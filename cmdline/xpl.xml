@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XPLEngine>
+ <Databases>
+<!--
+  <Database Name="AsterGen">Provider='sqlncli11'; Data Source='(local)'; Initial Catalog='AsterGen'; Integrated Security='SSPI';</Database>
+-->
+  <Database Name="postgres">Driver={PostgreSQL Unicode};Server=127.0.0.1;Port=5432;Database=postgres;UId=postgres;Pwd=rfhnfuty5483;</Database>
+ </Databases>
+ <Options>
+  <Option name="LogFile">xpl.log</Option>
+  <!-- Экспериментальная фишка, пусть будет, как есть -->
+  <Option name="MacroContentCachingThreshold">3</Option>
+  <!-- Минимальный уровень отладочных сообщений на консоли: 0 - отладка, 1 - предупреждение, 2 - ошибка, 3 - критическая ошибка -->
+  <Option name="MinDebugPrintLevel">0</Option>
+  <!-- Защита от зацикливания. Выше 400 выставлять не стоит. -->
+  <Option name="MaxRecursionDepth">100</Option>
+  <!-- Начальный размер хэша макро. При переполнении перевыделяется память. 
+       При большом кол-ве макро на одном уровне есть смысл увеличить. 
+       По умолчанию - 16. 
+   -->
+  <Option name="InitialMacroTableSize">16</Option>
+  <!-- URI пространства имён языка. Сравнивается с заголовком xpl-файла.
+       По умолчанию - http://xpl-dev.org/xpl
+   -->
+  <Option name="XplNsUri">http://xpl-dev.org/xpl</Option>
+  <!-- Предупреждать ли в случае, когда ns-uri для префикса xpl не совпадает
+       с заданным здесь (или с умолчанием, если здесь не указан)
+       По умолчанию - false
+   -->
+  <Option name="WarnOnInvalidXplNsUri">true</Option>
+  <!-- Выводить порождённые командами сообщения об ошибках на консоль сервера.
+       По умолчанию - false
+  -->
+  <Option name="ErrorsToConsole">true</Option>
+  <!-- Выводить трассировку стека документа при возникновении ошибки.
+       Включение имплицирует включение опции ErrorsToConsole.
+       По умолчанию - false
+  -->
+  <Option name="StackTrace">true</Option>
+  <!-- Включить совместимость с именами команд и параметров из старого интерпретатора
+       (is-file-exist, delimeter и т.д.)
+       По умолчанию - true
+  -->
+  <Option name="LuciferCompatibility">true</Option>
+  <!-- Раскрашивать ли сообщения при выводе их на консоль.
+       По умолчанию - false
+  -->
+  <Option name="UseConsoleColors">true</Option>
+  <!-- При запуске проверить доступность всех прописанных в конфиге баз.
+       По умолчанию - true
+  -->
+  <Option name="CheckDbOnStartup">true</Option>
+  <!-- Выводить на консоль предупреждения о переопределении макросов.
+       Инструмент отладочный и на продакшене должен быть выключен.
+       По умолчанию - false
+  -->
+  <Option name="WarnOnMacroRedefinition">true</Option>
+  <!-- Выводить на консоль предупреждения о наличии узлов внутри уже развёрнутого макро.
+       Инструмент отладочный и на продакшене должен быть выключен.
+       По умолчанию - false
+  -->
+  <Option name="WarnOnExpandedMacroContent">true</Option>
+  <!-- Вывод на консоль предупреждений о попытке модификации родительского узла.
+       По умолчанию - false
+  -->
+  <Option name="WarnOnAncestorModificationAttempt">true</Option>
+  <!-- Вывод на консоль предупреждений об обращении к уже удалённым в ходе обработки узлам.
+       По умолчанию - false
+  -->
+  <Option name="WarnOnDeletedNodeReference">_T</Option>
+  <!-- Вывод на консоль предупреждений об отсутствии содержимого МО, попадающего под селектор, но имеющего атрибут required
+       По умолчанию - false
+  -->
+  <Option name="WarnOnMissingMacroContent">true</Option>
+  <!-- Вывод на консоль предупреждений о неизвестной команде языка
+       По умолчанию - false
+  -->
+  <Option name="WarnOnUnknownCommand">true</Option>
+  <!-- Выводить на консоль сообщения HTML Tidy (для xpl:include uri=...)
+       Генерирует тонны мусора.
+       Инструмент отладочный и на продакшене должен быть выключен.
+       По умолчанию - false
+  -->
+  <Option name="PrintTidyInfo">false</Option>
+  <!-- Предупреждать об отсутствии параметра expect у команды get-param.
+       По умолчанию - false
+  -->
+  <Option name="WarnOnNoExpectParam">true</Option>
+  <!-- Имя файла, в который записывается результат обработки последнего документа.
+       Если не указано - файл не записывается.
+       По умолчанию - нет
+  -->
+<!--
+  <Option name="DebugSaveFile">d:\фпень\debug.xml</Option> 
+-->
+  <!-- Параметры прокси. Если не задана опция ProxyServer, прокси не используется. 
+  -->
+  <!--
+  <Option name="ProxyServer">sofia.niks.by</Option>
+  <Option name="ProxyPort">8080</Option>
+  <Option name="ProxyUser">niks\iam</Option>
+  <Option name="ProxyPassword">пароля, насяльника!</Option>
+  -->
+  <!-- Включение расширенного режима обработки с "обёртками". 
+       По умолчанию - false
+  -->
+  <Option name="UseWrappers">false</Option>
+  <!-- Требовать привилегированный режим для общесерверных команд (shutdown, rehash, set-option etc).
+       По умолчанию - true
+       Замечание: на текущий момент единственная доступная команда этого рода - shutdown
+  -->
+  <Option name="CheckSAMode">false</Option>
+  <!-- Включить команду xpl:assert 
+       По умолчанию - false 
+  -->
+  <Option name="EnableAssertions">true</Option>
+ </Options>
+ <WrapperMap/>
+</XPLEngine>
+

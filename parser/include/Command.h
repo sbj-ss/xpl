@@ -1,0 +1,137 @@
+/******************************************/
+/* Polaris project: the pure C XPL engine */
+/* (c) НИЛ ИТС, Подковырин, 2006-2020     */
+/******************************************/
+#ifndef __command_H
+#define __command_H
+
+#include "Configuration.h"
+#include "Common.h"
+#include "abstraction/xpr.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct _xplDocument xplDocument;
+typedef xplDocument* xplDocumentPtr;
+
+/* Node parsing result */
+typedef struct _xplResult
+{
+    xmlNodePtr list;
+	BOOL repeat;
+	BOOL has_list;
+} xplResult, *xplResultPtr;
+
+#define ASSIGN_RESULT(lst, rpt, has_lst) do {\
+	result->list = lst;\
+	result->repeat = rpt;\
+	result->has_list = has_lst;\
+} while(0)
+
+/* XPL command info */
+typedef struct _xplCommandInfo
+{
+    xmlNodePtr element;
+    xplDocumentPtr document;
+	void *_private;
+} xplCommandInfo, *xplCommandInfoPtr;
+
+/* XPL command handler */
+
+typedef void (*xplCommandPrologue) (xplCommandInfoPtr info);
+typedef void (*xplCommandEpilogue) (xplCommandInfoPtr info, xplResultPtr result);
+typedef BOOL (*xplCommandInitializer) (void*, xmlChar **error);
+typedef void (*xplCommandFinalizer) (void*);
+
+#define XPL_CMD_FLAG_CONTENT_SAFE 0x0001UL
+#define XPL_CMD_FLAG_INITIALIZED 0x0100UL
+
+typedef struct _xplCommand
+{
+	xplCommandPrologue prologue;
+	xplCommandEpilogue epilogue;
+	xplCommandInitializer initializer;
+	xplCommandFinalizer finalizer;
+	unsigned int flags;
+} xplCommand, *xplCommandPtr;
+
+/* pluggable command modules support */
+#define PLUGGABLE_MODULE_VERSION 2
+#define PLUGGABLE_MODULE_MAGIC 0x02706711
+
+typedef struct _xplExternalCommand
+{
+	int magic;   /* = PLUGGABLE_MODULE_MAGIC */
+	xmlChar *name;
+	xplCommandPtr cmd;
+	void *reserved[8];
+} xplExternalCommand, *xplExternalCommandPtr;
+
+typedef struct _xplExternalCommands
+{
+	int magic;   /* = PLUGGABLE_MODULE_MAGIC */
+	int version; /* = PLUGGABLE_MODULE_VERSION */
+	int count;
+	XPR_SHARED_OBJECT_HANDLE handle;
+	void *reserved[8];
+	xplExternalCommandPtr commands;
+} xplExternalCommands, *xplExternalCommandsPtr;
+
+typedef xplExternalCommandsPtr (*GetCommandsFunc)(void);
+
+typedef enum _xplModuleCmdResult
+{
+	XPL_MODULE_CMD_OK = 0,
+	XPL_MODULE_CMD_MODULE_NOT_FOUND = -1,
+	XPL_MODULE_CMD_INVALID_MODULE_FORMAT = -2,
+	XPL_MODULE_CMD_INVALID_COMMAND_FORMAT = -3,
+	XPL_MODULE_CMD_COMMAND_NAME_CLASH = -4,
+	XPL_MODULE_CMD_VERSION_TOO_OLD = -5,
+	XPL_MODULE_CMD_UNSUPPORTED_VERSION = -6,
+	XPL_MODULE_CMD_INSUFFICIENT_MEMORY = -7,
+	XPL_MODULE_CMD_COMMAND_INIT_FAILED = -8,
+	XPL_MODULE_CMD_NO_PARSER = -9,
+	XPL_MODULE_CMD_MODULE_ALREADY_LOADED = -10,
+	XPL_MODULE_CMD_LOCK_ERROR = -11
+} xplModuleCmdResult;
+
+XPLPUBFUN xplModuleCmdResult XPLCALL
+	xplInitCommands();
+XPLPUBFUN xplModuleCmdResult XPLCALL
+	xplRegisterCommand(const xmlChar* name, xplCommandPtr cmd, xmlChar **error);
+XPLPUBFUN void XPLCALL
+	xplUnregisterCommand(const xmlChar* name);
+XPLPUBFUN xplCommandPtr XPLCALL
+	xplGetCommand(xmlNodePtr el);
+XPLPUBFUN BOOL XPLCALL
+	xplCommandSupported(const xmlChar* name);
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplSupportedCommandsToList(xmlDocPtr doc, xmlNodePtr parent, const xmlChar *tagName);
+XPLPUBFUN void XPLCALL
+	xplCleanupCommands();
+
+XPLPUBFUN xplModuleCmdResult XPLCALL
+	xplLoadableModulesInit(void);
+XPLPUBFUN xplModuleCmdResult XPLCALL
+	xplLoadModule(xmlChar *name, xmlChar **error_data);
+XPLPUBFUN void XPLCALL
+	xplUnloadModule(xmlChar *name);
+XPLPUBFUN xmlChar* XPLCALL
+	xplModuleCmdResultToString(xplModuleCmdResult result, xmlChar *error_data);
+XPLPUBFUN BOOL XPLCALL
+	xplIsModuleLoaded(const xmlChar *name);
+XPLPUBFUN xmlChar* XPLCALL
+	xplLoadedModulesToString(const xmlChar *delimiter);
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplLoadedModulesToNodeList(const xmlChar *tagQName, xmlNodePtr parent);
+XPLPUBFUN int XPLCALL
+	xplLoadableModulesCleanup(void);
+
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, BOOL *value, BOOL defaultValue);
+#ifdef __cplusplus
+}
+#endif
+#endif

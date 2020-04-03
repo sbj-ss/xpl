@@ -1,0 +1,83 @@
+#include "commands/Case.h"
+#include "Core.h"
+#include "Messages.h"
+#include "Options.h"
+#include "Utils.h"
+
+void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
+{
+#define KEY_ATTR (BAD_CAST "key")
+#define BREAK_ATTR (BAD_CAST "break")
+	xmlChar *key_attr = NULL;
+	BOOL do_break;
+	xmlXPathObjectPtr sel = NULL, parent_sel;
+	xmlNodePtr parent = commandInfo->element->parent;
+	xmlNodePtr error;
+
+	if (!parent->ns || 
+		((parent->ns != commandInfo->document->root_xpl_ns) && xmlStrcmp(parent->ns->href, cfgXplNsUri)) ||
+		xmlStrcmp(parent->name, BAD_CAST "switch"))
+	{
+		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "parent element must be a switch command");
+		goto done;
+	}
+	key_attr = xmlGetNoNsProp(commandInfo->element, KEY_ATTR);
+	if (!key_attr)
+	{
+		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing key attribute");
+		goto done;
+	}
+	sel = xplSelectNodes(commandInfo->document, commandInfo->element, key_attr);
+	if (!sel)
+	{
+		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid key XPath expression \"%s\"", key_attr);
+		goto done;
+	}
+	parent_sel = (xmlXPathObjectPtr) parent->content;
+	/* ToDo: param for equality/identity */
+	if (compareXPathSelections(sel, parent_sel, 0))
+	{
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, BREAK_ATTR, &do_break, TRUE)))
+		{
+			commandInfo->_private = error;
+			goto done;
+		}
+		if (do_break)
+		{
+			xplDocDeferNodeListDeletion(commandInfo->document, commandInfo->element->next);
+			commandInfo->element->next = NULL;
+			parent->last = commandInfo->element;
+		}
+	} else
+		xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
+	if (sel->nodesetval)
+		sel->nodesetval->nodeNr = 0;
+done:
+	if (commandInfo->_private)
+		xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
+	if (key_attr) xmlFree(key_attr);
+	if (sel)
+		xmlXPathFreeObject(sel);
+}
+
+void xplCmdCaseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
+{
+#define REPEAT_ATTR (BAD_CAST "repeat")
+	xmlChar *repeat_attr = NULL;
+	BOOL repeat = FALSE;
+
+	if (commandInfo->_private)
+	{
+		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, TRUE, TRUE);
+	} else {
+		if ((repeat_attr = xmlGetNoNsProp(commandInfo->element, REPEAT_ATTR)))
+		{
+			if (!xmlStrcasecmp(repeat_attr, BAD_CAST "TRUE"))
+				repeat = TRUE;
+			xmlFree(repeat_attr);
+		}
+		ASSIGN_RESULT(detachContent(commandInfo->element), repeat, TRUE);
+	}
+}
+
+xplCommand xplCaseCommand = { xplCmdCasePrologue, xplCmdCaseEpilogue };

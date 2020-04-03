@@ -1,0 +1,38 @@
+# extensions
+*.bak
+*.cod
+*.def
+*.dll
+*.exe
+*.exp
+*.htm*
+*.idb
+*.idc
+*.ilk
+*.lib
+*.log
+*.lst
+*.manifest
+*.manifest.res
+*.map
+*.ncb
+*.o
+*.obj
+*.pch
+*.pdb
+*.rar
+*.so
+*.so.*
+*.suo
+*.user
+*.vsp
+# top dirs
+/plugins
+/sql_sp
+/test_anything
+# build dirs
+x64
+Debug
+Release
+# specific files
+mt.dep
