@@ -4,8 +4,6 @@
 
 #include <oniguruma.h>
 
-#undef _REGEX_MATCH_FULL_STRING_ONLY
-
 void xplCmdRegexMatchPrologue(xplCommandInfoPtr commandInfo)
 {
 }
