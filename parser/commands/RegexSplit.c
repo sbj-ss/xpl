@@ -38,10 +38,10 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	xmlChar *tagname, *delimitertagname;
 	xmlChar tmp;
 	xmlNsPtr ns, delim_ns;
-	BOOL keepdelimiter;
-	BOOL keepemptytags;
-	BOOL repeat;
-	BOOL unique;
+	bool keepdelimiter;
+	bool keepemptytags;
+	bool repeat;
+	bool unique;
 	xmlChar *content = NULL, *content_end;
 	regex_t *regex = NULL;
 	OnigErrorInfo err_info;
@@ -49,7 +49,7 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	xmlChar onig_err_str[ONIG_MAX_ERROR_MESSAGE_LEN+1];
 	int onig_ret_code;
 	xmlNodePtr ret = NULL, tail, cur, error;
-	BOOL match;
+	bool match;
 	xmlChar *start, *end, *prev_boundary;
 	xmlHashTablePtr unique_hash = NULL;
 	xmlXPathObjectPtr sel = NULL;
@@ -61,21 +61,21 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		regex_attr = xmlGetNoNsProp(commandInfo->element, DELIMITER_ATTR);
 	if (!regex_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing regex attribute"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing regex attribute"), true, true);
 		goto done;
 	}
 	tagname_attr = xmlGetNoNsProp(commandInfo->element, TAGNAME_ATTR);
 	if (!tagname_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing tagname attribute"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing tagname attribute"), true, true);
 		goto done;
 	}
 	select_attr = xmlGetNoNsProp(commandInfo->element, BAD_CAST "select");
 	if (!select_attr)
 		select_attr = xmlStrdup(BAD_CAST ".");
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEPDELIMITER_ATTR, &keepdelimiter, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEPDELIMITER_ATTR, &keepdelimiter, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (keepdelimiter)
@@ -84,19 +84,19 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		if (!delimitertagname_attr)
 			delimitertagname_attr = tagname_attr;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEPEMPTYTAGS_ATTR, &keepemptytags, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEPEMPTYTAGS_ATTR, &keepemptytags, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, UNIQUE_ATTR, &unique, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, UNIQUE_ATTR, &unique, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (unique)
@@ -107,13 +107,13 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	{
 		if (!onig_error_code_to_str(onig_err_str, onig_ret_code))
 			strcpy((char*) onig_err_str, "unknown error");
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "Oniguruma error: %s", onig_err_str), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "Oniguruma error: %s", onig_err_str), true, true);
 		goto done;
 	}
 	region = onig_region_new();
 	if (!region)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "Oniguruma cannot create search region"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "Oniguruma cannot create search region"), true, true);
 		goto done;
 	}
 	EXTRACT_NS_AND_TAGNAME(tagname_attr, ns, tagname, commandInfo->element);
@@ -122,17 +122,17 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	sel = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
 	if (!sel)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr), true, true);
 		goto done;
 	}
 	if (sel->type != XPATH_NODESET)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression \"%s\" evaluated to non-nodeset value", select_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression \"%s\" evaluated to non-nodeset value", select_attr), true, true);
 		goto done;
 	}
 	if (!sel->nodesetval)
 	{
-		ASSIGN_RESULT(NULL, FALSE, TRUE);
+		ASSIGN_RESULT(NULL, false, true);
 		goto done;
 	}
 	for (i = 0; i < (size_t) sel->nodesetval->nodeNr; i++)
@@ -200,7 +200,7 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 			xmlFree(content);
 		} /* first match found */
 	} /* outer loop */
-	ASSIGN_RESULT(ret, repeat, TRUE);
+	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (select_attr)
 		xmlFree(select_attr);

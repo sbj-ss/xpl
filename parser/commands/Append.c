@@ -93,7 +93,7 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	{
 		if ((position = appendModeFromString(position_attr)) == POS_ERROR)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid position argument: %s", position_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid position argument: %s", position_attr), true, true);
 			goto done;
 		}
 	}
@@ -103,7 +103,7 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		select_attr = xmlGetNoNsProp(commandInfo->element, DESTINATION_ATTR);
 	if (!select_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "neither select nor destination attribute specified"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "neither select nor destination attribute specified"), true, true);
 		goto done;
 	}
 
@@ -115,17 +115,17 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			if (src->type != XPATH_NODESET)
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "source XPath (%s) returned non-nodeset value", source_attr), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "source XPath (%s) returned non-nodeset value", source_attr), true, true);
 				goto done;
 			}
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid source XPath (%s)", source_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid source XPath (%s)", source_attr), true, true);
 			xmlResetLastError();
 			goto done;
 		}
 	} else if (!commandInfo->element->children) {
 		/* ������������ ����������� ���, ����� ������ �� ������ */
-		ASSIGN_RESULT(NULL, FALSE, TRUE);
+		ASSIGN_RESULT(NULL, false, true);
 		goto done;
 	}
 
@@ -164,16 +164,16 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				}
 			}
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "destination XPath (%s) returned non-nodeset value", select_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "destination XPath (%s) returned non-nodeset value", select_attr), true, true);
 			goto done; 
 		}
 	} else {
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid destination XPath (%s)", select_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid destination XPath (%s)", select_attr), true, true);
 		xmlResetLastError();
 		goto done;
 	}
 
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (position_attr) xmlFree(position_attr);
 	if (select_attr) xmlFree(select_attr);

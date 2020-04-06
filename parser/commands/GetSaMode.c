@@ -17,7 +17,7 @@ void xplCmdGetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	else 
 		txt = BAD_CAST "false";
 	ret = xmlNewDocText(commandInfo->element->doc, txt);
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 }
 
 xplCommand xplGetSaModeCommand = { xplCmdGetSaModePrologue, xplCmdGetSaModeEpilogue };

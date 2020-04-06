@@ -17,7 +17,7 @@ void xplCmdSessionGetIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 		ret = xmlNewDocText(commandInfo->document->document, id);
 	else
 		ret = NULL;
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 }
 
 xplCommand xplSessionGetIdCommand = { xplCmdSessionGetIdPrologue, xplCmdSessionGetIdEpilogue };

@@ -13,20 +13,20 @@ void xplCmdSessionSetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 #define NAME_ATTR BAD_CAST "name"
 #define THREADLOCAL_ATTR (BAD_CAST "threadlocal")
 	xmlChar *name_attr = NULL;
-	BOOL threadlocal;
+	bool threadlocal;
 	xmlNodePtr error;
 
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
 	if (!name_attr || !*name_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "name attribute not specified or empty"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "name attribute not specified or empty"), true, true);
 		goto done;
 	}
 	if (!commandInfo->document->main->session)
 		commandInfo->document->main->session = xplSessionCreateWithAutoId();
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, THREADLOCAL_ATTR, &threadlocal, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, THREADLOCAL_ATTR, &threadlocal, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (threadlocal)
@@ -35,7 +35,7 @@ void xplCmdSessionSetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 done:
 	if (name_attr)
 		xmlFree(name_attr);
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 }
 
 xplCommand xplSessionSetObjectCommand = { xplCmdSessionSetObjectPrologue, xplCmdSessionSetObjectEpilogue };

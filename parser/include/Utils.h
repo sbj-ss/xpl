@@ -57,10 +57,10 @@ XPLPUBFUN xmlChar* XPLCALL
 	strTrim(xmlChar* str);
 
 /* Есть ли что-то, кроме форматирования */
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	strNonblank(xmlChar *str);
 /* ^[0-9]+(\.[0-9]+)$ */
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	isNumber(xmlChar *str);
 
 /* Получение последней ошибки libxml2 в удобочитаемом виде.
@@ -74,9 +74,9 @@ XPLPUBFUN xmlNodePtr XPLCALL
 	cloneAttrAsText(xmlNodePtr cur, xmlNodePtr parent);
 
 /* Проверка, что в списке содержатся только текстовые узлы, CDATA и ссылки на сущности */
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	checkNodeListForText(xmlNodePtr start);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	checkNodeSetForText(xmlNodeSetPtr s);
 
 /* Пометить фрагмент родительской оси к удалению
@@ -85,10 +85,10 @@ XPLPUBFUN BOOL XPLCALL
 XPLPUBFUN void XPLCALL 
 	markAncestorAxisForDeletion(xmlNodePtr bottom, xmlNodePtr top);
 XPLPUBFUN void XPLCALL
-	markDOSAxisForDeletion(xmlNodePtr cur, int bitwiseAttribute, BOOL doMark);
+	markDOSAxisForDeletion(xmlNodePtr cur, int bitwiseAttribute, bool doMark);
 /* Расчистить соседей на всех уровнях до указанной точки */
 XPLPUBFUN void XPLCALL
-	deleteNeighbours(xmlNodePtr cur, xmlNodePtr boundary, BOOL markAncestorAxis);
+	deleteNeighbours(xmlNodePtr cur, xmlNodePtr boundary, bool markAncestorAxis);
 
 /* Является ли test родителем cur */
 XPLPUBFUN int XPLCALL
@@ -135,8 +135,8 @@ XPLPUBFUN void XPLCALL
 
 /* Кодировки */
 /* Проверка на корректную utf-8 запись */
-XPLPUBFUN BOOL XPLCALL
-	isValidUtf8Sample(xmlChar *s, size_t len, BOOL isCompleteString);
+XPLPUBFUN bool XPLCALL
+	isValidUtf8Sample(xmlChar *s, size_t len, bool isCompleteString);
 /* Получение смещения до следующего UTF-8 символа. При неверной записи возвращает 0! */
 XPLPUBFUN size_t XPLCALL
 	getOffsetToNextUTF8Char(xmlChar *cur);
@@ -165,7 +165,7 @@ XPLPUBFUN int XPLCALL
 				  char** resultp, size_t* lengthp);
 /* Шестнадцатеричный дамп буфера. Результат необходимо освободить. */
 XPLPUBFUN xmlChar* XPLCALL
-	bufferToHex(void* buf, size_t len, BOOL prefix);
+	bufferToHex(void* buf, size_t len, bool prefix);
 /* base-64 запись буфера. Память под результат должна быть выделена до вызова функции, result и resultSize заполнены! */
 XPLPUBFUN int XPLCALL
 	base64encode(const void* data_buf, size_t dataLength, char* result, size_t resultSize);
@@ -186,7 +186,7 @@ XPLPUBFUN void XPLCALL
 	safeSerializeDocument(char *filename, xmlDocPtr doc);
 
 /* Сохранение документа в файл с учётом символов нац. алфавитов в путях */
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	saveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int options);
 
 /* Для сериализаторов */
@@ -205,29 +205,29 @@ XPLPUBFUN xmlNsPtr XPLCALL
 
 /* Прицепить к элементу атрибут */
 XPLPUBFUN void XPLCALL
-	assignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *value, BOOL allowReplace);
+	assignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *value, bool allowReplace);
 
 /* Создать узел-элемент с заданным именем */
 XPLPUBFUN xmlNodePtr XPLCALL
 	createElement(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name);
 
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	checkNodeEquality(xmlNodePtr a, xmlNodePtr b);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	checkNodeListEquality(xmlNodePtr a, xmlNodePtr b);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	checkPropListEquality(xmlAttrPtr a, xmlAttrPtr b);
 /* Сравнить два набора узлов по декартову произведению */
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	checkNodeSetEquality(xmlNodeSetPtr a, xmlNodeSetPtr b);
 /* Сравнить два набора узлов по декартову произведению */
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	checkNodeSetIdentity(xmlNodeSetPtr a, xmlNodeSetPtr b);
 
 /* Сравнить два результата XPath-выборок. В случае набора узлов сравнение идёт по декартову произведению.
-   При типах, отличных от string/boolean/number/nodeset, всегда возвращает FALSE. */
-XPLPUBFUN BOOL XPLCALL
-	compareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, BOOL checkEquality);
+   При типах, отличных от string/boolean/number/nodeset, всегда возвращает false. */
+XPLPUBFUN bool XPLCALL
+	compareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool checkEquality);
 
 /* Дописать в конец строки шестнадцатиричную запись id. Возвращает указатель на новую строку (xmlRealloc). */
 XPLPUBFUN xmlChar* XPLCALL

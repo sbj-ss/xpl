@@ -31,7 +31,7 @@ typedef struct _xplMacro
 	xmlNodePtr node_original_content;
 	/* For list-macros */
 	xmlChar *name;
-	BOOL ns_is_duplicated;
+	bool ns_is_duplicated;
 	xmlNsPtr ns;
 	xmlNodePtr parent;
 	int line;
@@ -43,7 +43,7 @@ typedef struct _xplMacro
 } xplMacro, *xplMacroPtr;
 
 XPLPUBFUN xplMacroExpansionState XPLCALL
-	xplMacroExpansionStateFromString(xmlChar *state, BOOL allowNoDefault);
+	xplMacroExpansionStateFromString(xmlChar *state, bool allowNoDefault);
 XPLPUBFUN xplMacroPtr XPLCALL
 	xplMacroCreate(xmlChar *aId, xmlNodePtr aContent, xplMacroExpansionState expansionState);
 XMLPUBFUN void XMLCALL
@@ -57,11 +57,11 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN xplMacroPtr XPLCALL
 	xplMacroLookup(xmlNodePtr element, const xmlChar *href, const xmlChar *name);
 XPLPUBFUN xmlChar* XPLCALL
-	xplMacroTableToString(xmlNodePtr element, xmlChar* delimiter, BOOL unique);
+	xplMacroTableToString(xmlNodePtr element, xmlChar* delimiter, bool unique);
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplMacroToNode(xplMacroPtr macro, xmlChar *tagname, xmlNodePtr parent);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplMacroTableToNodeList(xmlNodePtr element, xmlChar *tagQName, BOOL unique, xmlNodePtr parent);
+	xplMacroTableToNodeList(xmlNodePtr element, xmlChar *tagQName, bool unique, xmlNodePtr parent);
 XPLPUBFUN xmlHashTablePtr XPLCALL
 	xplCloneMacroTableUpwards(xmlNodePtr src, xmlNodePtr parent);
 

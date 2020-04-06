@@ -15,21 +15,21 @@ void xplCmdCommandSupportedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 	xmlChar *name_attr = NULL;
 	xmlChar *tagname_attr = NULL;
 	xmlChar *name;
-	BOOL repeat;
-	BOOL showtags;
+	bool repeat;
+	bool showtags;
 	xmlChar *value;
 	xmlNodePtr ret, error;
 
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
 	tagname_attr = xmlGetNoNsProp(commandInfo->element, TAGNAME_ATTR);
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWTAGS_ATTR, &showtags, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWTAGS_ATTR, &showtags, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (!name_attr) /* all commands */
@@ -40,11 +40,11 @@ void xplCmdCommandSupportedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 			name = tagname_attr;
 		else
 			name = BAD_CAST "command";
-		ASSIGN_RESULT(xplSupportedCommandsToList(commandInfo->element->doc, commandInfo->element, name), repeat, TRUE);
+		ASSIGN_RESULT(xplSupportedCommandsToList(commandInfo->element->doc, commandInfo->element, name), repeat, true);
 	} else { /* specified command */
 		value = BAD_CAST (xplCommandSupported(name_attr)? "true": "false");
 		ret = xmlNewDocText(commandInfo->element->doc, value);
-		ASSIGN_RESULT(ret, FALSE, TRUE);
+		ASSIGN_RESULT(ret, false, true);
 	}
 done:
 	if (name_attr) xmlFree(name_attr);

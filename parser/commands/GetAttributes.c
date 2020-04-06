@@ -16,8 +16,8 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 #define REPEAT_ATTR (BAD_CAST "repeat")
 	xmlChar *select_attr = NULL;
 	xmlChar *tagname_attr = NULL;
-	BOOL showtags;
-	BOOL repeat;
+	bool showtags;
+	bool repeat;
 	xmlNodePtr src = NULL;
 	xmlNodePtr ret = NULL, tail, cur, error;
 	xmlChar *tagname, *name;
@@ -27,14 +27,14 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
 	tagname_attr = xmlGetNoNsProp(commandInfo->element, TAGNAME_ATTR);
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWTAGS_ATTR, &showtags, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWTAGS_ATTR, &showtags, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 
@@ -58,20 +58,20 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 					if ((sel->nodesetval->nodeNr == 1) && (sel->nodesetval->nodeTab[0]->type == XML_ELEMENT_NODE))
 						src = sel->nodesetval->nodeTab[0];
 					else if (!sel->nodesetval->nodeNr) {
-						ASSIGN_RESULT(NULL, FALSE, TRUE);
+						ASSIGN_RESULT(NULL, false, true);
 						goto done;
 					} else {
-						ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) must evaluate to a single element node", select_attr), TRUE, TRUE);
+						ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) must evaluate to a single element node", select_attr), true, true);
 						goto done;
 					}
 				} else
 					goto done;
 			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) evaluated to non-nodeset value", select_attr), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) evaluated to non-nodeset value", select_attr), true, true);
 				goto done;
 			}
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), true, true);
 			goto done;
 		}
 	} else {
@@ -80,7 +80,7 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 			src = src->next;
 		if (!src)
 		{
-			ASSIGN_RESULT(NULL, FALSE, TRUE);
+			ASSIGN_RESULT(NULL, false, true);
 			goto done;
 		}
 	}
@@ -122,7 +122,7 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 		}
 		prop = prop->next;
 	}
-	ASSIGN_RESULT(ret, repeat, TRUE);
+	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (select_attr)
 		xmlFree(select_attr);

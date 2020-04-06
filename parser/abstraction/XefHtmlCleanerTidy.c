@@ -27,7 +27,7 @@ XEF_STARTUP_PROTO(HtmlCleaner)
 	tidySetReallocCall(xml_tidyRealloc);
 	tidySetFreeCall(xml_tidyFree);
 #endif
-	return TRUE;
+	return true;
 }
 
 XEF_SHUTDOWN_PROTO(HtmlCleaner)
@@ -47,7 +47,7 @@ XEF_FREE_ERROR_MESSAGE_PROTO(HtmlCleaner)
 	DISPLAY_INTERNAL_ERROR_MESSAGE();
 }
 
-BOOL xefCleanHtml(xefCleanHtmlParamsPtr params)
+bool xefCleanHtml(xefCleanHtmlParamsPtr params)
 {
 	TidyBuffer output = {0};
 	TidyBuffer errbuf = {0};
@@ -61,7 +61,7 @@ BOOL xefCleanHtml(xefCleanHtmlParamsPtr params)
 	if (!(tdoc = tidyCreate()))
 	{
 		params->error = xefCreateCommonErrorMessage("cannot create HtmlTidy document");
-		return FALSE;
+		return false;
 	}
 	tidyOptSetBool(tdoc, TidyXhtmlOut, yes); /* don't set to "XML" */
 	tidyOptSetBool(tdoc, TidyNumEntities, yes);
@@ -73,14 +73,14 @@ BOOL xefCleanHtml(xefCleanHtmlParamsPtr params)
 		tidyBufFree(&output);
 		tidyBufFree(&errbuf);
 		params->error = xefCreateCommonErrorMessage("HtmlTidy refused to parse input document");
-		return FALSE;
+		return false;
 	}
 	if (tidyCleanAndRepair(tdoc) < 0)
 	{
 		tidyBufFree(&output);
 		tidyBufFree(&errbuf);
 		params->error = xefCreateCommonErrorMessage("HtmlTidy refused to clean input document");
-		return FALSE;
+		return false;
 	}
 	if (cfgPrintTidyInfo)
 		tidyRunDiagnostics(tdoc);
@@ -89,7 +89,7 @@ BOOL xefCleanHtml(xefCleanHtmlParamsPtr params)
 		tidyBufFree(&output);
 		tidyBufFree(&errbuf);
 		params->error = xefCreateCommonErrorMessage("cannot save document cleaned by HtmlTidy to buffer");
-		return FALSE;
+		return false;
 	}
 	tidyBufPutByte(&output, 0); /* ensure NULL-termination */
 #if 0
@@ -104,5 +104,5 @@ BOOL xefCleanHtml(xefCleanHtmlParamsPtr params)
 	tidyBufFree(&output);
 	tidyBufFree(&errbuf);
 	if (tdoc) tidyRelease(tdoc);
-	return TRUE;
+	return true;
 }

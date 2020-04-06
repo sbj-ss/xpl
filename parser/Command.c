@@ -8,11 +8,11 @@ static xmlHashTablePtr commands = NULL;
 static xmlHashTablePtr loaded_modules = NULL;
 static XPR_MUTEX module_locker;
 
-BOOL xplInitCommands()
+bool xplInitCommands()
 {
 	xplCleanupCommands();
 	commands = xmlHashCreate(128);
-	return commands? TRUE: FALSE;
+	return commands? true: false;
 }
 
 xplModuleCmdResult xplRegisterCommand(const xmlChar *name, xplCommandPtr cmd, xmlChar **error)
@@ -60,15 +60,15 @@ static const xmlChar* builtins[] =
 	BAD_CAST "define"
 };
 
-BOOL xplCommandSupported(const xmlChar* name)
+bool xplCommandSupported(const xmlChar* name)
 {
 	unsigned int i;
 
 	for (i = 0; i < sizeof(builtins) / sizeof(xmlChar*); i++)
 		if (!xmlStrcmp(name, builtins[i]))
-			return TRUE;
+			return true;
 	if (!commands)
-		return FALSE;
+		return false;
 	return xmlHashLookup(commands, name)?TRUE:FALSE;
 }
 
@@ -316,14 +316,14 @@ xmlChar* xplModuleCmdResultToString(xplModuleCmdResult result, xmlChar *error_da
 	}
 }
 
-BOOL xplIsModuleLoaded(const xmlChar *name)
+bool xplIsModuleLoaded(const xmlChar *name)
 {
-	BOOL ret;
+	bool ret;
 	if (!loaded_modules)
-		return FALSE;
+		return false;
 	if (!xprMutexAcquire(&module_locker))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	ret = xmlHashLookup(loaded_modules, name)? TRUE: FALSE;
+	ret = xmlHashLookup(loaded_modules, name)? true: false;
 	if (!xprMutexRelease(&module_locker))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	return ret;
@@ -433,7 +433,7 @@ xmlNodePtr xplLoadedModulesToNodeList(const xmlChar *tagQName, xmlNodePtr parent
 	return ctxt.first;
 }
 
-xmlNodePtr xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, BOOL *value, BOOL defaultValue)
+xmlNodePtr xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, bool *value, bool defaultValue)
 {
 	xmlChar *attr = xmlGetNoNsProp(cmd, name);
 	int dec_value;
@@ -453,10 +453,10 @@ xmlNodePtr xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, BOOL *valu
 	switch(dec_value)
 	{
 	case 0:
-		*value = FALSE;
+		*value = false;
 		break;
 	case 1:
-		*value = TRUE;
+		*value = true;
 		break;
 	default:
 		*value = defaultValue;

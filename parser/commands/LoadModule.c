@@ -35,7 +35,7 @@ void xplCmdLoadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	if (error_data)
 		xmlFree(error_data);
 done:
-	ASSIGN_RESULT(ret, TRUE, TRUE);
+	ASSIGN_RESULT(ret, true, true);
 	if (name_attr)
 		xmlFree(name_attr);
 }

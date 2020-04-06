@@ -48,7 +48,7 @@ typedef struct _IncludeContext
 	xplDocumentPtr doc;
 	xmlChar *encoding_str;
 	int encoding;
-	BOOL needs_recoding;
+	bool needs_recoding;
 	InputFormat input_format;
 	OutputFormat output_format;
 	/* input source info */
@@ -85,7 +85,7 @@ static void getSourceStep(IncludeContextPtr ctxt)
 {
 	xmlChar *uri_attr = xmlGetNoNsProp(ctxt->command_element, URI_ATTR);
 	xmlChar *file_attr = xmlGetNoNsProp(ctxt->command_element, FILE_ATTR);
-	BOOL abspath;
+	bool abspath;
 
 	if (uri_attr && file_attr)
 	{
@@ -93,7 +93,7 @@ static void getSourceStep(IncludeContextPtr ctxt)
 		xmlFree(uri_attr);
 		xmlFree(file_attr);
 	} else if (file_attr) {
-		ctxt->error = xplDecodeCmdBoolParam(ctxt->command_element, ABS_PATH_ATTR, &abspath, FALSE);
+		ctxt->error = xplDecodeCmdBoolParam(ctxt->command_element, ABS_PATH_ATTR, &abspath, false);
 		if (ctxt->error)
 			return;
 		if (abspath)
@@ -301,11 +301,11 @@ static void updateCtxtEncoding(IncludeContextPtr ctxt)
 	xmlChar *encoding_attr = xmlGetNoNsProp(ctxt->command_element, ENCODING_ATTR);
 	if (!encoding_attr || !xmlStrcasecmp(encoding_attr, BAD_CAST "utf-8"))
 	{
-		ctxt->needs_recoding = FALSE;
+		ctxt->needs_recoding = false;
 		ctxt->encoding_str = encoding_attr;
 		return;
 	} else if (xmlStrcasecmp(encoding_attr, BAD_CAST "auto")) { /* non-utf8 encoding specified */
-		ctxt->needs_recoding = TRUE;
+		ctxt->needs_recoding = true;
 		ctxt->encoding_str = encoding_attr;
 		return;
 	}
@@ -360,10 +360,10 @@ static void recodeStep(IncludeContextPtr ctxt)
 	ctxt->content_size = recoded_size;
 }
 
-static BOOL checkForNonprintable(xmlChar* src, size_t size)
+static bool checkForNonprintable(xmlChar* src, size_t size)
 {
 	size_t i;
-	static BOOL map_ok = FALSE;
+	static bool map_ok = false;
 	static xmlChar map[256];
 
 	if (!map_ok)
@@ -372,14 +372,14 @@ static BOOL checkForNonprintable(xmlChar* src, size_t size)
 		map[0x09] = 1;
 		map[0x0A] = 1;
 		map[0x0D] = 1;
-		map_ok = TRUE;
+		map_ok = true;
 	}
 	for (i = 0; i < size; i++)
 	{
 		if (!map[*src++])
-			return FALSE;
+			return false;
 	}
-	return TRUE;
+	return true;
 }
 
 static void cleanStep(IncludeContextPtr ctxt)
@@ -395,7 +395,7 @@ static void cleanStep(IncludeContextPtr ctxt)
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "input document contains characters that cannot be output as text (try hex or base64 output format)");
 			return;
 		}
-		if (!isValidUtf8Sample(ctxt->content, ctxt->content_size, TRUE))
+		if (!isValidUtf8Sample(ctxt->content, ctxt->content_size, true))
 		{
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "input document contains characters that cannot be displayed as utf-8 (try recoding or hex/base64 output format)");
 			return;
@@ -464,7 +464,7 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 	xmlChar *response_tag_name_attr;
 	xmlXPathObjectPtr sel;
 	xmlNodePtr cur, head = NULL, tail, sibling, prnt;
-	BOOL remove_source;
+	bool remove_source;
 	size_t i;
 
 	/* check select attribute */
@@ -511,7 +511,7 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 		return;
 	}
 	/* select nodes */
-	if ((ctxt->error = xplDecodeCmdBoolParam(ctxt->command_element, REMOVE_SOURCE_ATTR, &remove_source, FALSE)))
+	if ((ctxt->error = xplDecodeCmdBoolParam(ctxt->command_element, REMOVE_SOURCE_ATTR, &remove_source, false)))
 	{
 		xmlFree(select_attr);
 		return;
@@ -608,7 +608,7 @@ static void computeRetStep(IncludeContextPtr ctxt)
 		ctxt->content_size = encoded_size;
 		break;
 	case OUTPUT_FORMAT_HEX:
-		if (!(encoded_content = bufferToHex(ctxt->content, ctxt->content_size, FALSE)))
+		if (!(encoded_content = bufferToHex(ctxt->content, ctxt->content_size, false)))
 		{
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "insufficient memory");
 			return;
@@ -630,7 +630,7 @@ static void computeRetStep(IncludeContextPtr ctxt)
 
 typedef void (*CtxtStep)(IncludeContextPtr ctxt);
 
-static BOOL ProcessInclude(xplCommandInfoPtr commandInfo, xmlNodePtr *ret)
+static bool ProcessInclude(xplCommandInfoPtr commandInfo, xmlNodePtr *ret)
 {
 	CtxtStep steps[] = 
 	{
@@ -656,12 +656,12 @@ static BOOL ProcessInclude(xplCommandInfoPtr commandInfo, xmlNodePtr *ret)
 		{
 			clearIncludeContext(&ctxt);
 			*ret = ctxt.error;
-			return FALSE;
+			return false;
 		}
 	}
 	*ret = ctxt.ret;
 	clearIncludeContext(&ctxt);
-	return TRUE;
+	return true;
 }
 
 void xplCmdIncludePrologue(xplCommandInfoPtr commandInfo)
@@ -671,18 +671,18 @@ void xplCmdIncludePrologue(xplCommandInfoPtr commandInfo)
 void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xmlNodePtr ret, error;
-	BOOL repeat;
+	bool repeat;
 
 	if (ProcessInclude(commandInfo, &ret)) /* ok */
 	{
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 		{
-			ASSIGN_RESULT(error, TRUE, TRUE);
+			ASSIGN_RESULT(error, true, true);
 		} else {
-			ASSIGN_RESULT(ret, repeat, TRUE);
+			ASSIGN_RESULT(ret, repeat, true);
 		}
 	} else {
-		ASSIGN_RESULT(ret, TRUE, TRUE);
+		ASSIGN_RESULT(ret, true, true);
 	}
 }
 

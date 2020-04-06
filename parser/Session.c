@@ -18,9 +18,9 @@ typedef struct _xplSession
 	xmlDocPtr doc;
 	time_t init_ts;
 	xmlChar* id;
-	BOOL valid;
-	BOOL sa_mode;
-	BOOL just_created;
+	bool valid;
+	bool sa_mode;
+	bool just_created;
 	XPR_MUTEX locker;
 } xplSession;
 
@@ -101,8 +101,8 @@ static xplSessionPtr xplSessionCreateInner(const xmlChar *id)
 	ret->doc->children = root;
 	time(&ret->init_ts);
 	ret->id = xmlStrdup(id);
-	ret->valid = TRUE;
-	ret->just_created = TRUE;
+	ret->valid = true;
+	ret->just_created = true;
 	xmlHashAddEntry(session_mgr, id, (void*) ret);
 	return ret;
 }
@@ -143,7 +143,7 @@ xplSessionPtr xplSessionCreate(const xmlChar *id)
 xplSessionPtr xplSessionCreateWithAutoId()
 {
 	xmlChar id[XPL_SESSION_ID_SIZE + 1];
-	BOOL flag = TRUE;
+	bool flag = true;
 	xplSessionPtr ret;
 
 	if (!session_mgr)
@@ -309,58 +309,58 @@ xmlChar *xplSessionGetId(xplSessionPtr session)
 	return session->id;
 }
 
-BOOL xplSessionIsValid(xplSessionPtr session)
+bool xplSessionIsValid(xplSessionPtr session)
 {
 	if (!session)
-		return FALSE;
+		return false;
 	return session->valid;
 }
 
-BOOL xplSessionGetSaMode(xplSessionPtr session)
+bool xplSessionGetSaMode(xplSessionPtr session)
 {
 	if (!cfgCheckSAMode)
-		return TRUE;
+		return true;
 	if (!session)
-		return FALSE;
+		return false;
 	return session->sa_mode;
 }
 
-BOOL xplSessionSetSaMode(xplSessionPtr session, BOOL enable, xmlChar *password)
+bool xplSessionSetSaMode(xplSessionPtr session, bool enable, xmlChar *password)
 {
 	unsigned char* digest;
 	xmlChar* digest_str;
-	BOOL ret;
+	bool ret;
 
 	if (!session)
-		return FALSE;
+		return false;
 	if (!enable)
 	{
-		session->sa_mode = FALSE;
-		return TRUE;
+		session->sa_mode = false;
+		return true;
 	}
 	if (session->sa_mode)
-		return TRUE; /* already set */
+		return true; /* already set */
 	digest = RIPEMD160((const unsigned char*) password, xmlStrlen(password), NULL);
-	digest_str = bufferToHex(digest, RIPEMD160_DIGEST_LENGTH, FALSE);
+	digest_str = bufferToHex(digest, RIPEMD160_DIGEST_LENGTH, false);
 	if (!strcmp((const char*) cfgSaPassword, (const char*) digest_str))
 	{
-		session->sa_mode = TRUE;
-		ret = TRUE;
+		session->sa_mode = true;
+		ret = true;
 	} else
-		ret = FALSE;
+		ret = false;
 	xmlFree(digest_str);
 	return ret;
 }
 
-BOOL xplSessionIsJustCreated(xplSessionPtr session)
+bool xplSessionIsJustCreated(xplSessionPtr session)
 {
 	if (!session)
-		return FALSE;
+		return false;
 	return session->just_created;
 }
 
 void xplMarkSessionAsSeen(xplSessionPtr session)
 {
 	if (session)
-		session->just_created = FALSE;
+		session->just_created = false;
 }

@@ -15,10 +15,10 @@ typedef struct _UnstringerContext
 	xmlChar* end_delimiter;
 	xmlChar* tag_name;
 	xmlChar* delimiter_tag_name;
-	BOOL unique;
-	BOOL keep_delimiter;
-	BOOL multi_delimiter;
-	BOOL keep_empty_tags;
+	bool unique;
+	bool keep_delimiter;
+	bool multi_delimiter;
+	bool keep_empty_tags;
 
 	xmlChar* input_str;
 	xmlHashTablePtr unique_hash;
@@ -182,7 +182,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	xmlChar *select_attr = NULL;
 	xmlChar *tag_name_attr = NULL;
 	xmlChar *delimiter_tag_name_attr = NULL;
-	BOOL repeat = TRUE;
+	bool repeat = true;
 	xmlNodePtr ret = NULL, error;
 	xmlXPathObjectPtr sel = NULL;
 	UnstringerContext ctxt;
@@ -194,44 +194,44 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	/* ToDo: check if tag name is valid */
 	if (!tag_name_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing tagname attribute"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing tagname attribute"), true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, UNIQUE_ATTR, &ctxt.unique, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, UNIQUE_ATTR, &ctxt.unique, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEP_EMPTY_TAGS_ATTR, &ctxt.keep_empty_tags, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEP_EMPTY_TAGS_ATTR, &ctxt.keep_empty_tags, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEP_DELIMITER_ATTR, &ctxt.keep_delimiter, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEP_DELIMITER_ATTR, &ctxt.keep_delimiter, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, MULTI_DELIMITER_ATTR, &ctxt.multi_delimiter, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, MULTI_DELIMITER_ATTR, &ctxt.multi_delimiter, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
 	if (cfgLuciferCompat)
 	{
 		if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEP_DELIMeTER_ATTR, &ctxt.keep_delimiter, ctxt.keep_delimiter)))
 		{
-			ASSIGN_RESULT(error, TRUE, TRUE);
+			ASSIGN_RESULT(error, true, true);
 			return;
 		}
 		if ((error = xplDecodeCmdBoolParam(commandInfo->element, MULTI_DELIMeTER_ATTR, &ctxt.multi_delimiter, ctxt.multi_delimiter)))
 		{
-			ASSIGN_RESULT(error, TRUE, TRUE);
+			ASSIGN_RESULT(error, true, true);
 			return;
 		}
 	}
@@ -257,12 +257,12 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 
 	if (ctxt.delimiter && (ctxt.start_delimiter || ctxt.end_delimiter))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "can't perform single delimiter and coupled delimiter splitting at the same time"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "can't perform single delimiter and coupled delimiter splitting at the same time"), true, true);
 		goto done;
 	}
 	if (ctxt.multi_delimiter && ctxt.start_delimiter && ctxt.end_delimiter && (xmlStrlen(ctxt.start_delimiter) != xmlStrlen(ctxt.end_delimiter)))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "multi-delimiter splitting is requested, but lengths of start and end delimiters differ"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "multi-delimiter splitting is requested, but lengths of start and end delimiters differ"), true, true);
 		goto done;
 	}
 
@@ -310,15 +310,15 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 			else
 				ret = splitBySingle(&ctxt);	
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression \"%s\" evaluated to neither nodeset nor string value", select_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression \"%s\" evaluated to neither nodeset nor string value", select_attr), true, true);
 			goto done;
 		}
 	} else {
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr), true, true);
 		goto done;
 	}
 	downshiftNodeListNsDef(ret, commandInfo->element->nsDef);
-	ASSIGN_RESULT(ret, repeat, TRUE);
+	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (select_attr)
 		xmlFree(select_attr);

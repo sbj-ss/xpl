@@ -12,13 +12,13 @@ void xplCmdSetResponseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resul
 	xmlChar *response;
 	if (!checkNodeListForText(commandInfo->element->children))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 		return;
 	}
-	response = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, TRUE);
+	response = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, true);
 	if (commandInfo->document->response) xmlFree(commandInfo->document->response);
 	commandInfo->document->response = response;
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 }
 
 xplCommand xplSetResponseCommand = { xplCmdSetResponsePrologue, xplCmdSetResponseEpilogue };

@@ -46,13 +46,13 @@ XPLPUBFUN void XPLCALL
 	xplSessionClear(xplSessionPtr session);
 XPLPUBFUN xmlChar* XPLCALL
 	xplSessionGetId(xplSessionPtr session);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplSessionIsValid(xplSessionPtr session);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplSessionGetSaMode(xplSessionPtr session);
-XPLPUBFUN BOOL XPLCALL
-	xplSessionSetSaMode(xplSessionPtr session, BOOL enable, xmlChar *password);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
+	xplSessionSetSaMode(xplSessionPtr session, bool enable, xmlChar *password);
+XPLPUBFUN bool XPLCALL
 	xplSessionIsJustCreated(xplSessionPtr session);
 XPLPUBFUN void XPLCALL
 	xplMarkSessionAsSeen(xplSessionPtr session);

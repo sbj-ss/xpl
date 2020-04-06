@@ -108,7 +108,7 @@
 #define XPR_CLEANUP_LOCK(x) DeleteCriticalSection(&x);
 
 #define XPR_EVENT_HANDLE HANDLE
-#define XPR_CREATE_EVENT(name) CreateEvent(NULL, TRUE, FALSE, name)
+#define XPR_CREATE_EVENT(name) CreateEvent(NULL, true, false, name)
 #define XPR_SET_EVENT(h) SetEvent(h)
 #define XPR_RESET_EVENT(h) ResetEvent(h)
 #define XPR_WAIT_EVENT(h, delay) WaitForSingleObject(h, delay);

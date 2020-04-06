@@ -18,19 +18,19 @@ void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (!xplSessionGetSaMode(commandInfo->document->session))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 		goto done;
 	}
 
 	if (!name_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no database name specified"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no database name specified"), true, true);
 		goto done;
 	}
 	xplLockThreads(TRUE);
 	xplRemoveDB(name_attr);
 	xplLockThreads(FALSE);
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (name_attr)
 		xmlFree(name_attr);

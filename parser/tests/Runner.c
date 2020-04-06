@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 {
 	int c;
 	xmlChar *skip_list = NULL, *error;
-	BOOL ok;
+	bool ok;
 	xtsContext ctxt;
 	int initial_blocks, mem_delta;
 

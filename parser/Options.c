@@ -417,7 +417,7 @@ void xplCleanupOptions(void)
 	}
 }
 
-static xmlChar *xplGetOptionValueInner(xplConfigEntryPtr p, BOOL showPasswords)
+static xmlChar *xplGetOptionValueInner(xplConfigEntryPtr p, bool showPasswords)
 {
 	xmlChar int_buf[12];
 
@@ -444,7 +444,7 @@ static xmlChar *xplGetOptionValueInner(xplConfigEntryPtr p, BOOL showPasswords)
 	return NULL;
 }
 
-xmlChar *xplGetOptionValue(xmlChar *optionName, BOOL showPasswords)
+xmlChar *xplGetOptionValue(xmlChar *optionName, bool showPasswords)
 {
 	xplConfigEntryPtr p;
 
@@ -458,7 +458,7 @@ xmlChar *xplGetOptionValue(xmlChar *optionName, BOOL showPasswords)
 	return xplGetOptionValueInner(p, showPasswords);
 }
 
-xmlNodePtr xplOptionsToList(xmlDocPtr doc, xmlNodePtr parent, xmlChar *tagName, BOOL showTags, BOOL showPasswords)
+xmlNodePtr xplOptionsToList(xmlDocPtr doc, xmlNodePtr parent, xmlChar *tagName, bool showTags, bool showPasswords)
 {
 	unsigned int i;
 	xmlNodePtr ret = NULL, tail, cur, value;
@@ -503,7 +503,7 @@ xmlNodePtr xplOptionsToList(xmlDocPtr doc, xmlNodePtr parent, xmlChar *tagName, 
 	return ret;
 }
 
-xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, BOOL byDefault)
+xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool byDefault)
 {
 	xplConfigEntryPtr p;
 	int int_value = 0;
@@ -525,7 +525,7 @@ xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, BOOL b
 			if (p->options & CFG_OPTION_STORED_AS_HASH)
 			{
 				digest = RIPEMD160((unsigned char*) value, xmlStrlen(value), NULL);
-				value = bufferToHex(digest, RIPEMD160_DIGEST_LENGTH, FALSE);
+				value = bufferToHex(digest, RIPEMD160_DIGEST_LENGTH, false);
 				*((xmlChar**) p->value_ptr) = value;
 			} else
 				*((xmlChar**) p->value_ptr) = xmlStrdup(value);

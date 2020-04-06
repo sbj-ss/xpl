@@ -9,26 +9,26 @@ void xplCmdParseXmlPrologue(xplCommandInfoPtr commandInfo)
 void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REPEAT_ATTR (BAD_CAST "repeat")
-	BOOL repeat;
+	bool repeat;
 	xmlChar *txt = NULL;
 	xmlDocPtr doc = NULL;
 	xmlChar *parse_error;
 	xmlNodePtr ret, error;
 
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
 	if (!checkNodeListForText(commandInfo->element->children))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 		return;
 	}
 	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
 	if (!txt)
 	{
-		ASSIGN_RESULT(NULL, FALSE, TRUE);
+		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
 	doc = xmlParseMemory((const char*) txt, xmlStrlen(txt));
@@ -36,14 +36,14 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (!doc)
 	{
 		parse_error = getLastLibxmlError();
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "document parsing error: %s", parse_error), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "document parsing error: %s", parse_error), true, true);
 		xmlFree(parse_error);
 	} else {
 		/* ToDo: replaceRedundantNamespaces */
 		ret = detachContent((xmlNodePtr) doc);
 		xmlSetTreeDoc(ret, commandInfo->element->doc);
 		xmlFreeDoc(doc);
-		ASSIGN_RESULT(ret, repeat, TRUE);
+		ASSIGN_RESULT(ret, repeat, true);
 	}
 }
 

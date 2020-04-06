@@ -20,9 +20,9 @@ xplExpectType xplExpectTypeFromString(const xmlChar *expect)
 
 static xmlChar* xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, xmlChar *out)
 {
-	BOOL dot = 0;
+	bool dot = 0;
 	xmlChar *p = data_buf;
-	BOOL leading_zero = 0, leading_x = 0;
+	bool leading_zero = 0, leading_x = 0;
 
 	if (!p)
 		return NULL;
@@ -39,17 +39,17 @@ static xmlChar* xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, 
 					if (!dot)
 					{
 						*out++ = *p;
-						dot = TRUE;
+						dot = true;
 					}
 				}
 				break;
 			case XPL_EXPECT_HEX: /* ���������� � 0[xX], ����� [0-9a-fA-F] */
 				if ((p == data_buf) && (*p == '0'))
 				{
-					leading_zero = TRUE;
+					leading_zero = true;
 					*out++ = *p;
 				} else if (leading_zero && (p == data_buf + 1) && ((*p == 'x') || (*p == 'X'))) {
-					leading_x = TRUE;
+					leading_x = true;
 					*out++ = *p;
 				/* �������� ����� ��� lookup-�������, �� ��� �� ����� ������� �������� � ����� ������� ���������� */
 				} else if (leading_x && ((('0' <= *p) && (*p <= '9')) || (('a' <= *p) && (*p <= 'f')) || (('A' <= *p) && (*p <= 'F'))))
@@ -68,10 +68,10 @@ static xmlChar* xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, 
 					; /* ����� .. */
 				else if (*p == '.') {
 					*out++ = *p;
-					dot = TRUE;
+					dot = true;
 				} else {
 					*out++ = *p;
-					dot = FALSE;
+					dot = false;
 				}
 				break;
 			default:
@@ -119,15 +119,15 @@ int xplParamTypeMaskFromString(xmlChar* mask)
 	return ret;
 }
 
-BOOL xplParamTypeIsAtomic(xplParamType type)
+bool xplParamTypeIsAtomic(xplParamType type)
 {
 	switch(type)
 	{
 	case XPL_PARAM_TYPE_USERDATA:
 	case XPL_PARAM_TYPE_HEADER:
-		return TRUE;
+		return true;
 	default:
-		return FALSE;
+		return false;
 	}
 }
 
@@ -181,7 +181,7 @@ static xplParamValuesPtr xplParamValuesCreateInner(int size)
 	else
 		ret->param_max = 0;
 	ret->param_nr = 0;
-	ret->is_locked = FALSE;
+	ret->is_locked = false;
 	ret->type = XPL_PARAM_TYPE_EMPTY;
 	return ret;
 }
@@ -330,7 +330,7 @@ void xplParamValuesFree(xplParamValuesPtr values)
 	xmlFree(values);
 }
 
-xmlChar* xplParamValuesToString(const xplParamValuesPtr values, BOOL unique, const xmlChar *delim, xplExpectType expect)
+xmlChar* xplParamValuesToString(const xplParamValuesPtr values, bool unique, const xmlChar *delim, xplExpectType expect)
 {
 	xmlChar *ret, *cur, *candidate;
 	int delim_len;
@@ -378,7 +378,7 @@ xmlChar* xplParamValuesToString(const xplParamValuesPtr values, BOOL unique, con
 	return ret;
 }
 
-xmlNodePtr xplParamValuesToList(const xplParamValuesPtr values, BOOL unique, xplExpectType expect, const xmlNsPtr ns, const xmlChar *nodeName, xmlNodePtr parent)
+xmlNodePtr xplParamValuesToList(const xplParamValuesPtr values, bool unique, xplExpectType expect, const xmlNsPtr ns, const xmlChar *nodeName, xmlNodePtr parent)
 {
 	xmlNodePtr ret = NULL, tail, cur, txt;
 	xmlHashTablePtr unique_table = NULL;
@@ -484,12 +484,12 @@ int xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xpl
 			{
 				*eq_pos = 0;
 				param_value = decodeUrl(eq_pos + 1, NULL);
-				if (!isValidUtf8Sample(param_value, xmlStrlen(param_value), TRUE))
+				if (!isValidUtf8Sample(param_value, xmlStrlen(param_value), true))
 				{
 					if (fallbackEncoding)
 					{
 						iconv_string("utf-8", fallbackEncoding, (char*) param_value, (char*) param_value + xmlStrlen(param_value), (char**) &recoded_value, NULL);
-						if (recoded_value && !isValidUtf8Sample(recoded_value, xmlStrlen(recoded_value), TRUE))
+						if (recoded_value && !isValidUtf8Sample(recoded_value, xmlStrlen(recoded_value), true))
 						{
 							xmlFree(recoded_value);
 							recoded_value = NULL; /* �� ��������� ��������� ������ */
@@ -631,7 +631,7 @@ void xplParamsScan(const xplParamsPtr params, xplParamsScanner f, void *userData
 
 typedef struct _xplParamsToListCtxt 
 {
-	BOOL unique;
+	bool unique;
 	xmlNodePtr ret;
 	xmlNodePtr tail;
 	xplExpectType expect;
@@ -667,7 +667,7 @@ static void xplParamsToListScanner(void *payload, void *data, xmlChar *name)
 	}
 }
 
-xmlNodePtr xplParamsToList(const xplParamsPtr params, BOOL unique, xplExpectType expect, const xmlNsPtr ns, const xmlChar *nodeName, xmlNodePtr parent, int typeMask)
+xmlNodePtr xplParamsToList(const xplParamsPtr params, bool unique, xplExpectType expect, const xmlNsPtr ns, const xmlChar *nodeName, xmlNodePtr parent, int typeMask)
 {
 	xplParamsToListCtxt ctxt;
 
@@ -690,7 +690,7 @@ xmlNodePtr xplParamsToList(const xplParamsPtr params, BOOL unique, xplExpectType
 	return ctxt.ret;
 }
 
-void xplParamsLockValue(xplParamsPtr params, const xmlChar *name, BOOL doLock)
+void xplParamsLockValue(xplParamsPtr params, const xmlChar *name, bool doLock)
 {
 	xplParamValuesPtr carrier;
 

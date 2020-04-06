@@ -51,7 +51,7 @@ typedef enum
 
 XPLPUBFUN int XPLCALL
 	xplParamTypeMaskFromString(xmlChar* mask);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplParamTypeIsAtomic(xplParamType type);
 
 typedef struct _xplParamFileInfo 
@@ -75,7 +75,7 @@ typedef struct _xplParamValues
 	void **param_tab; /* xmlChar* [] or xplFileInfoPtr [] */
 	int param_nr;
 	int param_max;
-	BOOL is_locked;
+	bool is_locked;
 } xplParamValues;
 typedef xplParamValues* xplParamValuesPtr;
 
@@ -99,10 +99,10 @@ XPLPUBFUN void XPLCALL
 	xplParamValuesFree(xplParamValuesPtr values);
 /* Make a string of values */
 XPLPUBFUN xmlChar* XPLCALL
-	xplParamValuesToString(const xplParamValuesPtr values, BOOL unique, const xmlChar *delim, xplExpectType expect);
+	xplParamValuesToString(const xplParamValuesPtr values, bool unique, const xmlChar *delim, xplExpectType expect);
 /* Make a list of node-packed values */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplParamValuesToList(const xplParamValuesPtr values, BOOL unique, xplExpectType expect, const xmlNsPtr ns, const xmlChar *nodeName, xmlNodePtr parent);
+	xplParamValuesToList(const xplParamValuesPtr values, bool unique, xplExpectType expect, const xmlNsPtr ns, const xmlChar *nodeName, xmlNodePtr parent);
 
 /* user-defined parameters collection */
 typedef void* xplParamsPtr;
@@ -128,9 +128,9 @@ XPLPUBFUN xplParamResult XPLCALL
 XPLPUBFUN void XPLCALL
 	xplParamsScan(xplParamsPtr params, xplParamsScanner f, void *userData);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplParamsToList(const xplParamsPtr params, BOOL unique, xplExpectType expect, const xmlNsPtr ns, const xmlChar *nodeName, xmlNodePtr parent, int typeMask);
+	xplParamsToList(const xplParamsPtr params, bool unique, xplExpectType expect, const xmlNsPtr ns, const xmlChar *nodeName, xmlNodePtr parent, int typeMask);
 XPLPUBFUN void XPLCALL
-	xplParamsLockValue(xplParamsPtr params, const xmlChar *name, BOOL doLock);
+	xplParamsLockValue(xplParamsPtr params, const xmlChar *name, bool doLock);
 XPLPUBFUN void XPLCALL
 	xplParamsFree(xplParamsPtr params);
 

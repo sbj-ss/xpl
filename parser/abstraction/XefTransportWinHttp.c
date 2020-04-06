@@ -8,7 +8,7 @@
 
 XEF_STARTUP_PROTO(Transport)
 {
-	return TRUE;
+	return true;
 }
 
 XEF_SHUTDOWN_PROTO(Transport)
@@ -63,7 +63,7 @@ XEF_FREE_ERROR_MESSAGE_PROTO(Transport)
 
 #define INT_RETRYTIMES 3
 
-BOOL xefFetchDocument(xefFetchDocumentParamsPtr params)
+bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 {
 	/* Оригинальный код - (c) 2007-2009 Cheng Shi, shicheng107@hotmail.com */
 	HINTERNET hSession;
@@ -78,7 +78,7 @@ BOOL xefFetchDocument(xefFetchDocumentParamsPtr params)
 	wchar_t *wszHeader;
 	wchar_t *wsz_extra_headers;
 	size_t iconv_len;
-	BOOL bOpResult = FALSE, bResponseSucceeded = FALSE;
+	bool bOpResult = false, bResponseSucceeded = false;
 	unsigned int iRetryTimes = 0;
 	int status_code;
 	DWORD extra_query_len;
@@ -92,7 +92,7 @@ BOOL xefFetchDocument(xefFetchDocumentParamsPtr params)
 	if (!params->uri)
 	{
 		params->error = xefCreateCommonErrorMessage(BAD_CAST "empty URI");
-		return FALSE;
+		return false;
 	}
 
 	/* ToDo: maybe reuse at document level?.. */
@@ -105,7 +105,7 @@ BOOL xefFetchDocument(xefFetchDocumentParamsPtr params)
 	if (!hSession)
 	{
 		params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot open WinHTTP session");
-		return FALSE;
+		return false;
 	}
 	memset(&urlComp, 0, sizeof(urlComp));
 	urlComp.dwStructSize = sizeof(urlComp);
@@ -292,7 +292,7 @@ BOOL xefFetchDocument(xefFetchDocumentParamsPtr params)
 			advanceReszBufferPosition(buf, (size_t) dwRead);
 			dwTotal += dwRead;
 		} while (dwSize > 0); /* reading cycle */
-		bResponseSucceeded = TRUE;
+		bResponseSucceeded = true;
 	} // while
 	addDataToReszBuf(buf, &zero, sizeof(zero));
 	params->document = (xmlChar*) detachReszBufContent(buf);
@@ -316,5 +316,5 @@ done:
 
 	if (buf) freeReszBuf(buf);
 
-	return (params->error)? FALSE: TRUE;
+	return (params->error)? false: true;
 }

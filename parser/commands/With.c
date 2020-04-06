@@ -29,7 +29,7 @@ typedef enum _NaosCheckResult
 	NAOS_CHECK_RESULT_ANCESTOR_DELETED
 } NaosCheckResult;
 
-BOOL checkNAOS(xmlNodePtr cmd, xmlNodePtr test)
+bool checkNAOS(xmlNodePtr cmd, xmlNodePtr test)
 {
 	while (cmd != (xmlNodePtr) cmd->doc)
 	{
@@ -129,7 +129,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 					{
 						xplDocDeferNodeListDeletion(commandInfo->document, detachContent(cur));
 						setChildren(cur, repl);
-						xplNodeApply(commandInfo->document, cur, TRUE, &temp_result);
+						xplNodeApply(commandInfo->document, cur, true, &temp_result);
 						if ((int) cur->type & XML_NODE_DELETION_MASK)
 							xmlUnlinkNode(cur);
 						else {
@@ -139,7 +139,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 						xplDocDeferNodeDeletion(commandInfo->document, cur);
 					} else if (mode == WITH_MODE_APPEND) {
 						appendChildren(cur, repl);
-						xplNodeListApply(commandInfo->document, repl, TRUE, &temp_result);
+						xplNodeListApply(commandInfo->document, repl, true, &temp_result);
 					} else
 						DISPLAY_INTERNAL_ERROR_MESSAGE();
 				} /* for */
@@ -169,7 +169,7 @@ done:
 
 void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, (commandInfo->_private)? TRUE: FALSE, TRUE);
+	ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, (commandInfo->_private)? true: false, true);
 }
 
 xplCommand xplWithCommand = 

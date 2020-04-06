@@ -22,13 +22,13 @@ void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplParamResult res;
 	xmlNodePtr err_node = NULL;
 
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 	if (!commandInfo->document->environment)
 		goto done;
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
 	if (!name_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name attribute"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name attribute"), true, true);
 		goto done;
 	}
 	mode_attr = xmlGetNoNsProp(commandInfo->element, MODE_ATTR);
@@ -39,16 +39,16 @@ void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		else if (!xmlStrcasecmp(mode_attr, BAD_CAST "replace"))
 			mode = SP_MODE_REPLACE;
 		else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown mode: \"%s\"", mode_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown mode: \"%s\"", mode_attr), true, true);
 			goto done;
 		}
 	}
 	if (!checkNodeListForText(commandInfo->element->children))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 		goto done;
 	}
-	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, TRUE);
+	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, true);
 	switch (mode)
 	{
 		case SP_MODE_ADD: res = xplParamAddValue(commandInfo->document->environment, name_attr, txt, XPL_PARAM_TYPE_USERDATA); break;
@@ -80,7 +80,7 @@ void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (err_node)
 	{
 		xmlFree(txt);
-		ASSIGN_RESULT(err_node, TRUE, TRUE);
+		ASSIGN_RESULT(err_node, true, true);
 	}
 done:
 	if (name_attr) xmlFree(name_attr);

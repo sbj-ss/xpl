@@ -33,28 +33,28 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplExpectType expect;
 	xplParamValuesPtr values;
 	xmlNodePtr ret = NULL, error;
-	BOOL repeat;
-	BOOL unique;
-	BOOL show_tags;
-	BOOL free_needed = FALSE;
+	bool repeat;
+	bool unique;
+	bool show_tags;
+	bool free_needed = false;
 	int type_mask = XPL_PARAM_TYPE_USERDATA; /* backward compatibility */
 
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
 	expect_attr = xmlGetNoNsProp(commandInfo->element, EXPECT_ATTR);
 	response_tag_name_attr = xmlGetNoNsProp(commandInfo->element, RESPONSE_TAG_NAME_ATTR);
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOW_TAGS_ATTR, &show_tags, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOW_TAGS_ATTR, &show_tags, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, UNIQUE_ATTR, &unique, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, UNIQUE_ATTR, &unique, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (!(delim_attr = xmlGetNoNsProp(commandInfo->element, DELIM_ATTR)))
@@ -85,7 +85,7 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		type_mask = xplParamTypeMaskFromString(type_attr);
 		if (type_mask == -1)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "The type mask \"%s\" is invalid", type_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "The type mask \"%s\" is invalid", type_attr), true, true);
 			goto done;
 		}
 	}
@@ -98,7 +98,7 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			values = NULL; /* skip unwanted */
 		else if (!values && default_attr) {
 			values = xplParamValuesCreate();
-			free_needed = TRUE;
+			free_needed = true;
 			xplParamValuesAdd(values, default_attr, XPL_PARAM_TYPE_USERDATA);
 		}
 		if (!values)
@@ -131,7 +131,7 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ret = xplParamsToList(commandInfo->document->environment, unique, expect, ns, node_name, commandInfo->element, type_mask);
 		// ToDo: downshiftNodeListNsDef?..
 	} 
-	ASSIGN_RESULT(ret, repeat, TRUE);
+	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (name_attr)
 		xmlFree(name_attr);

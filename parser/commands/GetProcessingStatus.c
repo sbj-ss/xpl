@@ -18,12 +18,12 @@ void xplCmdGetProcessingStatusEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 	document_attr = xmlGetNoNsProp(commandInfo->element, DOCUMENT_ATTR);
 	if (!xplGetDocByRole(commandInfo->document, document_attr, &doc))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid document attribute value \"%s\"", document_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid document attribute value \"%s\"", document_attr), true, true);
 		goto done;
 	}
 	status = doc? (xplErrorToShortString(doc->status)): BAD_CAST "no_such_doc";
 	ret = xmlNewDocText(commandInfo->element->doc, status);
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 
 done:
 	if (document_attr) xmlFree(document_attr);

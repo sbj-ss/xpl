@@ -14,7 +14,7 @@ XPR_CONSOLE_MODE old_console_mode;
 
 void xprWaitForThreads(XPR_THREAD_HANDLE *handles, int count)
 {
-	WaitForMultipleObjects((DWORD) count, handles, TRUE, INFINITE);
+	WaitForMultipleObjects((DWORD) count, handles, true, INFINITE);
 }
 
 void xprSleep(int ms)
@@ -58,7 +58,7 @@ void xprParseCommandLine()
 		if (wcsstr(argv[i], L"+wait=") == argv[i])
 		{
 			pid = wcstoul(argv[i]+6, &end_ptr, 16);
-			process = OpenProcess(SYNCHRONIZE, FALSE, pid);
+			process = OpenProcess(SYNCHRONIZE, false, pid);
 			printf("Waiting for the parent process with id %08X (handle %p) to terminate...", pid, process);
 			wait_result = WaitForSingleObject(process, INFINITE);
 			CloseHandle(process);
@@ -103,7 +103,7 @@ void xprSpawnProcessCopy()
 	ZeroMemory(&proc_info, sizeof(proc_info));
 	wprintf(L"! Respawning process with command line '%s'\n", new_cmdline);
 	/* ������� �� ��������, ������� �������� ��������� */
-	if (!CreateProcessW(NULL, new_cmdline, NULL, NULL, TRUE, 0/*CREATE_NEW_CONSOLE*/, NULL, NULL, &startup_info, &proc_info))
+	if (!CreateProcessW(NULL, new_cmdline, NULL, NULL, true, 0/*CREATE_NEW_CONSOLE*/, NULL, NULL, &startup_info, &proc_info))
 		printf("! Failed to spawn replacement process\n");
 	else
 		printf("! Respawned process id: %08X\n", proc_info.dwProcessId);
@@ -118,7 +118,7 @@ static LONG WINAPI xprUnhandledExceptionFilter(__in struct _EXCEPTION_POINTERS* 
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
-BOOL xprStartup(int what)
+bool xprStartup(int what)
 {
 	if (what & XPR_STARTSTOP_LOW_LEVEL)
 	{
@@ -152,10 +152,10 @@ BOOL xprStartup(int what)
 		SetUnhandledExceptionFilter(xprUnhandledExceptionFilter);
 #endif
 	}
-	return TRUE;
+	return true;
 }
 
-BOOL xprShutdown(int what)
+bool xprShutdown(int what)
 {
 	if (what & XPR_STARTSTOP_LOW_LEVEL)
 	{
@@ -169,7 +169,7 @@ BOOL xprShutdown(int what)
 	{
 		SetUnhandledExceptionFilter(NULL);
 	}
-	return TRUE;
+	return true;
 }
 
 void xprSetConsoleColor(int color)
@@ -183,30 +183,30 @@ int xprGetPid()
 	return (int) GetCurrentProcessId();
 }
 
-BOOL xprCheckPid(int pid)
+bool xprCheckPid(int pid)
 {
 	HANDLE process, self_process;
 	wchar_t process_fn[MAX_PATH + 1], self_process_fn[MAX_PATH + 1];
 
 	printf("* checking pid. ours is %08X, input is %08X\n", GetCurrentProcessId(), pid);
 	if (pid == GetCurrentProcessId())
-		return FALSE;
-	process = OpenProcess(SYNCHRONIZE | PROCESS_QUERY_INFORMATION, FALSE, (DWORD) pid);
+		return false;
+	process = OpenProcess(SYNCHRONIZE | PROCESS_QUERY_INFORMATION, false, (DWORD) pid);
 	if (process) /* if the function failed, we assume the process isn't ours */
 	{
 		printf("* mapped handle to alive process %p\n", process);
 		if (!GetProcessImageFileNameW(process, process_fn, sizeof(process_fn)/sizeof(wchar_t)))
 		{
 			CloseHandle(process);
-			return FALSE; /* already exited?.. */
+			return false; /* already exited?.. */
 		}
 		self_process = GetCurrentProcess();
 		GetProcessImageFileNameW(self_process, self_process_fn, sizeof(self_process_fn)/sizeof(wchar_t));
 		CloseHandle(process);
 		if (!wcscmp(process_fn, self_process_fn))
-			return TRUE;
+			return true;
 	}
-	return FALSE;
+	return false;
 }
 
 void xprDebugBreak(void)
@@ -214,12 +214,12 @@ void xprDebugBreak(void)
 	__debugbreak();
 }
 
-BOOL xprIsDebuggerPresent(void)
+bool xprIsDebuggerPresent(void)
 {
-	return IsDebuggerPresent()? TRUE: FALSE;
+	return IsDebuggerPresent()? true: false;
 }
 
-BOOL xprCheckFilePresence(const XPR_FS_CHAR *path)
+bool xprCheckFilePresence(const XPR_FS_CHAR *path)
 {
 	XPR_FS_CHAR *cur_path;
 	struct _stat64 stat_buf;
@@ -227,10 +227,10 @@ BOOL xprCheckFilePresence(const XPR_FS_CHAR *path)
 	int stat_ret;
 
 	if (!path)
-		return FALSE;
+		return false;
 	path_len = XPR_FS_STRLEN(path);
 	if (!path_len)
-		return FALSE;
+		return false;
 	if ((path_len == 2) && (path[1] == ':')) /* "x:", special case */ {
 		cur_path = (XPR_FS_CHAR*) malloc(4*sizeof(XPR_FS_CHAR));
 		*cur_path = *path;
@@ -252,14 +252,14 @@ BOOL xprCheckFilePresence(const XPR_FS_CHAR *path)
 	return !stat_ret;
 }
 
-BOOL xprEnsurePathExistence(const XPR_FS_CHAR *path)
+bool xprEnsurePathExistence(const XPR_FS_CHAR *path)
 {
 	XPR_FS_CHAR *slash_pos;
 	XPR_FS_CHAR *path_copy;
 	XPR_FS_CHAR tmp;
 
 	if (!path)
-		return TRUE;
+		return true;
 	/* �� ������ ���� */
 	path_copy = XPR_FS_STRDUP(path);
 	slash_pos = path_copy;
@@ -276,7 +276,7 @@ BOOL xprEnsurePathExistence(const XPR_FS_CHAR *path)
 	if (!slash_pos)
 	{
 		free(path_copy);
-		return TRUE; /* ���� �������� �������� �� ����� */
+		return true; /* ���� �������� �������� �� ����� */
 	}
 
 	while (slash_pos)
@@ -284,7 +284,7 @@ BOOL xprEnsurePathExistence(const XPR_FS_CHAR *path)
 		if (XPR_MKDIR_FAILED(XPR_MKDIR(path_copy)))
 		{
 			free(path_copy);
-			return FALSE;
+			return false;
 		}
 		*slash_pos = tmp;
 		slash_pos = XPR_FS_STRCHR(++slash_pos, XPR_FS_PATH_DELIM);
@@ -295,7 +295,7 @@ BOOL xprEnsurePathExistence(const XPR_FS_CHAR *path)
 		}
 	}
 	free(path_copy);
-	return TRUE;
+	return true;
 }
 
 xmlChar* xprGetProgramPath()

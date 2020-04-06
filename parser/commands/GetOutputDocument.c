@@ -13,26 +13,26 @@ void xplCmdGetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 #define REPEAT_ATTR (BAD_CAST "repeat")
 	xmlChar *select_attr = NULL;
 	xmlDocPtr doc = NULL;
-	BOOL repeat;
+	bool repeat;
 	xmlXPathObjectPtr sel = NULL;
 	size_t i;
 	xmlNodePtr sibling, prnt, copy, ret, tail, error;
 
 	if (commandInfo->document->role != XPL_DOC_ROLE_EPILOGUE)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "this command is only available from epilogue wrapper"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "this command is only available from epilogue wrapper"), true, true);
 		goto done;
 	}
 	if (!commandInfo->document->main || !commandInfo->document->main->document)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "main document wasn't evaluated due to some error"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "main document wasn't evaluated due to some error"), true, true);
 		goto done;
 	}
 	doc = commandInfo->document->main->document;
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 
@@ -62,21 +62,21 @@ void xplCmdGetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 					}
 				}
 			} else if (sel->type != XPATH_UNDEFINED) {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", select_attr), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", select_attr), true, true);
 				goto done;
 			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to undef", select_attr), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to undef", select_attr), true, true);
 				goto done;
 			}
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), true, true);
 			goto done;
 		}
 	} else {
 		ret = cloneNode(doc->children, commandInfo->element, commandInfo->document->document);
 		downshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	}
-	ASSIGN_RESULT(ret, repeat, TRUE);
+	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (select_attr) xmlFree(select_attr);
 	if (sel) xmlXPathFreeObject(sel);

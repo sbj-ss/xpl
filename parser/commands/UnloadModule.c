@@ -24,7 +24,7 @@ void xplCmdUnloadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	xplUnloadModule(name_attr);
 	xplLockThreads(FALSE);
 done:
-	ASSIGN_RESULT(ret, TRUE, TRUE);
+	ASSIGN_RESULT(ret, true, true);
 	if (name_attr) xmlFree(name_attr);
 }
 

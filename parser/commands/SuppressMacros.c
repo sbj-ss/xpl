@@ -115,7 +115,7 @@ void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 {
 #define REPEAT_ATTR BAD_CAST("repeat")
 	xmlHashTablePtr macros;
-	BOOL repeat;
+	bool repeat;
 	xmlNodePtr error;
 
 	macros = (xmlHashTablePtr) commandInfo->_private;
@@ -125,12 +125,12 @@ void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 		xmlHashFree(macros, NULL);
 	}
 	if (commandInfo->element->type & XML_NODE_DELETION_MASK)
-		ASSIGN_RESULT(NULL, FALSE, FALSE);
+		ASSIGN_RESULT(NULL, false, false);
 	else {
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, FALSE)))
-			ASSIGN_RESULT(error, TRUE, TRUE);
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
+			ASSIGN_RESULT(error, true, true);
 		else
-			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, TRUE);
+			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
 	}
 }
 

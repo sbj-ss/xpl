@@ -13,24 +13,24 @@ void xplCmdSessionRemoveObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 #define NAME_ATTR (BAD_CAST "name")
 #define THREADLOCAL_ATTR (BAD_CAST "threadlocal")
 	xmlChar *name_attr;
-	BOOL threadlocal;
+	bool threadlocal;
 	xmlNodePtr error;
 
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
 	if (!name_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no name attribute specified"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no name attribute specified"), true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, THREADLOCAL_ATTR, &threadlocal, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, THREADLOCAL_ATTR, &threadlocal, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (threadlocal)
 		name_attr = appendThreadIdToString(name_attr, xprGetCurrentThreadId());
 	xplSessionRemoveObject(commandInfo->document->main->session, name_attr);
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (name_attr) xmlFree(name_attr);
 }

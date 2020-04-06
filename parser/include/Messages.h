@@ -23,7 +23,7 @@ typedef enum _xplMsgType
 } xplMsgType;
 
 XPLPUBFUN xplMsgType XPLCALL
-	xplMsgTypeFromString(xmlChar *severity, BOOL allowInternalError);
+	xplMsgTypeFromString(xmlChar *severity, bool allowInternalError);
 XPLPUBFUN xmlChar* XPLCALL
 	xplFormatMessage(xmlChar *fmt, ...);
 /* The same via va_list - for wrappers */
@@ -43,7 +43,7 @@ XPLPUBFUN void XPLCALL
 	BAD_CAST "please contact the developer. Function %s, file %s, line %d",\
 	__FUNCTION__, __FILE__, __LINE__);
 
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplInitMessages();
 XPLPUBFUN void XPLCALL
 	xplCleanupMessages();

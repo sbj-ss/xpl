@@ -15,17 +15,17 @@ void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlChar *name_attr = NULL, *tagname;
 	xmlNsPtr ns;
 	xplMacroPtr macro = NULL;
-	BOOL skip_current = TRUE;
+	bool skip_current = true;
 	xmlNodePtr ret, error, original_content = NULL, caller, temp_children;
 
 	if (!commandInfo->document->current_macro)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "not inside macro definition or call"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "not inside macro definition or call"), true, true);
 		return;
 	}
 	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SKIP_CURRENT_ATTR, &skip_current, skip_current)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
@@ -70,7 +70,7 @@ void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			ret = cloneNodeList(macro->content, commandInfo->element->parent, commandInfo->element->doc);
 	} else
 		ret = NULL;
-	ASSIGN_RESULT(ret, TRUE, TRUE);
+	ASSIGN_RESULT(ret, true, true);
 	if (name_attr) xmlFree(name_attr);
 }
 

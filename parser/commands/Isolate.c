@@ -16,10 +16,10 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 #define INHERITMACROS_ATTR (BAD_CAST "inheritmacros")
 #define PARALLEL_ATTR (BAD_CAST "parallel")
 #define DELAYSTART_ATTR (BAD_CAST "delaystart")
-	BOOL sharesession;
-	BOOL parallel;
-	BOOL inheritmacros;
-	BOOL delaystart;
+	bool sharesession;
+	bool parallel;
+	bool inheritmacros;
+	bool delaystart;
 	xmlNodePtr content, root, error;
 	xplDocumentPtr child;
 	xplParamsPtr env;
@@ -27,39 +27,39 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplError status;
 	xmlHashTablePtr macros = NULL;
 
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHARESESSION_ATTR, &sharesession, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHARESESSION_ATTR, &sharesession, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, INHERITMACROS_ATTR, &inheritmacros, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, INHERITMACROS_ATTR, &inheritmacros, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, PARALLEL_ATTR, &parallel, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, PARALLEL_ATTR, &parallel, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
 #ifndef _THREADING_SUPPORT
 	if (parallel)
 	{
 		error = xplCreateErrorNode(commandInfo->element, BAD_CAST "no threading support compiled in");
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
 #endif
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, DELAYSTART_ATTR, &delaystart, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, DELAYSTART_ATTR, &delaystart, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
 	content = detachContent(commandInfo->element);
 	if (!content)
 	{
 		if (parallel)
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "command content is empty"), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "command content is empty"), true, true);
 		goto done;
 	}
 	root = xmlNewDocNode(commandInfo->element->doc, NULL, BAD_CAST "Root", NULL);
@@ -97,15 +97,15 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		child->landing_point = commandInfo->element;
 		xplEnsureDocThreadSupport(commandInfo->document);
 		if (xplStartChildThread(commandInfo->document, child, !delaystart))
-			ASSIGN_RESULT(NULL, FALSE, FALSE);
+			ASSIGN_RESULT(NULL, false, false);
 		else
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "couldn't spawn child thread"), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "couldn't spawn child thread"), true, true);
 #endif
 	} else {
 		if ((status = xplDocumentApply(child)) != XPL_ERR_NO_ERROR)
 		{
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "error \"%s\" processing child document", 
-				xplErrorToString(status)), TRUE, TRUE);
+				xplErrorToString(status)), true, true);
 			goto done;
 		}
 		/* TODO don't clone when redundant namespace removal code is ready
@@ -118,7 +118,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		//child->document->intSubset = NULL;
 		xplDocumentFree(child);
 		xplParamsFree(env);
-		ASSIGN_RESULT(content, FALSE, TRUE);
+		ASSIGN_RESULT(content, false, true);
 	}
 done:
 	;

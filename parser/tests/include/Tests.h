@@ -27,7 +27,7 @@ typedef enum {
 typedef struct _xtsContext
 {
 	xmlChar *error;
-	BOOL error_malloced;
+	bool error_malloced;
 	xmlHashTablePtr env;
 	xtsFailMode fail_mode;
 	xtsVerbosity verbosity;
@@ -39,7 +39,7 @@ typedef struct _xtsContext
 void xtsInitContext(xtsContextPtr ctxt, xtsFailMode fail_mode, xtsVerbosity verbosity);
 
 /* single test */
-typedef BOOL (*xtsFunction) (xtsContextPtr ctxt);
+typedef bool (*xtsFunction) (xtsContextPtr ctxt);
 
 #define XTS_FLAG_CHECK_MEMORY 0x0001
 #define XTS_FLAG_SKIP 0x0002
@@ -53,10 +53,10 @@ typedef struct _xtsTest
 	int expectedMemoryDelta;
 } xtsTest, *xtsTestPtr;
 
-BOOL xtsRunTest(const xtsTestPtr test, xtsContextPtr ctxt);
+bool xtsRunTest(const xtsTestPtr test, xtsContextPtr ctxt);
 
 /* test fixture */
-typedef BOOL (*xtsFixtureSetupFunction) (xtsContextPtr ctxt);
+typedef bool (*xtsFixtureSetupFunction) (xtsContextPtr ctxt);
 typedef void (*xtsFixtureTeardownFunction) (xtsContextPtr ctxt);
 
 typedef struct _xtsFixture
@@ -69,12 +69,12 @@ typedef struct _xtsFixture
 	xtsTestPtr tests;
 } xtsFixture, *xtsFixturePtr;
 
-BOOL xtsRunFixture(const xtsFixturePtr fixture, xtsContextPtr ctxt);
+bool xtsRunFixture(const xtsFixturePtr fixture, xtsContextPtr ctxt);
 xtsTestPtr xtsLocateTest(const xtsFixturePtr fixture, const xmlChar *test_id);
 
 /* entire suite */
 /* fixtures must be NULL-terminated */
-BOOL xtsRunSuite(const xtsFixturePtr *suite, xtsContextPtr ctxt);
+bool xtsRunSuite(const xtsFixturePtr *suite, xtsContextPtr ctxt);
 xtsFixturePtr xtsLocateFixture(const xtsFixturePtr *suite, const xmlChar *fixture_id);
 
 /* skipping control */
@@ -88,11 +88,11 @@ xtsFixturePtr xtsLocateFixture(const xtsFixturePtr *suite, const xmlChar *fixtur
  * last command wins
  */
 
-void xtsSkipSingleTest(xtsTestPtr test, BOOL skip);
-void xtsSkipAllTestsInFixture(xtsFixturePtr fixture, BOOL skip);
-void xtsSkipAllTestsInSuite(xtsFixturePtr *suite, BOOL skip);
-BOOL xtsSkipTest(xtsFixturePtr *suite, const xmlChar *fixture_id, const xmlChar *test_id, BOOL skip);
-BOOL xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error);
+void xtsSkipSingleTest(xtsTestPtr test, bool skip);
+void xtsSkipAllTestsInFixture(xtsFixturePtr fixture, bool skip);
+void xtsSkipAllTestsInSuite(xtsFixturePtr *suite, bool skip);
+bool xtsSkipTest(xtsFixturePtr *suite, const xmlChar *fixture_id, const xmlChar *test_id, bool skip);
+bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error);
 
 #ifdef __cplusplus
 }

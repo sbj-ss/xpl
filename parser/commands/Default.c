@@ -20,24 +20,24 @@ void xplCmdDefaultEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REPEAT_ATTR (BAD_CAST "repeat")
 #define BREAK_ATTR (BAD_CAST "break")
-	BOOL repeat;
-	BOOL do_break;
+	bool repeat;
+	bool do_break;
 	xmlNodePtr error;
 
 	if (commandInfo->_private)
 	{
-		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, TRUE, TRUE);
+		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, true, true);
 	} else {
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, FALSE)))
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
 		{
-			ASSIGN_RESULT(error, TRUE, TRUE);
+			ASSIGN_RESULT(error, true, true);
 			return;
 		}
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, BREAK_ATTR, &do_break, TRUE)))
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, BREAK_ATTR, &do_break, true)))
 		{
-			ASSIGN_RESULT(error, TRUE, TRUE);
+			ASSIGN_RESULT(error, true, true);
 		} else {
-			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, TRUE);
+			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
 		}
 		if (do_break)
 		{

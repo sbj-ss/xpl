@@ -21,12 +21,12 @@ void xplCmdSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		obj = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
 		if (!obj)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), true, true);
 			goto done;
 		}
 		if (obj->type != XPATH_NODESET) 
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", select_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", select_attr), true, true);
 			goto done;
 		}
 		txt = serializeNodeSet(obj->nodesetval);
@@ -34,7 +34,7 @@ void xplCmdSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		txt = serializeNodeList(commandInfo->element->children);
 	ret = xmlNewDocText(commandInfo->element->doc, NULL);
 	ret->content = txt;
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 done:
 	if (select_attr) xmlFree(select_attr);
 	if (obj) xmlXPathFreeObject(obj);

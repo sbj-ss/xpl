@@ -76,13 +76,13 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlChar *select_attr = NULL;
 	xmlXPathObjectPtr dest_list = NULL;
 	size_t i, j;
-	BOOL double_pass_mode;
+	bool double_pass_mode;
 	ReszBufPtr deleted_buf = NULL;
 	
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
 	if (!select_attr || !*select_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select attribute is missing or empty"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select attribute is missing or empty"), true, true);
 		goto done;
 	}
 	dest_list = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
@@ -163,14 +163,14 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				}
 			} /* if nodesetval is present */
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) evaluated to scalar or undefined", select_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) evaluated to scalar or undefined", select_attr), true, true);
 			goto done;
 		}
 	} else {
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), true, true);
 		goto done;
 	}
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (select_attr) xmlFree(select_attr);
 	if (dest_list) 

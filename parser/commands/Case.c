@@ -9,7 +9,7 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 #define KEY_ATTR (BAD_CAST "key")
 #define BREAK_ATTR (BAD_CAST "break")
 	xmlChar *key_attr = NULL;
-	BOOL do_break;
+	bool do_break;
 	xmlXPathObjectPtr sel = NULL, parent_sel;
 	xmlNodePtr parent = commandInfo->element->parent;
 	xmlNodePtr error;
@@ -37,7 +37,7 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 	/* ToDo: param for equality/identity */
 	if (compareXPathSelections(sel, parent_sel, 0))
 	{
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, BREAK_ATTR, &do_break, TRUE)))
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, BREAK_ATTR, &do_break, true)))
 		{
 			commandInfo->_private = error;
 			goto done;
@@ -64,19 +64,19 @@ void xplCmdCaseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REPEAT_ATTR (BAD_CAST "repeat")
 	xmlChar *repeat_attr = NULL;
-	BOOL repeat = FALSE;
+	bool repeat = false;
 
 	if (commandInfo->_private)
 	{
-		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, TRUE, TRUE);
+		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, true, true);
 	} else {
 		if ((repeat_attr = xmlGetNoNsProp(commandInfo->element, REPEAT_ATTR)))
 		{
 			if (!xmlStrcasecmp(repeat_attr, BAD_CAST "TRUE"))
-				repeat = TRUE;
+				repeat = true;
 			xmlFree(repeat_attr);
 		}
-		ASSIGN_RESULT(detachContent(commandInfo->element), repeat, TRUE);
+		ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
 	}
 }
 

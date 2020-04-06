@@ -19,7 +19,7 @@ typedef struct _xplDB xplDB, *xplDBPtr;
 struct _xplDB
 {
 	void* connection;
-	BOOL busy;
+	bool busy;
 	xplDBPtr next;
 	xplDBDeallocator dealloc;
 };
@@ -62,7 +62,7 @@ typedef enum _xplAddDBResult
 } xplAddDBResult;
 
 XPLPUBFUN xplAddDBResult XPLCALL
-	xplAddDB(xmlChar *name, xmlChar *newConnString, BOOL withCheck);
+	xplAddDB(xmlChar *name, xmlChar *newConnString, bool withCheck);
 
 typedef enum _xplChangeDBResult
 {
@@ -74,12 +74,12 @@ typedef enum _xplChangeDBResult
 } xplChangeDBResult;
 
 XPLPUBFUN xplChangeDBResult XPLCALL
-	xplChangeDB(xmlChar *name, xmlChar *newConnString, BOOL withCheck);
+	xplChangeDB(xmlChar *name, xmlChar *newConnString, bool withCheck);
 
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplDatabasesToNodeList(xmlDocPtr doc, xmlNodePtr parent, const xmlChar *tagName, BOOL showTags);
+	xplDatabasesToNodeList(xmlDocPtr doc, xmlNodePtr parent, const xmlChar *tagName, bool showTags);
 
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplReadDatabases(xmlNodePtr cur);
 
 XPLPUBFUN void XPLCALL

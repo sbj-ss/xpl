@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplRegisterBuiltinCommands();
 
 #ifdef __cplusplus

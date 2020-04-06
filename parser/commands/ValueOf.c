@@ -18,7 +18,7 @@ void xplCmdValueOfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
 	if (!select_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing select attribute"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing select attribute"), true, true);
 		return;
 	}
 	 sel = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
@@ -29,13 +29,13 @@ void xplCmdValueOfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			value = xmlXPathCastToString(sel);
 			ret = xmlNewDocText(commandInfo->document->document, NULL);
 			ret->content = value;
-			ASSIGN_RESULT(ret, FALSE, TRUE);
+			ASSIGN_RESULT(ret, false, true);
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression \"%s\" evaluated to non-scalar value", select_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression \"%s\" evaluated to non-scalar value", select_attr), true, true);
 		}
 		xmlXPathFreeObject(sel);
 	} else {
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr), true, true);
 	}
 	xmlFree(select_attr);
 }

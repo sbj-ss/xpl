@@ -17,20 +17,20 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 #define THREADLOCAL_ATTR (BAD_CAST "threadlocal")
 	xmlChar *name_attr = NULL;
 	xmlChar *select_attr = NULL;
-	BOOL repeat;
-	BOOL threadlocal;
+	bool repeat;
+	bool threadlocal;
 	xmlXPathObjectPtr sel = NULL;
 	xmlNodePtr obj, head = NULL, tail, cur, error;
 	size_t i;
 
 	if (!commandInfo->document->main->session)
 	{
-		ASSIGN_RESULT(NULL, FALSE, TRUE);
+		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
@@ -38,12 +38,12 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 	{
 		cur = xplSessionGetAllObjects(commandInfo->document->main->session);
 		cur = cloneNodeList(cur, commandInfo->element->parent, commandInfo->element->doc);
-		ASSIGN_RESULT(cur, repeat, TRUE);
+		ASSIGN_RESULT(cur, repeat, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, THREADLOCAL_ATTR, &threadlocal, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, THREADLOCAL_ATTR, &threadlocal, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (threadlocal)
@@ -75,19 +75,19 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 				} else if (sel->type != XPATH_UNDEFINED) {
 					head = xmlNewDocText(commandInfo->element->doc, NULL);
 					head->content = xmlXPathCastToString(sel);
-					repeat = FALSE;
+					repeat = false;
 				} else {
 					head = xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expresssion (%s) evaluated to undef", select_attr);
-					repeat = TRUE;
+					repeat = true;
 				}
 			} else {
 				head = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr);
-				repeat = TRUE;
+				repeat = true;
 			}
 		} else 
 			head = cloneNodeList(obj->children, commandInfo->element->parent, commandInfo->element->doc);
 	}
-	ASSIGN_RESULT(head, repeat, TRUE);
+	ASSIGN_RESULT(head, repeat, true);
 done:
 	if (name_attr)
 		xmlFree(name_attr);

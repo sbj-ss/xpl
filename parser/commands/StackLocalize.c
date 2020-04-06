@@ -11,7 +11,7 @@ void xplCmdStackLocalizePrologue(xplCommandInfoPtr commandInfo)
 void xplCmdStackLocalizeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REPEAT_ATTR (BAD_CAST "repeat")
-	BOOL repeat;
+	bool repeat;
 	xmlNodePtr old_stack = (xmlNodePtr) commandInfo->_private;
 	xmlNodePtr error;
 
@@ -19,14 +19,14 @@ void xplCmdStackLocalizeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 	commandInfo->document->stack = old_stack;
 	if (commandInfo->element->type & XML_NODE_DELETION_MASK)
 	{
-		ASSIGN_RESULT(NULL, FALSE, FALSE);
+		ASSIGN_RESULT(NULL, false, false);
 	} else {
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, FALSE)))
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
 		{
-			ASSIGN_RESULT(error, TRUE, TRUE);
+			ASSIGN_RESULT(error, true, true);
 			return;
 		} else
-			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, TRUE);
+			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
 	}
 }
 

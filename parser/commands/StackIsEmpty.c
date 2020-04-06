@@ -16,7 +16,7 @@ void xplCmdStackIsEmptyEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	else
 		ret_value = BAD_CAST "false";
 	ret = xmlNewDocText(commandInfo->document->document, ret_value);
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 }
 
 xplCommand xplStackIsEmptyCommand = { xplCmdStackIsEmptyPrologue, xplCmdStackIsEmptyEpilogue };

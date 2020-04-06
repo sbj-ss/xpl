@@ -25,8 +25,8 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlChar *delimiter_attr = NULL;
 	xmlChar *start_delimiter_attr = NULL;
 	xmlChar *end_delimiter_attr = NULL;
-	BOOL unique;
-	BOOL keep_empty_tags;
+	bool unique;
+	bool keep_empty_tags;
 	xmlXPathObjectPtr sel = NULL;
 	xmlNodePtr cur, ret = NULL, error;
 	xmlHashTablePtr unique_hash = NULL;
@@ -34,14 +34,14 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlChar *cur_str, *ret_str = NULL, *ret_str_pos = NULL, *tail_pos = NULL;
 	size_t delim_len = 0, sd_len = 0, ed_len = 0, delims_len, cur_len, ret_len = 0;
 
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, UNIQUE_ATTR, &unique, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, UNIQUE_ATTR, &unique, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEPEMPTYTAGS_ATTR, &keep_empty_tags, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEPEMPTYTAGS_ATTR, &keep_empty_tags, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
@@ -76,16 +76,16 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			{
 				if (!sel->nodesetval || !sel->nodesetval->nodeNr) /* no nodes */
 				{
-					ASSIGN_RESULT(NULL, FALSE, TRUE);
+					ASSIGN_RESULT(NULL, false, true);
 					goto done;
 				}
 				cur = sel->nodesetval->nodeTab[0];
 			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression \"%s\" evaluated to non-nodeset value", select_attr), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression \"%s\" evaluated to non-nodeset value", select_attr), true, true);
 				goto done;
 			}
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), true, true);
 			goto done;
 		}
 	} else
@@ -145,7 +145,7 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ret = xmlNewDocText(commandInfo->element->doc, NULL);
 		ret->content = ret_str;
 	}
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 done:
 	if (select_attr)
 		xmlFree(select_attr);

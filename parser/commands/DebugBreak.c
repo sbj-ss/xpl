@@ -12,7 +12,7 @@ void xplCmdDebugBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		xprDebugBreak();
 	else
 		xplDisplayMessage(xplMsgWarning, BAD_CAST "xpl:debug-break called when running outside of IDE (file \"%s\", line %d)", commandInfo->element->doc->URL, commandInfo->element->line);
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 }
 
 xplCommand xplDebugBreakCommand = { xplCmdDebugBreakPrologue, xplCmdDebugBreakEpilogue };

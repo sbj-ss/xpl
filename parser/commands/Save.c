@@ -51,10 +51,10 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlChar *deserialize_attr = NULL;
 	xmlChar *root_name;
 	xmlNsPtr ns;
-	BOOL format;
-	BOOL abs_path;
-	BOOL create_destination;
-	BOOL omit_root;
+	bool format;
+	bool abs_path;
+	bool create_destination;
+	bool omit_root;
 	int ret = -1;
 	xmlDocPtr doc = NULL;
 	xmlXPathObjectPtr sel = NULL;
@@ -65,38 +65,38 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	file_attr = xmlGetNoNsProp(commandInfo->element, FILE_ATTR);
 	if (!file_attr || !*file_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no file name specified"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no file name specified"), true, true);
 		goto done;
 	}
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
 	encoding_attr = xmlGetNoNsProp(commandInfo->element, ENCODING_ATTR);
 	if (!encoding_attr || !*encoding_attr)
 		encoding_attr = xmlStrdup(cfgDefaultEncoding);
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, FORMAT_ATTR, &format, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, FORMAT_ATTR, &format, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, ABS_PATH_ATTR, &abs_path, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, ABS_PATH_ATTR, &abs_path, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, CREATE_DESTINATION_ATTR, &create_destination, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, CREATE_DESTINATION_ATTR, &create_destination, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, OMIT_ROOT_ATTR, &omit_root, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, OMIT_ROOT_ATTR, &omit_root, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	deserialize_attr = xmlGetNoNsProp(commandInfo->element, DESERIALIZE_ATTR);
 	if (deserialize_attr && xmlStrcasecmp(deserialize_attr, BAD_CAST "base64"))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown deserialization method \"%s\", the only supported value is \"base64\"", 
-			deserialize_attr), TRUE, TRUE);
+			deserialize_attr), true, true);
 		goto done;
 	}
 	root_attr = xmlGetNoNsProp(commandInfo->element, ROOT_ATTR);
@@ -130,7 +130,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					{ 
 						if ((sel->nodesetval->nodeNr != 1) || (sel->nodesetval->nodeTab[0]->type != XML_ELEMENT_NODE))
 						{
-							ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "omitroot requires exactly one element node returned by XPath selection"), TRUE, TRUE);
+							ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "omitroot requires exactly one element node returned by XPath selection"), true, true);
 							goto done;
 						}
 						root = sel->nodesetval->nodeTab[0];
@@ -139,15 +139,15 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 						for (i = 0; i < (size_t) sel->nodesetval->nodeNr; i++)
 							xmlAddChild(root, cloneNode(sel->nodesetval->nodeTab[i], root, doc));
 				} else if (omit_root) {
-					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath selection (%s) returned an empty result but omitroot is requested", select_attr), TRUE, TRUE);
+					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath selection (%s) returned an empty result but omitroot is requested", select_attr), true, true);
 					goto done;
 				}
 			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", select_attr), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", select_attr), true, true);
 				goto done;
 			}
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), true, true);
 			goto done;
 		}
 	} else {
@@ -155,17 +155,17 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			if (!commandInfo->element->children)
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "omitroot requires non-empty command content"), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "omitroot requires non-empty command content"), true, true);
 				goto done;				
 			}
 			if (commandInfo->element->children->next)
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "command has multiple child nodes but omitroot is requested"), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "command has multiple child nodes but omitroot is requested"), true, true);
 				goto done;
 			}
 			if (commandInfo->element->children->type != XML_ELEMENT_NODE)
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "command content is non-element but omitroot is requested"), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "command content is non-element but omitroot is requested"), true, true);
 				goto done;
 			}
 			root = cloneNode(commandInfo->element->children, (xmlNodePtr) doc, doc);
@@ -179,10 +179,10 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		xprEnsurePathExistence(filename);
 	if (!saveXmlDocToFile(doc, filename, (char*) encoding_attr, options))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot save document \"%s\" (encoding \"%s\")", filename, encoding_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot save document \"%s\" (encoding \"%s\")", filename, encoding_attr), true, true);
 		goto done;
 	}
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (file_attr)
 		xmlFree(file_attr);

@@ -24,7 +24,7 @@ void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
 	if (!name_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name attribute"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name attribute"), true, true);
 		return;
 	}
 	EXTRACT_NS_AND_TAGNAME(name_attr, ns, tagname, commandInfo->element);
@@ -48,11 +48,11 @@ void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					}
 				}
 			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "at XPath expression \"%s\" evaluated to non-nodeset value", at_attr), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "at XPath expression \"%s\" evaluated to non-nodeset value", at_attr), true, true);
 				goto done;
 			}
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "invalid at XPath expression \"%s\"", at_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "invalid at XPath expression \"%s\"", at_attr), true, true);
 			goto done;
 		}
 	} else
@@ -62,7 +62,7 @@ void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	else
 		value = BAD_CAST "false";
 	ret = xmlNewDocText(commandInfo->document->document, value);
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 done:
 	if (name_attr) xmlFree(name_attr);
 	if (at_attr) xmlFree(at_attr);

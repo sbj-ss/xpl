@@ -13,8 +13,8 @@ void xplCmdSessionIsPresentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 #define NAME_ATTR (BAD_CAST "name")
 #define THREADLOCAL_ATTR (BAD_CAST "threadlocal")
 	xmlChar *name_attr;
-	BOOL ret_value;
-	BOOL threadlocal;
+	bool ret_value;
+	bool threadlocal;
 	xmlNodePtr ret, error;
 
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
@@ -22,9 +22,9 @@ void xplCmdSessionIsPresentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 		ret_value = (commandInfo->document->main->session 
 		&& xplSessionIsValid(commandInfo->document->main->session));
 	else {
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, THREADLOCAL_ATTR, &threadlocal, FALSE)))
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, THREADLOCAL_ATTR, &threadlocal, false)))
 		{
-			ASSIGN_RESULT(error, TRUE, TRUE);
+			ASSIGN_RESULT(error, true, true);
 			goto done;
 		}
 		if (threadlocal)
@@ -34,7 +34,7 @@ void xplCmdSessionIsPresentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 			&& xplSessionGetObject(commandInfo->document->main->session, name_attr));
 	}
 	ret = xmlNewDocText(commandInfo->document->document, ret_value? BAD_CAST "true": BAD_CAST "false");
-	ASSIGN_RESULT(ret, FALSE, TRUE);	
+	ASSIGN_RESULT(ret, false, true);	
 done:
 	if (name_attr) xmlFree(name_attr);
 }

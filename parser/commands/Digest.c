@@ -26,12 +26,12 @@ void xplCmdDigestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	method_attr = xmlGetNoNsProp(commandInfo->element, METHOD_ATTR);
 	if (!method_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no digest method specified"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no digest method specified"), true, true);
 		goto done;
 	}
 	if (!checkNodeListForText(commandInfo->element->children))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 		goto done;
 	}
 	content = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
@@ -64,12 +64,12 @@ void xplCmdDigestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		digest = WHIRLPOOL(content, xmlStrlen(content), NULL);
 		digest_size = WHIRLPOOL_DIGEST_LENGTH;
 	} else {
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown method: %s", method_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown method: %s", method_attr), true, true);
 		goto done;
 	}
 	ret = xmlNewDocText(commandInfo->document->document, NULL);
-	ret->content = bufferToHex(digest, digest_size, FALSE);
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ret->content = bufferToHex(digest, digest_size, false);
+	ASSIGN_RESULT(ret, false, true);
 done:
 	if (method_attr)
 		xmlFree(method_attr);

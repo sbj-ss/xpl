@@ -12,7 +12,7 @@ void xtsInitContext(xtsContextPtr ctxt, xtsFailMode fail_mode, xtsVerbosity verb
 {
 	ctxt->env = NULL;
 	ctxt->error = NULL;
-	ctxt->error_malloced = FALSE;
+	ctxt->error_malloced = false;
 	ctxt->fail_mode = fail_mode;
 	ctxt->verbosity = verbosity;
 	ctxt->passed = 0;
@@ -20,9 +20,9 @@ void xtsInitContext(xtsContextPtr ctxt, xtsFailMode fail_mode, xtsVerbosity verb
 	ctxt->total = 0;
 }
 
-BOOL xtsRunTest(const xtsTestPtr test, xtsContextPtr ctxt)
+bool xtsRunTest(const xtsTestPtr test, xtsContextPtr ctxt)
 {
-	BOOL ok;
+	bool ok;
 	int mem_blocks;
 
 	assert(test);
@@ -38,7 +38,7 @@ BOOL xtsRunTest(const xtsTestPtr test, xtsContextPtr ctxt)
 			xmlGenericError(xmlGenericErrorContext, "%s%03d Skipping %s (#%s)...\n",
 				SINGLE_TEST_PREAMBLE, ctxt->total, test->displayName, test->id);
 		ctxt->skipped++;
-		return TRUE;
+		return true;
 	}
 	if (test->flags & XTS_FLAG_CHECK_MEMORY)
 		mem_blocks = xmlMemBlocks();
@@ -53,7 +53,7 @@ BOOL xtsRunTest(const xtsTestPtr test, xtsContextPtr ctxt)
 					"%s%03d %s (#%s): FAILED: expected %d used memory blocks, got %d\n",
 					SINGLE_TEST_PREAMBLE, ctxt->total, test->displayName, test->id,
 					test->expectedMemoryDelta, xmlMemBlocks() - mem_blocks);
-			return FALSE;
+			return false;
 		}
 		if (ctxt->verbosity >= XTS_VERBOSITY_TEST)
 			xmlGenericError(xmlGenericErrorContext, "%s%03d %s (#%s): OK\n",
@@ -68,15 +68,15 @@ BOOL xtsRunTest(const xtsTestPtr test, xtsContextPtr ctxt)
 	if (ctxt->error && ctxt->error_malloced)
 	{
 		xmlFree(ctxt->error);
-		ctxt->error_malloced = FALSE;
+		ctxt->error_malloced = false;
 	}
 	ctxt->error = NULL;
 	return ok;
 }
 
-BOOL xtsRunFixture(const xtsFixturePtr fixture, xtsContextPtr ctxt)
+bool xtsRunFixture(const xtsFixturePtr fixture, xtsContextPtr ctxt)
 {
-	BOOL ok = TRUE;
+	bool ok = true;
 	int i, old_passed, old_skipped, old_total;
 	xtsTestPtr test;
 
@@ -102,7 +102,7 @@ BOOL xtsRunFixture(const xtsFixturePtr fixture, xtsContextPtr ctxt)
 			if (ctxt->verbosity >= XTS_VERBOSITY_FIXTURE)
 				xmlGenericError(xmlGenericErrorContext, "Fixture.setup() failed: %s\n",
 					ctxt->error? ctxt->error: UNKNOWN_ERROR_MESSAGE);
-			return FALSE;
+			return false;
 		}
 
 	for (i = 0, test = fixture->tests; i < fixture->test_count; i++, test++)
@@ -126,10 +126,10 @@ BOOL xtsRunFixture(const xtsFixturePtr fixture, xtsContextPtr ctxt)
 	return ok;
 }
 
-BOOL xtsRunSuite(const xtsFixturePtr *fixtures, xtsContextPtr ctxt)
+bool xtsRunSuite(const xtsFixturePtr *fixtures, xtsContextPtr ctxt)
 {
 	xtsFixturePtr fixture;
-	BOOL ok = TRUE;
+	bool ok = true;
 
 	assert(fixtures);
 	assert(ctxt);
@@ -176,7 +176,7 @@ xtsFixturePtr xtsLocateFixture(const xtsFixturePtr *suite, const xmlChar *fixtur
 	return NULL;
 }
 
-void xtsSkipSingleTest(xtsTestPtr test, BOOL skip)
+void xtsSkipSingleTest(xtsTestPtr test, bool skip)
 {
 	assert(test);
 	if (skip)
@@ -185,7 +185,7 @@ void xtsSkipSingleTest(xtsTestPtr test, BOOL skip)
 		test->flags &= ~XTS_FLAG_SKIP;
 }
 
-void xtsSkipAllTestsInFixture(xtsFixturePtr fixture, BOOL skip)
+void xtsSkipAllTestsInFixture(xtsFixturePtr fixture, bool skip)
 {
 	xtsTestPtr test;
 	int i;
@@ -195,7 +195,7 @@ void xtsSkipAllTestsInFixture(xtsFixturePtr fixture, BOOL skip)
 		xtsSkipSingleTest(test, skip);
 }
 
-void xtsSkipAllTestsInSuite(xtsFixturePtr *suite, BOOL skip)
+void xtsSkipAllTestsInSuite(xtsFixturePtr *suite, bool skip)
 {
 	xtsFixturePtr fixture;
 
@@ -204,7 +204,7 @@ void xtsSkipAllTestsInSuite(xtsFixturePtr *suite, BOOL skip)
 		xtsSkipAllTestsInFixture(fixture, skip);
 }
 
-BOOL xtsSkipTest(xtsFixturePtr *suite, const xmlChar *fixture_id, const xmlChar *test_id, BOOL skip)
+bool xtsSkipTest(xtsFixturePtr *suite, const xmlChar *fixture_id, const xmlChar *test_id, bool skip)
 {
 	xtsFixturePtr fixture = NULL;
 	xtsTestPtr test;
@@ -215,18 +215,18 @@ BOOL xtsSkipTest(xtsFixturePtr *suite, const xmlChar *fixture_id, const xmlChar 
 
 
 	if (!(fixture = xtsLocateFixture(suite, fixture_id)))
-		return FALSE;
+		return false;
 	if (!(test = xtsLocateTest(fixture, test_id)))
-		return FALSE;
+		return false;
 	xtsSkipSingleTest(test, skip);
-	return TRUE;
+	return true;
 }
 
 typedef struct _xtsSkipListParserCtxt
 {
 	const xmlChar *cur;
 	const xmlChar *new_cur;
-	BOOL skip;
+	bool skip;
 	xtsFixturePtr *suite;
 	xtsFixturePtr fixture;
 	xmlChar *error;
@@ -261,7 +261,7 @@ static xmlChar* xtsExtractEntityId(xtsSkipListParserCtxtPtr ctxt)
 	return ent_id;
 }
 
-static BOOL xtsParseSkipListTest(xtsSkipListParserCtxtPtr ctxt)
+static bool xtsParseSkipListTest(xtsSkipListParserCtxtPtr ctxt)
 {
 	xmlChar *test_id;
 	xtsTestPtr test;
@@ -273,12 +273,12 @@ static BOOL xtsParseSkipListTest(xtsSkipListParserCtxtPtr ctxt)
 	{
 		xtsSkipAllTestsInFixture(ctxt->fixture, ctxt->skip);
 		ctxt->cur++;
-		return TRUE; /* we don't expect #names afterwards */
+		return true; /* we don't expect #names afterwards */
 	}
 	if (*(ctxt->cur) != (xmlChar) '#')
 	{
 		ctxt->error = BAD_CAST "test names must start with #";
-		return FALSE;
+		return false;
 	}
 	ctxt->cur++;
 	xtsOmitSkipListSpace(ctxt);
@@ -288,17 +288,17 @@ static BOOL xtsParseSkipListTest(xtsSkipListParserCtxtPtr ctxt)
 	if (!test)
 	{
 		ctxt->error = BAD_CAST "can't locate test";
-		return FALSE;
+		return false;
 	}
 	xtsSkipSingleTest(test, ctxt->skip);
 	ctxt->cur = ctxt->new_cur;
 	xtsOmitSkipListSpace(ctxt);
 	if (*(ctxt->cur) == (xmlChar) '#')
 		return xtsParseSkipListTest(ctxt);
-	return TRUE;
+	return true;
 }
 
-static BOOL xtsParseSkipListFixture(xtsSkipListParserCtxtPtr ctxt)
+static bool xtsParseSkipListFixture(xtsSkipListParserCtxtPtr ctxt)
 {
 	xmlChar *fixture_id;
 
@@ -308,12 +308,12 @@ static BOOL xtsParseSkipListFixture(xtsSkipListParserCtxtPtr ctxt)
 	{
 		xtsSkipAllTestsInSuite(ctxt->suite, ctxt->skip);
 		ctxt->cur++;
-		return TRUE;
+		return true;
 	}
 	if (*(ctxt->cur) != (xmlChar) '@')
 	{
 		ctxt->error = BAD_CAST "fixture names must start with @";
-		return FALSE;
+		return false;
 	}
 	ctxt->cur++;
 	xtsOmitSkipListSpace(ctxt);
@@ -323,59 +323,59 @@ static BOOL xtsParseSkipListFixture(xtsSkipListParserCtxtPtr ctxt)
 	if (!ctxt->fixture)
 	{
 		ctxt->error = "can't locate fixture";
-		return FALSE;
+		return false;
 	}
 	ctxt->cur = ctxt->new_cur;
 	xtsOmitSkipListSpace(ctxt);
 	if (!xtsParseSkipListTest(ctxt))
-		return FALSE;
+		return false;
 	xtsOmitSkipListSpace(ctxt);
 	if (*ctxt->cur == (xmlChar) '@')
 		return xtsParseSkipListFixture(ctxt);
-	return TRUE;
+	return true;
 }
 
-static BOOL xtsParseSkipListStatement(xtsSkipListParserCtxtPtr ctxt)
+static bool xtsParseSkipListStatement(xtsSkipListParserCtxtPtr ctxt)
 {
 	assert(ctxt);
 	assert(ctxt->cur);
 	if (!*(ctxt->cur))
-		return TRUE;
+		return true;
 	if (*(ctxt->cur) == (xmlChar) 'i')
-		ctxt->skip = FALSE;
+		ctxt->skip = false;
 	else if (*(ctxt->cur) == (xmlChar) 's')
-		ctxt->skip = TRUE;
+		ctxt->skip = true;
 	else {
 		ctxt->error = BAD_CAST "unknown operation";
-		return FALSE;
+		return false;
 	}
 	ctxt->cur++;
 	xtsOmitSkipListSpace(ctxt);
 	if (*(ctxt->cur) != (xmlChar) ':')
 	{
 		ctxt->error = BAD_CAST "missing colon after operation";
-		return FALSE;
+		return false;
 	}
 	ctxt->cur++;
 	xtsOmitSkipListSpace(ctxt);
 	if (!xtsParseSkipListFixture(ctxt))
-		return FALSE;
+		return false;
 	if (*(ctxt->cur) != (xmlChar) ';')
 	{
 		ctxt->error = "statements must end with a semicolon";
-		return FALSE;
+		return false;
 	}
 	ctxt->cur++;
 	xtsOmitSkipListSpace(ctxt);
 	if (*(ctxt->cur))
 		return xtsParseSkipListStatement(ctxt);
-	return TRUE;
+	return true;
 }
 
-BOOL xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error)
+bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error)
 {
 	xtsSkipListParserCtxt ctxt;
-	BOOL ok;
+	bool ok;
 	static const xmlChar *fmt = BAD_CAST "%s at ...%s...";
 	xmlChar part[20];
 	int error_len;

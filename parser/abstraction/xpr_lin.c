@@ -72,31 +72,31 @@ int xprSOpen(const xmlChar *path, int mode, int sharing, int perms)
 	return ret;
 }
 
-BOOL xprCheckFilePresence(const xmlChar *path)
+bool xprCheckFilePresence(const xmlChar *path)
 {
 	xmlChar *internal_path;
 	struct stat st;
 	int stat_ret;
 
 	if (!path)
-		return FALSE;
+		return false;
 	if (!(internal_path = convertToFSPath(path)))
-		return FALSE;
+		return false;
 	stat_ret = stat(path, &st);
 	xmlFree(internal_path);
 	/* in EACCES etc error cases file isn't available anyway */
-	return stat_ret == 0? TRUE: FALSE;
+	return stat_ret == 0? true: false;
 }
 
-BOOL xprEnsurePathExistence(const xmlChar *path)
+bool xprEnsurePathExistence(const xmlChar *path)
 {
 	xmlChar *internal_path, *slash_pos, tmp;
-	BOOL create = FALSE;
+	bool create = false;
 
 	if (!path)
-		return FALSE;
+		return false;
 	if (!(internal_path = convertToFSPath(path)))
-		return FALSE;
+		return false;
 	slash_pos = internal_path;
 	while ((slash_pos = (xmlChar*) xmlStrchr(slash_pos, '/')))
 	{
@@ -107,15 +107,15 @@ BOOL xprEnsurePathExistence(const xmlChar *path)
 			if (mkdir(internal_path, 0755) != 0)
 			{
 				xmlFree(internal_path);
-				return FALSE;
+				return false;
 			}
 		} else if (!xprCheckFilePresence(internal_path))
-			create = TRUE;
+			create = true;
 		*slash_pos = tmp;
 		slash_pos++;
 	}
 	xmlFree(internal_path);
-	return TRUE;
+	return true;
 }
 
 xmlChar* xprGetProgramPath(void)
@@ -139,42 +139,42 @@ xmlChar* xprGetProgramPath(void)
     return ret;
 }
 
-BOOL xprMutexInit(XPR_MUTEX *m)
+bool xprMutexInit(XPR_MUTEX *m)
 {
-	return pthread_mutex_init(m, NULL) == 0? TRUE: FALSE;
+	return pthread_mutex_init(m, NULL) == 0? true: false;
 }
 
-BOOL xprMutexAcquire(XPR_MUTEX *m)
+bool xprMutexAcquire(XPR_MUTEX *m)
 {
-	return pthread_mutex_lock(m) == 0? TRUE: FALSE;
+	return pthread_mutex_lock(m) == 0? true: false;
 }
 
-BOOL xprMutexRelease(XPR_MUTEX *m)
+bool xprMutexRelease(XPR_MUTEX *m)
 {
-	return pthread_mutex_unlock(m) == 0? TRUE: FALSE;
+	return pthread_mutex_unlock(m) == 0? true: false;
 }
 
-BOOL xprMutexCleanup(XPR_MUTEX *m)
+bool xprMutexCleanup(XPR_MUTEX *m)
 {
 	int ret = pthread_mutex_destroy(m);
-	return ret == 0? TRUE: FALSE;
+	return ret == 0? true: false;
 }
 
-BOOL xprSemaphoreInit(XPR_SEMAPHORE *s, int initial_value)
+bool xprSemaphoreInit(XPR_SEMAPHORE *s, int initial_value)
 {
-	return sem_init(s, 0, initial_value) == 0? TRUE: FALSE;
+	return sem_init(s, 0, initial_value) == 0? true: false;
 }
-BOOL xprSemaphoreAcquire(XPR_SEMAPHORE *s)
+bool xprSemaphoreAcquire(XPR_SEMAPHORE *s)
 {
-	return sem_wait(s) == 0? TRUE: FALSE;
+	return sem_wait(s) == 0? true: false;
 }
-BOOL xprSemaphoreRelease(XPR_SEMAPHORE *s)
+bool xprSemaphoreRelease(XPR_SEMAPHORE *s)
 {
-	return sem_post(s) == 0? TRUE: FALSE;
+	return sem_post(s) == 0? true: false;
 }
-BOOL xprSemaphoreCleanup(XPR_SEMAPHORE *s)
+bool xprSemaphoreCleanup(XPR_SEMAPHORE *s)
 {
-	return sem_destroy(s) == 0? TRUE: FALSE;
+	return sem_destroy(s) == 0? true: false;
 }
 
 XPR_THREAD_ID xprGetCurrentThreadId()
@@ -231,24 +231,24 @@ void xprDebugBreak(void)
 	raise(SIGTRAP);
 }
 
-BOOL xprIsDebuggerPresent(void)
+bool xprIsDebuggerPresent(void)
 {
 	/* TODO: this will break gdb attaching to live process */
-    static BOOL checked = FALSE;
-    static BOOL debugged = FALSE;
+    static bool checked = false;
+    static bool debugged = false;
 
     if (!checked)
     {
         if (ptrace(PTRACE_TRACEME, 0, 1, 0) < 0)
-             debugged = TRUE;
+             debugged = true;
         else
         	ptrace(PTRACE_DETACH, 0, 1, 0);
-        checked = TRUE;
+        checked = true;
    }
    return debugged;
 }
 
-BOOL xprStartup(int what)
+bool xprStartup(int what)
 {
 	if (what & XPR_STARTSTOP_LOW_LEVEL)
 	{
@@ -262,7 +262,7 @@ BOOL xprStartup(int what)
 	{
 		NOOP();
 	}
-	return TRUE;
+	return true;
 }
 
 void xprShutdown(int what)

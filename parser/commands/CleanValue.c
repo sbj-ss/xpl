@@ -13,35 +13,35 @@ void xplCmdCleanValueEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 #define REMOVEONNONMATCH_ATTR (BAD_CAST "removeonnonmatch")
 	xmlChar *expect_attr = NULL;
 	xplExpectType expect;
-	BOOL remove_on_nonmatch;
+	bool remove_on_nonmatch;
 	xmlNodePtr error, ret;
 	xmlChar *value = NULL, *clean_value;
 
 	expect_attr = xmlGetNoNsProp(commandInfo->element, EXPECT_ATTR);
 	if (!expect_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing expect attribute"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing expect attribute"), true, true);
 		goto done;
 	}
 	if ((expect = xplExpectTypeFromString(expect_attr)) == XPL_EXPECT_UNDEFINED)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown expect value: \"%s\"", expect_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown expect value: \"%s\"", expect_attr), true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REMOVEONNONMATCH_ATTR, &remove_on_nonmatch, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REMOVEONNONMATCH_ATTR, &remove_on_nonmatch, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (!checkNodeListForText(commandInfo->element->children))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 		goto done;
 	}
 	value = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
 	if (!value)
 	{
-		ASSIGN_RESULT(NULL, FALSE, TRUE);
+		ASSIGN_RESULT(NULL, false, true);
 		goto done; 
 	}
 	clean_value = xplCleanTextValue(value, expect);
@@ -54,9 +54,9 @@ void xplCmdCleanValueEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	{
 		ret = xmlNewDocText(commandInfo->element->doc, NULL);
 		ret->content = clean_value;
-		ASSIGN_RESULT(ret, FALSE, TRUE);
+		ASSIGN_RESULT(ret, false, true);
 	} else {
-		ASSIGN_RESULT(NULL, FALSE, TRUE);
+		ASSIGN_RESULT(NULL, false, true);
 	}
 done:
 	if (expect_attr) xmlFree(expect_attr);

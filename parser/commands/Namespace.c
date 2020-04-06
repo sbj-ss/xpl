@@ -23,18 +23,18 @@ void xplCmdNamespaceEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	destination_attr = xmlGetNoNsProp(commandInfo->element, DESTINATION_ATTR);
 	if (!commandInfo->element->children)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "uri is empty"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "uri is empty"), true, true);
 		goto done;
 	}
 	if (!checkNodeListForText(commandInfo->element->children))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "uri is non-text"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "uri is non-text"), true, true);
 		goto done;
 	}
 	uri = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
 	if (!uri)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "uri is empty"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "uri is empty"), true, true);
 		goto done;
 	}
 	if (destination_attr)
@@ -75,7 +75,7 @@ done:
 		xmlFree(destination_attr);
 	if (uri)
 		xmlFree(uri);
-	ASSIGN_RESULT(ret, ret? TRUE: FALSE, TRUE);
+	ASSIGN_RESULT(ret, ret? true: false, true);
 }
 
 xplCommand xplNamespaceCommand = { xplCmdNamespacePrologue, xplCmdNamespaceEpilogue };

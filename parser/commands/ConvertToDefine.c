@@ -15,30 +15,30 @@ void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr r
 	xmlChar *defaultexpand_attr = NULL;
 	xmlNodePtr tmp;
 	xplMacroExpansionState default_expand;
-	BOOL default_replace = TRUE;
+	bool default_replace = true;
 
 	if ((defaultexpand_attr = xmlGetNoNsProp(commandInfo->element, DEFAULTEXPAND_ATTR)))
 	{
-		if ((default_expand = xplMacroExpansionStateFromString(defaultexpand_attr, TRUE)) == XPL_MACRO_EXPAND_UNKNOWN)
+		if ((default_expand = xplMacroExpansionStateFromString(defaultexpand_attr, true)) == XPL_MACRO_EXPAND_UNKNOWN)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown defaultexpand value: \"%s\"", defaultexpand_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown defaultexpand value: \"%s\"", defaultexpand_attr), true, true);
 			goto done;
 		}
 	} else
 		default_expand = XPL_MACRO_EXPAND_NO_DEFAULT;
-	if ((tmp = xplDecodeCmdBoolParam(commandInfo->element, DEFAULTREPLACE_ATTR, &default_replace, TRUE)))
+	if ((tmp = xplDecodeCmdBoolParam(commandInfo->element, DEFAULTREPLACE_ATTR, &default_replace, true)))
 	{
-		ASSIGN_RESULT(tmp, TRUE, TRUE);
+		ASSIGN_RESULT(tmp, true, true);
 		goto done;
 	}
 	tmp = commandInfo->element->children;
 	while (tmp)
 	{
 		if (tmp->type == XML_ELEMENT_NODE)
-			xplAddMacro(commandInfo->document, tmp, commandInfo->element->parent, TRUE, default_expand, default_replace);
+			xplAddMacro(commandInfo->document, tmp, commandInfo->element->parent, true, default_expand, default_replace);
 		tmp = tmp->next;
 	}
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (defaultexpand_attr) xmlFree(defaultexpand_attr);
 }

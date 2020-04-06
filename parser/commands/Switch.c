@@ -25,7 +25,7 @@ void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo)
 void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REPEAT_ATTR (BAD_CAST "repeat")
-	BOOL repeat;
+	bool repeat;
 	xmlXPathObjectPtr nodes = (xmlXPathObjectPtr) commandInfo->element->content;
 	xmlNodePtr error;
 
@@ -34,15 +34,15 @@ void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		if (nodes->nodesetval)
 			nodes->nodesetval->nodeNr = 0;
 		xmlXPathFreeObject(nodes);
-		ASSIGN_RESULT(NULL, FALSE, FALSE);
+		ASSIGN_RESULT(NULL, false, false);
 	} else if (nodes) {
 		xmlXPathFreeObject(nodes);
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, FALSE)))
-			ASSIGN_RESULT(error, TRUE, TRUE);
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
+			ASSIGN_RESULT(error, true, true);
 		else
-			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, TRUE);
+			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
 	} else
-		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, TRUE, TRUE);
+		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, true, true);
 }
 
 xplCommand xplSwitchCommand = { 

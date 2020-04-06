@@ -17,31 +17,31 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlXPathObjectPtr sel = NULL;
 	xmlChar *new_name;
 	xmlNsPtr ns = NULL;
-	BOOL change_ns = FALSE;
+	bool change_ns = false;
 	size_t i;
 	xmlNodePtr cur;
 
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
 	if (!select_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select attribute is missing"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select attribute is missing"), true, true);
 		goto done;
 	}
 	newname_attr = xmlGetNoNsProp(commandInfo->element, NEWNAME_ATTR);
 	if (!newname_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "newname attribute is missing"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "newname attribute is missing"), true, true);
 		goto done;
 	}
 	sel = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
 	if (!sel)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath: \"%s\"", select_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath: \"%s\"", select_attr), true, true);
 		goto done;
 	}
 	if (sel->type != XPATH_NODESET)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath \"%s\" evaluated to non-nodeset value", select_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath \"%s\" evaluated to non-nodeset value", select_attr), true, true);
 		goto done;
 	}
 	{
@@ -51,7 +51,7 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		else {
 			*new_name++ = 0;
 			ns = xmlSearchNs(commandInfo->element->doc, commandInfo->element, newname_attr);
-			change_ns = TRUE;
+			change_ns = true;
 		}
 	}
 	if (sel->nodesetval)
@@ -67,7 +67,7 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			}
 		}
 	}
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (select_attr)
 		xmlFree(select_attr);

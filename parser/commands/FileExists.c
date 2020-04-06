@@ -17,17 +17,17 @@ void xplCmdFileExistsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	xmlChar *filename = NULL;
 	xmlChar *value;
 	xmlNodePtr ret, error;
-	BOOL abs_path;
+	bool abs_path;
 
 	file_attr = xmlGetNoNsProp(commandInfo->element, FILE_ATTR);
 	if (!file_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "file attribute not found"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "file attribute not found"), true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, ABS_PATH_ATTR, &abs_path, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, ABS_PATH_ATTR, &abs_path, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (abs_path)
@@ -40,7 +40,7 @@ void xplCmdFileExistsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	else
 		value = BAD_CAST "false";
 	ret = xmlNewDocText(commandInfo->document->document, value);
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 done:
 	if (file_attr) xmlFree(file_attr);
 	if (filename) xmlFree(filename);

@@ -11,13 +11,13 @@ void xplCmdRehashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	if (!xplSessionGetSaMode(commandInfo->document->session))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 		return;
 	}
 	xplLockThreads(TRUE);
 	xplReadConfig();
 	xplLockThreads(FALSE);
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 }
 
 xplCommand xplRehashCommand = { xplCmdRehashPrologue, xplCmdRehashEpilogue };

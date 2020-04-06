@@ -19,32 +19,32 @@ void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	xmlChar *name_attr = NULL;
 	xmlChar *responsetagname_attr = NULL;
-	BOOL show_tags;
-	BOOL show_passwords;
-	BOOL repeat;
+	bool show_tags;
+	bool show_passwords;
+	bool repeat;
 	xmlNodePtr ret, error;
 
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
 	responsetagname_attr = xmlGetNoNsProp(commandInfo->element, RESPONSETAGNAME_ATTR);
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWTAGS_ATTR, &show_tags, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWTAGS_ATTR, &show_tags, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWPASSWORDS_ATTR, &show_passwords, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWPASSWORDS_ATTR, &show_passwords, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 
 	if (show_passwords && !xplSessionGetSaMode(commandInfo->document->session))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 		goto done;
 	}
 
@@ -52,13 +52,13 @@ void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	{
 		ret = xmlNewDocText(commandInfo->element->doc, NULL);
 		ret->content = xplGetOptionValue(name_attr, show_passwords);
-		repeat = FALSE;
+		repeat = false;
 	} else {
 		ret = xplOptionsToList(commandInfo->element->doc, commandInfo->element, 
 			responsetagname_attr?responsetagname_attr:BAD_CAST "Option", show_tags, show_passwords);
 		downshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	}
-	ASSIGN_RESULT(ret, repeat, TRUE);
+	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (name_attr)
 		xmlFree(name_attr);

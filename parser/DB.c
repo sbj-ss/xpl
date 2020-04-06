@@ -5,7 +5,7 @@
 #include "Messages.h"
 
 static xmlHashTablePtr databases = NULL;
-static BOOL db_initialized = FALSE;
+static bool db_initialized = false;
 
 xplDBPtr xplDBCreate(const xplDBPtr aNext, const xplDBDeallocator aDealloc)
 {
@@ -84,7 +84,7 @@ xplDBPtr xplLocateAvailDB(xplDBListPtr list)
 		db = db->next;
 	}
 	if (ret)
-		ret->busy = TRUE;
+		ret->busy = true;
 	if (!xprMutexRelease(&list->lock))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	return ret;
@@ -115,7 +115,7 @@ void xplRemoveDB(xmlChar *name)
 	}
 }
 
-xplAddDBResult xplAddDB(xmlChar *name, xmlChar *newConnString, BOOL withCheck)
+xplAddDBResult xplAddDB(xmlChar *name, xmlChar *newConnString, bool withCheck)
 {
 	xplDBListPtr db;
 
@@ -135,7 +135,7 @@ xplAddDBResult xplAddDB(xmlChar *name, xmlChar *newConnString, BOOL withCheck)
 	return XPL_ADD_DB_OK;
 }
 
-xplChangeDBResult xplChangeDB(xmlChar *name, xmlChar *newConnString, BOOL withCheck)
+xplChangeDBResult xplChangeDB(xmlChar *name, xmlChar *newConnString, bool withCheck)
 {
 	xplDBListPtr db, new_db;
 
@@ -164,7 +164,7 @@ typedef struct _getDBListContext
 	xmlDocPtr doc;
 	xmlNsPtr ns;
 	xmlNodePtr head, tail;
-	BOOL show_tags;
+	bool show_tags;
 } getDBListContext, *getDBListContextPtr;
 
 static void databaseListScanner(void *payload, void *data, xmlChar *name)
@@ -185,7 +185,7 @@ static void databaseListScanner(void *payload, void *data, xmlChar *name)
 		ctxt->head = ctxt->tail = cur;
 }
 
-xmlNodePtr xplDatabasesToNodeList(xmlDocPtr doc, xmlNodePtr parent, const xmlChar *tagName, BOOL showTags)
+xmlNodePtr xplDatabasesToNodeList(xmlDocPtr doc, xmlNodePtr parent, const xmlChar *tagName, bool showTags)
 {
 	getDBListContext ctxt;
 
@@ -204,7 +204,7 @@ static void dbDeallocator(void *payload, xmlChar *name)
 	xplDBListFree((xplDBListPtr) payload);
 }
 
-BOOL xplReadDatabases(xmlNodePtr cur)
+bool xplReadDatabases(xmlNodePtr cur)
 {
 	xplDBListPtr db;
 	xmlChar *dbname;
@@ -212,7 +212,7 @@ BOOL xplReadDatabases(xmlNodePtr cur)
 	xplCleanupDatabases();
 	databases = xmlHashCreate(16);
 	if (!databases)
-		return FALSE;
+		return false;
 
 	cur = cur->children;
 	while (cur)
@@ -238,13 +238,13 @@ BOOL xplReadDatabases(xmlNodePtr cur)
 		}
 		cur = cur->next;
 	}
-	return TRUE;
+	return true;
 }
 
 static void checkDatabase(void *payload, void *data, xmlChar *name)
 {
 	xmlChar *msg;
-	BOOL is_avail = xefDbCheckAvail(((xplDBListPtr) payload)->conn_string, name, &msg);
+	bool is_avail = xefDbCheckAvail(((xplDBListPtr) payload)->conn_string, name, &msg);
 	if (msg)
 	{
 		xplDisplayMessage(is_avail? xplMsgInfo: xplMsgWarning, msg);

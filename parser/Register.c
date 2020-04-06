@@ -241,7 +241,7 @@ static xplCommandSignature builtinCommands[] =
 
 #define BUILTIN_COMMAND_COUNT (sizeof(builtinCommands) / sizeof(builtinCommands[0]))
 
-BOOL xplRegisterBuiltinCommands()
+bool xplRegisterBuiltinCommands()
 {
 	int i;
 	xmlChar *cmd_error;
@@ -256,9 +256,9 @@ BOOL xplRegisterBuiltinCommands()
 				builtinCommands[i].name, cmd_error);
 			if (cmd_error)
 				xmlFree(cmd_error);
-			return FALSE;
+			return false;
 		}
 	}
 
-	return TRUE;
+	return true;
 }

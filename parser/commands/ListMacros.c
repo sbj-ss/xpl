@@ -16,8 +16,8 @@ void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	xmlChar *tagname_attr = NULL;
 	xmlChar *delimiter_attr = NULL;
 	xmlChar *tagname;
-	BOOL repeat;
-	BOOL unique;
+	bool repeat;
+	bool unique;
 	xmlNodePtr ret, error;
 
 	tagname_attr = xmlGetNoNsProp(commandInfo->element, TAGNAME_ATTR);
@@ -25,17 +25,17 @@ void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	delimiter_attr = xmlGetNoNsProp(commandInfo->element, DELIMITER_ATTR);
 	if (delimiter_attr && tagname_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot use delimiter and tagname at the same time"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot use delimiter and tagname at the same time"), true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, UNIQUE_ATTR, &unique, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, UNIQUE_ATTR, &unique, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (delimiter_attr)
@@ -46,7 +46,7 @@ void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		ret = xplMacroTableToNodeList(commandInfo->element, tagname, unique, commandInfo->element);
 		downshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	}
-	ASSIGN_RESULT(ret, repeat, TRUE);
+	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (tagname_attr)
 		xmlFree(tagname_attr);

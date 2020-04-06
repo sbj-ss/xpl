@@ -70,12 +70,12 @@ void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	xmlChar *after_count_attr = NULL;
 	int after_count = 1;
-	BOOL repeat;
+	bool repeat;
 	xmlNodePtr ret = NULL, error;
 
 	if (commandInfo->_private)
 	{
-		ASSIGN_RESULT(commandInfo->_private, TRUE, TRUE);
+		ASSIGN_RESULT(commandInfo->_private, true, true);
 		goto done;
 	}
 
@@ -84,13 +84,13 @@ void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	{
 		if (sscanf((const char*) after_count_attr, "%d", &after_count) != 1)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "aftercount (%s) is not a number", after_count_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "aftercount (%s) is not a number", after_count_attr), true, true);
 			goto done;
 		}
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (after_count > 1)
@@ -100,7 +100,7 @@ void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		downshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	} else
 		ret = NULL;
-	ASSIGN_RESULT(ret, repeat, TRUE);	
+	ASSIGN_RESULT(ret, repeat, true);	
 done:
 	if (after_count_attr)
 		xmlFree(after_count_attr);

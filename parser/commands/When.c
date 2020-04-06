@@ -28,13 +28,13 @@ void xplCmdWhenEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	 * motivation: :choose implies single choice but :when without condition will always succeed.
      */
 #define REPEAT_ATTR (BAD_CAST "repeat")
-	BOOL repeat;
+	bool repeat;
 	xmlNodePtr error;
 
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, FALSE)))
-		ASSIGN_RESULT(error, TRUE, TRUE);
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
+		ASSIGN_RESULT(error, true, true);
 	else
-		ASSIGN_RESULT(detachContent(commandInfo->element), repeat, TRUE);
+		ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
 }
 
 xplCommand xplWhenCommand = { xplCmdWhenPrologue, xplCmdWhenEpilogue };

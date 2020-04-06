@@ -18,12 +18,12 @@ void xplCmdSleepEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	until_attr = xmlGetNoNsProp(commandInfo->element, UNTIL_ATTR);
 	if (delay_attr && until_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "both delay and until can't be specified at the same time"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "both delay and until can't be specified at the same time"), true, true);
 		goto done;
 	}
 	if (!delay_attr && !until_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "neyther delay nor until specified"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "neyther delay nor until specified"), true, true);
 		goto done;
 	}
 	if (delay_attr)
@@ -31,14 +31,14 @@ void xplCmdSleepEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		int delay;
 		if (sscanf((const char*) delay_attr, "%d", &delay) != 1)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "xpl:sleep: non-integer delay value (%s)", delay_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "xpl:sleep: non-integer delay value (%s)", delay_attr), true, true);
 			return;
 		}
 		xprSleep(delay);
 	} else if (until_attr) {
 		/* ToDo */
 	}
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (delay_attr) xmlFree(delay_attr);
 	if (until_attr) xmlFree(until_attr);

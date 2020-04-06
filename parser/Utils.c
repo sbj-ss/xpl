@@ -182,38 +182,38 @@ xmlChar* strTrim(xmlChar* str)
 	return out;
 }
 
-BOOL strNonblank(xmlChar* str)
+bool strNonblank(xmlChar* str)
 {
 	if (!str)
-		return FALSE;
+		return false;
 	while (*str)
 	{
 		if (!xmlIsBlank_ch(*str))
-			return TRUE;
+			return true;
 		str++;
 	}
-	return FALSE;
+	return false;
 }
 
-BOOL isNumber(xmlChar *str)
+bool isNumber(xmlChar *str)
 {
 	xmlChar *p;
-	BOOL dot = FALSE;
+	bool dot = false;
 
 	if (!str)
-		return FALSE;
+		return false;
 	p = str;
 	while (*p)
 	{
 		if (isdigit(*p))
 			NOOP();
 		else if ((*p == '.') && !dot)
-			dot = TRUE;
+			dot = true;
 		else
-			return FALSE;
+			return false;
 		p++;
 	}
-	return TRUE;
+	return true;
 }
 
 xmlChar* getLastLibxmlError()
@@ -262,7 +262,7 @@ xmlNodePtr cloneAttrAsText(xmlNodePtr cur, xmlNodePtr parent)
 	return ret;
 }
 
-BOOL checkNodeListForText(xmlNodePtr start)
+bool checkNodeListForText(xmlNodePtr start)
 {
 	while (start)
 	{
@@ -270,25 +270,25 @@ BOOL checkNodeListForText(xmlNodePtr start)
 			&& (start->type != XML_ENTITY_REF_NODE)
 			&& (start->type != XML_CDATA_SECTION_NODE)
 		)
-			return FALSE;
+			return false;
 		start = start->next;
 	}
-	return TRUE;
+	return true;
 }
 
-BOOL checkNodeSetForText(xmlNodeSetPtr s)
+bool checkNodeSetForText(xmlNodeSetPtr s)
 {
 	size_t i;
 
 	if (!s)
-		return FALSE;
+		return false;
 	for (i = 0; i < (size_t) s->nodeNr; i++)
 		if ((s->nodeTab[i]->type != XML_TEXT_NODE) 
 			&& (s->nodeTab[i]->type != XML_ATTRIBUTE_NODE)
 			&& (s->nodeTab[i]->type != XML_CDATA_SECTION_NODE)
 		)
-			return FALSE;
-	return TRUE;
+			return false;
+	return true;
 }
 
 void markAncestorAxisForDeletion(xmlNodePtr bottom, xmlNodePtr top)
@@ -304,7 +304,7 @@ void markAncestorAxisForDeletion(xmlNodePtr bottom, xmlNodePtr top)
 	} 
 }
 
-void markDOSAxisForDeletion(xmlNodePtr cur, int bitwiseAttribute, BOOL doMark)
+void markDOSAxisForDeletion(xmlNodePtr cur, int bitwiseAttribute, bool doMark)
 {
 	xmlAttrPtr prop;
 
@@ -327,7 +327,7 @@ void markDOSAxisForDeletion(xmlNodePtr cur, int bitwiseAttribute, BOOL doMark)
 	}
 }
 
-void deleteNeighbours(xmlNodePtr cur, xmlNodePtr boundary, BOOL markAncestorAxis)
+void deleteNeighbours(xmlNodePtr cur, xmlNodePtr boundary, bool markAncestorAxis)
 {
 	if  (!cur || !boundary) 
 		return;
@@ -894,7 +894,7 @@ typedef struct _NsReplacementContext
 } NsReplacementContext;
 typedef NsReplacementContext *NsReplacementContextPtr;
 
-static BOOL nsIsIndep(xmlNsPtr ns, xmlNodePtr top, xmlNodePtr elem)
+static bool nsIsIndep(xmlNsPtr ns, xmlNodePtr top, xmlNodePtr elem)
 {
 	xmlNsPtr cur_ns;
 
@@ -904,12 +904,12 @@ static BOOL nsIsIndep(xmlNsPtr ns, xmlNodePtr top, xmlNodePtr elem)
 		while(cur_ns)
 		{
 			if (cur_ns == ns)
-				return TRUE;
+				return true;
 			cur_ns = cur_ns->next;
 		}
 		elem = elem->parent;
 	} while (elem != top->parent);
-	return FALSE;
+	return false;
 }
 
 static xmlNsPtr getIndepNs(NsReplacementContextPtr ctxt, xmlNodePtr top, xmlNodePtr elem, xmlNsPtr ns)
@@ -1105,7 +1105,7 @@ void xplRegisterXPathExtensions(xmlXPathContextPtr ctxt)
 
 static xmlChar hex_digits[] = "0123456789ABCDEF";
 
-xmlChar* bufferToHex(void* buf, size_t len, BOOL prefix)
+xmlChar* bufferToHex(void* buf, size_t len, bool prefix)
 {
 	xmlChar *ret, *ret_start;
 	size_t i;
@@ -1215,7 +1215,7 @@ static utf8CheckState U8TransitionList[] =
 	{ 0xC0, 0x80, U8CS_DECISION }	/* U8CS_4_3 */
 };
 
-BOOL isValidUtf8Sample(xmlChar *s, size_t len, BOOL isCompleteString)
+bool isValidUtf8Sample(xmlChar *s, size_t len, bool isCompleteString)
 {
 	xmlChar *end = s + len, *p = s;
 	utf8CheckStep step = U8CS_DECISION;
@@ -1232,22 +1232,22 @@ BOOL isValidUtf8Sample(xmlChar *s, size_t len, BOOL isCompleteString)
 					break;
 				}
 			if (i == U8_DECISION_LIST_SIZE) /* "��������, ������ �� ������� ��������� ��� ���" */
-				return FALSE;
+				return false;
 		} else { /* ������� */
 			if ((*p & U8TransitionList[step].mask) == U8TransitionList[step].result)
 				step = U8TransitionList[step].next;
 			else
-				return FALSE;
+				return false;
 		}
 		p++;
 	}
 	if (isCompleteString)
 		return (step == U8CS_DECISION);
-	return TRUE;
+	return true;
 }
 
 #if 0
-BOOL isValidUtf8Sample(xmlChar *s, size_t len)
+bool isValidUtf8Sample(xmlChar *s, size_t len)
 {
 	size_t i = 0;
 	while (i < (len-4)) /* ����� ������ �� ������ ����� ������, � ��� ������� �� ����� ���� �������� �� ������� ������� */
@@ -1272,9 +1272,9 @@ BOOL isValidUtf8Sample(xmlChar *s, size_t len)
 			i += 4;
 			continue; /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */
 		}
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 #endif 
 
@@ -1299,7 +1299,7 @@ int detectEncoding(char* str, size_t sampleLen)
 		}
 	}
 	/* �������� �� utf-8 */
-	if (isValidUtf8Sample(BAD_CAST str, sampleLen, FALSE))
+	if (isValidUtf8Sample(BAD_CAST str, sampleLen, false))
 		return DETECTED_ENC_UTF8;
 	/* ������ ������. ���� �� ������� �������� ���� ������, ��� �� ������, ��������� ���-8 */
 	small_count = caps_count = 0;
@@ -1893,22 +1893,22 @@ static int xml_save_close_cb(void *context)
 	return 0;
 }
 
-BOOL saveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int options)
+bool saveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int options)
 {
 	int fh, ret;
 	xmlSaveCtxtPtr save_ctxt;
 
 	fh = xprSOpen(filename, O_CREAT | O_TRUNC | O_RDWR | O_BINARY, 0, S_IREAD | S_IWRITE);
 	if (fh == -1)
-		return FALSE;
+		return false;
 	save_ctxt = xmlSaveToIO(xml_save_write_cb, xml_save_close_cb, (void*) (size_t) fh, encoding, options);
 	if (!save_ctxt)
-		return FALSE;
+		return false;
 	xmlSaveSetEscape(save_ctxt, NULL);
 	xmlSaveSetAttrEscape(save_ctxt, NULL);
 	xmlSaveDoc(save_ctxt, doc);
 	xmlSaveClose(save_ctxt);
-	return TRUE;
+	return true;
 }
 
 
@@ -2061,7 +2061,7 @@ xmlNsPtr getResultingNs(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
 	return NULL;
 }
 
-void assignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *value, BOOL allowReplace)
+void assignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *value, bool allowReplace)
 {
 	xmlNsPtr ns = NULL;
 	xmlChar *colon_pos, *tagname;
@@ -2116,31 +2116,31 @@ xmlNodePtr createElement(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
 }
 
 
-BOOL checkNodeEquality(xmlNodePtr a, xmlNodePtr b)
+bool checkNodeEquality(xmlNodePtr a, xmlNodePtr b)
 {
 	if (!a && !b)
-		return TRUE;
+		return true;
 	if (!a || !b)
-		return FALSE;
+		return false;
 	if (a == b)
-		return TRUE;
+		return true;
 	if (a->type != b->type)
-		return FALSE;
+		return false;
 	switch (a->type)
 	{
 	case XML_ELEMENT_NODE:
 	case XML_ATTRIBUTE_NODE:
 		if (!a->ns ^ !b->ns)
-			return FALSE;
+			return false;
 		/* The following line is safe */
 		if ((a->ns != b->ns) && xmlStrcmp(a->ns->href, b->ns->href))
-			return FALSE;
+			return false;
 		if (xmlStrcmp(a->name, b->name))
-			return FALSE;
+			return false;
 		if (a->type == XML_ELEMENT_NODE)
 		{
 			if (!checkNodeListEquality(a->children, b->children))
-				return FALSE;
+				return false;
 			return checkPropListEquality(a->properties, b->properties);
 		} else
 			return checkNodeListEquality(a->children, b->children);
@@ -2150,47 +2150,47 @@ BOOL checkNodeEquality(xmlNodePtr a, xmlNodePtr b)
 		return !xmlStrcmp(a->content, b->content);
 	case XML_ENTITY_REF_NODE:
 		if ((a->doc == b->doc) && !xmlStrcmp(a->name, b->name))
-			return TRUE;
+			return true;
 		a = (xmlNodePtr) xmlGetDocEntity(a->doc, a->name);
 		b = (xmlNodePtr) xmlGetDocEntity(b->doc, b->name);
 		/* ���� a == b == null, ���� �� �����: ������ �� �������������� �������� ����� ����� ���� ������ */
 		if (!a || !b)
-			return FALSE;
+			return false;
 		return checkNodeListEquality(a->children, b->children);
 	case XML_PI_NODE:
 		return !xmlStrcmp(a->name, b->name) && !xmlStrcmp(a->content, b->content);
 	case XML_NAMESPACE_DECL:
 		return !xmlStrcmp(((xmlNsPtr) a)->href, ((xmlNsPtr) b)->href);
 	default: /* what else?.. */
-		return FALSE;
+		return false;
 	}
 }
 
-BOOL checkNodeListEquality(xmlNodePtr a, xmlNodePtr b)
+bool checkNodeListEquality(xmlNodePtr a, xmlNodePtr b)
 {
 	if (!a && !b)
-		return TRUE;
+		return true;
 	if (!a || !b)
-		return FALSE;
+		return false;
 	if ((a->type == b->type) && (b->type == XML_ATTRIBUTE_NODE))
 		return checkPropListEquality((xmlAttrPtr) a, (xmlAttrPtr) b);
 	while (a && b)
 	{
 		if (!checkNodeEquality(a, b))
-			return FALSE;
+			return false;
 		a = a->next;
 		b = b->next;
 	}
 	if (a || b)
-		return FALSE;
-	return TRUE;
+		return false;
+	return true;
 }
 
-BOOL checkPropListEquality(xmlAttrPtr a, xmlAttrPtr b)
+bool checkPropListEquality(xmlAttrPtr a, xmlAttrPtr b)
 {
 	/* ��������� ����������� � ��������� �� ������� ����������, �������� �������� "��������������, �� �� ��������� ����������" */
 	xmlAttrPtr prop_a, prop_b, cur_b;
-	BOOL match;
+	bool match;
 	/* ������� ��-���, ��� ����������� ��� �������, ��� ��������� ������ ��������� */
 	prop_a = a, prop_b = b;
 	while (prop_a && prop_b)
@@ -2199,7 +2199,7 @@ BOOL checkPropListEquality(xmlAttrPtr a, xmlAttrPtr b)
 		prop_b = prop_b->next;
 	}
 	if (prop_a || prop_b)
-		return FALSE;
+		return false;
 	/* ���������� �����, �������� ������ */
 	prop_a = a, prop_b = b;
 	while (prop_a)
@@ -2217,80 +2217,80 @@ BOOL checkPropListEquality(xmlAttrPtr a, xmlAttrPtr b)
 				cur_b = b;
 		} while (cur_b != prop_b);
 		if (!match)
-			return FALSE;
+			return false;
 		prop_a = prop_a->next;
 		prop_b = prop_b->next;
 	}
-	return TRUE;
+	return true;
 }
 
-BOOL checkNodeSetIdentity(xmlNodeSetPtr a, xmlNodeSetPtr b)
+bool checkNodeSetIdentity(xmlNodeSetPtr a, xmlNodeSetPtr b)
 {
 	size_t i, j, max;
-	BOOL match;
+	bool match;
 	/* �������, ��������, �� �����: ��������� ����� ������� ������ ������, ������� �� ��� ���-������. */
 	if (!a || !b)
-		return FALSE;
+		return false;
 	if (a->nodeNr != b->nodeNr)
-		return FALSE;
+		return false;
 	max = (size_t) a->nodeNr;
 	for (i = 0; i < max; i++)
 	{
-		match = FALSE, j = i;
+		match = false, j = i;
 		do {
 			if (a->nodeTab[i] == b->nodeTab[j])
 			{
-				match = TRUE;
+				match = true;
 				break;
 			}
 			if (++j >= max)
 				j = 0;
 		} while (j != i);
 		if (!match)
-			return FALSE;
+			return false;
 	}
-	return TRUE;
+	return true;
 }
 
-BOOL checkNodeSetEquality(xmlNodeSetPtr a, xmlNodeSetPtr b)
+bool checkNodeSetEquality(xmlNodeSetPtr a, xmlNodeSetPtr b)
 {
 	size_t i, j, max;
-	BOOL match;
+	bool match;
 	/* ������� ����� */
 	if (!a && !b)
-		return TRUE;
+		return true;
 	if (!a || !b)
-		return FALSE;
+		return false;
 	if (a->nodeNr != b->nodeNr)
-		return FALSE;
+		return false;
 	max = (size_t) a->nodeNr;
 	for (i = 0; i < max; i++)
 	{
-		match = FALSE, j = i;
+		match = false, j = i;
 		do {
 			if (checkNodeEquality(a->nodeTab[i], b->nodeTab[j]))
 			{
-				match = TRUE;
+				match = true;
 				break;
 			}
 			if (++j >= max)
 				j = 0;
 		} while (j != i);
 		if (!match)
-			return FALSE;
+			return false;
 	}
-	return TRUE;
+	return true;
 }
 
 
-BOOL compareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, BOOL checkEquality)
+bool compareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool checkEquality)
 {
 	if (!a && !b)
 		return checkEquality;
 	if (!a || !b)
-		return FALSE;
+		return false;
 	if (a->type != b->type)
-		return FALSE;
+		return false;
 	switch (a->type)
 	{
 	case XPATH_BOOLEAN:
@@ -2305,7 +2305,7 @@ BOOL compareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, BOOL check
 		else
 			return checkNodeSetIdentity(a->nodesetval, b->nodesetval);
 	default:
-		return FALSE;
+		return false;
 	}
 }
 

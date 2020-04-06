@@ -15,7 +15,7 @@ void xplCmdGetThreadIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resul
 	id = xprGetCurrentThreadId();
 	snprintf(buf, 9, XPR_THREAD_ID_FORMAT, id);
 	ret = xmlNewDocText(commandInfo->element->doc, BAD_CAST buf);
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 }
 
 xplCommand xplGetThreadIdCommand = { xplCmdGetThreadIdPrologue, xplCmdGetThreadIdEpilogue };

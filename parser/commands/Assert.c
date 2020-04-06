@@ -18,18 +18,18 @@ void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (!cfgEnableAssertions)
 	{
-		ASSIGN_RESULT(NULL, FALSE, TRUE);
+		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
 	if (!checkNodeListForText(commandInfo->element->children))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is non-text"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is non-text"), true, true);
 		return;
 	}
-	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, TRUE);
+	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, true);
 	if (!txt)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is empty"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is empty"), true, true);
 		return;
 	}
 	message_attr = xmlGetNoNsProp(commandInfo->element, MESSAGE_ATTR);
@@ -51,7 +51,7 @@ void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			smth = (ct->stringval && *ct->stringval);
 			break;
 		default:
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unsupported XPath result type (expression is %s)", txt), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unsupported XPath result type (expression is %s)", txt), true, true);
 			goto done;
 		}
 		xmlXPathFreeObject(ct);
@@ -59,15 +59,15 @@ void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			if (message_attr)
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, message_attr), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, message_attr), true, true);
 			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "assertion \"%s\" failed", txt), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "assertion \"%s\" failed", txt), true, true);
 			}
 		} else {
-			ASSIGN_RESULT(NULL, FALSE, TRUE);
+			ASSIGN_RESULT(NULL, false, true);
 		}
 	} else {
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath expression (%s)", txt), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath expression (%s)", txt), true, true);
 	}
 done:
 	if (txt) xmlFree(txt);

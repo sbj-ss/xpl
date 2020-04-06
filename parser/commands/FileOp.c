@@ -44,8 +44,8 @@ typedef struct _FileScanContext
 	xmlChar *tag_name;
 	xmlNsPtr ns;
 	xmlDocPtr doc;
-	BOOL fail_if_exists;
-	BOOL create_destination;
+	bool fail_if_exists;
+	bool create_destination;
 	/* scanner must not change fields above this comment! */
 	xmlNodePtr head;
 	xmlNodePtr tail;
@@ -53,7 +53,7 @@ typedef struct _FileScanContext
 
 typedef void (*fileScanner)(FileScanContextPtr ctxt);
 
-static XPR_FS_CHAR* makeFSPath(const xmlChar *source, const xmlChar *appPath, BOOL absPath)
+static XPR_FS_CHAR* makeFSPath(const xmlChar *source, const xmlChar *appPath, bool absPath)
 {
 	xmlChar *full_path;
 	XPR_FS_CHAR *fs_path = NULL;
@@ -88,29 +88,29 @@ static void scanSublevels(
 	XPR_FS_CHAR *source, 
 	XPR_FS_CHAR *filemask,
 	XPR_FS_CHAR *destination, 
-	BOOL recursive, 
+	bool recursive, 
 	fileScanner scanner, 
 	FileScanContextPtr ctxt, 
-	BOOL subfoldersFirst
+	bool subfoldersFirst
 );
 
 static void scanFolder(
 	 XPR_FS_CHAR *source,
 	 XPR_FS_CHAR *filemask,
 	 XPR_FS_CHAR *destination,
-	 BOOL recursive,
+	 bool recursive,
 	 fileScanner scanner, 
 	 FileScanContextPtr ctxt, /* only for scanner */
-	 BOOL subfoldersFirst
+	 bool subfoldersFirst
 )
 {
 	if (subfoldersFirst)
 	{
-		scanSublevels(source, filemask, destination, recursive, scanner, ctxt, TRUE);
+		scanSublevels(source, filemask, destination, recursive, scanner, ctxt, true);
 		scanThisLevel(source, filemask, destination, scanner, ctxt);
 	} else {
 		scanThisLevel(source, filemask, destination, scanner, ctxt);
-		scanSublevels(source, filemask, destination, recursive, scanner, ctxt, FALSE);
+		scanSublevels(source, filemask, destination, recursive, scanner, ctxt, false);
 	}
 }
 
@@ -176,10 +176,10 @@ static void scanSublevels(
 	XPR_FS_CHAR *source,
 	XPR_FS_CHAR *filemask,
 	XPR_FS_CHAR *destination,
-	BOOL recursive,
+	bool recursive,
 	fileScanner scanner, 
 	FileScanContextPtr ctxt, /* only for scanner */
-	BOOL subfoldersFirst
+	bool subfoldersFirst
 )
 {
 	XPR_FS_CHAR *fs_subdir;
@@ -242,7 +242,7 @@ static void scanSublevels(
 				XPR_FS_STRCAT(rec_destination, XPR_FILE_NAME_FROM_FDP(&ctxt->data));
 			} else
 				rec_destination = NULL;
-			scanFolder(rec_source, filemask, rec_destination, TRUE, scanner, ctxt, subfoldersFirst);
+			scanFolder(rec_source, filemask, rec_destination, true, scanner, ctxt, subfoldersFirst);
 			xmlFree(rec_source);
 			if (rec_destination)
 				xmlFree(rec_destination);
@@ -275,15 +275,15 @@ static void deleteFilesScanner(FileScanContextPtr ctxt)
 static void deleteFiles(
 	XPR_FS_CHAR* source,
 	XPR_FS_CHAR *filemask,
-	BOOL recursive, 
+	bool recursive, 
 	FileScanContextPtr ctxt
 )
 {
 	/* subfolders first */
-	scanFolder(source, filemask, NULL, recursive, deleteFilesScanner, ctxt, TRUE);
+	scanFolder(source, filemask, NULL, recursive, deleteFilesScanner, ctxt, true);
 }
 
-__inline void markAttribute(xmlNodePtr cur, xmlChar *attrName, BOOL value)
+__inline void markAttribute(xmlNodePtr cur, xmlChar *attrName, bool value)
 {
 	if (value)
 		xmlNewProp(cur, attrName, BAD_CAST "true");
@@ -335,12 +335,12 @@ static void listFilesScanner(FileScanContextPtr ctxt)
 static void listFiles(
 	XPR_FS_CHAR* source, 
 	XPR_FS_CHAR *filemask,
-	BOOL recursive, 
+	bool recursive, 
 	FileScanContextPtr ctxt
 )
 {
 	/* higher levels first */
-	scanFolder(source, filemask, NULL, recursive, listFilesScanner, ctxt, FALSE);
+	scanFolder(source, filemask, NULL, recursive, listFilesScanner, ctxt, false);
 }
 
 static void copyFilesScanner(FileScanContextPtr ctxt)
@@ -382,12 +382,12 @@ static void copyFiles(
 	XPR_FS_CHAR *source, 
 	XPR_FS_CHAR *filemask,	
 	XPR_FS_CHAR *destination, 
-	BOOL recursive, 
+	bool recursive, 
 	FileScanContextPtr ctxt
 )
 {
 	/* higher levels first */
-	scanFolder(source, filemask, destination, recursive, copyFilesScanner, ctxt, FALSE);
+	scanFolder(source, filemask, destination, recursive, copyFilesScanner, ctxt, false);
 }
 
 static void moveFilesScanner(FileScanContextPtr ctxt)
@@ -424,12 +424,12 @@ static void moveFiles(
 	XPR_FS_CHAR *source, 
 	XPR_FS_CHAR *filemask,	
 	XPR_FS_CHAR *destination, 
-	BOOL recursive, 
+	bool recursive, 
 	FileScanContextPtr ctxt
 )
 {
 	/* higher levels first (balance folder creation) */
-	scanFolder(source, filemask, destination, recursive, moveFilesScanner, ctxt, FALSE);
+	scanFolder(source, filemask, destination, recursive, moveFilesScanner, ctxt, false);
 }
 
 
@@ -454,9 +454,9 @@ void xplCmdFileOpEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlChar *destination_attr = NULL;
 	xmlChar *operation_attr = NULL;
 	xmlChar *tagname_attr = NULL;
-	BOOL recursive;
-	BOOL srcabspath = FALSE, dstabspath = FALSE;
-	BOOL repeat;
+	bool recursive;
+	bool srcabspath = false, dstabspath = false;
+	bool repeat;
 	FileOpType op_type;
 	xmlNodePtr error;
 	XPR_FS_CHAR *fs_source = NULL, *fs_destination = NULL, *fs_filemask = NULL;
@@ -466,13 +466,13 @@ void xplCmdFileOpEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	operation_attr = xmlGetNoNsProp(commandInfo->element, OPERATION_ATTR);
 	if (!operation_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "operation not specified"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "operation not specified"), true, true);
 		return;
 	}
 	op_type = fileOpTypeFromString(operation_attr);
 	if (op_type == FILE_OP_UNKNOWN)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown operation: %s", operation_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown operation: %s", operation_attr), true, true);
 		goto done;
 	}
 	source_attr = xmlGetNoNsProp(commandInfo->element, SOURCE_ATTR);
@@ -481,50 +481,50 @@ void xplCmdFileOpEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	filemask_attr = xmlGetNoNsProp(commandInfo->element, FILEMASK_ATTR);
 	if (!source_attr && !filemask_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "neither source nor filemask attribute specified"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "neither source nor filemask attribute specified"), true, true);
 		goto done;
 	}
 	destination_attr = xmlGetNoNsProp(commandInfo->element, DESTINATION_ATTR);
 	if (!destination_attr && ((op_type == FILE_OP_COPY) || (op_type == FILE_OP_MOVE)))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no destination attribute specified"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no destination attribute specified"), true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, RECURSIVE_ATTR, &recursive, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, RECURSIVE_ATTR, &recursive, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, ABSPATH_ATTR, &srcabspath, FALSE))) /* not a typo */
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, ABSPATH_ATTR, &srcabspath, false))) /* not a typo */
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (srcabspath)
-		dstabspath = TRUE;
+		dstabspath = true;
 	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SRCABSPATH_ATTR, &srcabspath, srcabspath)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if ((error = xplDecodeCmdBoolParam(commandInfo->element, DSTABSPATH_ATTR, &dstabspath, dstabspath)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, FAILIFEXISTS_ATTR, &ctxt.fail_if_exists, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, FAILIFEXISTS_ATTR, &ctxt.fail_if_exists, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, CREATE_DESTINATION_ATTR, &ctxt.create_destination, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, CREATE_DESTINATION_ATTR, &ctxt.create_destination, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	tagname_attr = xmlGetNoNsProp(commandInfo->element, TAGNAME_ATTR);
@@ -579,7 +579,7 @@ void xplCmdFileOpEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	default:
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	}
-	ASSIGN_RESULT(ctxt.head, repeat, TRUE);
+	ASSIGN_RESULT(ctxt.head, repeat, true);
 done:
 	if (source_attr) xmlFree(source_attr);
 	if (filemask_attr) xmlFree(filemask_attr);

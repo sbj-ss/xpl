@@ -10,7 +10,7 @@ void xplCmdCommentPrologue(xplCommandInfoPtr commandInfo)
 
 void xplCmdCommentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 }
 
 xplCommand xplCommentCommand = { xplCmdCommentPrologue, xplCmdCommentEpilogue };

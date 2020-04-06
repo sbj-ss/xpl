@@ -41,7 +41,7 @@ void xplCmdFatalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		root_element = root_element->next;
 	}
 	markAncestorAxisForDeletion(commandInfo->element->parent, root_element);
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 }
 
 xplCommand xplFatalCommand = { xplCmdFatalPrologue, xplCmdFatalEpilogue };

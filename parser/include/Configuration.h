@@ -44,19 +44,6 @@
 	#define SFINIT(f, ...) __VA_ARGS__
 #endif
 
-/* Bool basics */
-#ifndef TRUE
-	#define TRUE 1
-#endif
-
-#ifndef FALSE
-	#define FALSE 0
-#endif
-
-#ifndef BOOL
-	#define BOOL int
-#endif
-
 /* Hard-coded params */
 /* Should be changed only together with all existing XPL code. */
 #define ERROR_NODE_NAME (BAD_CAST "error")

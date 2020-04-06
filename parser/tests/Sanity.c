@@ -1,14 +1,14 @@
 #include "Tests.h"
 #include "assert.h"
 
-static BOOL passing_function(xtsContextPtr ctxt)
+static bool passing_function(xtsContextPtr ctxt)
 {
-	return TRUE;
+	return true;
 }
 //------------------------
 static xtsContext test_context;
 
-static BOOL xtsTestSanity_InitContext(xtsContextPtr ctxt)
+static bool xtsTestSanity_InitContext(xtsContextPtr ctxt)
 {
 	test_context.total = test_context.skipped = test_context.passed = 883;
 	test_context.error = (xmlChar*) 0x883;
@@ -19,39 +19,39 @@ static BOOL xtsTestSanity_InitContext(xtsContextPtr ctxt)
 	if (test_context.total != 0)
 	{
 		ctxt->error = BAD_CAST "total != 0";
-		return FALSE;
+		return false;
 	}
 	if (test_context.skipped != 0)
 	{
 		ctxt->error = BAD_CAST "skipped != 0";
-		return FALSE;
+		return false;
 	}
 	if (test_context.passed != 0)
 	{
 		ctxt->error = BAD_CAST "passed != 0";
-		return FALSE;
+		return false;
 	}
 	if (test_context.error != NULL)
 	{
 		ctxt->error = BAD_CAST "error != NULL";
-		return FALSE;
+		return false;
 	}
 	if (test_context.env != NULL)
 	{
 		ctxt->error = BAD_CAST "env != NULL";
-		return FALSE;
+		return false;
 	}
 	if (test_context.verbosity != XTS_VERBOSITY_QUIET)
 	{
 		ctxt->error = BAD_CAST "context.verbosity != XTS_VERBOSITY_QUIET";
-		return FALSE;
+		return false;
 	}
 	if (test_context.fail_mode != XTS_FAIL_FIRST)
 	{
 		ctxt->error = BAD_CAST "context.fail_mode != XTS_FAIL_FIRST";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //---------------------------
 static xtsTest passing_test =
@@ -61,15 +61,15 @@ static xtsTest passing_test =
 	SFINIT(.testFunction, passing_function)
 };
 
-static BOOL xtsTestSanity_TestPass(xtsContextPtr ctxt)
+static bool xtsTestSanity_TestPass(xtsContextPtr ctxt)
 {
 	xtsInitContext(&test_context, XTS_FAIL_FIRST, XTS_VERBOSITY_QUIET);
 	return xtsRunTest(&passing_test, &test_context);
 }
 //----------------------------------------------
-static BOOL failing_function(xtsContextPtr ctxt)
+static bool failing_function(xtsContextPtr ctxt)
 {
-	return FALSE;
+	return false;
 }
 
 static xtsTest failing_test =
@@ -79,7 +79,7 @@ static xtsTest failing_test =
 	SFINIT(.testFunction, failing_function)
 };
 
-static BOOL xtsTestSanity_TestFail(xtsContextPtr ctxt)
+static bool xtsTestSanity_TestFail(xtsContextPtr ctxt)
 {
 	xtsInitContext(&test_context, XTS_FAIL_FIRST, XTS_VERBOSITY_QUIET);
 	return !xtsRunTest(&failing_test, &test_context);
@@ -93,9 +93,9 @@ static xtsTest skipped_test =
 	SFINIT(.flags, XTS_FLAG_SKIP)
 };
 
-static BOOL xtsTestSanity_TestSkip(xtsContextPtr ctxt)
+static bool xtsTestSanity_TestSkip(xtsContextPtr ctxt)
 {
-	BOOL ok;
+	bool ok;
 	xtsInitContext(&test_context, XTS_FAIL_FIRST, XTS_VERBOSITY_QUIET);
 	ok = xtsRunTest(&skipped_test, &test_context);
 	if (!ok)
@@ -112,33 +112,33 @@ static xtsFixture passing_fixture = {
 	SFINIT(.tests, &passing_test)
 };
 
-static BOOL xtsTestSanity_FixtureSinglePass(xtsContextPtr ctxt)
+static bool xtsTestSanity_FixtureSinglePass(xtsContextPtr ctxt)
 {
-	BOOL ok;
+	bool ok;
 
 	xtsInitContext(&test_context, XTS_FAIL_FIRST, XTS_VERBOSITY_QUIET);
 	ok = xtsRunFixture(&passing_fixture, &test_context);
 	if (!ok)
 	{
 		ctxt->error = BAD_CAST "this fixture should pass";
-		return FALSE;
+		return false;
 	}
 	if (test_context.total != 1)
 	{
 		ctxt->error = BAD_CAST "total != 1";
-		return FALSE;
+		return false;
 	}
 	if (test_context.skipped != 0)
 	{
 		ctxt->error = BAD_CAST "skipped != 0";
-		return FALSE;
+		return false;
 	}
 	if (test_context.passed != 1)
 	{
 		ctxt->error = BAD_CAST "passed != 1";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //----------------------------
 static xtsTest mixed_tests[] =
@@ -169,67 +169,67 @@ static xtsFixture mixed_fixture =
 	SFINIT(.tests, &mixed_tests[0])
 };
 
-static BOOL xtsTestSanity_FixtureFailImmediately(xtsContextPtr ctxt)
+static bool xtsTestSanity_FixtureFailImmediately(xtsContextPtr ctxt)
 {
-	BOOL ok;
+	bool ok;
 
 	xtsInitContext(&test_context, XTS_FAIL_FIRST, XTS_VERBOSITY_QUIET);
 	ok = xtsRunFixture(&mixed_fixture, &test_context);
 	if (ok)
 	{
 		ctxt->error = BAD_CAST "this fixture should fail";
-		return FALSE;
+		return false;
 	}
 	if (test_context.total != 1)
 	{
 		ctxt->error = BAD_CAST "total != 1";
-		return FALSE;
+		return false;
 	}
 	if (test_context.skipped != 0)
 	{
 		ctxt->error = BAD_CAST "skipped != 0";
-		return FALSE;
+		return false;
 	}
 	if (test_context.passed != 0)
 	{
 		ctxt->error = BAD_CAST "passed != 0";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //------------------------------------------------------------
-static BOOL xtsTestSanity_FixtureFailAfter(xtsContextPtr ctxt)
+static bool xtsTestSanity_FixtureFailAfter(xtsContextPtr ctxt)
 {
-	BOOL ok;
+	bool ok;
 
 	xtsInitContext(&test_context, XTS_FAIL_ALL, XTS_VERBOSITY_QUIET);
 	ok = xtsRunFixture(&mixed_fixture, &test_context);
 	if (ok)
 	{
 		ctxt->error = BAD_CAST "this fixture should fail";
-		return FALSE;
+		return false;
 	}
 	if (test_context.total != 3)
 	{
 		ctxt->error = BAD_CAST "total != 3";
-		return FALSE;
+		return false;
 	}
 	if (test_context.skipped != 1)
 	{
 		ctxt->error = BAD_CAST "skipped != 1";
-		return FALSE;
+		return false;
 	}
 	if (test_context.passed != 1)
 	{
 		ctxt->error = BAD_CAST "passed != 1";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //------------------------------------------------
-static BOOL setup_fixture_fail(xtsContextPtr ctxt)
+static bool setup_fixture_fail(xtsContextPtr ctxt)
 {
-	return FALSE;
+	return false;
 }
 
 static xtsFixture setup_fail_fixture = {
@@ -241,39 +241,39 @@ static xtsFixture setup_fail_fixture = {
 	SFINIT(.tests, &passing_test)
 };
 
-static BOOL xtsTestSanity_FixtureSetupFail(xtsContextPtr ctxt)
+static bool xtsTestSanity_FixtureSetupFail(xtsContextPtr ctxt)
 {
 	xtsInitContext(&test_context, XTS_FAIL_FIRST, XTS_VERBOSITY_QUIET);
 	if (xtsRunFixture(&setup_fail_fixture, &test_context))
 	{
 		ctxt->error = BAD_CAST "this fixture should fail";
-		return FALSE;
+		return false;
 	}
 	if (test_context.total > 0)
 	{
 		ctxt->error = BAD_CAST "no tests should be invoked";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //--------------------------------------------------------
-static BOOL setup_fixture_called, teardown_fixture_called;
-static BOOL fixture_env_present, fixture_env_param_passed;
+static bool setup_fixture_called, teardown_fixture_called;
+static bool fixture_env_present, fixture_env_param_passed;
 
-static BOOL setup_fixture_mock(xtsContextPtr ctxt)
+static bool setup_fixture_mock(xtsContextPtr ctxt)
 {
-	setup_fixture_called = TRUE;
+	setup_fixture_called = true;
 	if (ctxt->env)
 	{
-		fixture_env_present = TRUE;
+		fixture_env_present = true;
 		xmlHashAddEntry(ctxt->env, "test", (void*) 5);
 	}
-	return TRUE;
+	return true;
 }
 
 static void teardown_fixture_mock(xtsContextPtr ctxt)
 {
-	teardown_fixture_called = TRUE;
+	teardown_fixture_called = true;
 	if (ctxt->env)
 		fixture_env_param_passed = (xmlHashLookup(ctxt->env, "test") == (void*) 5);
 }
@@ -287,39 +287,39 @@ static xtsFixture setup_teardown_fixture = {
 	SFINIT(.tests, &passing_test)
 };
 
-static BOOL xtsTestSanity_FixtureSetupTeardown(xtsContextPtr ctxt)
+static bool xtsTestSanity_FixtureSetupTeardown(xtsContextPtr ctxt)
 {
-	setup_fixture_called = teardown_fixture_called = FALSE;
-	fixture_env_present = fixture_env_param_passed = FALSE;
+	setup_fixture_called = teardown_fixture_called = false;
+	fixture_env_present = fixture_env_param_passed = false;
 	xtsInitContext(&test_context, XTS_FAIL_FIRST, XTS_VERBOSITY_QUIET);
 	xtsRunFixture(&setup_teardown_fixture, &test_context);
 	if (!setup_fixture_called)
 	{
 		ctxt->error = "fixture.setup() not called";
-		return FALSE;
+		return false;
 	}
 	if (!teardown_fixture_called)
 	{
 		ctxt->error = "fixture.teardown() not called";
-		return FALSE;
+		return false;
 	}
 	if (!fixture_env_present)
 	{
 		ctxt->error = "fixture.env = NULL";
-		return FALSE;
+		return false;
 	}
 	if (!fixture_env_param_passed)
 	{
 		ctxt->error = "fixture env param lost";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //----------------------------------------
-static BOOL leaky_test(xtsContextPtr ctxt)
+static bool leaky_test(xtsContextPtr ctxt)
 {
 	xmlHashAddEntry(ctxt->env, BAD_CAST "leak", xmlMalloc(sizeof(int)));
-	return TRUE;
+	return true;
 }
 
 static xtsTest unexpected_leak_test =
@@ -351,7 +351,7 @@ static xtsFixture unexpected_leak_fixture =
 	SFINIT(.tests, &unexpected_leak_test)
 };
 
-static BOOL xtsTestSanity_UnexpectedLeakFixture(xtsContextPtr ctxt)
+static bool xtsTestSanity_UnexpectedLeakFixture(xtsContextPtr ctxt)
 {
 	xtsInitContext(&test_context, XTS_FAIL_FIRST, XTS_VERBOSITY_QUIET);
 	return !xtsRunFixture(&unexpected_leak_fixture, &test_context);
@@ -376,7 +376,7 @@ static xtsFixture expected_leak_fixture =
 	SFINIT(.tests, &expected_leak_test)
 };
 
-static BOOL xtsTestSanity_ExpectedLeakFixture(xtsContextPtr ctxt)
+static bool xtsTestSanity_ExpectedLeakFixture(xtsContextPtr ctxt)
 {
 	xtsInitContext(&test_context, XTS_FAIL_FIRST, XTS_VERBOSITY_QUIET);
 	return xtsRunFixture(&expected_leak_fixture, &test_context);
@@ -388,33 +388,33 @@ static xtsFixturePtr passing_suite[] =
 	NULL
 };
 
-static BOOL xplTestSanity_PassingSuite(xtsContextPtr ctxt)
+static bool xplTestSanity_PassingSuite(xtsContextPtr ctxt)
 {
-	BOOL ok;
+	bool ok;
 
 	xtsInitContext(&test_context, XTS_FAIL_FIRST, XTS_VERBOSITY_QUIET);
 	ok = xtsRunSuite(passing_suite, &test_context);
 	if (!ok)
 	{
 		ctxt->error = BAD_CAST "this suite should pass";
-		return FALSE;
+		return false;
 	}
 	if (test_context.total != 1)
 	{
 		ctxt->error = BAD_CAST "total != 1";
-		return FALSE;
+		return false;
 	}
 	if (test_context.skipped != 0)
 	{
 		ctxt->error = BAD_CAST "skipped != 0";
-		return FALSE;
+		return false;
 	}
 	if (test_context.passed != 1)
 	{
 		ctxt->error = BAD_CAST "passed != 1";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //----------------------------------
 static xtsFixturePtr mixed_suite[] =
@@ -424,62 +424,62 @@ static xtsFixturePtr mixed_suite[] =
 	NULL
 };
 
-static BOOL xplTestSanity_SuiteFailingEarly(xtsContextPtr ctxt)
+static bool xplTestSanity_SuiteFailingEarly(xtsContextPtr ctxt)
 {
-	BOOL ok;
+	bool ok;
 
 	xtsInitContext(&test_context, XTS_FAIL_FIRST, XTS_VERBOSITY_QUIET);
 	ok = xtsRunSuite(mixed_suite, &test_context);
 	if (ok)
 	{
 		ctxt->error = BAD_CAST "this suite should fail";
-		return FALSE;
+		return false;
 	}
 	if (test_context.total != 2)
 	{
 		ctxt->error = BAD_CAST "total != 2";
-		return FALSE;
+		return false;
 	}
 	if (test_context.skipped != 0)
 	{
 		ctxt->error = BAD_CAST "skipped != 0";
-		return FALSE;
+		return false;
 	}
 	if (test_context.passed != 1)
 	{
 		ctxt->error = BAD_CAST "passed != 1";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //------------------------------------------------------------
-static BOOL xplTestSanity_SuiteFailingLate(xtsContextPtr ctxt)
+static bool xplTestSanity_SuiteFailingLate(xtsContextPtr ctxt)
 {
-	BOOL ok;
+	bool ok;
 
 	xtsInitContext(&test_context, XTS_FAIL_ALL, XTS_VERBOSITY_QUIET);
 	ok = xtsRunSuite(mixed_suite, &test_context);
 	if (ok)
 	{
 		ctxt->error = BAD_CAST "this suite should fail";
-		return FALSE;
+		return false;
 	}
 	if (test_context.total != 4)
 	{
 		ctxt->error = BAD_CAST "total != 4";
-		return FALSE;
+		return false;
 	}
 	if (test_context.skipped != 1)
 	{
 		ctxt->error = BAD_CAST "skipped != 1";
-		return FALSE;
+		return false;
 	}
 	if (test_context.passed != 2)
 	{
 		ctxt->error = BAD_CAST "passed != 2";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //----------------------------------------
 static xtsTest fixture_to_skip_a_tests[] =
@@ -535,7 +535,7 @@ static xtsFixturePtr suite_to_skip[] =
 	NULL
 };
 
-static BOOL xplTestSanity_LocateFixture(xtsContextPtr ctxt)
+static bool xplTestSanity_LocateFixture(xtsContextPtr ctxt)
 {
 	xtsFixturePtr fixture_b, unknown_fixture;
 
@@ -543,23 +543,23 @@ static BOOL xplTestSanity_LocateFixture(xtsContextPtr ctxt)
 	if (!fixture_b)
 	{
 		ctxt->error = BAD_CAST "fixture_b not found";
-		return FALSE;
+		return false;
 	}
 	if (xmlStrcasecmp(fixture_b->id, "fixture_b"))
 	{
 		ctxt->error = BAD_CAST "wrong fixture found instead of fixture_b";
-		return FALSE;
+		return false;
 	}
 	unknown_fixture = xtsLocateFixture(suite_to_skip, BAD_CAST "unknown_fixture");
 	if (unknown_fixture)
 	{
 		ctxt->error = BAD_CAST "unknown_fixture must not be found";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //------------------------------------------------------
-static BOOL xplTestSanity_LocateTest(xtsContextPtr ctxt)
+static bool xplTestSanity_LocateTest(xtsContextPtr ctxt)
 {
 	xtsFixturePtr fixture_a;
 	xtsTestPtr test_b, unknown_test;
@@ -569,23 +569,23 @@ static BOOL xplTestSanity_LocateTest(xtsContextPtr ctxt)
 	if (!test_b)
 	{
 		ctxt->error = BAD_CAST "test_b not found";
-		return FALSE;
+		return false;
 	}
 	if (xmlStrcasecmp(test_b->id, "test_b"))
 	{
 		ctxt->error = BAD_CAST "wrong test found instead of test_b";
-		return FALSE;
+		return false;
 	}
 	unknown_test = xtsLocateTest(fixture_a, BAD_CAST "unknown_test");
 	if (unknown_test)
 	{
 		ctxt->error = BAD_CAST "unknown_test must not be found";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //----------------------------------------------------------
-static BOOL xplTestSanity_SkipSingleTest(xtsContextPtr ctxt)
+static bool xplTestSanity_SkipSingleTest(xtsContextPtr ctxt)
 {
 	xtsFixturePtr fixture_b;
 	xtsTestPtr test_d;
@@ -594,30 +594,30 @@ static BOOL xplTestSanity_SkipSingleTest(xtsContextPtr ctxt)
 	if (!fixture_b)
 	{
 		ctxt->error = BAD_CAST "fixture_b not found";
-		return FALSE;
+		return false;
 	}
 	test_d = xtsLocateTest(fixture_b, "test_d");
 	if (!test_d)
 	{
 		ctxt->error = BAD_CAST "test_d not found";
-		return FALSE;
+		return false;
 	}
-	xtsSkipSingleTest(test_d, TRUE);
+	xtsSkipSingleTest(test_d, true);
 	if (!(test_d->flags & XTS_FLAG_SKIP))
 	{
 		ctxt->error = BAD_CAST "XTS_FLAG_SKIP not set";
-		return FALSE;
+		return false;
 	}
-	xtsSkipSingleTest(test_d, FALSE);
+	xtsSkipSingleTest(test_d, false);
 	if (test_d->flags & XTS_FLAG_SKIP)
 	{
 		ctxt->error = BAD_CAST "XTS_FLAG_SKIP is set";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //----------------------------------------------------
-static BOOL xplTestSanity_SkipTest(xtsContextPtr ctxt)
+static bool xplTestSanity_SkipTest(xtsContextPtr ctxt)
 {
 	xtsFixturePtr fixture_b;
 	xtsTestPtr test_d;
@@ -626,38 +626,38 @@ static BOOL xplTestSanity_SkipTest(xtsContextPtr ctxt)
 	if (!fixture_b)
 	{
 		ctxt->error = BAD_CAST "fixture_b not found";
-		return FALSE;
+		return false;
 	}
 	test_d = xtsLocateTest(fixture_b, "test_d");
 	if (!test_d)
 	{
 		ctxt->error = BAD_CAST "test_d not found";
-		return FALSE;
+		return false;
 	}
-	if (!xtsSkipTest(suite_to_skip, "fixture_b", "test_d", TRUE))
+	if (!xtsSkipTest(suite_to_skip, "fixture_b", "test_d", true))
 	{
 		ctxt->error = BAD_CAST "skipping test_d failed";
-		return FALSE;
+		return false;
 	}
 	if (!(test_d->flags & XTS_FLAG_SKIP))
 	{
 		ctxt->error = BAD_CAST "XTS_FLAG_SKIP not set";
-		return FALSE;
+		return false;
 	}
-	if (!xtsSkipTest(suite_to_skip, "fixture_b", "test_d", FALSE))
+	if (!xtsSkipTest(suite_to_skip, "fixture_b", "test_d", false))
 	{
 		ctxt->error = BAD_CAST "un-skipping test_d failed";
-		return FALSE;
+		return false;
 	}
 	if (test_d->flags & XTS_FLAG_SKIP)
 	{
 		ctxt->error = BAD_CAST "XTS_FLAG_SKIP is set";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //-----------------------------------------------------------------
-static BOOL xplTestSanity_SkipAllTestsInFixture(xtsContextPtr ctxt)
+static bool xplTestSanity_SkipAllTestsInFixture(xtsContextPtr ctxt)
 {
 	xtsFixturePtr fixture_b;
 	xtsTestPtr test_c, test_d;
@@ -665,22 +665,22 @@ static BOOL xplTestSanity_SkipAllTestsInFixture(xtsContextPtr ctxt)
 	fixture_b = xtsLocateFixture(suite_to_skip, "fixture_b");
 	test_c = xtsLocateTest(fixture_b, "test_c");
 	test_d = xtsLocateTest(fixture_b, "test_d");
-	xtsSkipAllTestsInFixture(fixture_b, TRUE);
+	xtsSkipAllTestsInFixture(fixture_b, true);
 	if (!(test_c->flags & XTS_FLAG_SKIP) || !(test_d->flags & XTS_FLAG_SKIP))
 	{
 		ctxt->error = BAD_CAST "XTS_FLAG_SKIP not set";
-		return FALSE;
+		return false;
 	}
-	xtsSkipAllTestsInFixture(fixture_b, FALSE);
+	xtsSkipAllTestsInFixture(fixture_b, false);
 	if ((test_c->flags & XTS_FLAG_SKIP) || (test_d->flags & XTS_FLAG_SKIP))
 	{
 		ctxt->error = BAD_CAST "XTS_FLAG_SKIP is set";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //---------------------------------------------------------------
-static BOOL xplTestSanity_SkipAllTestsInSuite(xtsContextPtr ctxt)
+static bool xplTestSanity_SkipAllTestsInSuite(xtsContextPtr ctxt)
 {
 	xtsFixturePtr fixture_a, fixture_b;
 	xtsTestPtr test_a, test_d;
@@ -689,28 +689,28 @@ static BOOL xplTestSanity_SkipAllTestsInSuite(xtsContextPtr ctxt)
 	fixture_b = xtsLocateFixture(suite_to_skip, "fixture_b");
 	test_a = xtsLocateTest(fixture_a, "test_a");
 	test_d = xtsLocateTest(fixture_b, "test_d");
-	xtsSkipAllTestsInSuite(suite_to_skip, TRUE);
+	xtsSkipAllTestsInSuite(suite_to_skip, true);
 	if (!(test_a->flags & XTS_FLAG_SKIP) || !(test_d->flags & XTS_FLAG_SKIP))
 	{
 		ctxt->error = BAD_CAST "XTS_FLAG_SKIP not set";
-		return FALSE;
+		return false;
 	}
-	xtsSkipAllTestsInSuite(suite_to_skip, FALSE);
+	xtsSkipAllTestsInSuite(suite_to_skip, false);
 	if ((test_a->flags & XTS_FLAG_SKIP) || (test_d->flags & XTS_FLAG_SKIP))
 	{
 		ctxt->error = BAD_CAST "XTS_FLAG_SKIP is set";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 //---------------------------
 typedef struct _skipTestState
 {
 	xmlChar *skip_list;
-	BOOL enabled[4];
+	bool enabled[4];
 } skipTestState;
 
-static BOOL xplTestSanity_ApplySkipList(xtsContextPtr ctxt)
+static bool xplTestSanity_ApplySkipList(xtsContextPtr ctxt)
 {
 	static const xmlChar *feature_names[] =
 	{
@@ -725,13 +725,13 @@ static BOOL xplTestSanity_ApplySkipList(xtsContextPtr ctxt)
 	static const skipTestState states[] =
 	{
 		{
-			BAD_CAST "s:@fixture_a#test_b;", { TRUE, FALSE, TRUE, TRUE }
+			BAD_CAST "s:@fixture_a#test_b;", { true, false, true, true }
 		}, {
-			BAD_CAST "i:@fixture_a*;", { TRUE, TRUE, TRUE, TRUE }
+			BAD_CAST "i:@fixture_a*;", { true, true, true, true }
 		}, {
-			BAD_CAST "s:@fixture_a#test_a@fixture_b#test_d;", { FALSE, TRUE, TRUE, FALSE }
+			BAD_CAST "s:@fixture_a#test_a@fixture_b#test_d;", { false, true, true, false }
 		}, {
-			BAD_CAST "i:*;", { TRUE, TRUE, TRUE, TRUE }
+			BAD_CAST "i:*;", { true, true, true, true }
 		}
 	};
 	int i, j;
@@ -749,22 +749,22 @@ static BOOL xplTestSanity_ApplySkipList(xtsContextPtr ctxt)
 		if (!xtsApplySkipList(states[i].skip_list, suite_to_skip, &error))
 		{
 			ctxt->error = error;
-			ctxt->error_malloced = TRUE;
-			return FALSE;
+			ctxt->error_malloced = true;
+			return false;
 		}
 		for (j = 0; j < sizeof(tests) / sizeof(tests[0]); j++)
 		{
-			if (states[i].enabled[j] != (tests[j]->flags & XTS_FLAG_SKIP? FALSE: TRUE))
+			if (states[i].enabled[j] != (tests[j]->flags & XTS_FLAG_SKIP? false: true))
 			{
 				ctxt->error = BAD_CAST "unexpected skip state";
-				return FALSE;
+				return false;
 			}
 		}
 	}
-	return TRUE;
+	return true;
 }
 //---------------------------------------------------------------------
-static BOOL xplTestSanity_ApplySkipListInvalidInput(xtsContextPtr ctxt)
+static bool xplTestSanity_ApplySkipListInvalidInput(xtsContextPtr ctxt)
 {
 	xmlChar* erratic[] = {
 		BAD_CAST "q:@feature_a#test_b",	/* invalid operation */
@@ -786,23 +786,23 @@ static BOOL xplTestSanity_ApplySkipListInvalidInput(xtsContextPtr ctxt)
 		if (xtsApplySkipList(s, suite_to_skip, &error))
 		{
 			ctxt->error = BAD_CAST "these lists must fail";
-			return FALSE;
+			return false;
 		}
 		if (!error)
 		{
 			ctxt->error = BAD_CAST "error not filled in";
-			return FALSE;
+			return false;
 		}
 		xmlFree(error);
 	} while (1);
-	return TRUE;
+	return true;
 }
 //------------------------------------------------
-static BOOL testMallocingError(xtsContextPtr ctxt)
+static bool testMallocingError(xtsContextPtr ctxt)
 {
 	ctxt->error = xmlStrdup(BAD_CAST "error");
-	ctxt->error_malloced = TRUE;
-	return FALSE;
+	ctxt->error_malloced = true;
+	return false;
 }
 
 static xtsTest test_mallocing_error =
@@ -812,22 +812,22 @@ static xtsTest test_mallocing_error =
 	SFINIT(.testFunction, testMallocingError)
 };
 
-BOOL xplTestSanity_RunTestFreeError(xtsContextPtr ctxt)
+bool xplTestSanity_RunTestFreeError(xtsContextPtr ctxt)
 {
 	test_context.error = NULL;
-	test_context.error_malloced = FALSE;
+	test_context.error_malloced = false;
 	xtsRunTest(&test_mallocing_error, &test_context);
 	if (test_context.error)
 	{
 		ctxt->error = BAD_CAST "xtsRunTest() didn't clean up ctxt.error";
-		return FALSE;
+		return false;
 	}
 	if (test_context.error_malloced)
 	{
 		ctxt->error = BAD_CAST "xtsRunTest() didn't clean up ctxt.error_malloced";
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 

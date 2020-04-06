@@ -34,12 +34,12 @@ typedef struct _xefCommonErrorMessage
 
 xefErrorMessagePtr xefCreateCommonErrorMessage(xmlChar *format, ...);
 
-#define XEF_STARTUP_PROTO(subsys) BOOL xefStartup##subsys(xefStartupParamsPtr params)
+#define XEF_STARTUP_PROTO(subsys) bool xefStartup##subsys(xefStartupParamsPtr params)
 #define XEF_SHUTDOWN_PROTO(subsys) void xefShutdown##subsys(void)
 #define XEF_GET_ERROR_TEXT_PROTO(subsys) xmlChar* xefGetErrorText##subsys(xefErrorMessagePtr msg)
 #define XEF_FREE_ERROR_MESSAGE_PROTO(subsys) void xefFreeErrorMessage##subsys(xefErrorMessagePtr msg)
 
-typedef BOOL (*xefStartupProto)(xefStartupParamsPtr params);
+typedef bool (*xefStartupProto)(xefStartupParamsPtr params);
 typedef void (*xefShutdownProto)(void);
 typedef xmlChar* (*xefGetErrorTextProto)(xefErrorMessagePtr msg);
 typedef void (*xefFreeErrorMessageProto)(xefErrorMessagePtr msg);

@@ -8,6 +8,7 @@
 #include "Configuration.h"
 #include <libxml/xmlstring.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,29 +40,29 @@ XPLPUBFUN FILE* XPLCALL
 XPLPUBFUN int XPLCALL
 	xprSOpen(const xmlChar *path, int mode, int sharing, int perms);
 
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprCheckFilePresence(const xmlChar *path);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprEnsurePathExistence(const xmlChar *path);
 XPLPUBFUN xmlChar* XPLCALL
 	xprGetProgramPath(void);
 
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprMutexInit(XPR_MUTEX *m);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprMutexAcquire(XPR_MUTEX *m);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprMutexRelease(XPR_MUTEX *m);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprMutexCleanup(XPR_MUTEX *m);
 
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprSemaphoreInit(XPR_SEMAPHORE *s, int initial_value);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprSemaphoreAcquire(XPR_SEMAPHORE *s);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprSemaphoreRelease(XPR_SEMAPHORE *s);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprSemaphoreCleanup(XPR_SEMAPHORE *s);
 
 XPLPUBFUN XPR_THREAD_ID XPLCALL
@@ -98,12 +99,12 @@ XPLPUBFUN void XPLCALL
 
 XPLPUBFUN int XPLCALL
 	xprGetPid(void);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprCheckPid(int pid);
 
 XPLPUBFUN void XPLCALL
 	xprDebugBreak(void);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprIsDebuggerPresent(void);
 
 #define XPR_STARTSTOP_LOW_LEVEL 0x01
@@ -111,7 +112,7 @@ XPLPUBFUN BOOL XPLCALL
 #define XPR_STARTSTOP_PHOENIX_TECH 0x04
 #define XPR_STARTSTOP_EVERYTHING 0xFFFFFFFF
 
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprStartup(int what);
 XPLPUBFUN void XPLCALL
 	xprShutdown(int what);

@@ -35,18 +35,18 @@ void xplCmdTestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlXPathObjectPtr ct = NULL;
 	int smth = 0;
 	xmlNodePtr parent, error;
-	BOOL repeat = TRUE;
+	bool repeat = true;
 
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 	if (!checkNodeListForText(commandInfo->element->children))
 	{
-		ASSIGN_RESULT(createBreak(commandInfo, xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is non-text"), NULL), TRUE, TRUE);
+		ASSIGN_RESULT(createBreak(commandInfo, xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is non-text"), NULL), true, true);
 		return;
 	}
-	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, TRUE);
+	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, true);
 	if (!txt)
 	{
-		ASSIGN_RESULT(createBreak(commandInfo, xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is empty"), NULL), TRUE, TRUE);
+		ASSIGN_RESULT(createBreak(commandInfo, xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is empty"), NULL), true, true);
 		return;
 	}
 	ct = xplSelectNodes(commandInfo->document, commandInfo->element, txt);
@@ -67,18 +67,18 @@ void xplCmdTestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			smth = (ct->stringval && *ct->stringval);
 			break;
 		default:
-			ASSIGN_RESULT(createBreak(commandInfo, xplCreateErrorNode(commandInfo->element, BAD_CAST "unsupported XPath result type (expression is %s)", txt), NULL), TRUE, TRUE);
+			ASSIGN_RESULT(createBreak(commandInfo, xplCreateErrorNode(commandInfo->element, BAD_CAST "unsupported XPath result type (expression is %s)", txt), NULL), true, true);
 			goto done;
 		}
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 		{
-			ASSIGN_RESULT(createBreak(commandInfo, error, NULL), TRUE, TRUE);
+			ASSIGN_RESULT(createBreak(commandInfo, error, NULL), true, true);
 			goto done;
 		}
 		if (!smth)
 		{
 			point_attr = xmlGetNoNsProp(commandInfo->element, POINT_ATTR);
-			ASSIGN_RESULT(createBreak(commandInfo, NULL, point_attr), repeat, TRUE);
+			ASSIGN_RESULT(createBreak(commandInfo, NULL, point_attr), repeat, true);
 			if (point_attr) xmlFree(point_attr);
 		} else {
 			parent = commandInfo->element->parent;
@@ -87,7 +87,7 @@ void xplCmdTestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		}
 		xmlXPathFreeObject(ct);
 	} else {
-		 ASSIGN_RESULT(createBreak(commandInfo, xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath expression (%s)", txt), NULL), TRUE, TRUE);
+		 ASSIGN_RESULT(createBreak(commandInfo, xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath expression (%s)", txt), NULL), true, true);
 	}
 done:
 	if (txt) xmlFree(txt);

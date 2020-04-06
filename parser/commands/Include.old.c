@@ -83,7 +83,7 @@ IncludeSource getIncludeSource(xmlChar *source)
 }
 
 /* �������, ��� �� ����� ������ ��������� �� ������ ���� �� NULL */
-xmlChar *uriFromLegacy(xmlChar *uri, xmlChar *file, BOOL abs_path, xmlChar *app_path)
+xmlChar *uriFromLegacy(xmlChar *uri, xmlChar *file, bool abs_path, xmlChar *app_path)
 {
 	xmlChar *ret, *fn;
 	if (uri)
@@ -185,7 +185,7 @@ char* loadHTTPSource(xmlChar *url, xmlChar *encoding, size_t *size, xmlChar *uri
 	wchar_t *wszProxyPassword = NULL;
 	wchar_t *wszHeader;
 	size_t iconv_len;
-	BOOL bOpResult = FALSE, bResponseSucceeded = FALSE;
+	bool bOpResult = false, bResponseSucceeded = false;
 	int status_code;
 	ReszBufPtr buf = NULL;
 	unsigned short zero = 0;
@@ -398,7 +398,7 @@ char* loadHTTPSource(xmlChar *url, xmlChar *encoding, size_t *size, xmlChar *uri
 			advanceReszBufferPosition(buf, dwRead);
 			dwTotal += dwRead;
 		} while (dwSize > 0); /* reading cycle */
-		bResponseSucceeded = TRUE;
+		bResponseSucceeded = true;
 	} // while
 	addDataToReszBuf(buf, &zero, sizeof(zero));
 	ret = (char*) detachReszBufContent(buf);
@@ -656,9 +656,9 @@ void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlChar *as_text_attr = NULL;		/* ������� ��������� ���� */
 	xmlChar *format_attr = NULL;
 	/* �������������� ��������� */
-	BOOL repeat = TRUE;
-	BOOL abs_path = FALSE;
-	BOOL as_text = FALSE;
+	bool repeat = true;
+	bool abs_path = false;
+	bool as_text = false;
 	IncludeFormat format = INC_FORMAT_XML;
 	/* ���������� ���������� */
 	xmlChar *uri = NULL;				/* ����� �������� ��������� */
@@ -682,23 +682,23 @@ void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	uri_attr = xmlGetNoNsProp(commandInfo->element, URI_ATTR);
 	repeat_attr = xmlGetNoNsProp(commandInfo->element, REPEAT_ATTR);
 	if (repeat_attr && !xmlStrcasecmp(repeat_attr, BAD_CAST "false"))
-		repeat = FALSE;
+		repeat = false;
 	res_tag_name_attr = xmlGetNoNsProp(commandInfo->element, RESPONSE_TAG_NAME_ATTR);
 	encoding_attr = xmlGetNoNsProp(commandInfo->element, ENCODING_ATTR);
 	uri_encoding_attr = xmlGetNoNsProp(commandInfo->element, URI_ENCODING_ATTR);
 	abs_path_attr = xmlGetNoNsProp(commandInfo->element, ABS_PATH_ATTR);
 	if (abs_path_attr && !xmlStrcasecmp(abs_path_attr, BAD_CAST "true"))
-		abs_path = TRUE;
+		abs_path = true;
 	as_text_attr = xmlGetNoNsProp(commandInfo->element, AS_TEXT_ATTR);
 	if (as_text_attr && !xmlStrcasecmp(as_text_attr, BAD_CAST "true"))
-		as_text = TRUE;
+		as_text = true;
 	format_attr = xmlGetNoNsProp(commandInfo->element, FORMAT_ATTR);
 	if (format_attr)
 	{
 		format = getIncludeFormat(format_attr);
 		if (format == INC_FORMAT_UNKNOWN)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "invalid format attribute value \"%s\"", format_attr), TRUE, TRUE)
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "invalid format attribute value \"%s\"", format_attr), true, true)
 			goto done;
 		}
 	}
@@ -708,12 +708,12 @@ void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		/* �������� �� �������� */
 		if (file_attr && uri_attr)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "file and uri specified simultaneously"), TRUE, TRUE)
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "file and uri specified simultaneously"), true, true)
 			goto done; 
 		}
 		if (abs_path_attr && uri_attr)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "abspath and uri specified simultaneously"), TRUE, TRUE)
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "abspath and uri specified simultaneously"), true, true)
 				goto done; 
 		}
 		uri = uriFromLegacy(uri_attr, file_attr, abs_path, commandInfo->document->app_path);
@@ -721,7 +721,7 @@ void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			if (iconv_string((char*) uri_encoding_attr, "utf-8", (char*) uri, (char*) uri+xmlStrlen(uri), &encoded_uri, NULL))
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "cannot convert document uri to encoding \"%s\"", uri_encoding_attr), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "cannot convert document uri to encoding \"%s\"", uri_encoding_attr), true, true);
 				goto done;
 			}
 		} else
@@ -737,16 +737,16 @@ void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			{
 				ret = xmlNewDocText(commandInfo->element->doc, NULL);
 				ret->content = content;
-				ASSIGN_RESULT(ret, repeat, TRUE)
+				ASSIGN_RESULT(ret, repeat, true)
 			}
 			else
-				ASSIGN_RESULT(error, TRUE, TRUE)
+				ASSIGN_RESULT(error, true, true)
 			goto done;
 		}
 		ext_doc = loadExtDoc(BAD_CAST encoded_uri, format, encoding_attr, commandInfo, &error);
 		if (!ext_doc)
 		{
-			ASSIGN_RESULT(error, TRUE, TRUE);
+			ASSIGN_RESULT(error, true, true);
 			goto done;
 		}
 	}
@@ -788,15 +788,15 @@ void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				ret = xmlNewDocText(commandInfo->document->document, NULL);
 				ret->content = xmlXPathCastToString(sel);
 #else
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", select_attr), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", select_attr), true, true);
 				goto done;
 #endif
 			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "select XPath expression (%s) evaluated to undef", select_attr), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "select XPath expression (%s) evaluated to undef", select_attr), true, true);
 				goto done;
 			}
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "invalid select XPath expression (%s)", select_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "invalid select XPath expression (%s)", select_attr), true, true);
 			goto done;
 		}
 	} else if (!ret) {
@@ -820,7 +820,7 @@ void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		}
 	}
 
-	ASSIGN_RESULT(ret, repeat, TRUE);
+	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (select_attr) xmlFree(select_attr);
 	if (file_attr) xmlFree(file_attr);

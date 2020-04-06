@@ -9,7 +9,7 @@ void xplCmdWaitForThreadsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 {
 	if (commandInfo->document->threads)
 		xplWaitForChildThreads(commandInfo->document);
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 }
 
 xplCommand xplWaitForThreadsCommand = { xplCmdWaitForThreadsPrologue, xplCmdWaitForThreadsEpilogue };

@@ -12,7 +12,7 @@ void xplCmdSessionClearEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	if (!commandInfo->document->main->session)
 		return;
 	xplSessionClear(commandInfo->document->main->session);
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 }
 
 xplCommand xplSessionClearCommand = { xplCmdSessionClearPrologue, xplCmdSessionClearEpilogue };

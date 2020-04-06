@@ -11,27 +11,27 @@ void xplCmdContainerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 #define REPEAT_ATTR BAD_CAST "repeat"
 #define RETURNCONTENT_ATTR BAD_CAST "returncontent"
 
-	BOOL repeat;
-	BOOL return_content;
+	bool repeat;
+	bool return_content;
 	xmlNodePtr error;
 
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, RETURNCONTENT_ATTR, &return_content, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, RETURNCONTENT_ATTR, &return_content, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
 	if (return_content)
 	{
-		ASSIGN_RESULT(detachContent(commandInfo->element), repeat, TRUE);
+		ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
 	} else {
 		if (commandInfo->element->children)
 			xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element->children));
-		ASSIGN_RESULT(NULL, FALSE, TRUE);
+		ASSIGN_RESULT(NULL, false, true);
 	}
 }
 

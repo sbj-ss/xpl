@@ -18,7 +18,7 @@ void xplCmdSqlPrologue(xplCommandInfoPtr commandInfo)
 #ifndef _XEF_HAS_DB
 void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "No database support is compiled in"), TRUE, TRUE);
+	ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "No database support is compiled in"), true, true);
 }
 #else
 static xmlNodePtr _getNonTextQueryError(xmlNodePtr queryParent)
@@ -163,10 +163,10 @@ typedef struct _xplSqlRowContext
 	xmlNsPtr ns;
 	xmlChar *tagname;
 	xmlChar *default_column_name;
-	BOOL as_attributes;
-	BOOL keep_nulls;
-	BOOL show_nulls;
-	BOOL copy_data;
+	bool as_attributes;
+	bool keep_nulls;
+	bool show_nulls;
+	bool copy_data;
 } xplSqlRowContext, *xplSqlRowContextPtr;
 
 static void _freeXmlRowDesc(xplSqlXmlRowDescPtr desc)
@@ -213,7 +213,7 @@ static xplSqlXmlRowDescPtr _createXmlRowDesc(xefDbRowDescPtr desc, xmlNodePtr pa
 	return ret;
 }
 
-static BOOL _RowScanner(xefDbRowDescPtr desc, xefDbRowPtr row, void *payload)
+static bool _RowScanner(xefDbRowDescPtr desc, xefDbRowPtr row, void *payload)
 {
 	xmlNodePtr row_el = NULL, tail = NULL, col;
 	xplSqlRowContextPtr ctxt = (xplSqlRowContextPtr) payload;
@@ -274,7 +274,7 @@ static BOOL _RowScanner(xefDbRowDescPtr desc, xefDbRowPtr row, void *payload)
 			ctxt->first = row_el;
 		ctxt->cur = tail? tail: row_el;
 	}
-	return TRUE;
+	return true;
 }
 
 void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
@@ -291,12 +291,12 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlChar *response_tag_name_attr = NULL;
 	xmlChar *dbname_attr = NULL;
 	xmlChar *default_column_name_attr = NULL;
-	BOOL as_xml;
-	BOOL repeat;
-	BOOL cleanup_stream;
-	BOOL keep_nulls;
-	BOOL as_attributes;
-	BOOL show_nulls;
+	bool as_xml;
+	bool repeat;
+	bool cleanup_stream;
+	bool keep_nulls;
+	bool as_attributes;
+	bool show_nulls;
 	xmlNodePtr attr_error;
 	xmlChar *sql = NULL;
 	xplSqlRowTagNamesPtr tag_names = NULL;
@@ -313,34 +313,34 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	size_t stream_size, xml_doc_size;
 	xmlDocPtr xml_doc;
 
-	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(attr_error, TRUE, TRUE);
+		ASSIGN_RESULT(attr_error, true, true);
 		return;
 	}
-	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, CLEANUPSTREAM_ATTR, &cleanup_stream, FALSE)))
+	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, CLEANUPSTREAM_ATTR, &cleanup_stream, false)))
 	{
-		ASSIGN_RESULT(attr_error, TRUE, TRUE);
+		ASSIGN_RESULT(attr_error, true, true);
 		return;
 	}
-	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, MERGE_TABLE_AS_XML_ATTR, &as_xml, FALSE)))
+	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, MERGE_TABLE_AS_XML_ATTR, &as_xml, false)))
 	{
-		ASSIGN_RESULT(attr_error, TRUE, TRUE);
+		ASSIGN_RESULT(attr_error, true, true);
 		return;
 	}
-	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, ASATTRIBUTES_ATTR, &as_attributes, FALSE)))
+	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, ASATTRIBUTES_ATTR, &as_attributes, false)))
 	{
-		ASSIGN_RESULT(attr_error, TRUE, TRUE);
+		ASSIGN_RESULT(attr_error, true, true);
 		return;
 	}
-	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, KEEPNULLS_ATTR, &keep_nulls, FALSE)))
+	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, KEEPNULLS_ATTR, &keep_nulls, false)))
 	{
-		ASSIGN_RESULT(attr_error, TRUE, TRUE);
+		ASSIGN_RESULT(attr_error, true, true);
 		return;
 	}
-	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, SHOWNULLS_ATTR, &show_nulls, FALSE)))
+	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, SHOWNULLS_ATTR, &show_nulls, false)))
 	{
-		ASSIGN_RESULT(attr_error, TRUE, TRUE);
+		ASSIGN_RESULT(attr_error, true, true);
 		return;
 	}
 
@@ -358,31 +358,31 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	if (!dbs)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "dbsession not found"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "dbsession not found"), true, true);
 		goto done;
 	}
 	dbname_attr = xmlGetNoNsProp(dbs, BAD_CAST "dbname");
 	if (!dbname_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no dbname found in %s:dbsession", dbs->ns? dbs->ns->prefix: BAD_CAST ""), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no dbname found in %s:dbsession", dbs->ns? dbs->ns->prefix: BAD_CAST ""), true, true);
 		goto done;
 	}
 	db_list = xplLocateDBList(dbname_attr);
 	if (!db_list)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown database \"%s\" in %s:dbsession", 
-			dbname_attr, dbs->ns? dbs->ns->prefix: BAD_CAST ""), TRUE, TRUE);
+			dbname_attr, dbs->ns? dbs->ns->prefix: BAD_CAST ""), true, true);
 		goto done;
 	}
 	if (!checkNodeListForText(commandInfo->element->children))
 	{
-		ASSIGN_RESULT(_getNonTextQueryError(commandInfo->element), TRUE, TRUE);
+		ASSIGN_RESULT(_getNonTextQueryError(commandInfo->element), true, true);
 		goto done;
 	}
 	sql = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
 	if (!sql || !*sql)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "query is empty"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "query is empty"), true, true);
 		goto done;
 	}
 	result->list = NULL;
@@ -405,7 +405,7 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (!db_ctxt || params.error)
 	{
 		error_text = xefGetErrorText(params.error);
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, error_text), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, error_text), true, true);
 		xefFreeErrorMessage(params.error);
 		goto done;
 	}
@@ -415,19 +415,19 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		if ((error = xefDbGetError(db_ctxt)))
 		{
 			error_text = xefGetErrorText(error);
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, error_text), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, error_text), true, true);
 				goto done;
 		}
 		if (!stream_size)
 		{
-			ASSIGN_RESULT(NULL, FALSE, TRUE);
+			ASSIGN_RESULT(NULL, false, true);
 			goto done;
 		}
 		xml_doc_size = stream_size + xmlStrlen(DOC_START) + xmlStrlen(DOC_END);
 		xml_doc_start = xml_doc_cur = (xmlChar*) xmlMalloc(xml_doc_size + 1);
 		if (!xml_doc_start)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "insufficient memory for resulting XML document"), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "insufficient memory for resulting XML document"), true, true);
 			xefDbUnaccessStreamData(db_ctxt, stream_text);
 			goto done;
 		}
@@ -440,20 +440,20 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		if ((error = xefDbGetError(db_ctxt)))
 		{
 			error_text = xefGetErrorText(error);
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, error_text), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, error_text), true, true);
 			goto done;
 		}
 		xml_doc = xmlReadMemory(xml_doc_start, (int) xml_doc_size, NULL, NULL, XML_PARSE_NODICT);
 		if (!xml_doc)
 		{
 			error_text = getLastLibxmlError();
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "error parsing input document: \"%s\"", error_text), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "error parsing input document: \"%s\"", error_text), true, true);
 			goto done;
 		}
 		row_ctxt.first = detachContent(xml_doc->children);
 		xmlSetListDoc(row_ctxt.first, commandInfo->element->doc);
 		xmlFreeDoc(xml_doc);
-		ASSIGN_RESULT(row_ctxt.first, repeat, TRUE);
+		ASSIGN_RESULT(row_ctxt.first, repeat, true);
 		goto done;
 	}
 
@@ -476,7 +476,7 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		if ((error = xefDbGetError(db_ctxt)))
 		{
 			error_text = xefGetErrorText(error);
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, error_text), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, error_text), true, true);
 			if (row_ctxt.first)
 				xmlFreeNodeList(row_ctxt.first);
 			goto done;
@@ -485,13 +485,13 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		if ((error = xefDbGetError(db_ctxt)))
 		{
 			error_text = xefGetErrorText(error);
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, error_text), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, error_text), true, true);
 			if (row_ctxt.first)
 				xmlFreeNodeList(row_ctxt.first);
 			goto done;
 		}
 	}
-	ASSIGN_RESULT(row_ctxt.first, repeat, TRUE);
+	ASSIGN_RESULT(row_ctxt.first, repeat, true);
 done:
 	if (error_text)
 		xmlFree(error_text);

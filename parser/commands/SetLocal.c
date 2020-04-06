@@ -19,7 +19,7 @@ void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REPEAT_ATTR BAD_CAST("repeat")
 	xplParamsPtr old_params, tmp_params;
-	BOOL repeat;
+	bool repeat;
 	xmlNodePtr error;
 	
 	tmp_params = commandInfo->document->environment;
@@ -28,12 +28,12 @@ void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	old_params = (xplParamsPtr) commandInfo->_private;
 	commandInfo->document->environment = old_params;
 	if (commandInfo->element->type & XML_NODE_DELETION_MASK)
-		ASSIGN_RESULT(NULL, FALSE, FALSE);
+		ASSIGN_RESULT(NULL, false, false);
 	else {
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, FALSE)))
-			ASSIGN_RESULT(error, TRUE, TRUE);
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
+			ASSIGN_RESULT(error, true, true);
 		else
-			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, TRUE);
+			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
 	}
 }
 

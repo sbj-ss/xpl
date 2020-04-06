@@ -16,7 +16,7 @@ void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 
 	if (!checkNodeListForText(commandInfo->element->children))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "element content is non-text"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "element content is non-text"), true, true);
 		return;
 	}
 	if ((content = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1)))
@@ -28,7 +28,7 @@ void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 			{
 				if (iconv_string((char*) encoding_attr, "utf-8", content, content + xmlStrlen(content), (char**) &param, NULL) == -1)
 				{
-					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot convert parameter value \"%s\" to encoding \"%s\"", content, encoding_attr), TRUE, TRUE);
+					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot convert parameter value \"%s\" to encoding \"%s\"", content, encoding_attr), true, true);
 					xmlFree(content);
 					xmlFree(encoding_attr);
 					return;
@@ -47,9 +47,9 @@ void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 			xmlFree(param);
 		} else
 			ret = NULL;
-		ASSIGN_RESULT(ret, FALSE, TRUE);
+		ASSIGN_RESULT(ret, false, true);
 	} else
-		ASSIGN_RESULT(NULL, FALSE, TRUE);
+		ASSIGN_RESULT(NULL, false, true);
 }
 
 xplCommand xplUriEscapeParamCommand = { xplCmdUriEscapeParamPrologue, xplCmdUriEscapeParamEpilogue };

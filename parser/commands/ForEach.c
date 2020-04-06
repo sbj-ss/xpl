@@ -69,20 +69,20 @@ done:
 void xplCmdForEachEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REPEAT_ATTR (BAD_CAST "repeat")
-	BOOL repeat;
+	bool repeat;
 	xmlNodePtr error;
 
 	if (commandInfo->_private) /* error found in prologue */
 	{
-		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, TRUE, TRUE);
+		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	ASSIGN_RESULT(detachContent(commandInfo->element), repeat, TRUE);
+	ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
 }
 
 xplCommand xplForEachCommand = { 

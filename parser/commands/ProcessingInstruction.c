@@ -16,23 +16,23 @@ void xplCmdProcessingInstructionEpilogue(xplCommandInfoPtr commandInfo, xplResul
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
 	if (!name_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name attribute"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name attribute"), true, true);
 		goto done;
 	}
 	if (!checkNodeListForText(commandInfo->element->children))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 		goto done;
 	}
 	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
 	if (!txt)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing content"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing content"), true, true);
 		goto done;
 	}
 	ret = xmlNewDocPI(commandInfo->element->doc, name_attr, NULL);
 	ret->content = txt;
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 done:
 	if (name_attr)
 		xmlFree(name_attr);

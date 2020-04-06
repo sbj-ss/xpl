@@ -16,6 +16,7 @@
 
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #include <libxml/HTMLparser.h>
 #include <libxml/hash.h>

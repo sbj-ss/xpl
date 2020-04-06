@@ -12,7 +12,7 @@ void xplCmdGetDocumentRoleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr r
 	xmlNodePtr ret;
 
 	ret = xmlNewDocText(commandInfo->element->doc, xplDocRoleToString(commandInfo->document->role));
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 }
 
 xplCommand xplGetDocumentRoleCommand = { xplCmdGetDocumentRolePrologue, xplCmdGetDocumentRoleEpilogue };

@@ -13,19 +13,19 @@ SQLHANDLE hEnv = NULL;
 XEF_STARTUP_PROTO(Database)
 {
 	if (hEnv)
-		return TRUE;
+		return true;
 	if (!SQL_SUCCEEDED(SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &hEnv)))
 	{
 		hEnv = NULL;
-		return FALSE;
+		return false;
 	}
 	if (SQLSetEnvAttr(hEnv, SQL_ATTR_ODBC_VERSION, (SQLPOINTER) SQL_OV_ODBC3, 0) != SQL_SUCCESS)
 	{
 		SQLFreeHandle(SQL_HANDLE_ENV, hEnv);
 		hEnv = NULL;
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 XEF_SHUTDOWN_PROTO(Database)
@@ -157,20 +157,20 @@ static SQLHDBC _xefDbEstablishConnection(const xmlChar* connString, xmlChar **er
 static xplDBPtr _xefDbGetAvailDB(xplDBListPtr list, xmlChar **error)
 {
 	xplDBPtr db;
-	BOOL append = FALSE;
+	bool append = false;
 
 	if (!(db = xplLocateAvailDB(list)))
 	{
 		db = xplDBCreate(NULL, xefDbDeallocateDb);
-		db->busy = TRUE;
-		append = TRUE;
+		db->busy = true;
+		append = true;
 	}
 	if (!db->connection)
 	{
 		db->connection = _xefDbEstablishConnection(list->conn_string, error);
 		if (!db->connection)
 		{
-			db->busy = FALSE;
+			db->busy = false;
 			return NULL;
 		}
 	}
@@ -182,10 +182,10 @@ static xplDBPtr _xefDbGetAvailDB(xplDBListPtr list, xmlChar **error)
 static void _xefDbReleaseDB(xplDBPtr db)
 {
 	if (db)
-		db->busy = FALSE;
+		db->busy = false;
 }
 
-BOOL xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **msg)
+bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **msg)
 {
 	SQLHDBC hDbc;
 	xmlChar *error, *stars, *pw;
@@ -195,7 +195,7 @@ BOOL xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **m
 		xefDbDeallocateDb(hDbc);
 		if (msg)
 			*msg = xplFormatMessage(BAD_CAST "Successfully connected to database \"%s\"", name);
-		return TRUE;
+		return true;
 	}
 
 	if (msg)
@@ -213,7 +213,7 @@ BOOL xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **m
 		xmlFree(error);
 		xmlFree(stars);
 	}
-	return FALSE;
+	return false;
 }
 
 /*================= internal structures ====================*/
@@ -224,11 +224,11 @@ typedef struct xefDbContext
 	xefDbRowDescPtr row_desc;
 	xefDbRowPtr row;
 	xefDbStreamType stream_type;
-	BOOL cleanup_stream;
+	bool cleanup_stream;
 	/* module-specific */
 	xplDBPtr db; /* dbc */
 	SQLHSTMT statement;
-	BOOL end_of_recordsets;
+	bool end_of_recordsets;
 } xefDbContext;
 
 typedef struct xefDbRowBuffer 
@@ -469,10 +469,10 @@ void* xefDbGetUserData(xefDbContextPtr ctxt)
 	return ctxt? ctxt->user_data: NULL;
 }
 
-BOOL xefDbHasRecordset(xefDbContextPtr ctxt)
+bool xefDbHasRecordset(xefDbContextPtr ctxt)
 {
 	if (!ctxt)
-		return FALSE;
+		return false;
 	return !ctxt->end_of_recordsets;
 }
 
@@ -552,18 +552,18 @@ static SQLHSTMT _xefCreateStmt(SQLHDBC hConn, xmlChar **error)
 	return stmt;
 }
 
-static BOOL _xefDbExecSQL(xefDbContextPtr ctxt, xmlChar *sql)
+static bool _xefDbExecSQL(xefDbContextPtr ctxt, xmlChar *sql)
 {
 	SQLRETURN r;
 	SQLWCHAR *w_sql = NULL;
 	xmlChar *error_text;
 
 	if (!ctxt)
-		return FALSE;
+		return false;
 	if (!sql || !*sql)
 	{
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): sql is empty or NULL", __FUNCTION__));
-		return FALSE;
+		return false;
 	}
 	iconv_string("utf-16le", "utf-8", sql, sql + xmlStrlen(sql), (char**) &w_sql, NULL);
 	r = SQLExecDirectW(ctxt->statement, w_sql, SQL_NTS);
@@ -573,20 +573,20 @@ static BOOL _xefDbExecSQL(xefDbContextPtr ctxt, xmlChar *sql)
 		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): SQLExecDirect(): %s", __FUNCTION__, error_text));
 		xmlFree(error_text);
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
-static BOOL _xefDbLocateNextNonemptyRecordset(xefDbContextPtr ctxt, BOOL advance)
+static bool _xefDbLocateNextNonemptyRecordset(xefDbContextPtr ctxt, bool advance)
 {
 	xmlChar *error_text;
-	BOOL found = FALSE;
+	bool found = false;
 	SQLRETURN r;
 	SQLSMALLINT ncols;
 
 	if (!ctxt)
-		return FALSE;
+		return false;
 	while (1)
 	{
 		r = SQLNumResultCols(ctxt->statement, &ncols);
@@ -600,17 +600,17 @@ static BOOL _xefDbLocateNextNonemptyRecordset(xefDbContextPtr ctxt, BOOL advance
 		if (ncols)
 		{
 			if (advance)
-				advance = FALSE; /* skip current */
+				advance = false; /* skip current */
 			else {
-				found = TRUE;
+				found = true;
 				break;
 			}
 		}
 		r = SQLMoreResults(ctxt->statement);
 		if (r == SQL_NO_DATA)
 		{
-			ctxt->end_of_recordsets = TRUE;
-			found = FALSE;
+			ctxt->end_of_recordsets = true;
+			found = false;
 			break;
 		}
 		if (!SQL_SUCCEEDED(r))
@@ -624,29 +624,29 @@ static BOOL _xefDbLocateNextNonemptyRecordset(xefDbContextPtr ctxt, BOOL advance
 error:
 	if (error_text)
 		xmlFree(error_text);
-	return FALSE;
+	return false;
 done:
 	return found;
 }
 
-static BOOL _xefDbNextRecord(xefDbContextPtr ctxt)
+static bool _xefDbNextRecord(xefDbContextPtr ctxt)
 {
 	xmlChar *error_text;
 	SQLRETURN r;
 
 	if (!ctxt)
-		return FALSE;
+		return false;
 	r = SQLFetch(ctxt->statement);
 	if (r == SQL_NO_DATA)
-		return FALSE;
+		return false;
 	if (!SQL_SUCCEEDED(r))
 	{
 		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): SQLFetch(): %s", __FUNCTION__, error_text));
 		xmlFree(error_text);
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 static void _xefDbFillRow(xefDbContextPtr ctxt)
@@ -673,11 +673,11 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 		field = &ctxt->row->fields[i];
 		if (buf->len_or_ind == SQL_NULL_DATA)
 		{
-			field->is_null = TRUE;
+			field->is_null = true;
 			field->value = NULL;
 			field->value_size = 0;
 		} else {
-			field->is_null = FALSE;
+			field->is_null = false;
 			field->value = NULL;
 			iconv_string("utf-8", "utf-16le", (const char*) buf->data, (const char*) (buf->data + buf->len_or_ind), (char**) &field->value, &field->value_size);
 			// TODO cleanup nonprintable
@@ -722,7 +722,7 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 	if (!_xefDbExecSQL(ctxt, params->query))
 		goto error;
 
-	_xefDbLocateNextNonemptyRecordset(ctxt, FALSE);
+	_xefDbLocateNextNonemptyRecordset(ctxt, false);
 	if (ctxt->error)
 		goto error;
 	_xefDbRefreshContext(ctxt);
@@ -748,24 +748,24 @@ done:
 	return ctxt; 
 }
 
-BOOL xefDbNextRowset(xefDbContextPtr ctxt)
+bool xefDbNextRowset(xefDbContextPtr ctxt)
 {
 	if (!ctxt)
-		return FALSE;
+		return false;
 	if (ctxt->error)
-		return FALSE;
+		return false;
 	if (ctxt->stream_type != XEF_DB_STREAM_TDS)
 	{
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage("xefDbNextRowset(): ctxt->stream_type (%d) != XEF_DB_STREAM_TDS", ctxt->stream_type));
-		return FALSE;
+		return false;
 	}
 	if (!ctxt->statement)
 	{
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage("xefDbNextRowset(): ctxt->statement is NULL"));
-		return FALSE;
+		return false;
 	}
-	if (!_xefDbLocateNextNonemptyRecordset(ctxt, TRUE))
-		return FALSE;
+	if (!_xefDbLocateNextNonemptyRecordset(ctxt, true))
+		return false;
 	_xefDbRefreshContext(ctxt);
 	return !ctxt->end_of_recordsets;
 }
@@ -814,7 +814,7 @@ void xefDbUnaccessStreamData(xefDbContextPtr ctxt, xmlChar *data)
 {
 }
 
-void xefDbFreeParams(xefDbQueryParamsPtr params, BOOL freeCarrier)
+void xefDbFreeParams(xefDbQueryParamsPtr params, bool freeCarrier)
 {
 	if (!params)
 		return;

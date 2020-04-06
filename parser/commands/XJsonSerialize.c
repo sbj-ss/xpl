@@ -9,19 +9,19 @@ void xplCmdXJsonSerializePrologue(xplCommandInfoPtr commandInfo)
 {
 }
 
-static BOOL _checkJsonNs(xmlNsPtr ns, xmlNsPtr *cached_ns)
+static bool _checkJsonNs(xmlNsPtr ns, xmlNsPtr *cached_ns)
 {
 	if (!ns)
-		return FALSE;
+		return false;
 	if (ns == *cached_ns)
-		return TRUE;
+		return true;
 	if (!ns->href)
-		return FALSE;
+		return false;
 	if (xmlStrcmp(ns->href, XJSON_SCHEMA_URI))
-		return FALSE;
+		return false;
 	if (!*cached_ns)
 		*cached_ns = ns;
-	return TRUE;
+	return true;
 }
 
 typedef enum _xjsonAtomType {
@@ -40,14 +40,14 @@ typedef enum _xjsonContainerType {
 typedef struct _xjsonSerializeCtxt {
 	xmlNodePtr command_element;
 	ReszBufPtr buf;
-	BOOL force_quotes;
-	BOOL strict_tag_names;
-	BOOL value_type_check;
-	BOOL single_quotes;
+	bool force_quotes;
+	bool strict_tag_names;
+	bool value_type_check;
+	bool single_quotes;
 	/* will be changed by serializer */
 	xmlNsPtr ns;
 	xjsonContainerType container_type;
-	BOOL is_first_item;
+	bool is_first_item;
 } xjsonSerializeCtxt, *xjsonSerializeCtxtPtr;
 
 static xmlNodePtr _createMemoryError(xjsonSerializeCtxtPtr ctxt)
@@ -60,8 +60,8 @@ static xmlNodePtr _xjsonSerializeNodeList(xmlNodePtr first, xjsonSerializeCtxtPt
 
 static xmlNodePtr _xjsonSerializeList(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt, xjsonContainerType containerType)
 {
-	BOOL prev_container_type;
-	BOOL prev_is_first_item;
+	bool prev_container_type;
+	bool prev_is_first_item;
 	xmlNodePtr ret = NULL;
 
 	if (addDataToReszBuf(ctxt->buf, (containerType == XJC_ARRAY)? "[": "{", 1) != RESZ_BUF_RESULT_OK)
@@ -69,7 +69,7 @@ static xmlNodePtr _xjsonSerializeList(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	prev_container_type = ctxt->container_type;
 	prev_is_first_item = ctxt->is_first_item;
 	ctxt->container_type = containerType;
-	ctxt->is_first_item = TRUE;
+	ctxt->is_first_item = true;
 	if ((ret = _xjsonSerializeNodeList(cur->children, ctxt)))
 		goto done;
 	if (addDataToReszBuf(ctxt->buf, (containerType == XJC_ARRAY)? "]": "}", 1) != RESZ_BUF_RESULT_OK)
@@ -154,7 +154,7 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 			if (addDataToReszBuf(ctxt->buf, ",", 1 != RESZ_BUF_RESULT_OK))
 				return _createMemoryError(ctxt);
 		} else
-			ctxt->is_first_item = FALSE;
+			ctxt->is_first_item = false;
 	}
 	name = xmlGetNoNsProp(cur, BAD_CAST "name");
 	if (name)
@@ -220,24 +220,24 @@ void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	xmlNodePtr error = NULL, ret;
 
 	ctxt.buf = NULL;
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, FORCE_QUOTES_ATTR, &ctxt.force_quotes, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, FORCE_QUOTES_ATTR, &ctxt.force_quotes, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, STRICT_TAG_NAMES_ATTR, &ctxt.strict_tag_names, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, STRICT_TAG_NAMES_ATTR, &ctxt.strict_tag_names, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, VALUE_TYPE_CHECK_ATTR, &ctxt.value_type_check, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, VALUE_TYPE_CHECK_ATTR, &ctxt.value_type_check, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SINGLE_QUOTES_ATTR, &ctxt.single_quotes, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SINGLE_QUOTES_ATTR, &ctxt.single_quotes, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 
@@ -245,7 +245,7 @@ void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	if (!ctxt.buf)
 	{
 		/* no memory for anything, xplCreateErrorNode() will likely fail, too */
-		ASSIGN_RESULT(NULL, FALSE, TRUE);
+		ASSIGN_RESULT(NULL, false, true);
 		goto done;
 	}
 	ctxt.ns = NULL;
@@ -253,17 +253,17 @@ void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	ctxt.container_type = XJC_NONE;
 	if ((error = _xjsonSerializeNodeList(commandInfo->element->children, &ctxt)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (addDataToReszBuf(ctxt.buf, "", 1) != RESZ_BUF_RESULT_OK)
 	{
-		ASSIGN_RESULT(_createMemoryError(&ctxt), TRUE, TRUE);
+		ASSIGN_RESULT(_createMemoryError(&ctxt), true, true);
 		goto done;
 	}
 	ret = xmlNewDocText(commandInfo->element->doc, NULL);
 	ret->content = detachReszBufContent(ctxt.buf);
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 done:
 	if (ctxt.buf) freeReszBuf(ctxt.buf);
 }

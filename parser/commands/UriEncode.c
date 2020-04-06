@@ -13,7 +13,7 @@ void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (!checkNodeListForText(commandInfo->element->children))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "element content is non-text"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "element content is non-text"), true, true);
 		return;
 	}
 #ifdef _USE_LIBIDN
@@ -26,12 +26,12 @@ void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			ret->content = uri;
 		} else
 			ret = NULL;
-		ASSIGN_RESULT(ret, FALSE, TRUE);
+		ASSIGN_RESULT(ret, false, true);
 		xmlFree(content);
 	} else
-		ASSIGN_RESULT(NULL, FALSE, TRUE);
+		ASSIGN_RESULT(NULL, false, true);
 #else
-	ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "Interpreter is compiled without IDN support"), TRUE, TRUE);
+	ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "Interpreter is compiled without IDN support"), true, true);
 #endif
 }
 

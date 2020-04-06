@@ -38,18 +38,18 @@ void xplCmdSetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 
 	if ((commandInfo->document->role != XPL_DOC_ROLE_EPILOGUE) && (commandInfo->document->role != XPL_DOC_ROLE_PROLOGUE))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "this command can only be called from prologue or epilogue"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "this command can only be called from prologue or epilogue"), true, true);
 		goto done;
 	}
 	content = checkNodelist(commandInfo->element->children, &element_count);
 	if (!element_count)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no root node found"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no root node found"), true, true);
 		goto done;
 	}
 	if (element_count > 1)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "multiple root nodes found"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "multiple root nodes found"), true, true);
 		goto done;
 	}
 	content = cloneNode(content, NULL, NULL);
@@ -69,7 +69,7 @@ void xplCmdSetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 	xpl_doc->status = XPL_ERR_NO_ERROR;
 	xpl_doc->document = xml_doc = xmlNewDoc(BAD_CAST "1.0");
 	setChildren((xmlNodePtr) xml_doc, content);
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 done:
 	;
 }

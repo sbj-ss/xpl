@@ -41,9 +41,9 @@ typedef struct _xefStartupParams
 	xefErrorMessagePtr error;		/* сообщение об ошибке. если не NULL - нужно освободить. */
 } xefStartupParams, *xefStartupParamsPtr;
 
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xefStartup(xefStartupParamsPtr params);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xefIsStarted(void);
 XPLPUBFUN void XPLCALL
 	xefShutdown(void);
@@ -67,7 +67,7 @@ typedef struct _xefFetchDocumentParams
 	xefErrorMessagePtr error;	/* сообщение об ошибке. если не NULL - нужно освободить. */
 } xefFetchDocumentParams, *xefFetchDocumentParamsPtr;
 
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xefFetchDocument(xefFetchDocumentParamsPtr params);
 /* Очищает только выходные параметры */
 XPLPUBFUN void XPLCALL
@@ -83,7 +83,7 @@ XPLPUBFUN void XPLCALL
    рано или поздно это уйдёт в командно-специфическую секцию, но не сейчас. */
 XPLPUBFUN void XPLCALL /* нужно ли это снаружи? */
 	xefDbDeallocateDb(void *db_handle);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **msg);
 
 typedef enum _xefDbStreamType 
@@ -101,10 +101,10 @@ typedef struct _xefDbRowDesc
 
 typedef struct _xefDbField 
 {
-	BOOL is_null;
+	bool is_null;
 	xmlChar *value;
 	size_t value_size; /* в пересчёте на байты, включая нуль-терминатор */
-	BOOL needs_copy;
+	bool needs_copy;
 } xefDbField, *xefDbFieldPtr;
 
 typedef struct _xefDbRow 
@@ -115,7 +115,7 @@ typedef struct _xefDbRow
 /* скроем реализацию */
 typedef struct xefDbContext *xefDbContextPtr;
 
-typedef BOOL (*xefDbGetRowCallback)(xefDbRowDescPtr desc, xefDbRowPtr row, void *userData);
+typedef bool (*xefDbGetRowCallback)(xefDbRowDescPtr desc, xefDbRowPtr row, void *userData);
 
 typedef struct _xplDBList xplDBList, *xplDBListPtr;
 
@@ -123,7 +123,7 @@ typedef struct _xefDbQueryParams
 {
 	/* input */
 	xefDbStreamType stream_type;
-	BOOL cleanup_nonprintable;
+	bool cleanup_nonprintable;
 	xmlChar *query;
 	xplDBListPtr db_list;
 	void *user_data;
@@ -139,12 +139,12 @@ XPLPUBFUN xefErrorMessagePtr XPLCALL
 	xefDbGetError(xefDbContextPtr ctxt);
 XPLPUBFUN void* XPLCALL
 	xefDbGetUserData(xefDbContextPtr ctxt);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xefDbHasRecordset(xefDbContextPtr ctxt);
 
 XPLPUBFUN xefDbContextPtr XPLCALL
 	xefDbQuery(xefDbQueryParamsPtr params);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xefDbNextRowset(xefDbContextPtr ctxt);
 XPLPUBFUN void XPLCALL 
 	xefDbEnumRows(xefDbContextPtr ctxt, xefDbGetRowCallback cb);
@@ -155,7 +155,7 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN void XPLCALL
 	xefDbFreeContext(xefDbContextPtr ctxt);
 XPLPUBFUN void XPLCALL
-	xefDbFreeParams(xefDbQueryParamsPtr params, BOOL freeCarrier);
+	xefDbFreeParams(xefDbQueryParamsPtr params, bool freeCarrier);
 
 /* == Вычистка HTML == */
 typedef struct _xefCleanHtmlParams
@@ -168,7 +168,7 @@ typedef struct _xefCleanHtmlParams
 	xefErrorMessagePtr error;	/* сообщение об ошибке. если не NULL - нужно освободить. */
 } xefCleanHtmlParams, *xefCleanHtmlParamsPtr;
 
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xefCleanHtml(xefCleanHtmlParamsPtr params);
 
 /* Немного проверок и ругани */

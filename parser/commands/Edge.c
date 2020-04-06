@@ -109,7 +109,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	{
 		if ((type = edgeTypeFromString(type_attr)) == EDGE_ERROR)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid type argument: \"%s\"", type_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid type argument: \"%s\"", type_attr), true, true);
 			goto done;
 		}
 	}
@@ -118,19 +118,19 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	{
 		if (!name_attr)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name argument"), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name argument"), true, true);
 			goto done;
 		}
 		EXTRACT_NS_AND_TAGNAME(name_attr, ns, tagname, commandInfo->element);
 		if (xmlValidateName(tagname, 0)) 
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid name argument: \"%s\"", name_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid name argument: \"%s\"", name_attr), true, true);
 			goto done;
 		}
 	} else {
 		if (name_attr)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "using name argument for this operation type makes no sense"), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "using name argument for this operation type makes no sense"), true, true);
 			goto done;
 		}
 		/* it's better to allow source and destination to be missing simultaneously */
@@ -138,7 +138,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 #if 0
 		if (!source_attr && !destination_attr)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "at least source or destination must be specified for this operation type"), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "at least source or destination must be specified for this operation type"), true, true);
 			goto done;
 		}
 #endif
@@ -149,7 +149,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		src = xplSelectNodes(commandInfo->document, commandInfo->element, source_attr);
 		if (!src)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath source expression \"%s\"", source_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath source expression \"%s\"", source_attr), true, true);
 			goto done;
 		}
 		if (type == EDGE_ATTRIBUTE) 
@@ -159,12 +159,12 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			case XPATH_NODESET:
 				if (!src->nodesetval)
 				{
-					ASSIGN_RESULT(NULL, FALSE, TRUE);
+					ASSIGN_RESULT(NULL, false, true);
 					goto done;
 				}
 				if (!checkNodeSetForText(src->nodesetval))
 				{
-					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), TRUE, TRUE);
+					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 					goto done;
 				}
 				source_text = flattenTextSet(src->nodesetval);
@@ -175,7 +175,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				source_text = xmlXPathCastToString(src);
 				break;
 			default:
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "source XPath expression \"%s\" evaluated to an invalid result", source_attr), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "source XPath expression \"%s\" evaluated to an invalid result", source_attr), true, true);
 				goto done;
 			}
 		} else
@@ -185,13 +185,13 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			if (!checkNodeListForText(commandInfo->element->children))
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), TRUE, TRUE);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 					goto done;
 			}
 			source_text = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
 			if (!source_text)
 			{
-				ASSIGN_RESULT(NULL, FALSE, TRUE); /* nothing to do */
+				ASSIGN_RESULT(NULL, false, true); /* nothing to do */
 				goto done;
 			}
 		} else
@@ -203,12 +203,12 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		dst = xplSelectNodes(commandInfo->document, commandInfo->element, destination_attr);
 		if (!dst)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath destination expression \"%s\"", destination_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath destination expression \"%s\"", destination_attr), true, true);
 			goto done;
 		}
 		if (dst->type != XPATH_NODESET)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "destination XPath expression \"%s\" evaluated to non-nodeset value", destination_attr), TRUE, TRUE);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "destination XPath expression \"%s\" evaluated to non-nodeset value", destination_attr), true, true);
 			goto done;
 		}
 		dst_nodes = dst->nodesetval;
@@ -260,7 +260,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 		}
 	}
-	ASSIGN_RESULT(NULL, FALSE, TRUE);
+	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (name_attr)
 		xmlFree(name_attr);

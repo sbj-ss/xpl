@@ -163,14 +163,14 @@ static xefFreeErrorMessageProto xef_free_error_message_functions[] =
 
 static const int xef_function_count = sizeof(xef_startup_functions) / sizeof(xef_startup_functions[0]);
 
-static BOOL xef_is_started = FALSE;
+static bool xef_is_started = false;
 
-BOOL xefStartup(xefStartupParamsPtr params)
+bool xefStartup(xefStartupParamsPtr params)
 {
 	int i, j;
 	
 	if (xef_is_started)
-		return TRUE;
+		return true;
 	for (i = 0; i < xef_function_count; i++)
 	{
 		if (!xef_startup_functions[i])
@@ -180,14 +180,14 @@ BOOL xefStartup(xefStartupParamsPtr params)
 			for (j = i - 1; j >= 0; j--)
 				if (xef_shutdown_functions[j])
 					xef_shutdown_functions[j]();
-			return FALSE;
+			return false;
 		}
 	}
-	xef_is_started = TRUE;
-	return TRUE;
+	xef_is_started = true;
+	return true;
 }
 
-BOOL xefIsStarted(void)
+bool xefIsStarted(void)
 {
 	return xef_is_started;
 }
@@ -201,7 +201,7 @@ void xefShutdown(void)
 	for (i = xef_function_count - 1; i >= 0; i--)
 		if (xef_shutdown_functions[i])
 			xef_shutdown_functions[i]();
-	xef_is_started = FALSE;
+	xef_is_started = false;
 }
 
 xmlChar* xefGetErrorText(xefErrorMessagePtr msg)
@@ -239,8 +239,8 @@ void xefFetchParamsClear(xefFetchDocumentParamsPtr params)
 #endif
 
 #ifndef _XEF_HAS_DB
-BOOL xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **msg)
+bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **msg)
 {
-	return FALSE;
+	return false;
 }
 #endif

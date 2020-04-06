@@ -31,9 +31,9 @@ void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo)
 void xplCmdReplaceIfUndefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	if (commandInfo->_private)
-		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, TRUE, TRUE);
+		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, true, true);
 	else
-		ASSIGN_RESULT(detachContent(commandInfo->element), FALSE, TRUE);
+		ASSIGN_RESULT(detachContent(commandInfo->element), false, true);
 }
 
 xplCommand xplReplaceIfUndefinedCommand = { 

@@ -9,7 +9,7 @@
 #include "Utils.h"
 #include <stdio.h>
 
-xplMacroExpansionState xplMacroExpansionStateFromString(xmlChar *state, BOOL allowNoDefault)
+xplMacroExpansionState xplMacroExpansionStateFromString(xmlChar *state, bool allowNoDefault)
 {
 	if (!state)
 		return XPL_MACRO_EXPAND_ALWAYS; /* default */
@@ -63,7 +63,7 @@ xplMacroPtr xplMacroCopy(xplMacroPtr macro, xmlNodePtr parent)
 	if (!ret)
 		return NULL;
 	ret->name = xmlStrdup(macro->name);
-	ret->ns_is_duplicated = TRUE;
+	ret->ns_is_duplicated = true;
 	ret->ns = xmlCopyNamespace(macro->ns);
 	ret->line = -1;
 	ret->parent = parent;
@@ -154,7 +154,7 @@ static void macroStringScanner(void *payload, void *data, xmlChar *name)
 	}
 }
 
-xmlChar* xplMacroTableToString(xmlNodePtr element, xmlChar* delimiter, BOOL unique)
+xmlChar* xplMacroTableToString(xmlNodePtr element, xmlChar* delimiter, bool unique)
 {
 	xmlNodePtr cur;
 	macroStringScannerCtxt ctxt;
@@ -290,7 +290,7 @@ static void macroListScanner(void *payload, void *data, xmlChar *name)
 		xmlHashAddEntry2(ctxt->unique_hash, name, macro->ns? macro->ns->href: NULL, (void*) 1);
 }
 
-xmlNodePtr xplMacroTableToNodeList(xmlNodePtr element, xmlChar *tagQName, BOOL unique, xmlNodePtr parent)
+xmlNodePtr xplMacroTableToNodeList(xmlNodePtr element, xmlChar *tagQName, bool unique, xmlNodePtr parent)
 {
 	macroListScannerCtxt ctxt;
 	xmlNodePtr cur;

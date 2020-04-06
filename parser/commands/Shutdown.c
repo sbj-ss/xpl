@@ -13,7 +13,7 @@ void xplCmdShutdownEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (xplSessionGetSaMode(commandInfo->document->session))
 		xprShutdownApp();
 	else
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 }
 
 xplCommand xplShutdownCommand = { xplCmdShutdownPrologue, xplCmdShutdownEpilogue };

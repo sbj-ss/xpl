@@ -8,7 +8,7 @@
 static FILE *log_file = NULL;
 static XPR_MUTEX console_interlock;
 
-xplMsgType xplMsgTypeFromString(xmlChar *severity, BOOL allowInternalError)
+xplMsgType xplMsgTypeFromString(xmlChar *severity, bool allowInternalError)
 {
 	if (!xmlStrcasecmp(severity, BAD_CAST "debug"))
 		return xplMsgDebug;
@@ -203,7 +203,7 @@ static void xplCleanupLogger()
 		fclose(log_file);
 }
 
-static BOOL xplInitLogger()
+static bool xplInitLogger()
 {
 	xmlChar *log_file_full_name = NULL, *executable_path;
 
@@ -219,15 +219,15 @@ static BOOL xplInitLogger()
 			xplDisplayMessage(xplMsgWarning, BAD_CAST "cannot open log file \"%s\" for writing", cfgLogFileName);
 		xmlFree(log_file_full_name);
 		xmlFree(executable_path);
-		return log_file? TRUE: FALSE;
+		return log_file? true: false;
 	} else
-		return TRUE;
+		return true;
 }
 
-BOOL xplInitMessages()
+bool xplInitMessages()
 {
 	if (!xprMutexInit(&console_interlock))
-		return FALSE;
+		return false;
 	return xplInitLogger();
 }
 

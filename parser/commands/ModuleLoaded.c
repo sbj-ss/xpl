@@ -14,26 +14,26 @@ void xplCmdModuleLoadedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	xmlChar *name_attr = NULL;
 	xmlChar *tagname_attr = NULL;
 	xmlChar *name;
-	BOOL showtags;
-	BOOL repeat;
+	bool showtags;
+	bool repeat;
 	xmlNodePtr ret, error;
 
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
 	tagname_attr = xmlGetNoNsProp(commandInfo->element, TAGNAME_ATTR);
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWTAGS_ATTR, &showtags, FALSE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWTAGS_ATTR, &showtags, false)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
-		ASSIGN_RESULT(error, TRUE, TRUE);
+		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
 	if (name_attr)
 	{
 		ret = xmlNewDocText(commandInfo->element->doc, xplIsModuleLoaded(name_attr)? BAD_CAST "true": BAD_CAST "false");
-		ASSIGN_RESULT(ret, FALSE, TRUE);
+		ASSIGN_RESULT(ret, false, true);
 	} else {
 		if (showtags)
 			name = NULL;
@@ -42,7 +42,7 @@ void xplCmdModuleLoadedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 		else 
 			name = "module";
 		ret = xplLoadedModulesToNodeList(name, commandInfo->element);
-		ASSIGN_RESULT(ret, repeat, TRUE);
+		ASSIGN_RESULT(ret, repeat, true);
 	}
 done:
 	if (name_attr)

@@ -69,9 +69,9 @@ struct _xplDocument
 	XPR_MUTEX thread_landing_lock;	/* ditto */
 	xmlNodePtr landing_point;		/* landing point in spawning document */
 	xplDocumentPtr parent;			/* spawning document */
-	BOOL has_suspended_threads;		/* ditto */
-	BOOL discard_suspended_threads;	/* discard threads that weren't ever started */
-	BOOL thread_was_suspended;		/* current thread with document was suspended */
+	bool has_suspended_threads;		/* ditto */
+	bool discard_suspended_threads;	/* discard threads that weren't ever started */
+	bool thread_was_suspended;		/* current thread with document was suspended */
 	int indent_spinlock;			/* for :text */
 	xmlNsPtr root_xpl_ns;			/* for fast XPL namespace checking */
 	time_t profile_checkpoint;		/* for :profile-xx */
@@ -92,12 +92,12 @@ XPLPUBFUN void XPLCALL
 	xplDocumentFree(xplDocumentPtr doc);
 
 #ifdef _THREADING_SUPPORT
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplEnsureDocThreadSupport(xplDocumentPtr doc);
 XPLPUBFUN void XPLCALL
 	xplWaitForChildThreads(xplDocumentPtr doc);
-XPLPUBFUN BOOL XPLCALL
-	xplStartChildThread(xplDocumentPtr doc, xplDocumentPtr child, BOOL immediateStart);
+XPLPUBFUN bool XPLCALL
+	xplStartChildThread(xplDocumentPtr doc, xplDocumentPtr child, bool immediateStart);
 XPLPUBFUN void XPLCALL
 	xplStartDelayedThreads(xplDocumentPtr doc);
 #endif
@@ -109,25 +109,25 @@ XPLPUBFUN xmlNodePtr XPLCALL
 	xplPopFromDocStack(xplDocumentPtr doc, xmlNodePtr parent);
 XPLPUBFUN void XPLCALL
 	xplClearDocStack(xplDocumentPtr doc);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplDocStackIsEmpty(xplDocumentPtr doc);
 
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplCheckNodeForXplNs(xplDocumentPtr doc, xmlNodePtr element);
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNodePtr oldElement, xmlNodePtr macroContent);
 XPLPUBFUN void XPLCALL
-	xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, BOOL expand, xplResultPtr result);
+	xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xplResultPtr result);
 XPLPUBFUN void XPLCALL
-	xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, BOOL expand, xplResultPtr result);
+	xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, bool expand, xplResultPtr result);
 XPLPUBFUN xmlNodePtr XPLCALL 
 	xplAddMacro(
 		xplDocumentPtr doc, 
 		xmlNodePtr macro, 
 		xmlNodePtr destination, 
-		BOOL fromNonCommand, 
+		bool fromNonCommand, 
 		xplMacroExpansionState defaultExpansionState,
-		BOOL defaultReplace
+		bool defaultReplace
 	);
 
 XPLPUBFUN xmlXPathObjectPtr XPLCALL
@@ -150,12 +150,12 @@ XPLPUBFUN XPR_SEMAPHORE * XPLCALL
 XPLPUBFUN XPR_SEMAPHORE * XPLCALL
 	xplSetGlobalThreadSemaphore(XPR_SEMAPHORE *p);
 
-typedef void (*xplLockThreadsFunc)(BOOL doLock);
+typedef void (*xplLockThreadsFunc)(bool doLock);
 
 XPLPUBFUN xplLockThreadsFunc XPLCALL
 	xplSetLockThreadsFunc(xplLockThreadsFunc f);
 XPLPUBFUN void XPLCALL
-	xplLockThreads(BOOL doLock);
+	xplLockThreads(bool doLock);
 
 typedef xmlChar* (*xplGetAppTypeFunc)(void);
 
@@ -168,7 +168,7 @@ XPLPUBFUN xmlChar* XPLCALL
    Соответственно, вызывать её до инициализации парсера - бессмысленно.
    Назначение - ПЕРЕчитать конфиг после внесения в него изменений.
  */
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplReadConfig(void);
 
 /* High-level functions */
@@ -177,7 +177,7 @@ XPLPUBFUN xplError XPLCALL
 	xplInitParser(xmlChar* cfgFile);
 XPLPUBFUN void XPLCALL
 	xplDoneParser(void);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplParserLoaded(void);
 XPLPUBFUN xmlChar* XPLCALL
 	xplGetDocRoot(void);
@@ -192,7 +192,7 @@ XPLPUBFUN xplError XPLCALL
 /* Path format (e.g.)
    basePath = "d:\\Tomcat 4.1\\webapps\\ROOT"
    relativePath = "/Impulse/Developer.xpl" */
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplGetDocByRole(xplDocumentPtr docIn, xmlChar *strRole, xplDocumentPtr *docOut);
 XPLPUBFUN xplError XPLCALL
 	xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr environment, xplSessionPtr session, xplDocumentPtr *docOut);

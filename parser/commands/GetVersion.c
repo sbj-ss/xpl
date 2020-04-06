@@ -107,7 +107,7 @@ void xplCmdGetVersionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	xmlNsPtr tagname_ns = NULL;
 	xmlChar *ver;
 	xmlNodePtr ret, error;
-	BOOL repeat;
+	bool repeat;
 
 	part_attr = xmlGetNoNsProp(commandInfo->element, PART_ATTR);
 	if (!part_attr || !xmlStrcasecmp(part_attr, BAD_CAST "full"))
@@ -121,9 +121,9 @@ void xplCmdGetVersionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		sprintf((char*) ver, "%d", XPL_VERSION_MINOR);
 	} else if (!xmlStrcasecmp(part_attr, BAD_CAST "libs")) {
 		tagname_attr = xmlGetNoNsProp(commandInfo->element, TAGNAME_ATTR);
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, TRUE)))
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 		{
-			ASSIGN_RESULT(error, TRUE, TRUE);
+			ASSIGN_RESULT(error, true, true);
 			goto done;
 		}
 		if (tagname_attr)
@@ -131,15 +131,15 @@ void xplCmdGetVersionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 			EXTRACT_NS_AND_TAGNAME(tagname_attr, tagname_ns, tagname, commandInfo->element);
 		} else
 			tagname = BAD_CAST "library";
-		ASSIGN_RESULT(listLibraryVersions(tagname_ns, tagname, commandInfo->element->doc), repeat, TRUE);
+		ASSIGN_RESULT(listLibraryVersions(tagname_ns, tagname, commandInfo->element->doc), repeat, true);
 		goto done;
 	} else {
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown part attribute: \"%s\"", part_attr), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown part attribute: \"%s\"", part_attr), true, true);
 		goto done;
 	}
 	ret = xmlNewDocText(commandInfo->document->document, NULL);
 	ret->content = ver;
-	ASSIGN_RESULT(ret, FALSE, TRUE);
+	ASSIGN_RESULT(ret, false, true);
 done:
 	if (part_attr)
 		xmlFree(part_attr);

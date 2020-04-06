@@ -20,8 +20,8 @@ typedef xplDocument* xplDocumentPtr;
 typedef struct _xplResult
 {
     xmlNodePtr list;
-	BOOL repeat;
-	BOOL has_list;
+	bool repeat;
+	bool has_list;
 } xplResult, *xplResultPtr;
 
 #define ASSIGN_RESULT(lst, rpt, has_lst) do {\
@@ -42,7 +42,7 @@ typedef struct _xplCommandInfo
 
 typedef void (*xplCommandPrologue) (xplCommandInfoPtr info);
 typedef void (*xplCommandEpilogue) (xplCommandInfoPtr info, xplResultPtr result);
-typedef BOOL (*xplCommandInitializer) (void*, xmlChar **error);
+typedef bool (*xplCommandInitializer) (void*, xmlChar **error);
 typedef void (*xplCommandFinalizer) (void*);
 
 #define XPL_CMD_FLAG_CONTENT_SAFE 0x0001UL
@@ -97,7 +97,7 @@ typedef enum _xplModuleCmdResult
 	XPL_MODULE_CMD_LOCK_ERROR = -11
 } xplModuleCmdResult;
 
-XPLPUBFUN xplModuleCmdResult XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplInitCommands();
 XPLPUBFUN xplModuleCmdResult XPLCALL
 	xplRegisterCommand(const xmlChar* name, xplCommandPtr cmd, xmlChar **error);
@@ -105,7 +105,7 @@ XPLPUBFUN void XPLCALL
 	xplUnregisterCommand(const xmlChar* name);
 XPLPUBFUN xplCommandPtr XPLCALL
 	xplGetCommand(xmlNodePtr el);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplCommandSupported(const xmlChar* name);
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplSupportedCommandsToList(xmlDocPtr doc, xmlNodePtr parent, const xmlChar *tagName);
@@ -120,7 +120,7 @@ XPLPUBFUN void XPLCALL
 	xplUnloadModule(xmlChar *name);
 XPLPUBFUN xmlChar* XPLCALL
 	xplModuleCmdResultToString(xplModuleCmdResult result, xmlChar *error_data);
-XPLPUBFUN BOOL XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplIsModuleLoaded(const xmlChar *name);
 XPLPUBFUN xmlChar* XPLCALL
 	xplLoadedModulesToString(const xmlChar *delimiter);
@@ -130,7 +130,7 @@ XPLPUBFUN int XPLCALL
 	xplLoadableModulesCleanup(void);
 
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, BOOL *value, BOOL defaultValue);
+	xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, bool *value, bool defaultValue);
 #ifdef __cplusplus
 }
 #endif

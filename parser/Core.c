@@ -12,7 +12,7 @@
 #include <stdio.h> 
 
 /* internal statics */
-static BOOL parser_loaded = 0;
+static bool parser_loaded = 0;
 static xmlChar *config_file_path = NULL;
 XPR_SEMAPHORE *global_thread_semaphore = NULL;
 xplLockThreadsFunc lock_threads_func = NULL;
@@ -111,13 +111,13 @@ void xplClearDocStack(xplDocumentPtr doc)
 	doc->stack = NULL;
 }
 
-BOOL xplDocStackIsEmpty(xplDocumentPtr doc)
+bool xplDocStackIsEmpty(xplDocumentPtr doc)
 {
 	if (!doc)
-		return TRUE;
+		return true;
 	if (!doc->stack)
-		return TRUE;
-	return FALSE;
+		return true;
+	return false;
 }
 
 /* Command routines */
@@ -158,7 +158,7 @@ void xplDeferNodeDeletion(ReszBufPtr buf, xmlNodePtr cur)
 		return;
 	if ((int) cur->type & XML_NODE_DELETION_DEFERRED_FLAG)
 		return;
-	markDOSAxisForDeletion(cur, XML_NODE_DELETION_DEFERRED_FLAG, TRUE);
+	markDOSAxisForDeletion(cur, XML_NODE_DELETION_DEFERRED_FLAG, true);
 	addDataToReszBuf(buf, &cur, sizeof(xmlNodePtr));
 }
 
@@ -201,7 +201,7 @@ void xplDeleteDeferredNodes(ReszBufPtr buf)
 	xmlNodePtr *p = getReszBufContent(buf);
 	for (i = 0; i < getReszBufContentSize(buf) / sizeof(xmlNodePtr); i++, p++)
 	{
-		markDOSAxisForDeletion(*p, XML_NODE_DELETION_MASK, FALSE);
+		markDOSAxisForDeletion(*p, XML_NODE_DELETION_MASK, false);
 		xmlUnlinkNode(*p);
 		xmlFreeNode(*p);
 	}
@@ -227,7 +227,7 @@ xplLockThreadsFunc xplSetLockThreadsFunc(xplLockThreadsFunc f)
 	return tmp;
 }
 
-void xplLockThreads(BOOL doLock)
+void xplLockThreads(bool doLock)
 {
 	if (lock_threads_func)
 		lock_threads_func(doLock);
@@ -247,38 +247,38 @@ xmlChar* xplGetAppType()
 	return BAD_CAST "unknown";
 }
 
-BOOL xplGetDocByRole(xplDocumentPtr docIn, xmlChar *strRole, xplDocumentPtr *docOut)
+bool xplGetDocByRole(xplDocumentPtr docIn, xmlChar *strRole, xplDocumentPtr *docOut)
 {
 	xplDocRole role;
 
 	if (!strRole)
 	{
 		*docOut = docIn;
-		return TRUE;
+		return true;
 	}
 	if (!docIn)
 	{
 		*docOut = NULL;
-		return TRUE;
+		return true;
 	}
 	if ((role = xplDocRoleFromString(strRole)) == XPL_DOC_ROLE_UNKNOWN)
-		return FALSE;
+		return false;
 	switch (role)
 	{
 	case XPL_DOC_ROLE_PROLOGUE: 
 		*docOut = docIn->prologue;
-		return TRUE;
+		return true;
 	case XPL_DOC_ROLE_MAIN:
 		*docOut = docIn->main;
-		return TRUE;
+		return true;
 	case XPL_DOC_ROLE_EPILOGUE:
 		*docOut = docIn->epilogue;
-		return TRUE;
+		return true;
 	default:
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	}
 	*docOut = NULL;
-	return FALSE;
+	return false;
 }
 
 /* common document initialization part */
@@ -394,7 +394,7 @@ void xplDocumentFree(xplDocumentPtr doc)
 	if (doc->threads)
 	{
 		/* Перестрахуемся */
-		doc->discard_suspended_threads = TRUE;
+		doc->discard_suspended_threads = true;
 		xplStartDelayedThreads(doc);
 		xplWaitForChildThreads(doc);
 		freeReszBuf(doc->threads);
@@ -422,23 +422,23 @@ void xplEnsureDocThreadSupport(xplDocumentPtr doc)
 	if (!global_thread_semaphore)
 	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return FALSE;
+		return false;
 	}
 	if (doc->threads)
 		return;
 	if (!xprMutexInit(&doc->thread_landing_lock))
 	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return FALSE;
+		return false;
 	}
 	doc->threads = createReszBufParams(2*sizeof(XPR_THREAD_HANDLE), RESZ_BUF_GROW_INCREMENT, 2*sizeof(XPR_THREAD_HANDLE));
 	if (!doc_threads)
 	{
 		if (!xprMutexCleanup(&doc->thread_landing_lock))
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 void xplWaitForChildThreads(xplDocumentPtr doc)
@@ -494,23 +494,23 @@ XPR_THREAD_ROUTINE_RESULT XPR_THREAD_ROUTINE_CALL xplDocThreadWrapper(XPR_THREAD
 	XPR_EXIT_THREAD(0);
 }
 
-BOOL xplStartChildThread(xplDocumentPtr doc, xplDocumentPtr child, BOOL immediateStart)
+bool xplStartChildThread(xplDocumentPtr doc, xplDocumentPtr child, bool immediateStart)
 {
 	XPR_THREAD_HANDLE handle;
 	if (!doc || !child) 
-		return FALSE;
+		return false;
 	if (!xplEnsureDocThreadSupport(doc))
-		return FALSE;
+		return false;
 	XPR_START_THREAD_SUSPENDED(handle, xplDocThreadWrapper, (XPR_THREAD_ROUTINE_PARAM) child);
 	if (!handle)
-		return FALSE;
+		return false;
 	addDataToReszBuf(doc->threads, &handle, sizeof(XPR_THREAD_HANDLE));
 	child->thread_was_suspended = !immediateStart;
 	if (immediateStart)
 		XPR_RESUME_THREAD(handle);
 	else
-		doc->has_suspended_threads = TRUE;
-	return TRUE;
+		doc->has_suspended_threads = true;
+	return true;
 }
 
 void xplStartDelayedThreads(xplDocumentPtr doc)
@@ -524,22 +524,22 @@ void xplStartDelayedThreads(xplDocumentPtr doc)
 	{
 		XPR_RESUME_THREAD(*handles);
 	}
-	doc->has_suspended_threads = FALSE;
+	doc->has_suspended_threads = false;
 }
 #endif
 
 
-BOOL xplCheckNodeForXplNs(xplDocumentPtr doc, xmlNodePtr element)
+bool xplCheckNodeForXplNs(xplDocumentPtr doc, xmlNodePtr element)
 {
 	if (!element->ns)
-		return FALSE;
+		return false;
 	return (element->ns == doc->root_xpl_ns) 
 		|| (doc->root_xpl_ns && !xmlStrcmp(element->ns->href, doc->root_xpl_ns->href))
 		|| !xmlStrcmp(element->ns->href, cfgXplNsUri);
 }
 
 /* content stuff for <xpl:content/> */
-void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, BOOL defContent, const xmlChar* id, xmlNodeSetPtr list);
+void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, const xmlChar* id, xmlNodeSetPtr list);
 
 xmlNodeSetPtr getContentList(xplDocumentPtr doc, xmlNodePtr root, const xmlChar* id)
 {
@@ -547,11 +547,11 @@ xmlNodeSetPtr getContentList(xplDocumentPtr doc, xmlNodePtr root, const xmlChar*
 	xmlNodeSetPtr nodeset = xmlXPathNodeSetCreate(NULL);
 	if (!nodeset)
 		return NULL;
-	getContentListInner(doc, root, TRUE, id, nodeset);
+	getContentListInner(doc, root, true, id, nodeset);
 	return nodeset;
 }
 
-void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, BOOL defContent, const xmlChar* id, xmlNodeSetPtr list)
+void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, const xmlChar* id, xmlNodeSetPtr list)
 {
 	xmlChar* attr_id;
 	xmlNodePtr c = root;
@@ -583,7 +583,7 @@ void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, BOOL defContent, c
 				|| !xmlStrcmp(c->name, BAD_CAST "for-each")
 				|| !xmlStrcmp(c->name, BAD_CAST "with")
 				|| !xmlStrcmp(c->name, BAD_CAST "do")) {
-				getContentListInner(doc, c->children, FALSE, id, list);
+				getContentListInner(doc, c->children, false, id, list);
 			} else {
 				getContentListInner(doc, c->children, defContent, id, list);
             }
@@ -600,7 +600,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 	xmlNodeSetPtr content_cmds;
 	xmlChar *select_attr;
 	xmlChar *required_attr = NULL;
-	BOOL required = FALSE;
+	bool required = false;
 	xmlXPathObjectPtr sel;
 	int i, j;
 	xmlHashTablePtr content_cache = NULL;
@@ -625,10 +625,10 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 		select_attr = xmlGetNoNsProp(cur, BAD_CAST "select");
 		if (cfgWarnOnMissingMacroContent)
 		{
-			required = FALSE;
+			required = false;
 			required_attr = xmlGetNoNsProp(cur, BAD_CAST "required");
 			if (required_attr && !xmlStrcasecmp(required_attr, BAD_CAST "true"))
-				required = TRUE;
+				required = true;
 			xmlFree(required_attr);
 		}
 		if (select_attr)
@@ -700,10 +700,10 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 
 /* node mode-based processing */
 static void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result);
-static void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, BOOL expand, xplResultPtr result);
+static void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xplResultPtr result);
 static xplMacroPtr xplNodeHasMacro(xplDocumentPtr doc, xmlNodePtr element);
 
-void xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, BOOL expand, xplResultPtr result)
+void xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xplResultPtr result)
 {
 	xplMacroPtr macro;
 	xmlHashTablePtr macros;
@@ -726,7 +726,7 @@ void xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, BOOL expand, xplResult
 	}
 }
 
-void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, BOOL expand, xplResultPtr result)
+void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, bool expand, xplResultPtr result)
 {
 	xmlNodePtr tail, c = children;
 
@@ -779,7 +779,7 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, BOOL expand, xplR
 			tail = c->next;
 		c = tail;
 	}
-	ASSIGN_RESULT(NULL, FALSE, FALSE);
+	ASSIGN_RESULT(NULL, false, false);
 }
 
 void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result)
@@ -790,7 +790,7 @@ void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr mac
 	doc->recursion_level++;
 	if (doc->recursion_level > cfgMaxRecursionDepth)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(element, BAD_CAST "recursion depth exhausted (infinite loop in macro?..)"), TRUE, TRUE);
+		ASSIGN_RESULT(xplCreateErrorNode(element, BAD_CAST "recursion depth exhausted (infinite loop in macro?..)"), true, true);
 		return;
 	}
 	prev_macro = doc->current_macro;
@@ -818,7 +818,7 @@ void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr mac
 		macro->node_original_content = element->children; 
 		out = xplReplaceContentEntries(doc, macro->id, element, macro->content);
 		setChildren(element, out);
-		xplNodeListApply(doc, element->children, TRUE, result);
+		xplNodeListApply(doc, element->children, true, result);
 		downshiftNodeListNsDef(out, element->nsDef);
 		out = detachContent(element);
 		if (!out) /* содержимое могло быть удалено командой return */
@@ -837,7 +837,7 @@ void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr mac
 		macro->content = cloneNodeList(out, element->parent, element->doc);
 		macro->expansion_state = XPL_MACRO_EXPANDED;
 	}
-	ASSIGN_RESULT(out, FALSE, TRUE);
+	ASSIGN_RESULT(out, false, true);
 	doc->recursion_level--;
 	doc->current_macro = prev_macro;
 	macro->caller = prev_caller;
@@ -849,7 +849,7 @@ void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr mac
 	}
 }
 
-void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, BOOL expand, xplResultPtr result)
+void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xplResultPtr result)
 {
 	xmlNodePtr content; 
 	xplCommandPtr cmd = NULL;
@@ -857,21 +857,21 @@ void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, BOOL expand, xpl
 
 	if (expand && !xmlStrcmp(element->name, BAD_CAST "define"))
 	{ 
-		content = xplAddMacro(doc, element, element->parent, FALSE, XPL_MACRO_EXPAND_NO_DEFAULT, TRUE); /* content - буфер ошибки */
-		ASSIGN_RESULT(content, content? TRUE: FALSE, TRUE);
+		content = xplAddMacro(doc, element, element->parent, false, XPL_MACRO_EXPAND_NO_DEFAULT, true); /* content - буфер ошибки */
+		ASSIGN_RESULT(content, content? true: false, true);
 	} else if (!xmlStrcmp(element->name, BAD_CAST "no-expand")) {
-		xplNodeListApply(doc, element->children, FALSE, result);
+		xplNodeListApply(doc, element->children, false, result);
 		content = detachContent(element);
-		ASSIGN_RESULT(content, FALSE, TRUE);
+		ASSIGN_RESULT(content, false, true);
 	} else if (!xmlStrcmp(element->name, BAD_CAST "expand")) {
-		xplNodeListApply(doc, element->children, TRUE, result);
+		xplNodeListApply(doc, element->children, true, result);
 		content = detachContent(element);
-		ASSIGN_RESULT(content, FALSE, TRUE);
+		ASSIGN_RESULT(content, false, true);
 	} else if (!xmlStrcmp(element->name, BAD_CAST "expand-after")) {
-		xplNodeListApply(doc, element->children, FALSE, result);
-		xplNodeListApply(doc, element->children, TRUE, result);
+		xplNodeListApply(doc, element->children, false, result);
+		xplNodeListApply(doc, element->children, true, result);
 		content = detachContent(element);
-		ASSIGN_RESULT(content, FALSE, TRUE);
+		ASSIGN_RESULT(content, false, true);
 	} else {
 		if (expand)
 		{
@@ -907,9 +907,9 @@ xmlNodePtr xplAddMacro(
 	xplDocumentPtr doc, 
 	xmlNodePtr macro, 
 	xmlNodePtr destination, 
-	BOOL fromNonCommand, 
+	bool fromNonCommand, 
 	xplMacroExpansionState defaultExpansionState,
-	BOOL defaultReplace
+	bool defaultReplace
 )
 {
 	xmlHashTablePtr macros; 
@@ -917,7 +917,7 @@ xmlNodePtr xplAddMacro(
 	xmlChar *id_attr = NULL;
 	xmlChar *expand_attr = NULL;
 	xplMacroExpansionState expansion_state;
-	BOOL replace = TRUE;
+	bool replace = true;
 	xplMacroPtr mb, prev_def = NULL, prev_macro;
 	xmlChar *tagname;
 	xmlNsPtr ns;
@@ -936,7 +936,7 @@ xmlNodePtr xplAddMacro(
 	}
 	if (xmlHasProp(macro, BAD_CAST "replace"))
 	{
-		if ((ret = xplDecodeCmdBoolParam(macro, BAD_CAST "replace", &replace, TRUE)))
+		if ((ret = xplDecodeCmdBoolParam(macro, BAD_CAST "replace", &replace, true)))
 		{
 			xmlFree(name_attr);
 			return ret;
@@ -957,7 +957,7 @@ xmlNodePtr xplAddMacro(
 	expand_attr = xmlGetNoNsProp(macro, BAD_CAST "expand");
 	if (expand_attr)
 	{
-		expansion_state = xplMacroExpansionStateFromString(expand_attr, FALSE);
+		expansion_state = xplMacroExpansionStateFromString(expand_attr, false);
 		if (expansion_state == XPL_MACRO_EXPAND_UNKNOWN)
 		{
 			ret = xplCreateErrorNode(macro, BAD_CAST "invalid expand attribute: \"%s\"", expand_attr);
@@ -973,7 +973,7 @@ xmlNodePtr xplAddMacro(
 		prev_macro = doc->current_macro;
 		doc->current_macro = mb;
 		mb->caller = macro;
-		xplNodeListApply(doc, macro->children, TRUE, &tmp_result);
+		xplNodeListApply(doc, macro->children, true, &tmp_result);
 		doc->current_macro = prev_macro;
 	}
 	mb->content = detachContent(macro);
@@ -1000,7 +1000,7 @@ xmlNodePtr xplAddMacro(
 	{
 		if (mb->ns == ns) /* ns на самой команде */
 		{
-			mb->ns_is_duplicated = TRUE;
+			mb->ns_is_duplicated = true;
 			mb->ns = xmlCopyNamespace(ns);
 		}
 		ns = ns->next;
@@ -1070,11 +1070,11 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 		if (root_element)
 		{
 			xplCheckRootNs(doc, root_element);
-			xplNodeApply(doc, root_element, TRUE, &res);
+			xplNodeApply(doc, root_element, true, &res);
 #ifdef _THREADING_SUPPORT
 			if (doc->threads)
 			{
-				doc->discard_suspended_threads = TRUE;
+				doc->discard_suspended_threads = true;
 				xplStartDelayedThreads(doc);
 				xplWaitForChildThreads(doc);
 				freeReszBuf(doc->threads);
@@ -1109,7 +1109,7 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 	return ret;
 }
 
-BOOL xplReadConfig()
+bool xplReadConfig()
 {
 	xmlDocPtr cfg;
 	xmlNodePtr cur;
@@ -1130,7 +1130,7 @@ BOOL xplReadConfig()
 				if (!xplReadDatabases(cur))
 				{
 					xmlFreeDoc(cfg);
-					return FALSE;
+					return false;
 				}
 			} else if (!xmlStrcmp(cur->name, BAD_CAST "Options")) {
 				xplReadOptions(cur);
@@ -1145,7 +1145,7 @@ BOOL xplReadConfig()
 		xplAssignDefaultsToAllOptions();
 	if (cfgCheckDbOnStartup)
 		xplCheckDatabases();
-	return 1;
+	return true;
 }
 
 xplError xplInitParser(xmlChar *cfgFile)
@@ -1159,31 +1159,31 @@ xplError xplInitParser(xmlChar *cfgFile)
 	config_file_path = xmlStrdup(cfgFile);
 	if (!xplReadConfig())
 	{
-		parser_loaded = TRUE;
+		parser_loaded = true;
 		xplDoneParser();
 		return XPL_ERR_NO_CONFIG_FILE;
 	}
 	if (!xplInitMessages())
 	{
-		parser_loaded = TRUE;
+		parser_loaded = true;
 		xplDoneParser();
 		return XPL_ERR_NO_PARSER;
 	}
 	if (!xplInitCommands())
 	{
-		parser_loaded = TRUE;
+		parser_loaded = true;
 		xplDoneParser();
 		return XPL_ERR_NO_PARSER;
 	}
 	if (!xplRegisterBuiltinCommands())
 	{
-		parser_loaded = TRUE;
+		parser_loaded = true;
 		xplDoneParser();
 		return XPL_ERR_NO_PARSER;
 	}
 	initNamePointers();
 	xplSessionManagerInit(cfgSessionLifetime);
-	parser_loaded = TRUE;
+	parser_loaded = true;
 	return XPL_ERR_NO_ERROR;
 }
 
@@ -1203,10 +1203,10 @@ void xplDoneParser()
 	}
 	xplSessionManagerCleanup();
 	xplCleanupMessages();
-	parser_loaded = FALSE;
+	parser_loaded = false;
 }
 
-BOOL xplParserLoaded()
+bool xplParserLoaded()
 {
 	return parser_loaded;
 }

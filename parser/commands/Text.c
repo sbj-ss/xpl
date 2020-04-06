@@ -11,20 +11,20 @@ void xplCmdTextEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REPEAT_ATTR (BAD_CAST "repeat")
 
-	BOOL repeat;
+	bool repeat;
 	xmlNodePtr error;
 
 	commandInfo->document->indent_spinlock--;
 	if (!(commandInfo->element->type & XML_NODE_DELETION_MASK))
 	{
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, FALSE)))
+		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
 		{
-			ASSIGN_RESULT(error, TRUE, TRUE);
+			ASSIGN_RESULT(error, true, true);
 			return;
 		} else
-			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, TRUE);
+			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
 	} else
-		ASSIGN_RESULT(NULL, FALSE, FALSE);
+		ASSIGN_RESULT(NULL, false, false);
 }
 
 xplCommand xplTextCommand = {
