@@ -3,8 +3,8 @@
 /* are changed infrequently */
 
 #pragma once
-#ifndef _common_H
-#define _common_H
+#ifndef __common_H
+#define __common_H
 
 #ifdef _WIN32
 # define _CRT_SECURE_NO_WARNINGS

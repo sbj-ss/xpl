@@ -3,8 +3,8 @@
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
 
-#ifndef __Configuration_H
-#define __Configuration_H
+#ifndef __configuration_H
+#define __configuration_H
 
 #include <libxml/xmlstring.h>
 /* Calling conventions */

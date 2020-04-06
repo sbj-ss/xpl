@@ -2,8 +2,8 @@
 /* Polaris project: the pure C XPL engine */
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
-#ifndef _tests_H
-#define _tests_H
+#ifndef __tests_H
+#define __tests_H
 
 #include "Configuration.h"
 #include "Common.h"

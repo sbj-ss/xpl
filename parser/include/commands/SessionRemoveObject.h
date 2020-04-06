@@ -2,8 +2,8 @@
 /* Polaris project: the pure C XPL engine */
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
-#ifndef __SessionRemoveObject_H
-#define __SessionRemoveObject_H
+#ifndef __sessionremoveobject_H
+#define __sessionremoveobject_H
 
 #include "Command.h"
 

@@ -3,8 +3,8 @@
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
 
-#ifndef __Session_H
-#define __Session_H
+#ifndef __session_H
+#define __session_H
 
 #include "Configuration.h"
 #include "Common.h"

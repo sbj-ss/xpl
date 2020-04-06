@@ -2,8 +2,8 @@
 /* Polaris project: the pure C XPL engine */
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
-#ifndef __SessionIsPresent_H
-#define __SessionIsPresent_H
+#ifndef __sessionispresent_H
+#define __sessionispresent_H
 
 #include "Command.h"
 

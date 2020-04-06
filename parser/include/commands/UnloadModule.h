@@ -2,8 +2,8 @@
 /* Polaris project: the pure C XPL engine */
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
-#ifndef __unload_module_H
-#define __unload_module_H
+#ifndef __unloadmodule_H
+#define __unloadmodule_H
 
 #include "Command.h"
 

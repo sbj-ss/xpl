@@ -2,8 +2,8 @@
 /* Polaris project: the pure C XPL engine */
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
-#ifndef __suppress_macros_H
-#define __suppress_macros_H
+#ifndef __suppressmacros_H
+#define __suppressmacros_H
 
 #include "Command.h"
 

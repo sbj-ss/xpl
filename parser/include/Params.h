@@ -3,8 +3,8 @@
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
 
-#ifndef __Params_H
-#define __Params_H
+#ifndef __params_H
+#define __params_H
 
 #include "Configuration.h"
 #include "Common.h"
