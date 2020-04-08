@@ -469,7 +469,12 @@ XPR_THREAD_ROUTINE_RESULT XPR_THREAD_ROUTINE_CALL xplDocThreadWrapper(XPR_THREAD
 	}
 	if (!(doc->parent->discard_suspended_threads && doc->thread_was_suspended))
 	{
-		xprSemaphoreAcquire(global_thread_semaphore);
+		if (!xprSemaphoreAcquire(global_thread_semaphore))
+		{
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
+			/* don't unlink/free the landing point here - possible race condition */
+			goto done;
+		}
 		err = xplDocumentApply(doc);
 		if ((err != XPL_ERR_NO_ERROR) && (err != XPL_ERR_FATAL_CALLED))
 			/* Такого не должно быть, но… */
@@ -488,6 +493,7 @@ XPR_THREAD_ROUTINE_RESULT XPR_THREAD_ROUTINE_CALL xplDocThreadWrapper(XPR_THREAD
 		xmlUnlinkNode(doc->landing_point);
 		xmlFreeNode(doc->landing_point);
 	}
+done:
 	xplParamsFree(doc->environment);
 	doc->document->intSubset = NULL;
 	xplDocumentFree(doc);

@@ -24,7 +24,7 @@ typedef struct _xplSession
 	XPR_MUTEX locker;
 } xplSession;
 
-/* start/stop */
+/* start/stop */ /* TODO bool ret */
 int xplSessionManagerInit(time_t max_lifetime)
 {
 	if (!session_mgr)

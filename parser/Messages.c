@@ -233,6 +233,7 @@ bool xplInitMessages()
 
 void xplCleanupMessages()
 {
-	xprMutexCleanup(&console_interlock);
+	if (!xprMutexCleanup(&console_interlock))
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	xplCleanupLogger();
 }

@@ -170,7 +170,11 @@ void xplReadWrapperMap(xmlNodePtr cur)
 	unsigned int i;
 
 	xplCleanupWrapperMap();
-	xprMutexInit(&mapper_interlock);
+	if (!xprMutexInit(&mapper_interlock))
+	{
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return;
+	}
 	cur = cur->children;
 	while (cur)
 	{
@@ -227,7 +231,10 @@ xmlChar* xplMapDocWrapper(xmlChar *filename, xplDocRole role)
 		return NULL;
 	fn_end = filename + xmlStrlen(filename);
 	if (!xprMutexAcquire(&mapper_interlock)) /* regex isn't thread safe */
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return NULL;
+	}
 	while (cur)
 	{
 		if (onig_match(cur->regex, filename, fn_end, filename, region, 0) != ONIG_MISMATCH)

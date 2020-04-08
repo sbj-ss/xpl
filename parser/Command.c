@@ -168,10 +168,16 @@ xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 	if (!loaded_modules)
 		return XPL_MODULE_CMD_NO_PARSER;
 	if (!xprMutexAcquire(&module_locker))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return XPL_MODULE_CMD_LOCK_ERROR;
+	}
 	prev = xmlHashLookup(loaded_modules, name);
 	if (!xprMutexRelease(&module_locker))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return XPL_MODULE_CMD_LOCK_ERROR;
+	}
 	if (prev)
 		return XPL_MODULE_CMD_MODULE_ALREADY_LOADED;
 	ASSIGN_ERR_DATA(NULL);
@@ -216,7 +222,11 @@ xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 	}
 	cmds->handle = (void*) hmodule;
 	if (!xprMutexAcquire(&module_locker))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		xprUnloadSharedObject(hmodule);
+		return XPL_MODULE_CMD_LOCK_ERROR;
+	}
 	for (i = 0; i < cmds->count; i++)
 	{
 		if (cmds->commands[i].magic != PLUGGABLE_MODULE_MAGIC)
@@ -242,7 +252,11 @@ xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 	}
 	xmlHashAddEntry(loaded_modules, name, cmds);
 	if (!xprMutexRelease(&module_locker))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		xprUnloadSharedObject(hmodule);
+		return XPL_MODULE_CMD_LOCK_ERROR;
+	}
 	return XPL_MODULE_CMD_OK;
 #undef ASSIGN_ERR_DATA
 }
@@ -322,7 +336,10 @@ bool xplIsModuleLoaded(const xmlChar *name)
 	if (!loaded_modules)
 		return false;
 	if (!xprMutexAcquire(&module_locker))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return false;
+	}
 	ret = xmlHashLookup(loaded_modules, name)? true: false;
 	if (!xprMutexRelease(&module_locker))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -373,7 +390,10 @@ xmlChar* xplLoadedModulesToString(const xmlChar *delimiter)
 	count_ctxt.len = 0;
 	count_ctxt.delim_len = delimiter? xmlStrlen(delimiter): 0;
 	if (!xprMutexAcquire(&module_locker))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return xmlStrdup(BAD_CAST "lock error");
+	}
 	xmlHashScan(loaded_modules, loadedModulesCountScanner, &count_ctxt);
 	if (!count_ctxt.len)
 	{
