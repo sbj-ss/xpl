@@ -69,7 +69,7 @@ void xplSessionManagerCleanup()
 {
 	if (!session_mgr)
 		return;
-	if (!xprMutexAcquire(&session_interlock))
+	if (!xprMutexAcquire(&session_interlock)) /* TODO what should we do here? */
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	xmlHashFree(session_mgr, freeSessionCallback);
 	session_mgr = NULL;
@@ -131,7 +131,10 @@ xplSessionPtr xplSessionCreate(const xmlChar *id)
 	if (!session_mgr)
 		return NULL;
 	if (!xprMutexAcquire(&session_interlock))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return NULL;
+	}
 	s = xplSessionLookupInternal(id);
 	if (!s)
 		s = xplSessionCreateInner(id);
@@ -149,7 +152,10 @@ xplSessionPtr xplSessionCreateWithAutoId()
 	if (!session_mgr)
 		return NULL;
 	if (!xprMutexAcquire(&session_interlock))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return NULL;
+	}
 	while (flag)
 	{
 		snprintf((char*) id, sizeof(id), "%08X", (unsigned int) lrand48());
@@ -168,7 +174,10 @@ xplSessionPtr xplSessionLookup(const xmlChar *id)
 	if (!session_mgr)
 		return NULL;
 	if (!xprMutexAcquire(&session_interlock))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return NULL;
+	}
 	ret = (xplSessionPtr) xplSessionLookupInternal(id);
 	if (!xprMutexRelease(&session_interlock))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -179,7 +188,7 @@ void xplDeleteSession(const xmlChar *id)
 {
 	if (!session_mgr)
 		return;
-	if (!xprMutexAcquire(&session_interlock))
+	if (!xprMutexAcquire(&session_interlock)) /* TODO what should we do here? */
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	xmlHashRemoveEntry(session_mgr, id, freeSessionCallback);
 	if (!xprMutexRelease(&session_interlock))
@@ -198,7 +207,10 @@ void xplCleanupStaleSessions()
 	if (!session_mgr)
 		return;
 	if (!xprMutexAcquire(&session_interlock))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return;
+	}
 	xmlHashScan(session_mgr, enumStaleSessionsCallback, NULL);
 	if (!xprMutexRelease(&session_interlock))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -214,7 +226,10 @@ int xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlCh
 	if (!session)
 		return -1;
 	if (!xprMutexAcquire(&session->locker))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return -1;
+	}
 	new_parent = xmlNewDocNode(session->doc, NULL, name, NULL);
 	setChildren(new_parent, cur->children);
 	setChildren(cur, new_parent);
@@ -249,7 +264,10 @@ xmlNodePtr xplSessionGetObject(const xplSessionPtr session, const xmlChar *name)
 	if (!session)
 		return NULL;
 	if (!xprMutexAcquire(&session->locker))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return NULL;
+	}
 	if (session->valid)
 	{
 		carrier = (xmlNodePtr) xmlHashLookup(session->items, name);
@@ -267,7 +285,10 @@ xmlNodePtr xplSessionGetAllObjects(const xplSessionPtr session)
 	if (!session)
 		return NULL;
 	if (!xprMutexAcquire(&session->locker))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return NULL;
+	}
 	time(&session->init_ts);
 	ret = session->doc->children->children;
 	if (!xprMutexRelease(&session->locker))
@@ -279,7 +300,7 @@ void xplSessionRemoveObject(xplSessionPtr session, const xmlChar *name)
 {
 	if (!session)
 		return;
-	if (!xprMutexAcquire(&session->locker))
+	if (!xprMutexAcquire(&session->locker)) /* TODO what should we do here? */
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	if (xmlHashLookup(session->items, name))
 		xmlHashRemoveEntry(session->items, name, freeObjectCallback);
@@ -292,7 +313,7 @@ void xplSessionClear(xplSessionPtr session)
 {
 	if (!session)
 		return;
-	if (!xprMutexAcquire(&session->locker))
+	if (!xprMutexAcquire(&session->locker)) /* TODO what should we do here? */
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	xmlHashFree(session->items, freeObjectCallback);
 	time(&session->init_ts);

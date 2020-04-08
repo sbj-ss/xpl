@@ -33,6 +33,7 @@ xplDBListPtr xplDBListCreate(const xmlChar *connString)
 	memset(ret, 0, sizeof(xplDBList));
 	if (!xprMutexInit(&ret->lock))
 	{
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		xmlFree(ret);
 		return NULL;
 	}
@@ -72,7 +73,10 @@ xplDBPtr xplLocateAvailDB(xplDBListPtr list)
 	if (!list)
 		return NULL;
 	if (!xprMutexAcquire(&list->lock))
+	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return NULL;
+	}
 	db = list->first;
 	while (db)
 	{
@@ -94,7 +98,7 @@ void xplAddDBToDBList(xplDBListPtr list, xplDBPtr db)
 {
 	if (!list || !db)
 		return;
-	if (!xprMutexAcquire(&list->lock))
+	if (!xprMutexAcquire(&list->lock)) /* TODO what should we do here? */
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	if (list->last)
 		list->last->next = db;
