@@ -63,9 +63,9 @@ static xmlChar* xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, 
 				break;
 			case XPL_EXPECT_PATH:
 				if ((p == data_buf) && ((*p == XPR_FS_PATH_DELIM) || (*p == XPR_FS_PATH_INVERSE_DELIM)))
-					; /* skip absolute paths */
+					NOOP(); /* skip absolute paths */
 				else if (dot && (*p == '.'))
-					; /* skip multiple dots */
+					NOOP(); /* skip multiple dots */
 				else if (*p == '.') {
 					*out++ = *p;
 					dot = true;
