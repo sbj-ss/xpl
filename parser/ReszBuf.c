@@ -151,6 +151,7 @@ ReszBufOpResult ensureReszBufFreeSize(ReszBufPtr buf, size_t minfree)
 			return RESZ_BUF_RESULT_OK;
 			break;
 		default: /* RESZ_BUF_GROW_UNKNOWN, impossible */
+			return RESZ_BUF_RESULT_INVALID;
 			break;
 	}
 	start = xmlRealloc(buf->start, buf->size);
