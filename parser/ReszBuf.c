@@ -125,34 +125,33 @@ ReszBufOpResult ensureReszBufFreeSize(ReszBufPtr buf, size_t minfree)
 
 	switch (buf->grow_strategy)
 	{
-	case RESZ_BUF_GROW_FIXED:
-		return RESZ_BUF_RESULT_NO_MEMORY;
-		break;
-	case RESZ_BUF_GROW_EXACT:
-		buf->size += minfree - (buf->size - offset);
-		break;
-	case RESZ_BUF_GROW_INCREMENT:
-		/* округлим до кратного инкременту */
-		/* TODO размерность для x64 */
-		buf->size += ((int) (((minfree - 1.0*(buf->size - offset)) / buf->increment) + .5))*buf->increment;
-		break;
-	case RESZ_BUF_GROW_DOUBLE:
-		while ((buf->size - offset) < minfree)
-			buf->size *= 2;
-		break;
-	case RESZ_BUF_GROW_FLUSH:
-		/* мы можем попытаться обработать это здесь, если minfree <= buf->size */
-		if (buf->size < minfree)
+		case RESZ_BUF_GROW_FIXED:
 			return RESZ_BUF_RESULT_NO_MEMORY;
-		if (!buf->flush_callback)
-			return RESZ_BUF_RESULT_INVALID;
-		if (buf->flush_callback(buf->start, offset) < 0)
-			return RESZ_BUF_RESULT_FLUSH_FAILED;
-		buf->current = buf->start;
-		return RESZ_BUF_RESULT_OK;
-		break;
-	default: /* RESZ_BUF_GROW_UNKNOWN, такого не бывает */
-		break;
+			break;
+		case RESZ_BUF_GROW_EXACT:
+			buf->size += minfree - (buf->size - offset);
+			break;
+		case RESZ_BUF_GROW_INCREMENT:
+			/* round to the increment */
+			buf->size += ((size_t) (((minfree - 1.0*(buf->size - offset)) / buf->increment) + .5))*buf->increment;
+			break;
+		case RESZ_BUF_GROW_DOUBLE:
+			while ((buf->size - offset) < minfree)
+				buf->size *= 2;
+			break;
+		case RESZ_BUF_GROW_FLUSH:
+			/* we can try processing this here if minfree <= buf->size */
+			if (buf->size < minfree)
+				return RESZ_BUF_RESULT_NO_MEMORY;
+			if (!buf->flush_callback)
+				return RESZ_BUF_RESULT_INVALID;
+			if (buf->flush_callback(buf->start, offset) < 0)
+				return RESZ_BUF_RESULT_FLUSH_FAILED;
+			buf->current = buf->start;
+			return RESZ_BUF_RESULT_OK;
+			break;
+		default: /* RESZ_BUF_GROW_UNKNOWN, impossible */
+			break;
 	}
 	start = xmlRealloc(buf->start, buf->size);
 	if (!start)
@@ -173,15 +172,16 @@ ReszBufOpResult addDataToReszBuf(ReszBufPtr buf, void* content, size_t size)
 		return RESZ_BUF_RESULT_NO_MEMORY;
 
 	if (buf->grow_strategy == RESZ_BUF_GROW_FLUSH)
-	{ /* особый случай. буфер нужно не увеличить, а сбросить */
-		if (size > (buf->size - ((char*) buf->current - (char*) buf->start))) /* не входит */
+	{ /* special case. we need to flush the buffer instead of growing it */
+		if (size > (buf->size - ((char*) buf->current - (char*) buf->start))) /* doesn't fit */
 		{
 			if (!buf->flush_callback)
 				return RESZ_BUF_RESULT_INVALID;
-			/* Сначала сбросим содержимое буфера */
+			/* first flush current contents */
+			/* TODO: maybe fill the buffer fully first? */
 			if (buf->flush_callback(buf->start, (char*) buf->current - (char*) buf->start) < 0)
 				return RESZ_BUF_RESULT_FLUSH_FAILED;
-			/* Порциями запишем данные, не входящие в буфер */
+			/* then flush incoming data in batches */
 			while (size > buf->size)
 			{
 				if (buf->flush_callback(content, buf->size) < 0)
@@ -189,7 +189,7 @@ ReszBufOpResult addDataToReszBuf(ReszBufPtr buf, void* content, size_t size)
 				size -= buf->size;
 				content = (char*) content + buf->size;
 			}
-			/* Если остался хвост, запишем в буфер */
+			/* keep the remainder */
 			if (size)
 				memcpy(buf->start, content, size);
 			buf->current = (char*) buf->start + size;

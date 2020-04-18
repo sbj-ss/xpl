@@ -43,7 +43,7 @@ static xmlChar* xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, 
 					}
 				}
 				break;
-			case XPL_EXPECT_HEX: /* ���������� � 0[xX], ����� [0-9a-fA-F] */
+			case XPL_EXPECT_HEX: /* 0[xX][0-9a-fA-F]+ */
 				if ((p == data_buf) && (*p == '0'))
 				{
 					leading_zero = true;
@@ -51,7 +51,7 @@ static xmlChar* xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, 
 				} else if (leading_zero && (p == data_buf + 1) && ((*p == 'x') || (*p == 'X'))) {
 					leading_x = true;
 					*out++ = *p;
-				/* �������� ����� ��� lookup-�������, �� ��� �� ����� ������� �������� � ����� ������� ���������� */
+				/* could use a lookup table here but too lazy */
 				} else if (leading_x && ((('0' <= *p) && (*p <= '9')) || (('a' <= *p) && (*p <= 'f')) || (('A' <= *p) && (*p <= 'F'))))
 					*out++ = *p;
 				break;
@@ -63,9 +63,9 @@ static xmlChar* xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, 
 				break;
 			case XPL_EXPECT_PATH:
 				if ((p == data_buf) && ((*p == XPR_FS_PATH_DELIM) || (*p == XPR_FS_PATH_INVERSE_DELIM)))
-					; /* ���������� ���� �� ����� */
+					; /* skip absolute paths */
 				else if (dot && (*p == '.'))
-					; /* ����� .. */
+					; /* skip multiple dots */
 				else if (*p == '.') {
 					*out++ = *p;
 					dot = true;
@@ -341,7 +341,7 @@ xmlChar* xplParamValuesToString(const xplParamValuesPtr values, bool unique, con
 	if (!values)
 		return NULL;
 	if (!xplParamTypeIsAtomic(values->type))
-		return NULL; /* ������� ���������, �� ������� ����, ������������� �� ��� ����������� */
+		return NULL; /* TODO: should we serialize complex params? */
 	delim_len = delim? xmlStrlen(delim): 0;
 	for (i = 0; i < values->param_nr; i++)
 		if (values->param_tab[i])
@@ -372,7 +372,6 @@ xmlChar* xplParamValuesToString(const xplParamValuesPtr values, bool unique, con
 	}
 	if (unique_table)
 		xmlHashFree(unique_table, NULL);
-	/* ��������� ������ ����� �� ������, ����� ��������� �������� �� ��������� */
 	if (cur)
 		*cur = 0;
 	return ret;
@@ -466,8 +465,8 @@ int xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xpl
 	xmlChar *amp_pos; /* a=1_&_b=%E1%E0%EB%EA */
 	xmlChar *param; /* b=%E1%E0%EB%EA */
 	xmlChar *eq_pos; /* b_=_%E1%E0%EB%EA */
-	xmlChar *param_value; /* ���� (1251) */
-	xmlChar *recoded_value; /* ���� (utf-8) */
+	xmlChar *param_value; /* in browser/page encoding */
+	xmlChar *recoded_value; /* in native encoding (utf-8) */
 
 	while (params && *params)
 	{
@@ -478,9 +477,9 @@ int xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xpl
 		params = amp_pos? amp_pos+1: NULL;
 		if (param && *param)
 		{
-			/* �������� ����� ����� */
+			/* extract the left part */
 			eq_pos = BAD_CAST xmlStrchr(param, '=');
-			if (eq_pos && *(eq_pos+1)) /* ���������� �������� �� ��������� */
+			if (eq_pos && *(eq_pos+1)) /* "normal" param with a value */
 			{
 				*eq_pos = 0;
 				param_value = decodeUrl(eq_pos + 1, NULL);
@@ -492,19 +491,18 @@ int xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xpl
 						if (recoded_value && !isValidUtf8Sample(recoded_value, xmlStrlen(recoded_value), true))
 						{
 							xmlFree(recoded_value);
-							recoded_value = NULL; /* �� ��������� ��������� ������ */
+							recoded_value = NULL;
 						}
 					} else
 						recoded_value = NULL;
 				} else
 					recoded_value = param_value;
-				xplParamAddValue(ret, param, recoded_value, XPL_PARAM_TYPE_USERDATA); /* ������� ������� ������ �������� */
-				if (param_value && recoded_value && (param_value != recoded_value)) /* ������ ������������� ���-� */
+				xplParamAddValue(ret, param, recoded_value, XPL_PARAM_TYPE_USERDATA); /* eats recoded_value */
+				if (param_value && recoded_value && (param_value != recoded_value))
 					xmlFree(param_value);
-				*eq_pos = '='; /* ����������� ������ */
+				*eq_pos = '=';
 			} 
 		}
-		/* �� ������ ���� */
 		if (amp_pos)
 			*amp_pos = '&';
 	}
@@ -553,7 +551,7 @@ xplParamResult xplParamSet(const xplParamsPtr params, const xmlChar* name, const
 		return XPL_PARAM_RES_INVALID_INPUT;
 	ret = xmlHashAddEntry((xmlHashTablePtr) params, name, (void*) values);
 	if (ret == -1)
-		/* �������� ��� ����������, ������� */
+		/* already exists */
 		return (!xmlHashUpdateEntry((xmlHashTablePtr) params, name, (void*) values, freeParamsCallback)? XPL_PARAM_RES_OK: XPL_PARAM_RES_INTERNAL_ERROR);
 	else
 		return XPL_PARAM_RES_OK;
@@ -704,4 +702,3 @@ void xplParamsFree(xplParamsPtr params)
 {
 	xmlHashFree((xmlHashTablePtr) params, freeParamsCallback);
 }
-

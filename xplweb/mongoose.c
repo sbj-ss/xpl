@@ -2784,7 +2784,7 @@ send_file(struct mg_connection *conn, const char *path, struct mgstat *stp)
 	    "Accept-Ranges: bytes\r\n"
 		"Cache-Control: public\r\n"
 		"Cache-Control: max-age=%d\r\n"
-		/* специально для гуглохрома */
+		/* СЃРїРµС†РёР°Р»СЊРЅРѕ РґР»СЏ РіСѓРіР»РѕС…СЂРѕРјР° */
 		"Expires: %s\r\n"
 	    "%s\r\n",
 	    conn->request_info.status_code, msg, date, lm, etag,
@@ -2926,7 +2926,7 @@ substitute_index_file(struct mg_connection *conn,
 			/* Yes it does, break the loop */
 			*stp = st;
 			found = TRUE;
-			/* Перепишем uri */
+			/* РџРµСЂРµРїРёС€РµРј uri */
 			*uri = (char*) realloc(*uri, strlen(*uri) + filename_vec.len + 1);
 			strncat(*uri, filename_vec.ptr, filename_vec.len);
 			break;
@@ -3653,7 +3653,7 @@ analyze_request(struct mg_connection *conn)
 	(void) url_decode(uri, (int) strlen(uri), uri, strlen(uri) + 1, FALSE);
 	remove_double_dots_and_double_slashes(uri);
 	convert_uri_to_file_name(conn, uri, path, sizeof(path));
-	uri = strdup(ri->uri); /* Только сейчас - иначе не будет расшифровки параметров ri->uri */
+	uri = strdup(ri->uri); /* РўРѕР»СЊРєРѕ СЃРµР№С‡Р°СЃ - РёРЅР°С‡Рµ РЅРµ Р±СѓРґРµС‚ СЂР°СЃС€РёС„СЂРѕРІРєРё РїР°СЂР°РјРµС‚СЂРѕРІ ri->uri */
 
 	if (!check_authorization(conn, path)) {
 		send_authorization_request(conn);
@@ -4534,9 +4534,9 @@ worker_thread(struct mg_context *ctx)
 	    __func__, (void *) pthread_self()));
 
 	(void) memset(&conn, 0, sizeof(conn));
-	/* Возможна ситуация, когда соединение не открылось.
-	   В этом случае код conn.ctx->... вывалится в оригинале. 
-	   Следующая строчка исправляет это свинство. --ss
+	/* Р’РѕР·РјРѕР¶РЅР° СЃРёС‚СѓР°С†РёСЏ, РєРѕРіРґР° СЃРѕРµРґРёРЅРµРЅРёРµ РЅРµ РѕС‚РєСЂС‹Р»РѕСЃСЊ.
+	   Р’ СЌС‚РѕРј СЃР»СѓС‡Р°Рµ РєРѕРґ conn.ctx->... РІС‹РІР°Р»РёС‚СЃСЏ РІ РѕСЂРёРіРёРЅР°Р»Рµ. 
+	   РЎР»РµРґСѓСЋС‰Р°СЏ СЃС‚СЂРѕС‡РєР° РёСЃРїСЂР°РІР»СЏРµС‚ СЌС‚Рѕ СЃРІРёРЅСЃС‚РІРѕ. --ss
      */
 	conn.ctx = ctx;
 
