@@ -5,6 +5,7 @@
 *.dll
 *.exe
 *.exp
+*.gch
 *.htm*
 *.idb
 *.idc
