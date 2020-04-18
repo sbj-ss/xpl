@@ -90,8 +90,6 @@ int _scprintf(const char *format, ...);
 #define XPR_MUTEX pthread_mutex_t
 #define XPR_SEMAPHORE sem_t
 
-#define NOOP() ((void)0)
-
 #define XPR_THREAD_HANDLE pthread_t
 #define XPR_THREAD_ROUTINE_CALL
 #define XPR_THREAD_ROUTINE_PARAM void*
