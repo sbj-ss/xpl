@@ -1,4 +1,5 @@
 # extensions
+*.a
 *.bak
 *.cod
 *.def
@@ -31,6 +32,8 @@
 /plugins
 /sql_sp
 /test_anything
+# tests
+/xts/Runner
 # build dirs
 x64
 Debug

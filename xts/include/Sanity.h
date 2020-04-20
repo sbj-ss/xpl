@@ -5,7 +5,7 @@
 #ifndef __sanity_H
 #define __sanity_H
 
-#include "Tests.h"
+#include "xts.h"
 
 #ifdef __cplusplus
 extern "C" {

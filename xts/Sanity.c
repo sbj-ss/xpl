@@ -1,4 +1,4 @@
-#include "Tests.h"
+#include "xts.h"
 #include "assert.h"
 
 static bool passing_function(xtsContextPtr ctxt)

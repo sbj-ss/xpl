@@ -2,14 +2,26 @@
 /* Polaris project: the pure C XPL engine */
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
-#ifndef __tests_H
-#define __tests_H
+#ifndef __xts_H
+#define __xts_H
 
-#include "Configuration.h"
-#include "Common.h"
+#include <stdbool.h>
+#include <string.h>
+#include <libxml/hash.h>
+#include <libxml/xmlstring.h>
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifdef __GNUC__
+	#define HAVE_DESIGNATED_INITIALIZERS
+#endif
+
+#ifdef HAVE_DESIGNATED_INITIALIZERS
+	#define SFINIT(f, ...) f = __VA_ARGS__
+#else
+	#define SFINIT(f, ...) __VA_ARGS__
 #endif
 
 typedef enum {
@@ -93,6 +105,9 @@ void xtsSkipAllTestsInFixture(xtsFixturePtr fixture, bool skip);
 void xtsSkipAllTestsInSuite(xtsFixturePtr *suite, bool skip);
 bool xtsSkipTest(xtsFixturePtr *suite, const xmlChar *fixture_id, const xmlChar *test_id, bool skip);
 bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error);
+
+void xtsDisplayUsage(char *prog_name);
+int xtsRun(int argc, char **argv, xtsFixturePtr *suite);
 
 #ifdef __cplusplus
 }
