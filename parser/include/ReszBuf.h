@@ -5,28 +5,23 @@
 #ifndef __reszbuf_H
 #define __reszbuf_H
 
-/* =======================================================================
-   Буфер динамического размера.
-   Написан собственный, потому что аналог из libxml2 сделан, как обычно,
-   на статических функциях и макросах. 
-   =======================================================================
-*/
-
 #include "Configuration.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Стратегия роста буфера при заполнении */
+/* Grow strategy in case new content doesn't fit */
 typedef enum _ReszBufGrowStrategy 
 {
-	RESZ_BUF_GROW_UNKNOWN = -1, /* Только возврат getReszBufGrowStrategy */
-	RESZ_BUF_GROW_EXACT = 0,    /* Ровно столько места, сколько нужно */
-	RESZ_BUF_GROW_DOUBLE,		/* Удвоение размера */
-	RESZ_BUF_GROW_INCREMENT,	/* Увеличение на линейный инкремент */
-	RESZ_BUF_GROW_FIXED,		/* Не увеличивать, отбить ошибку */
-	RESZ_BUF_GROW_FLUSH			/* Вызвать пользовательскую функцию сброса, записать новые данные в начало */
+	RESZ_BUF_GROW_UNKNOWN = -1, /* can only be returned by getReszBufGrowStrategy */
+	RESZ_BUF_GROW_EXACT = 0,    /* add exactly as many bytes as needed */
+	RESZ_BUF_GROW_MIN = RESZ_BUF_GROW_EXACT,
+	RESZ_BUF_GROW_DOUBLE,		/* 2x grow every time */
+	RESZ_BUF_GROW_INCREMENT,	/* linear increment */
+	RESZ_BUF_GROW_FIXED,		/* don't grow, return an error */
+	RESZ_BUF_GROW_FLUSH,		/* call user-provided flush function (a remainder can be left in buffer) */
+	RESZ_BUF_GROW_MAX = RESZ_BUF_GROW_FLUSH
 } ReszBufGrowStrategy;
 
 typedef enum _ReszBufOpResult
@@ -39,69 +34,81 @@ typedef enum _ReszBufOpResult
 
 typedef struct _ReszBuf *ReszBufPtr;
 
-/* Пользовательская функция сброса буфера в IO, когда в него "перестаёт лезть".
+#define DEFAULT_RESZ_BUF_INITIAL_SIZE 1024
+#define DEFAULT_RESZ_BUF_GROW_STRATEGY RESZ_BUF_GROW_DOUBLE
+#define DEFAULT_RESZ_BUF_GROW_INCREMENT 1024
+
+/* User function to flush a buffer. Return values:
    0 = ОК
-   <0 = сбой, не сбрасывать
-   Функция должна быть способна принять блок данных размером до размера
-   буфера включительно.
+   < 0 = failure
+   The function should be able to handle blocks up to the buffer size.
  */
 typedef int (*ReszBufFlushCallback)(void* data, size_t size);
 
-/* Создать буфер с параметрами по умолчанию */
+/* Creates a buffer with default params */
 XPLPUBFUN ReszBufPtr XPLCALL
 	createReszBuf(void);
-/* Создать буфер указанного начального размера */
+/* Creates a buffer with default params and explicit initial size */
 XPLPUBFUN ReszBufPtr XPLCALL
 	createReszBufSize(size_t initialSize);
-/* Создать буфер с указанными начальным размером, стратегией роста и линейным инкрементом */
+/* Creates a buffer with provided initial size, grow strategy and increment */
 XPLPUBFUN ReszBufPtr XPLCALL
 	createReszBufParams(size_t initialSize, ReszBufGrowStrategy strategy, size_t increment);
-/* Получить стратегию роста буфера */
+/* Creates a flushable buffer */
+XPLPUBFUN ReszBufPtr XPLCALL
+	createFlushableReszBuf(size_t size, ReszBufFlushCallback cb);
+/* Gets buffer grow strategy */
 XPLPUBFUN ReszBufGrowStrategy XPLCALL
 	getReszBufGrowStrategy(ReszBufPtr buf);
-/* Установить стратегию роста буфера */
-XPLPUBFUN void XPLCALL
+/* Sets buffer grow strategy */
+XPLPUBFUN ReszBufOpResult XPLCALL
 	setReszBufGrowStrategy(ReszBufPtr buf, ReszBufGrowStrategy strategy);
-/* Получить инкремент линейного роста буфера */
+/* Gets buffer linear growth increment */
 XPLPUBFUN size_t XPLCALL
 	getReszBufGrowIncrement(ReszBufPtr buf);
-/* Установить инкремент линейного роста буфера */
-XPLPUBFUN void XPLCALL
+/* Sets buffer linear growth increment */
+XPLPUBFUN ReszBufOpResult XPLCALL
 	setReszBufGrowIncrement(ReszBufPtr buf, size_t increment);
-/* Получить размер содержимого буфера в байтах */
+/* Gets buffer content size */
 XPLPUBFUN size_t XPLCALL
 	getReszBufContentSize(ReszBufPtr buf);
-/* Получить функцию сброса буфера при переполнении */
+/* Gets buffer free space */
+XPLPUBFUN size_t XPLCALL
+	getReszBufFreeSpace(ReszBufPtr buf);
+/* Gets buffer total allocated size */
+XPLPUBFUN size_t XPLCALL
+	getReszBufTotalSize(ReszBufPtr buf);
+/* Gets buffer flush function */
 XPLPUBFUN ReszBufFlushCallback XPLCALL
 	getReszBufFlushCallback(ReszBufPtr buf);
-/* Установить функцию сброса буфера при переполнении */
+/* Sets buffer flush function */
 XPLPUBFUN ReszBufFlushCallback XPLCALL
 	setReszBufFlushCallback(ReszBufPtr buf, ReszBufFlushCallback cb);
-/* Получить указатель на содержимое буфера */
+/* Gets a pointer to buffer content */
 XPLPUBFUN void* XPLCALL
 	getReszBufContent(ReszBufPtr buf);
-/* Получить указатель на содержимое буфера, отцепить содержимое от управляющей структуры */
+/* Gets a pointer to buffer content detaching content from buffer. Buffer is still usable for writing */
 XPLPUBFUN void* XPLCALL
 	detachReszBufContent(ReszBufPtr buf);
-/* Записать в буфер size байт */
+/* Writes data to buffer */
 XPLPUBFUN ReszBufOpResult XPLCALL
 	addDataToReszBuf(ReszBufPtr buf, void* content, size_t size);
-/* Отмотать внутренний указатель буфера на начало (память не освобождается) */
-XPLPUBFUN void XPLCALL
+/* Rewinds the content pointer. Memory isn't freed. */
+XPLPUBFUN ReszBufOpResult XPLCALL
 	rewindReszBuf(ReszBufPtr buf);
-/* Получить прямой указатель на текущую позицию */
+/* Gets current buffer position */
 XPLPUBFUN void* XPLCALL
 	getReszBufPosition(ReszBufPtr buf);
-/* Продвинуть текущее положение вперед */
+/* Moves buffer position forward (within allocated size) */
 XPLPUBFUN ReszBufOpResult XPLCALL
 	advanceReszBufferPosition(ReszBufPtr buf, size_t delta);
-/* Убедиться, что в буфере достаточно места для прямой записи */
+/* Ensures there's enough place in buffer for direct writing */
 XPLPUBFUN ReszBufOpResult XPLCALL
 	ensureReszBufFreeSize(ReszBufPtr buf, size_t minfree);
-/* Принудительно сбросить буфер*/
+/* Flushes a buffer forcefully */
 XPLPUBFUN ReszBufOpResult XPLCALL
 	flushReszBuf(ReszBufPtr buf);
-/* Удалить буфер (память, занятая содержимым, освобождается */
+/* Deletes a buffer. Content is freed, too. */
 XPLPUBFUN void XPLCALL
 	freeReszBuf(ReszBufPtr buf);
 
