@@ -64,7 +64,7 @@ static xmlNodePtr _xjsonSerializeList(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	bool prev_is_first_item;
 	xmlNodePtr ret = NULL;
 
-	if (addDataToReszBuf(ctxt->buf, (containerType == XJC_ARRAY)? "[": "{", 1) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(ctxt->buf, (containerType == XJC_ARRAY)? "[": "{", 1) != RESZ_BUF_RESULT_OK)
 		return _createMemoryError(ctxt);
 	prev_container_type = ctxt->container_type;
 	prev_is_first_item = ctxt->is_first_item;
@@ -72,7 +72,7 @@ static xmlNodePtr _xjsonSerializeList(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	ctxt->is_first_item = true;
 	if ((ret = _xjsonSerializeNodeList(cur->children, ctxt)))
 		goto done;
-	if (addDataToReszBuf(ctxt->buf, (containerType == XJC_ARRAY)? "]": "}", 1) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(ctxt->buf, (containerType == XJC_ARRAY)? "]": "}", 1) != RESZ_BUF_RESULT_OK)
 		ret = _createMemoryError(ctxt);
 done:
 	ctxt->container_type = prev_container_type;
@@ -89,7 +89,7 @@ static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 		return xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s\" has non-text nodes inside", cur->name);
 	if ((type == XJA_STRING) || (ctxt->force_quotes && (type != XJA_NULL)))
 	{
-		if (addDataToReszBuf(ctxt->buf, ctxt->single_quotes? "'": "\"", 1) != RESZ_BUF_RESULT_OK)
+		if (rbAddDataToBuf(ctxt->buf, ctxt->single_quotes? "'": "\"", 1) != RESZ_BUF_RESULT_OK)
 			return _createMemoryError(ctxt);
 	}
 	content = xmlNodeListGetString(cur->doc, cur->children, 1);
@@ -121,14 +121,14 @@ static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	default:
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	}
-	if (addDataToReszBuf(ctxt->buf, (type == XJA_NULL)? BAD_CAST "null": content, xmlStrlen((type == XJA_NULL)? BAD_CAST "null": content)) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(ctxt->buf, (type == XJA_NULL)? BAD_CAST "null": content, xmlStrlen((type == XJA_NULL)? BAD_CAST "null": content)) != RESZ_BUF_RESULT_OK)
 	{
 		ret = _createMemoryError(ctxt);
 		goto done;
 	}
 	if ((type == XJA_STRING) || (ctxt->force_quotes && (type != XJA_NULL)))
 	{
-		if (addDataToReszBuf(ctxt->buf, ctxt->single_quotes? "'": "\"", 1) != RESZ_BUF_RESULT_OK)
+		if (rbAddDataToBuf(ctxt->buf, ctxt->single_quotes? "'": "\"", 1) != RESZ_BUF_RESULT_OK)
 			return _createMemoryError(ctxt);
 	}
 done:
@@ -151,7 +151,7 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	{
 		if (!ctxt->is_first_item)
 		{
-			if (addDataToReszBuf(ctxt->buf, ",", 1 != RESZ_BUF_RESULT_OK))
+			if (rbAddDataToBuf(ctxt->buf, ",", 1 != RESZ_BUF_RESULT_OK))
 				return _createMemoryError(ctxt);
 		} else
 			ctxt->is_first_item = false;
@@ -164,12 +164,12 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 			ret = xplCreateErrorNode(ctxt->command_element, "cannot use named items outside of object");
 			goto done;
 		}
-		if (addDataToReszBuf(ctxt->buf, name, xmlStrlen(name)) != RESZ_BUF_RESULT_OK)
+		if (rbAddDataToBuf(ctxt->buf, name, xmlStrlen(name)) != RESZ_BUF_RESULT_OK)
 		{
 			ret = _createMemoryError(ctxt);
 			goto done;
 		}
-		if (addDataToReszBuf(ctxt->buf, ":", 1) != RESZ_BUF_RESULT_OK)
+		if (rbAddDataToBuf(ctxt->buf, ":", 1) != RESZ_BUF_RESULT_OK)
 		{
 			ret = _createMemoryError(ctxt);
 			goto done;
@@ -241,7 +241,7 @@ void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 		goto done;
 	}
 
-	ctxt.buf = createReszBufParams(1024, RESZ_BUF_GROW_DOUBLE, 2);
+	ctxt.buf = rbCreateBufParams(1024, RESZ_BUF_GROW_DOUBLE, 2);
 	if (!ctxt.buf)
 	{
 		/* no memory for anything, xplCreateErrorNode() will likely fail, too */
@@ -256,16 +256,16 @@ void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if (addDataToReszBuf(ctxt.buf, "", 1) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(ctxt.buf, "", 1) != RESZ_BUF_RESULT_OK)
 	{
 		ASSIGN_RESULT(_createMemoryError(&ctxt), true, true);
 		goto done;
 	}
 	ret = xmlNewDocText(commandInfo->element->doc, NULL);
-	ret->content = detachReszBufContent(ctxt.buf);
+	ret->content = rbDetachBufContent(ctxt.buf);
 	ASSIGN_RESULT(ret, false, true);
 done:
-	if (ctxt.buf) freeReszBuf(ctxt.buf);
+	if (ctxt.buf) rbFreeBuf(ctxt.buf);
 }
 
 xplCommand xplXJsonSerializeCommand = { xplCmdXJsonSerializePrologue, xplCmdXJsonSerializeEpilogue };

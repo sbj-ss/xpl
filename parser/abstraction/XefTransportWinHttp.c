@@ -65,7 +65,7 @@ XEF_FREE_ERROR_MESSAGE_PROTO(Transport)
 
 bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 {
-	/* Оригинальный код - (c) 2007-2009 Cheng Shi, shicheng107@hotmail.com */
+	/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ - (c) 2007-2009 Cheng Shi, shicheng107@hotmail.com */
 	HINTERNET hSession;
 	HINTERNET hConnect = NULL;
 	HINTERNET hRequest = NULL;
@@ -96,7 +96,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	}
 
 	/* ToDo: maybe reuse at document level?.. */
-	/* прячемся под маской крокодила */
+	/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 	hSession = WinHttpOpen(L"Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",  
 		WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
 		WINHTTP_NO_PROXY_NAME, 
@@ -114,7 +114,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	urlComp.dwUrlPathLength = 1024*2;
 	urlComp.lpszUrlPath = (wchar_t*) xmlMalloc((size_t) urlComp.dwUrlPathLength); 
 	urlComp.dwExtraInfoLength = 1024*32;
-	urlComp.lpszExtraInfo = (wchar_t*) xmlMalloc((size_t) urlComp.dwExtraInfoLength); /* бОльшие объёмы - в POST */
+	urlComp.lpszExtraInfo = (wchar_t*) xmlMalloc((size_t) urlComp.dwExtraInfoLength); /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ - пїЅ POST */
 	iconv_string("utf-16le", "utf-8", params->uri, params->uri + strlen(params->uri), (char**) &wszRequestUrl, NULL);
 	if (!WinHttpCrackUrl(wszRequestUrl, 0, 0, &urlComp))
 	{
@@ -132,7 +132,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 
 	/* instantiate a request */
 	options = (urlComp.nScheme == INTERNET_SCHEME_HTTPS) ? WINHTTP_FLAG_SECURE : 0;
-	/* wszRequestUrl не короче, чем два его компонента */
+	/* wszRequestUrl пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 	wcscpy(wszRequestUrl, urlComp.lpszUrlPath);
 	wcscat(wszRequestUrl, urlComp.lpszExtraInfo);
 	hRequest = WinHttpOpenRequest(hConnect, params->extra_query? L"POST": L"GET", wszRequestUrl,
@@ -217,7 +217,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 				continue; /* next try */
 		}
 #if 0
-		/* ToDo: Получим кодировку */
+		/* ToDo: пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 		dwSize = 0;
 		bOpResult = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_CONTENT_ENCODING, WINHTTP_HEADER_NAME_BY_INDEX, NULL, &dwSize, WINHTTP_NO_HEADER_INDEX);
 		if (bOpResult || (!bOpResult && (GetLastError() == ERROR_INSUFFICIENT_BUFFER)))
@@ -239,10 +239,10 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 			} /* if the header is allocated */
 		} /* query headers */
 #endif
-		/* временная затычка */
+		/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 		params->encoding = NULL;
-		/* Получим код статуса */
-		/* ToDo: проверить код */
+		/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
+		/* ToDo: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ */
 		dwSize = 0;
 		bOpResult = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE, WINHTTP_HEADER_NAME_BY_INDEX, NULL, &dwSize, WINHTTP_NO_HEADER_INDEX);
 		if (bOpResult || (!bOpResult && (GetLastError() == ERROR_INSUFFICIENT_BUFFER)))
@@ -260,7 +260,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 			}
 		} /* if status queried */
 
-		buf = createReszBufParams(16384, RESZ_BUF_GROW_DOUBLE, 2);
+		buf = rbCreateBufParams(16384, RESZ_BUF_GROW_DOUBLE, 2);
 		dwTotal = 0;
 		do
 		{
@@ -274,12 +274,12 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 				} else
 					continue; /* next try */
 			}
-			if (ensureReszBufFreeSize(buf, (size_t) dwSize) != RESZ_BUF_RESULT_OK)
+			if (rbEnsureBufFreeSize(buf, (size_t) dwSize) != RESZ_BUF_RESULT_OK)
 			{
 				params->error = xefCreateCommonErrorMessage(BAD_CAST "insufficient memory");
 				goto done;
 			}
-			params->document = getReszBufPosition(buf);
+			params->document = rbGetBufPosition(buf);
 			if (!WinHttpReadData(hRequest, params->document, dwSize, &dwRead))
 			{
 				if (iRetryTimes == INT_RETRYTIMES)
@@ -289,16 +289,16 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 				} else
 					continue; /* next try */
 			}
-			advanceReszBufferPosition(buf, (size_t) dwRead);
+			rbAdvanceBufPosition(buf, (size_t) dwRead);
 			dwTotal += dwRead;
 		} while (dwSize > 0); /* reading cycle */
 		bResponseSucceeded = true;
 	} // while
-	addDataToReszBuf(buf, &zero, sizeof(zero));
-	params->document = (xmlChar*) detachReszBufContent(buf);
+	rbAddDataToBuf(buf, &zero, sizeof(zero));
+	params->document = (xmlChar*) rbDetachBufContent(buf);
 	params->document_size = (size_t) dwTotal;
 	params->error = NULL;
-	/* ToDo: заполнить */
+	/* ToDo: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 	params->real_uri = NULL;
 done:
 	if (hSession) WinHttpCloseHandle(hSession);
@@ -314,7 +314,7 @@ done:
 	if (wszProxyUser) xmlFree(wszProxyUser);
 	if (wszProxyPassword) xmlFree(wszProxyPassword);
 
-	if (buf) freeReszBuf(buf);
+	if (buf) rbFreeBuf(buf);
 
 	return (params->error)? false: true;
 }

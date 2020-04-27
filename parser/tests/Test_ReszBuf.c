@@ -9,60 +9,60 @@
 
 static bool xtsTestReszBuf_CreateDefaultParams(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	bool ok = false;
 
-	buf = createReszBuf();
+	buf = rbCreateBuf();
 	assert(buf);
-	if (getReszBufTotalSize(buf) != DEFAULT_RESZ_BUF_INITIAL_SIZE)
+	if (rbGetBufTotalSize(buf) != RB_DEFAULT_INITIAL_SIZE)
 		FAIL("wrong buffer size");
-	if (getReszBufContentSize(buf) != 0)
+	if (rbGetBufContentSize(buf) != 0)
 		FAIL("initial content size must be zero");
-	if (getReszBufGrowStrategy(buf) != DEFAULT_RESZ_BUF_GROW_STRATEGY)
+	if (rbGetBufGrowStrategy(buf) != RB_DEFAULT_GROW_STRATEGY)
 		FAIL("wrong grow strategy");
-	if (getReszBufGrowIncrement(buf) != DEFAULT_RESZ_BUF_GROW_INCREMENT)
+	if (rbGetBufGrowIncrement(buf) != RB_DEFAULT_GROW_INCREMENT)
 		FAIL("wrong increment");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
 static bool xtsTestReszBuf_CreateWithSize(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	bool ok = false;
 
-	buf = createReszBufSize(1234);
+	buf = rbCreateBufSize(1234);
 	assert(buf);
-	if (getReszBufTotalSize(buf) != 1234)
+	if (rbGetBufTotalSize(buf) != 1234)
 		FAIL("wrong buffer size");
-	if (getReszBufGrowStrategy(buf) != DEFAULT_RESZ_BUF_GROW_STRATEGY)
+	if (rbGetBufGrowStrategy(buf) != RB_DEFAULT_GROW_STRATEGY)
 		FAIL("wrong grow strategy");
-	if (getReszBufGrowIncrement(buf) != DEFAULT_RESZ_BUF_GROW_INCREMENT)
+	if (rbGetBufGrowIncrement(buf) != RB_DEFAULT_GROW_INCREMENT)
 		FAIL("wrong increment");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
 static bool xtsTestReszBuf_CreateExplicit(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	bool ok = false;
 
-	buf = createReszBufParams(1234, RESZ_BUF_GROW_INCREMENT, 321);
+	buf = rbCreateBufParams(1234, RB_GROW_INCREMENT, 321);
 	assert(buf);
-	if (getReszBufTotalSize(buf) != 1234)
+	if (rbGetBufTotalSize(buf) != 1234)
 		FAIL("wrong buffer size");
-	if (getReszBufGrowStrategy(buf) != RESZ_BUF_GROW_INCREMENT)
+	if (rbGetBufGrowStrategy(buf) != RB_GROW_INCREMENT)
 		FAIL("wrong grow strategy");
-	if (getReszBufGrowIncrement(buf) != 321)
+	if (rbGetBufGrowIncrement(buf) != 321)
 		FAIL("wrong increment");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
@@ -73,139 +73,139 @@ static int flush_to_dev_null_and_succeed(void *data, size_t size)
 
 static bool xtsTestReszBuf_CreateFlushable(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	bool ok = false;
 
-	buf = createFlushableReszBuf(1234, NULL);
+	buf = rbCreateFlushableBuf(1234, NULL);
 	if (buf)
 		FAIL("creating a flushable buffer without flush callback must fail");
-	buf = createFlushableReszBuf(2345, flush_to_dev_null_and_succeed);
+	buf = rbCreateFlushableBuf(2345, flush_to_dev_null_and_succeed);
 	assert(buf);
-	if (getReszBufTotalSize(buf) != 2345)
+	if (rbGetBufTotalSize(buf) != 2345)
 		FAIL("wrong buffer size");
-	if (getReszBufGrowStrategy(buf) != RESZ_BUF_GROW_FLUSH)
+	if (rbGetBufGrowStrategy(buf) != RB_GROW_FLUSH)
 		FAIL("wrong grow strategy");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
-static unsigned char src_bytes[DEFAULT_RESZ_BUF_INITIAL_SIZE] = { 0 };
+static unsigned char src_bytes[RB_DEFAULT_INITIAL_SIZE] = { 0 };
 
 static bool xtsTestReszBuf_GrowExact(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	bool ok = false;
 
-	buf = createReszBufParams(16, RESZ_BUF_GROW_EXACT, 0);
+	buf = rbCreateBufParams(16, RB_GROW_EXACT, 0);
 	assert(buf);
-	if (addDataToReszBuf(buf, src_bytes, 8) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 8) != RB_RESULT_OK)
 		FAIL("adding data failed (1)");
-	if (getReszBufContentSize(buf) != 8)
+	if (rbGetBufContentSize(buf) != 8)
 		FAIL("wrong content size (1)");
-	if (getReszBufTotalSize(buf) != 16)
+	if (rbGetBufTotalSize(buf) != 16)
 		FAIL("wrong total size (1)");
-	if (getReszBufFreeSpace(buf) != 8)
+	if (rbGetBufFreeSpace(buf) != 8)
 		FAIL("wrong free space (1)");
-	if (addDataToReszBuf(buf, src_bytes, 16) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 16) != RB_RESULT_OK)
 		FAIL("adding data failed (2)");
-	if (getReszBufContentSize(buf) != 24)
+	if (rbGetBufContentSize(buf) != 24)
 		FAIL("wrong content size (2)");
-	if (getReszBufTotalSize(buf) != 24)
+	if (rbGetBufTotalSize(buf) != 24)
 		FAIL("wrong total size (2)");
-	if (getReszBufFreeSpace(buf) != 0)
+	if (rbGetBufFreeSpace(buf) != 0)
 		FAIL("wrong free space (2)");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
 static bool xtsTestReszBuf_GrowIncrement(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	bool ok = false;
 
-	buf = createReszBufParams(16, RESZ_BUF_GROW_INCREMENT, 24);
+	buf = rbCreateBufParams(16, RB_GROW_INCREMENT, 24);
 	assert(buf);
-	if (addDataToReszBuf(buf, src_bytes, 8) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 8) != RB_RESULT_OK)
 		FAIL("adding data failed (1)");
-	if (getReszBufContentSize(buf) != 8)
+	if (rbGetBufContentSize(buf) != 8)
 		FAIL("wrong content size (1)");
-	if (getReszBufTotalSize(buf) != 16)
+	if (rbGetBufTotalSize(buf) != 16)
 		FAIL("wrong total size (1)");
-	if (getReszBufFreeSpace(buf) != 8)
+	if (rbGetBufFreeSpace(buf) != 8)
 		FAIL("wrong free space (1)");
-	if (addDataToReszBuf(buf, src_bytes, 16) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 16) != RB_RESULT_OK)
 		FAIL("adding data failed (2)");
-	if (getReszBufContentSize(buf) != 24)
+	if (rbGetBufContentSize(buf) != 24)
 		FAIL("wrong content size (2)");
-	if (getReszBufTotalSize(buf) != 40)
+	if (rbGetBufTotalSize(buf) != 40)
 		FAIL("wrong total size (2)");
-	if (getReszBufFreeSpace(buf) != 16)
+	if (rbGetBufFreeSpace(buf) != 16)
 		FAIL("wrong free space (2)");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
 static bool xtsTestReszBuf_GrowDouble(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	bool ok = false;
 
-	buf = createReszBufParams(16, RESZ_BUF_GROW_DOUBLE, 0);
+	buf = rbCreateBufParams(16, RB_GROW_DOUBLE, 0);
 	assert(buf);
-	if (addDataToReszBuf(buf, src_bytes, 8) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 8) != RB_RESULT_OK)
 		FAIL("adding data failed (1)");
-	if (getReszBufContentSize(buf) != 8)
+	if (rbGetBufContentSize(buf) != 8)
 		FAIL("wrong content size (1)");
-	if (getReszBufTotalSize(buf) != 16)
+	if (rbGetBufTotalSize(buf) != 16)
 		FAIL("wrong total size (1)");
-	if (getReszBufFreeSpace(buf) != 8)
+	if (rbGetBufFreeSpace(buf) != 8)
 		FAIL("wrong free space (1)");
-	if (addDataToReszBuf(buf, src_bytes, 16) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 16) != RB_RESULT_OK)
 		FAIL("adding data failed (2)");
-	if (getReszBufContentSize(buf) != 24)
+	if (rbGetBufContentSize(buf) != 24)
 		FAIL("wrong content size (2)");
-	if (getReszBufTotalSize(buf) != 32)
+	if (rbGetBufTotalSize(buf) != 32)
 		FAIL("wrong total size (2)");
-	if (getReszBufFreeSpace(buf) != 8)
+	if (rbGetBufFreeSpace(buf) != 8)
 		FAIL("wrong free space (2)");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
 static bool xtsTestReszBuf_GrowFixed(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	bool ok = false;
 
-	buf = createReszBufParams(16, RESZ_BUF_GROW_FIXED, 0);
+	buf = rbCreateBufParams(16, RB_GROW_FIXED, 0);
 	assert(buf);
-	if (addDataToReszBuf(buf, src_bytes, 8) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 8) != RB_RESULT_OK)
 		FAIL("adding data failed (1)");
-	if (getReszBufContentSize(buf) != 8)
+	if (rbGetBufContentSize(buf) != 8)
 		FAIL("wrong content size (1)");
-	if (getReszBufTotalSize(buf) != 16)
+	if (rbGetBufTotalSize(buf) != 16)
 		FAIL("wrong total size (1)");
-	if (getReszBufFreeSpace(buf) != 8)
+	if (rbGetBufFreeSpace(buf) != 8)
 		FAIL("wrong free space (1)");
-	if (addDataToReszBuf(buf, src_bytes, 16) != RESZ_BUF_RESULT_NO_MEMORY)
-		FAIL("addDataToReszBuf() must fail if size is fixed and data don't fit");
-	if (getReszBufContentSize(buf) != 8)
+	if (rbAddDataToBuf(buf, src_bytes, 16) != RB_RESULT_NO_MEMORY)
+		FAIL("rbAddDataToBuf() must fail if size is fixed and data don't fit");
+	if (rbGetBufContentSize(buf) != 8)
 		FAIL("wrong content size (2)");
-	if (getReszBufTotalSize(buf) != 16)
+	if (rbGetBufTotalSize(buf) != 16)
 		FAIL("wrong total size (2)");
-	if (getReszBufFreeSpace(buf) != 8)
+	if (rbGetBufFreeSpace(buf) != 8)
 		FAIL("wrong free space (2)");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
@@ -219,50 +219,50 @@ static int flush_to_dev_null(void *data, size_t size)
 
 static bool xtsTestReszBuf_GrowFlush(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	bool ok = false;
 
-	buf = createFlushableReszBuf(16, flush_to_dev_null);
+	buf = rbCreateFlushableBuf(16, flush_to_dev_null);
 	assert(buf);
 
 	flush_calls = 0;
-	if (addDataToReszBuf(buf, src_bytes, 8) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 8) != RB_RESULT_OK)
 		FAIL("adding data failed (1)");
-	if (getReszBufContentSize(buf) != 8)
+	if (rbGetBufContentSize(buf) != 8)
 		FAIL("wrong content size (1)");
-	if (getReszBufTotalSize(buf) != 16)
+	if (rbGetBufTotalSize(buf) != 16)
 		FAIL("wrong total size (1)");
-	if (getReszBufFreeSpace(buf) != 8)
+	if (rbGetBufFreeSpace(buf) != 8)
 		FAIL("wrong free space (1)");
 	if (flush_calls != 0)
 		FAIL("wrong flush calls count (1)");
 
 	flush_calls = 0;
-	if (addDataToReszBuf(buf, src_bytes, 16) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 16) != RB_RESULT_OK)
 		FAIL("adding data failed (2)");
-	if (getReszBufContentSize(buf) != 8)
+	if (rbGetBufContentSize(buf) != 8)
 		FAIL("wrong content size (2)");
-	if (getReszBufTotalSize(buf) != 16)
+	if (rbGetBufTotalSize(buf) != 16)
 		FAIL("wrong total size (2)");
-	if (getReszBufFreeSpace(buf) != 8)
+	if (rbGetBufFreeSpace(buf) != 8)
 		FAIL("wrong free space (2)");
 	if (flush_calls != 1)
 		FAIL("wrong flush calls count (2)");
 
 	flush_calls = 0;
-	if (addDataToReszBuf(buf, src_bytes, 56) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 56) != RB_RESULT_OK)
 		FAIL("adding data failed (3)");
-	if (getReszBufContentSize(buf) != 16)
+	if (rbGetBufContentSize(buf) != 16)
 		FAIL("wrong content size (3)");
-	if (getReszBufTotalSize(buf) != 16)
+	if (rbGetBufTotalSize(buf) != 16)
 		FAIL("wrong total size (3)");
-	if (getReszBufFreeSpace(buf) != 0)
+	if (rbGetBufFreeSpace(buf) != 0)
 		FAIL("wrong free space (3)");
 	if (flush_calls != 3)
 		FAIL("wrong flush calls count (3)");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
@@ -281,26 +281,26 @@ static int flush_to_strcat(void *data, size_t size)
 	return 0;
 }
 
-#define ADD_DATA(s) addDataToReszBuf(buf, s, xmlStrlen(BAD_CAST s))
+#define ADD_DATA(s) rbAddDataToBuf(buf, s, xmlStrlen(BAD_CAST s))
 
 static bool xtsTestReszBuf_Flush(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	bool ok = false;
 
-	buf = createFlushableReszBuf(8, flush_to_dev_null_and_fail);
+	buf = rbCreateFlushableBuf(8, flush_to_dev_null_and_fail);
 	assert(buf);
-	if (getReszBufFlushCallback(buf) != flush_to_dev_null_and_fail)
+	if (rbGetBufFlushCallback(buf) != flush_to_dev_null_and_fail)
 		FAIL("getting flush callback failed");
-	if (addDataToReszBuf(buf, src_bytes, 2) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 2) != RB_RESULT_OK)
 		FAIL("adding data must succeed if they fit");
-	if (flushReszBuf(buf) != RESZ_BUF_RESULT_FLUSH_FAILED)
+	if (rbFlushBuf(buf) != RB_RESULT_FLUSH_FAILED)
 		FAIL("flushing must fail if callback reports an error");
-	if (addDataToReszBuf(buf, src_bytes, 10) != RESZ_BUF_RESULT_FLUSH_FAILED)
+	if (rbAddDataToBuf(buf, src_bytes, 10) != RB_RESULT_FLUSH_FAILED)
 		FAIL("adding data  must fail if flush callback reports an error");
-	if (setReszBufFlushCallback(buf, flush_to_strcat) != flush_to_dev_null_and_fail)
+	if (rbSetBufFlushCallback(buf, flush_to_strcat) != flush_to_dev_null_and_fail)
 		FAIL("setting flush callback failed");
-	if (getReszBufFlushCallback(buf) != flush_to_strcat)
+	if (rbGetBufFlushCallback(buf) != flush_to_strcat)
 		FAIL("getting flush callback failed (2)");
 	ADD_DATA("This");
 	if (!xmlStrcmp(flush_buf, "This"))
@@ -316,7 +316,7 @@ static bool xtsTestReszBuf_Flush(xtsContextPtr ctxt)
 		FAIL("adding data failed (4)");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	if (flush_buf)
 	{
 		xmlFree(flush_buf);
@@ -330,37 +330,37 @@ cleanup:
 static bool xtsTestReszBuf_InvalidParams(xtsContextPtr ctxt)
 {
 	bool ok = false;
-	ReszBufPtr buf;
+	rbBufPtr buf;
 
-	if ((buf = createReszBufParams(10, RESZ_BUF_GROW_MIN - 1, 10)))
-		FAIL("createReszBufParams() must fail if strategy < RESZ_BUF_GROW_MIN");
-	if ((buf = createReszBufParams(10, RESZ_BUF_GROW_MAX + 1, 10)))
-		FAIL("createReszBufParams() must fail if strategy > RESZ_BUF_GROW_MAX");
-	if ((buf = createReszBufParams(10, RESZ_BUF_GROW_INCREMENT, 0)))
-		FAIL("createReszBufParams() must fail if grow_strategy = RESZ_BUF_GROW_INCREMENT and increment = 0");
-	if ((buf = createFlushableReszBuf(10, NULL)))
-		FAIL("createFlashableReszBuf() must fail if cb is NULL");
+	if ((buf = rbCreateBufParams(10, RB_GROW_MIN - 1, 10)))
+		FAIL("rbCreateBufParams() must fail if strategy < RESZ_BUF_GROW_MIN");
+	if ((buf = rbCreateBufParams(10, RB_GROW_MAX + 1, 10)))
+		FAIL("rbCreateBufParams() must fail if strategy > RESZ_BUF_GROW_MAX");
+	if ((buf = rbCreateBufParams(10, RB_GROW_INCREMENT, 0)))
+		FAIL("rbCreateBufParams() must fail if grow_strategy = RESZ_BUF_GROW_INCREMENT and increment = 0");
+	if ((buf = rbCreateFlushableBuf(10, NULL)))
+		FAIL("rbCreateFlashableBuf() must fail if cb is NULL");
 
-	buf = createReszBufParams(10, RESZ_BUF_GROW_INCREMENT, 10);
+	buf = rbCreateBufParams(10, RB_GROW_INCREMENT, 10);
 	assert(buf);
-	if (setReszBufGrowStrategy(buf, RESZ_BUF_GROW_MIN - 1) != RESZ_BUF_RESULT_INVALID)
-		FAIL("setReszBufGrowStrategy() must fail if strategy < RESZ_BUF_GROW_MIN");
-	if (setReszBufGrowStrategy(buf, RESZ_BUF_GROW_MAX + 1) != RESZ_BUF_RESULT_INVALID)
-		FAIL("setReszBufGrowStrategy() must fail if strategy > RESZ_BUF_GROW_MAX");
-	if (setReszBufGrowIncrement(buf, 0) != RESZ_BUF_RESULT_INVALID)
-		FAIL("setReszBufGrowIncrement() must fail if strategy = RESZ_BUF_GROW_INCREMENT and increment = 0");
-	if (setReszBufGrowStrategy(buf, RESZ_BUF_GROW_EXACT) != RESZ_BUF_RESULT_OK)
-		FAIL("setReszBufGrowStrategy() failed on valid input");
-	if (setReszBufGrowIncrement(buf, 0) != RESZ_BUF_RESULT_OK)
-		FAIL("setReszBufGrowIncrement() failed on valid input");
-	if (setReszBufGrowStrategy(buf, RESZ_BUF_GROW_INCREMENT) != RESZ_BUF_RESULT_INVALID)
-		FAIL("setReszBufGrowStrategy() must fail if increment is 0 and strategy = RESZ_BUF_GROW_INCREMENT");
-	if (advanceReszBufferPosition(buf, 1000) != RESZ_BUF_RESULT_NO_MEMORY)
-		FAIL("advanceReszBufferPosition() must fail on positions beyond the buffer end");
+	if (rbSetBufGrowStrategy(buf, RB_GROW_MIN - 1) != RB_RESULT_INVALID)
+		FAIL("rbSetBufGrowStrategy() must fail if strategy < RESZ_BUF_GROW_MIN");
+	if (rbSetBufGrowStrategy(buf, RB_GROW_MAX + 1) != RB_RESULT_INVALID)
+		FAIL("rbSetBufGrowStrategy() must fail if strategy > RESZ_BUF_GROW_MAX");
+	if (rbSetBufGrowIncrement(buf, 0) != RB_RESULT_INVALID)
+		FAIL("rbSetBufGrowIncrement() must fail if strategy = RESZ_BUF_GROW_INCREMENT and increment = 0");
+	if (rbSetBufGrowStrategy(buf, RB_GROW_EXACT) != RB_RESULT_OK)
+		FAIL("rbSetBufGrowStrategy() failed on valid input");
+	if (rbSetBufGrowIncrement(buf, 0) != RB_RESULT_OK)
+		FAIL("rbSetBufGrowIncrement() failed on valid input");
+	if (rbSetBufGrowStrategy(buf, RB_GROW_INCREMENT) != RB_RESULT_INVALID)
+		FAIL("rbSetBufGrowStrategy() must fail if increment is 0 and strategy = RESZ_BUF_GROW_INCREMENT");
+	if (rbAdvanceBufPosition(buf, 1000) != RB_RESULT_NO_MEMORY)
+		FAIL("rbAdvanceBufPosition() must fail on positions beyond the buffer end");
 	ok = true;
 cleanup:
 	if (buf)
-		freeReszBuf(buf);
+		rbFreeBuf(buf);
 	return ok;
 }
 
@@ -368,36 +368,36 @@ static bool xtsTestReszBuf_InvalidBuf(xtsContextPtr ctxt)
 {
 	bool ok = false;
 
-	if (getReszBufGrowStrategy(NULL) != RESZ_BUF_GROW_UNKNOWN)
-		FAIL("getReszBufGrowStrategy() must fail on NULL buffer");
-	if (setReszBufGrowStrategy(NULL, RESZ_BUF_GROW_EXACT) != RESZ_BUF_RESULT_INVALID)
-		FAIL("setReszBufGrowStrategy() must fail on NULL buffer");
-	if (getReszBufGrowIncrement(NULL) != 0)
-		FAIL("getReszBufGrowIncrement() must return 0 on NULL buffer");
-	if (setReszBufGrowIncrement(NULL, 10) != RESZ_BUF_RESULT_INVALID)
-		FAIL("setReszBufGrowStrategy() must fail on NULL buffer");
-	if (getReszBufContentSize(NULL) != 0)
-		FAIL("getReszBufContentSize() must return 0 on NULL buffer");
-	if (getReszBufFreeSpace(NULL) != 0)
-		FAIL("getReszBufFreeSpace() must return 0 on NULL buffer");
-	if (getReszBufTotalSize(NULL) != 0)
-		FAIL("getReszBufTotalSize() must return 0 on NULL buffer");
-	if (getReszBufFlushCallback(NULL) != NULL)
-		FAIL("getReszBufFlushCallback() must return NULL on NULL buffer");
-	if (getReszBufContent(NULL) != NULL)
-		FAIL("getReszBufContent() must return NULL on NULL buffer");
-	if (detachReszBufContent(NULL) != NULL)
-		FAIL("detachReszBufContent() must return NULL on NULL buffer");
-	if (addDataToReszBuf(NULL, src_bytes, 1) != RESZ_BUF_RESULT_INVALID)
-		FAIL("addDataToReszBuf must fail on NULL buffer");
-	if (rewindReszBuf(NULL) != RESZ_BUF_RESULT_INVALID)
-		FAIL("rewindReszBuf() must fail on NULL buffer");
-	if (advanceReszBufferPosition(NULL, 1) != RESZ_BUF_RESULT_INVALID)
-		FAIL("advanceReszBufferPosition() must fail on NULL buffer");
-	if (ensureReszBufFreeSize(NULL, 10) != RESZ_BUF_RESULT_INVALID)
-		FAIL("ensureReszBufFreeSize() must fail on NULL buffer");
-	if (flushReszBuf(NULL) != RESZ_BUF_RESULT_INVALID)
-		FAIL("flushReszBuf() must fail on NULL buffer");
+	if (rbGetBufGrowStrategy(NULL) != RB_GROW_UNKNOWN)
+		FAIL("rbGetBufGrowStrategy() must fail on NULL buffer");
+	if (rbSetBufGrowStrategy(NULL, RB_GROW_EXACT) != RB_RESULT_INVALID)
+		FAIL("rbSetBufGrowStrategy() must fail on NULL buffer");
+	if (rbGetBufGrowIncrement(NULL) != 0)
+		FAIL("rbGetBufGrowIncrement() must return 0 on NULL buffer");
+	if (rbSetBufGrowIncrement(NULL, 10) != RB_RESULT_INVALID)
+		FAIL("rbSetBufGrowIncrement() must fail on NULL buffer");
+	if (rbGetBufContentSize(NULL) != 0)
+		FAIL("rbGetBufContentSize() must return 0 on NULL buffer");
+	if (rbGetBufFreeSpace(NULL) != 0)
+		FAIL("rbGetBufFreeSpace() must return 0 on NULL buffer");
+	if (rbGetBufTotalSize(NULL) != 0)
+		FAIL("rbGetBufTotalSize() must return 0 on NULL buffer");
+	if (rbGetBufFlushCallback(NULL) != NULL)
+		FAIL("rbGetBufFlushCallback() must return NULL on NULL buffer");
+	if (rbGetBufContent(NULL) != NULL)
+		FAIL("rbGetBufContent() must return NULL on NULL buffer");
+	if (rbDetachBufContent(NULL) != NULL)
+		FAIL("rbDetachBufContent() must return NULL on NULL buffer");
+	if (rbAddDataToBuf(NULL, src_bytes, 1) != RB_RESULT_INVALID)
+		FAIL("rbAddDataToBuf() must fail on NULL buffer");
+	if (rbRewindBuf(NULL) != RB_RESULT_INVALID)
+		FAIL("rbRewindBuf() must fail on NULL buffer");
+	if (rbAdvanceBufPosition(NULL, 1) != RB_RESULT_INVALID)
+		FAIL("rbAdvanceBufPosition() must fail on NULL buffer");
+	if (rbEnsureBufFreeSize(NULL, 10) != RB_RESULT_INVALID)
+		FAIL("rbEnsureBufFreeSize() must fail on NULL buffer");
+	if (rbFlushBuf(NULL) != RB_RESULT_INVALID)
+		FAIL("rbFlushBuf() must fail on NULL buffer");
 	ok = true;
 cleanup:
 	return ok;
@@ -405,227 +405,227 @@ cleanup:
 
 static bool xtsTestReszBuf_GrowDynamic(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	bool ok = false;
 
-	buf = createReszBufParams(16, RESZ_BUF_GROW_FIXED, 0);
+	buf = rbCreateBufParams(16, RB_GROW_FIXED, 0);
 	assert(buf);
-	if (addDataToReszBuf(buf, src_bytes, 16) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 16) != RB_RESULT_OK)
 		FAIL("adding size <= free_space to a fixed buffer must succeed");
-	if (addDataToReszBuf(buf, src_bytes, 1) != RESZ_BUF_RESULT_NO_MEMORY)
+	if (rbAddDataToBuf(buf, src_bytes, 1) != RB_RESULT_NO_MEMORY)
 		FAIL("adding size > free_space to a fixed buffer must fail");
-	if (setReszBufGrowStrategy(buf, RESZ_BUF_GROW_EXACT) != RESZ_BUF_RESULT_OK)
+	if (rbSetBufGrowStrategy(buf, RB_GROW_EXACT) != RB_RESULT_OK)
 		FAIL("setting grow_strategy to exact must succeed");
-	if (addDataToReszBuf(buf, src_bytes, 1) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 1) != RB_RESULT_OK)
 		FAIL("adding to a growable buffer must succeed:1");
-	if (getReszBufContentSize(buf) != 17)
+	if (rbGetBufContentSize(buf) != 17)
 		FAIL("content size must be 17 at this point");
-	if (getReszBufTotalSize(buf) != 17)
+	if (rbGetBufTotalSize(buf) != 17)
 		FAIL("total size must be 17 at this point");
 
-	if (setReszBufGrowIncrement(buf, 16) != RESZ_BUF_RESULT_OK)
+	if (rbSetBufGrowIncrement(buf, 16) != RB_RESULT_OK)
 		FAIL("setting grow_increment >= 0 must succeed");
-	if (setReszBufGrowStrategy(buf, RESZ_BUF_GROW_INCREMENT) != RESZ_BUF_RESULT_OK)
+	if (rbSetBufGrowStrategy(buf, RB_GROW_INCREMENT) != RB_RESULT_OK)
 		FAIL("setting grow_strategy to incremental must succeed");
-	if (addDataToReszBuf(buf, src_bytes, 1) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 1) != RB_RESULT_OK)
 		FAIL("adding to a growable buffer must succeed:2");
-	if (getReszBufContentSize(buf) != 18)
+	if (rbGetBufContentSize(buf) != 18)
 		FAIL("content size must be 18 at this point");
-	if (getReszBufTotalSize(buf) != 33) /* 17 + 16*1 */
+	if (rbGetBufTotalSize(buf) != 33) /* 17 + 16*1 */
 		FAIL("total size must be 33 at this point");
 
-	if (setReszBufGrowStrategy(buf, RESZ_BUF_GROW_DOUBLE) != RESZ_BUF_RESULT_OK)
+	if (rbSetBufGrowStrategy(buf, RB_GROW_DOUBLE) != RB_RESULT_OK)
 		FAIL("setting grow_strategy to doubling must succeed");
-	if (addDataToReszBuf(buf, src_bytes, 16) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 16) != RB_RESULT_OK)
 		FAIL("adding to a growable buffer must succeed:3");
-	if (getReszBufContentSize(buf) != 34)
+	if (rbGetBufContentSize(buf) != 34)
 		FAIL("content size must be 34 at this point");
-	if (getReszBufTotalSize(buf) != 66) /* 33*2 */
+	if (rbGetBufTotalSize(buf) != 66) /* 33*2 */
 		FAIL("total size must be 66 at this point");
 
-	if (setReszBufGrowStrategy(buf, RESZ_BUF_GROW_DOUBLE) != RESZ_BUF_RESULT_OK)
+	if (rbSetBufGrowStrategy(buf, RB_GROW_DOUBLE) != RB_RESULT_OK)
 		FAIL("setting grow_strategy to doubling must succeed");
-	if (addDataToReszBuf(buf, src_bytes, 16) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 16) != RB_RESULT_OK)
 		FAIL("adding to a growable buffer must succeed:3");
-	if (getReszBufContentSize(buf) != 50)
+	if (rbGetBufContentSize(buf) != 50)
 		FAIL("content size must be 50 at this point");
-	if (getReszBufTotalSize(buf) != 66) /* 33*2 */
+	if (rbGetBufTotalSize(buf) != 66) /* 33*2 */
 		FAIL("total size must be 66 at this point:1");
 
-	if (setReszBufFlushCallback(buf, flush_to_dev_null_and_succeed) != RESZ_BUF_RESULT_OK)
+	if (rbSetBufFlushCallback(buf, flush_to_dev_null_and_succeed) != RB_RESULT_OK)
 		FAIL("setting buffer flush function must succeed");
-	if (setReszBufGrowStrategy(buf, RESZ_BUF_GROW_FLUSH) != RESZ_BUF_RESULT_OK)
+	if (rbSetBufGrowStrategy(buf, RB_GROW_FLUSH) != RB_RESULT_OK)
 		FAIL("setting grow_strategy to flushing must succeed");
-	if (addDataToReszBuf(buf, src_bytes, 32) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 32) != RB_RESULT_OK)
 			FAIL("adding to a growable buffer must succeed:4");
-	if (getReszBufContentSize(buf) != 16)
+	if (rbGetBufContentSize(buf) != 16)
 		FAIL("content size must be 16 at this point");
-	if (getReszBufTotalSize(buf) != 66) /* 33*2 */
+	if (rbGetBufTotalSize(buf) != 66) /* 33*2 */
 		FAIL("total size must be 66 at this point:2");
 
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
 static bool xtsTestReszBuf_DetachContent_Fixed(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	void *content;
 	bool ok = false;
 
-	buf = createReszBufParams(16, RESZ_BUF_GROW_FIXED, 0);
+	buf = rbCreateBufParams(16, RB_GROW_FIXED, 0);
 	assert(buf);
-	if (addDataToReszBuf(buf, src_bytes, 8) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 8) != RB_RESULT_OK)
 		FAIL("adding data to a growable buffer must succeed");
-	if (!(content = detachReszBufContent(buf)))
+	if (!(content = rbDetachBufContent(buf)))
 		FAIL("detached content must not be NULL");
 	xmlFree(content);
-	if (addDataToReszBuf(buf, src_bytes, 9) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 9) != RB_RESULT_OK)
 		FAIL("adding data after detaching content must succeed");
-	if (getReszBufContentSize(buf) != 9)
+	if (rbGetBufContentSize(buf) != 9)
 		FAIL("content size must be 9");
-	if (getReszBufTotalSize(buf) != 16)
+	if (rbGetBufTotalSize(buf) != 16)
 		FAIL("total size must be 16");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
 static bool xtsTestReszBuf_DetachContent_Exact(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	void *content;
 	bool ok = false;
 
-	buf = createReszBufParams(16, RESZ_BUF_GROW_EXACT, 0);
+	buf = rbCreateBufParams(16, RB_GROW_EXACT, 0);
 	assert(buf);
-	if (addDataToReszBuf(buf, src_bytes, 24) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 24) != RB_RESULT_OK)
 		FAIL("adding data to a growable buffer must succeed");
-	if (!(content = detachReszBufContent(buf)))
+	if (!(content = rbDetachBufContent(buf)))
 		FAIL("detached content must not be NULL");
 	xmlFree(content);
-	if (addDataToReszBuf(buf, src_bytes, 9) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 9) != RB_RESULT_OK)
 		FAIL("adding data after detaching content must succeed");
-	if (getReszBufContentSize(buf) != 9)
+	if (rbGetBufContentSize(buf) != 9)
 		FAIL("content size must be 9");
-	if (getReszBufTotalSize(buf) != 9)
+	if (rbGetBufTotalSize(buf) != 9)
 		FAIL("total size must be 9");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
 static bool xtsTestReszBuf_DetachContent_Increment(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	void *content;
 	bool ok = false;
 
-	buf = createReszBufParams(16, RESZ_BUF_GROW_INCREMENT, 16);
+	buf = rbCreateBufParams(16, RB_GROW_INCREMENT, 16);
 	assert(buf);
-	if (addDataToReszBuf(buf, src_bytes, 24) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 24) != RB_RESULT_OK)
 		FAIL("adding data to a growable buffer must succeed");
-	if (!(content = detachReszBufContent(buf)))
+	if (!(content = rbDetachBufContent(buf)))
 		FAIL("detached content must not be NULL");
 	xmlFree(content);
-	if (addDataToReszBuf(buf, src_bytes, 9) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 9) != RB_RESULT_OK)
 		FAIL("adding data after detaching content must succeed");
-	if (getReszBufContentSize(buf) != 9)
+	if (rbGetBufContentSize(buf) != 9)
 		FAIL("content size must be 9");
-	if (getReszBufTotalSize(buf) != 16)
+	if (rbGetBufTotalSize(buf) != 16)
 		FAIL("total size must be 16");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
 static bool xtsTestReszBuf_DetachContent_Double(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	void *content;
 	bool ok = false;
 
-	buf = createReszBufParams(16, RESZ_BUF_GROW_DOUBLE, 0);
+	buf = rbCreateBufParams(16, RB_GROW_DOUBLE, 0);
 	assert(buf);
-	if (addDataToReszBuf(buf, src_bytes, 24) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 24) != RB_RESULT_OK)
 		FAIL("adding data to a growable buffer must succeed");
-	if (!(content = detachReszBufContent(buf)))
+	if (!(content = rbDetachBufContent(buf)))
 		FAIL("detached content must not be NULL");
 	xmlFree(content);
-	if (addDataToReszBuf(buf, src_bytes, 9) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 9) != RB_RESULT_OK)
 		FAIL("adding data after detaching content must succeed");
-	if (getReszBufContentSize(buf) != 9)
+	if (rbGetBufContentSize(buf) != 9)
 		FAIL("content size must be 9");
-	if (getReszBufTotalSize(buf) != 16)
+	if (rbGetBufTotalSize(buf) != 16)
 		FAIL("total size must be 16");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
 static bool xtsTestReszBuf_DetachContent_Flush(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	void *content;
 	bool ok = false;
 
-	buf = createFlushableReszBuf(16, flush_to_dev_null_and_succeed);
+	buf = rbCreateFlushableBuf(16, flush_to_dev_null_and_succeed);
 	assert(buf);
-	if (addDataToReszBuf(buf, src_bytes, 24) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 24) != RB_RESULT_OK)
 		FAIL("adding data to a growable buffer must succeed");
-	if (!(content = detachReszBufContent(buf))) /* should anyone ever need a tail? */
+	if (!(content = rbDetachBufContent(buf))) /* should anyone ever need a tail? */
 		FAIL("detached content must not be NULL");
 	xmlFree(content);
-	if (addDataToReszBuf(buf, src_bytes, 30) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, src_bytes, 30) != RB_RESULT_OK)
 		FAIL("adding data after detaching content must succeed");
-	if (getReszBufContentSize(buf) != 14)
+	if (rbGetBufContentSize(buf) != 14)
 		FAIL("content size must be 14");
-	if (getReszBufTotalSize(buf) != 16)
+	if (rbGetBufTotalSize(buf) != 16)
 		FAIL("total size must be 16");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 
 static bool xtsTestReszBuf_Position(xtsContextPtr ctxt)
 {
-	ReszBufPtr buf;
+	rbBufPtr buf;
 	xmlChar *test_string = BAD_CAST "This is a test";
 	xmlChar *content;
 	bool ok = false;
 
-	buf = createReszBufParams(32, RESZ_BUF_GROW_FIXED, 0);
+	buf = rbCreateBufParams(32, RB_GROW_FIXED, 0);
 	assert(buf);
-	if (addDataToReszBuf(buf, test_string, xmlStrlen(test_string) + 1) != RESZ_BUF_RESULT_OK)
+	if (rbAddDataToBuf(buf, test_string, xmlStrlen(test_string) + 1) != RB_RESULT_OK)
 		FAIL("adding data must succeed");
-	if (!(content = (xmlChar*) getReszBufContent(buf)))
+	if (!(content = (xmlChar*) rbGetBufContent(buf)))
 		FAIL("content must not be NULL");
-	if ((xmlChar*) getReszBufPosition(buf) != content + xmlStrlen(test_string) + 1)
+	if ((xmlChar*) rbGetBufPosition(buf) != content + xmlStrlen(test_string) + 1)
 		FAIL("wrong buffer position");
 	if (xmlStrcmp(content, test_string))
 		FAIL("wrong buffer content");
 
-	if (rewindReszBuf(buf) != RESZ_BUF_RESULT_OK)
+	if (rbRewindBuf(buf) != RB_RESULT_OK)
 		FAIL("rewinding failed");
-	if (xmlStrcmp((xmlChar*) getReszBufPosition(buf), test_string))
+	if (xmlStrcmp((xmlChar*) rbGetBufPosition(buf), test_string))
 		FAIL("wrong content after rewinding");
 
-	if (advanceReszBufferPosition(buf, 5) != RESZ_BUF_RESULT_OK)
+	if (rbAdvanceBufPosition(buf, 5) != RB_RESULT_OK)
 		FAIL("advancing position failed");
-	if (!(content = (xmlChar*) getReszBufPosition(buf)))
+	if (!(content = (xmlChar*) rbGetBufPosition(buf)))
 		FAIL("content must not be NULL");
 	if (xmlStrcmp(content, test_string + 5))
 		FAIL("wrong content after advancing");
 	ok = true;
 cleanup:
-	freeReszBuf(buf);
+	rbFreeBuf(buf);
 	return ok;
 }
 

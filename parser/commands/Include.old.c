@@ -366,7 +366,7 @@ char* loadHTTPSource(xmlChar *url, xmlChar *encoding, size_t *size, xmlChar *uri
 			}
 		} /* if status queried */
 
-		buf = createReszBufParams(16384, RESZ_BUF_GROW_DOUBLE, 0);
+		buf = rbCreateBufParams(16384, RESZ_BUF_GROW_DOUBLE, 0);
 		dwTotal = 0;
 		do
 		{
@@ -385,7 +385,7 @@ char* loadHTTPSource(xmlChar *url, xmlChar *encoding, size_t *size, xmlChar *uri
 				ret = (char*) xmlStrdup(BAD_CAST "<error>Insufficient memory</error>");
 				goto done;
 			}
-			ret = (char*) getReszBufPosition(buf);
+			ret = (char*) rbGetBufPosition(buf);
 			if (!WinHttpReadData(hRequest, ret, dwSize, &dwRead))
 			{
 				if (iRetryTimes == INT_RETRYTIMES)
@@ -395,13 +395,13 @@ char* loadHTTPSource(xmlChar *url, xmlChar *encoding, size_t *size, xmlChar *uri
 				} else
 						continue; /* next try */
 			}
-			advanceReszBufferPosition(buf, dwRead);
+			rbAdvanceBufPosition(buf, dwRead);
 			dwTotal += dwRead;
 		} while (dwSize > 0); /* reading cycle */
 		bResponseSucceeded = true;
 	} // while
-	addDataToReszBuf(buf, &zero, sizeof(zero));
-	ret = (char*) detachReszBufContent(buf);
+	rbAddDataToBuf(buf, &zero, sizeof(zero));
+	ret = (char*) rbDetachBufContent(buf);
 	*size = dwTotal;
 done:
 	if (!*size && ret)
@@ -417,7 +417,7 @@ done:
 	if (wszProxyPassword) xmlFree(wszProxyPassword);
 
 	if (escaped_uri) xmlFree(escaped_uri);
-	if (buf) freeReszBuf(buf);
+	if (buf) rbFreeBuf(buf);
 
 	return ret;
 }

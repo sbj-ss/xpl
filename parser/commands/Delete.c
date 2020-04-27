@@ -105,7 +105,7 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 									dest_list->nodesetval->nodeTab[j] = 0;
 					}
 				} else
-					deleted_buf = createReszBufParams((size_t) sizeof(xmlNodePtr)*dest_list->nodesetval->nodeNr, RESZ_BUF_GROW_FIXED, 0);
+					deleted_buf = rbCreateBufParams((size_t) sizeof(xmlNodePtr)*dest_list->nodesetval->nodeNr, RESZ_BUF_GROW_FIXED, 0);
 				for (i = 0; i < (size_t) dest_list->nodesetval->nodeNr; i++)
 				{
 					xmlNodePtr cur = dest_list->nodesetval->nodeTab[i];
@@ -159,7 +159,7 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				if (double_pass_mode)
 				{
 					xplDeleteDeferredNodes(deleted_buf);
-					freeReszBuf(deleted_buf);
+					rbFreeBuf(deleted_buf);
 				}
 			} /* if nodesetval is present */
 		} else {

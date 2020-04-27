@@ -159,7 +159,7 @@ void xplDeferNodeDeletion(ReszBufPtr buf, xmlNodePtr cur)
 	if ((int) cur->type & XML_NODE_DELETION_DEFERRED_FLAG)
 		return;
 	markDOSAxisForDeletion(cur, XML_NODE_DELETION_DEFERRED_FLAG, true);
-	addDataToReszBuf(buf, &cur, sizeof(xmlNodePtr));
+	rbAddDataToBuf(buf, &cur, sizeof(xmlNodePtr));
 }
 
 void xplDeferNodeListDeletion(ReszBufPtr buf, xmlNodePtr cur)
@@ -198,14 +198,14 @@ void xplDocDeferNodeListDeletion(xplDocumentPtr doc, xmlNodePtr cur)
 void xplDeleteDeferredNodes(ReszBufPtr buf)
 {
 	size_t i = 0;
-	xmlNodePtr *p = getReszBufContent(buf);
-	for (i = 0; i < getReszBufContentSize(buf) / sizeof(xmlNodePtr); i++, p++)
+	xmlNodePtr *p = rbGetBufContent(buf);
+	for (i = 0; i < rbGetBufContentSize(buf) / sizeof(xmlNodePtr); i++, p++)
 	{
 		markDOSAxisForDeletion(*p, XML_NODE_DELETION_MASK, false);
 		xmlUnlinkNode(*p);
 		xmlFreeNode(*p);
 	}
-	rewindReszBuf(buf);
+	rbRewindBuf(buf);
 }
 
 XPR_SEMAPHORE *xplGetGlobalThreadSemaphore(void)
@@ -325,7 +325,7 @@ xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xpl
 		xplDocumentFree(doc);
 		return NULL;
 	}
-	doc->deleted_nodes = createReszBufParams(32, RESZ_BUF_GROW_DOUBLE, 2);
+	doc->deleted_nodes = rbCreateBufParams(32, RESZ_BUF_GROW_DOUBLE, 2);
 	if (!doc->deleted_nodes)
 	{
 		xplDocumentFree(doc);
@@ -397,7 +397,7 @@ void xplDocumentFree(xplDocumentPtr doc)
 		doc->discard_suspended_threads = true;
 		xplStartDelayedThreads(doc);
 		xplWaitForChildThreads(doc);
-		freeReszBuf(doc->threads);
+		rbFreeBuf(doc->threads);
 		if (!xprMutexCleanup(&doc->thread_landing_lock))
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 	}
@@ -410,7 +410,7 @@ void xplDocumentFree(xplDocumentPtr doc)
 	xplClearDocStack(doc);
 	/* ещё раз перестрахуемся */
 	xplDeleteDeferredNodes(doc->deleted_nodes);
-	freeReszBuf(doc->deleted_nodes);
+	rbFreeBuf(doc->deleted_nodes);
 	/* Освободим документ последним */
 	if (doc->document) xmlFreeDoc(doc->document);
 	xmlFree(doc);
@@ -431,7 +431,7 @@ void xplEnsureDocThreadSupport(xplDocumentPtr doc)
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		return false;
 	}
-	doc->threads = createReszBufParams(2*sizeof(XPR_THREAD_HANDLE), RESZ_BUF_GROW_INCREMENT, 2*sizeof(XPR_THREAD_HANDLE));
+	doc->threads = rbCreateBufParams(2*sizeof(XPR_THREAD_HANDLE), RESZ_BUF_GROW_INCREMENT, 2*sizeof(XPR_THREAD_HANDLE));
 	if (!doc_threads)
 	{
 		if (!xprMutexCleanup(&doc->thread_landing_lock))
@@ -448,11 +448,11 @@ void xplWaitForChildThreads(xplDocumentPtr doc)
 
 	if (!doc->threads)
 		return;
-	handles = (XPR_THREAD_HANDLE*) getReszBufContent(doc->threads);
-	count = getReszBufContentSize(doc->threads) / sizeof(XPR_THREAD_HANDLE);
+	handles = (XPR_THREAD_HANDLE*) rbGetBufContent(doc->threads);
+	count = rbGetBufContentSize(doc->threads) / sizeof(XPR_THREAD_HANDLE);
 	if (count)
 		xprWaitForThreads(handles, (int) count);
-	rewindReszBuf(doc->threads);
+	rbRewindBuf(doc->threads);
 }
 
 /* Thread wrapper */
@@ -510,7 +510,7 @@ bool xplStartChildThread(xplDocumentPtr doc, xplDocumentPtr child, bool immediat
 	XPR_START_THREAD_SUSPENDED(handle, xplDocThreadWrapper, (XPR_THREAD_ROUTINE_PARAM) child);
 	if (!handle)
 		return false;
-	addDataToReszBuf(doc->threads, &handle, sizeof(XPR_THREAD_HANDLE));
+	rbAddDataToBuf(doc->threads, &handle, sizeof(XPR_THREAD_HANDLE));
 	child->thread_was_suspended = !immediateStart;
 	if (immediateStart)
 		XPR_RESUME_THREAD(handle);
@@ -525,8 +525,8 @@ void xplStartDelayedThreads(xplDocumentPtr doc)
 	XPR_THREAD_HANDLE *handles;
 	if (!doc || !doc->threads || !doc->has_suspended_threads)
 		return;
-	pool_size = getReszBufContentSize(doc->threads) / sizeof(XPR_THREAD_HANDLE);
-	for (i = 0, handles = getReszBufContent(doc->threads); i < pool_size; i++, handles++)
+	pool_size = rbGetBufContentSize(doc->threads) / sizeof(XPR_THREAD_HANDLE);
+	for (i = 0, handles = rbGetBufContent(doc->threads); i < pool_size; i++, handles++)
 	{
 		XPR_RESUME_THREAD(*handles);
 	}
@@ -1083,7 +1083,7 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 				doc->discard_suspended_threads = true;
 				xplStartDelayedThreads(doc);
 				xplWaitForChildThreads(doc);
-				freeReszBuf(doc->threads);
+				rbFreeBuf(doc->threads);
 				doc->threads = NULL;
 			}
 #endif
