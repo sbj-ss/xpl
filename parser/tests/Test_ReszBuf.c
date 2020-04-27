@@ -637,8 +637,8 @@ static xtsTest resz_buf_tests[] =
 		SFINIT(.testFunction, xtsTestReszBuf_CreateDefaultParams),
 		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
 	}, {
-		SFINIT(.id, BAD_CAST "Creation with explicit size"),
-		SFINIT(.displayName, BAD_CAST "createReszBufSize()"),
+		SFINIT(.id, BAD_CAST "create_with_size"),
+		SFINIT(.displayName, BAD_CAST "Creation with explicit size"),
 		SFINIT(.testFunction, xtsTestReszBuf_CreateWithSize),
 		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
 	}, {
@@ -653,27 +653,27 @@ static xtsTest resz_buf_tests[] =
 		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
 	}, {
 		SFINIT(.id, BAD_CAST "grow_exact"),
-		SFINIT(.displayName, BAD_CAST "adding data with exact grow strategy"),
+		SFINIT(.displayName, BAD_CAST "Adding data with exact grow strategy"),
 		SFINIT(.testFunction, xtsTestReszBuf_GrowExact),
 		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
 	}, {
 		SFINIT(.id, BAD_CAST "grow_increment"),
-		SFINIT(.displayName, BAD_CAST "adding data with incremental grow strategy"),
+		SFINIT(.displayName, BAD_CAST "Adding data with incremental grow strategy"),
 		SFINIT(.testFunction, xtsTestReszBuf_GrowIncrement),
 		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
 	}, {
 		SFINIT(.id, BAD_CAST "grow_double"),
-		SFINIT(.displayName, BAD_CAST "adding data with doubling grow strategy"),
+		SFINIT(.displayName, BAD_CAST "Adding data with doubling grow strategy"),
 		SFINIT(.testFunction, xtsTestReszBuf_GrowDouble),
 		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
 	}, {
 		SFINIT(.id, BAD_CAST "grow_fixed"),
-		SFINIT(.displayName, BAD_CAST "adding data with fixed grow strategy"),
+		SFINIT(.displayName, BAD_CAST "Adding data with fixed grow strategy"),
 		SFINIT(.testFunction, xtsTestReszBuf_GrowFixed),
 		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
 	}, {
 		SFINIT(.id, BAD_CAST "grow_flush"),
-		SFINIT(.displayName, BAD_CAST "adding data with flush grow strategy"),
+		SFINIT(.displayName, BAD_CAST "Adding data with flush grow strategy"),
 		SFINIT(.testFunction, xtsTestReszBuf_GrowFlush),
 		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
 	}, {
