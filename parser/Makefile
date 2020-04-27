@@ -3,7 +3,7 @@
 #* (c) НИЛ ИТС, Подковырин, 2006-2020     *
 #******************************************
 
-INCLUDE = -I./include -I./tests/include -I/usr/include/libxml2
+INCLUDE = -I./include -I./tests/include -I../xts/include -I/usr/include/libxml2
 LIBS = -lxml2
 CFLAGS = -fpic -D_IN_DLL -g
 
@@ -151,11 +151,10 @@ endif
 SRC += $(COMMANDS)
 
 TEST_SRC=tests/Runner.c\
-tests/Sanity.c\
-tests/Tests.c\
+tests/Test_ReszBuf.c\
 
 OBJS = $(SRC:.c=.o)
-TEST_OBJS = $(TEST_SRC:.c=.o)
+TEST_OBJS = $(TEST_SRC:.c=.o) ReszBuf.o
 TEST_BIN = tests/Runner
 
 .DEFAULT_GOAL = all
@@ -171,10 +170,10 @@ libxpl.so: $(OBJS)
 	gcc -shared -o $@ $(OBJS)
 
 $(TEST_BIN): $(TEST_OBJS)
-	gcc $(TEST_OBJS) -o $@ $(LIBS) 
+	gcc $(TEST_OBJS) -o $@ -L../xts $(LIBS) -lxts
 
 test: $(TEST_BIN)
-	$(TEST_BIN)
+	$(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
 	
 clean:
 	rm -f *.o *.so tests/*.o abstraction/*.o commands/*.o

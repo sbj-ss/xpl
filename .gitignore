@@ -33,6 +33,7 @@
 /sql_sp
 /test_anything
 # tests
+/parser/tests/Runner
 /xts/Runner
 # build dirs
 x64
