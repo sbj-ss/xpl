@@ -5,7 +5,7 @@
 #ifndef __getparam_H
 #define __getparam_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetParamPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

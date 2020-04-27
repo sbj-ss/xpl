@@ -5,7 +5,7 @@
 #ifndef __setsamode_H
 #define __setsamode_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSetSaModePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

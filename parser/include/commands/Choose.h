@@ -5,7 +5,7 @@
 #ifndef __choose_H
 #define __choose_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdChoosePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdChooseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

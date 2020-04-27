@@ -1,5 +1,5 @@
+#include <libxpl/xplutils.h>
 #include "commands/Choose.h"
-#include "Utils.h"
 
 void xplCmdChoosePrologue(xplCommandInfoPtr commandInfo)
 {

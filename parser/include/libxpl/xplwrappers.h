@@ -2,8 +2,8 @@
 /* Polaris project: the pure C XPL engine */
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
-#ifndef __wrappers_H
-#define __wrappers_H
+#ifndef __xplwrappers_H
+#define __xplwrappers_H
 
 #include "Configuration.h"
 #include "Common.h"

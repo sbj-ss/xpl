@@ -1,10 +1,10 @@
 #include "Common.h"
 #include <Winhttp.h>
-#include "ReszBuf.h"
-#include "Utils.h"
-#include "Core.h"
-#include "abstraction/ExtFeatures.h"
-#include "abstraction/XefInternal.h"
+#include <libxpl/abstraction/xef.h>
+#include <libxpl/abstraction/xefinternal.h>
+#include <libxpl/xplbuffer.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplutils.h>
 
 XEF_STARTUP_PROTO(Transport)
 {

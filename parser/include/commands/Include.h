@@ -5,7 +5,7 @@
 #ifndef __include_H
 #define __include_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdIncludePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

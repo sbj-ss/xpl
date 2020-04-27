@@ -5,7 +5,7 @@
 #ifndef __container_H
 #define __container_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdContainerPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdContainerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

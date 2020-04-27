@@ -5,7 +5,7 @@
 #ifndef __replicate_H
 #define __replicate_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdReplicatePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

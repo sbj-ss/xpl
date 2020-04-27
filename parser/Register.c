@@ -86,10 +86,10 @@
 #include <commands/When.h>
 #include <commands/With.h>
 #include <commands/XJsonSerialize.h>
+#include <libxpl/xplcommand.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
 #include "Register.h"
-#include "Command.h"
-#include "Messages.h"
-#include "Options.h"
 #ifdef _DYNACONF_SUPPORT
 #include <commands/AddDB.h>
 #include <commands/ChangeDB.h>
@@ -112,8 +112,6 @@
 #ifdef _FILEOP_SUPPORT
 #include <commands/FileOp.h>
 #endif
-
-#include "Messages.h"
 
 typedef struct _xplCommandSignature
 {

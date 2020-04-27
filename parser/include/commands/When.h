@@ -5,8 +5,7 @@
 #ifndef __when_H
 #define __when_H
 
-#include "Command.h"
-
+#include <libxpl/xplcommand.h>
 void xplCmdWhenPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdWhenEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 

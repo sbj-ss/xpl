@@ -1,9 +1,9 @@
-#include "commands/GetVersion.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Utils.h"
-#include "abstraction/ExtFeatures.h"
 #include <stdio.h>
+#include <libxpl/abstraction/xef.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
+#include "commands/GetVersion.h"
 
 #ifdef __GNUC__
 	#include <gnu/libc-version.h>

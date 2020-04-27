@@ -1,8 +1,8 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplutils.h>
 #include "commands/Assert.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Options.h"
-#include "Utils.h"
 
 void xplCmdAssertPrologue(xplCommandInfoPtr commandInfo)
 {

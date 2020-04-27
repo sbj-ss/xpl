@@ -5,7 +5,7 @@
 #ifndef __setresponse_H
 #define __setresponse_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSetResponsePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSetResponseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

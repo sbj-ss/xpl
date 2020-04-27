@@ -5,7 +5,7 @@
 #ifndef __getsamode_H
 #define __getsamode_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetSaModePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

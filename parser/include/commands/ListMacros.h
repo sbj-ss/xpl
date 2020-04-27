@@ -5,7 +5,7 @@
 #ifndef __listmacros_H
 #define __listmacros_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdListMacrosPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

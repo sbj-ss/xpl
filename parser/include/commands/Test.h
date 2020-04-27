@@ -5,7 +5,7 @@
 #ifndef __test_H
 #define __test_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdTestPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdTestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

@@ -5,7 +5,7 @@
 #ifndef __getoption_H
 #define __getoption_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetOptionPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

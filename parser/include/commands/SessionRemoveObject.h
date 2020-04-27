@@ -5,7 +5,7 @@
 #ifndef __sessionremoveobject_H
 #define __sessionremoveobject_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSessionRemoveObjectPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSessionRemoveObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

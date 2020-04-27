@@ -1,13 +1,8 @@
-/******************************************/
-/* Polaris project: the pure C XPL engine */
-/* (c) НИЛ ИТС, Подковырин, 2006-2020     */
-/******************************************/
-
-#include "Macro.h"
-#include "Messages.h"
-#include "Options.h"
-#include "Utils.h"
 #include <stdio.h>
+#include <libxpl/xplmacro.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplutils.h>
 
 xplMacroExpansionState xplMacroExpansionStateFromString(xmlChar *state, bool allowNoDefault)
 {

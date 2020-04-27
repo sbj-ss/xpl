@@ -5,7 +5,7 @@
 #ifndef __crash_H
 #define __crash_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdCrashPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdCrashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

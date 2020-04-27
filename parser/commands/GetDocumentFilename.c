@@ -1,7 +1,7 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "commands/GetDocumentFilename.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Utils.h"
 
 void xplCmdGetDocumentFilenamePrologue(xplCommandInfoPtr commandInfo)
 {

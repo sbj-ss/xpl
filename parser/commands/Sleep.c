@@ -1,7 +1,8 @@
-#include "commands/Sleep.h"
-#include "Messages.h"
-#include "Utils.h"
 #include <stdio.h>
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
+#include "commands/Sleep.h"
 
 void xplCmdSleepPrologue(xplCommandInfoPtr commandInfo)
 {

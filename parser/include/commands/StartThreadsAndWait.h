@@ -5,7 +5,7 @@
 #ifndef __startthreadsandwait_H
 #define __startthreadsandwait_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdStartThreadsAndWaitPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdStartThreadsAndWaitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

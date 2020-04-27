@@ -5,7 +5,7 @@
 #ifndef __regexsplit_H
 #define __regexsplit_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdRegexSplitPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

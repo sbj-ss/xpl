@@ -1,9 +1,8 @@
-#include "DB.h"
-#include "Messages.h"
-#include "Utils.h"
-#include "abstraction/ExtFeatures.h"
-#include "abstraction/XefInternal.h"
-
+#include <libxpl/abstraction/xef.h>
+#include <libxpl/abstraction/xefinternal.h>
+#include <libxpl/xpldb.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include <sql.h>
 #include <sqlext.h>
 

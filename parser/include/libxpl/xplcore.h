@@ -3,19 +3,19 @@
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
 
-#ifndef __core_H
-#define __core_H
+#ifndef __xplcore_H
+#define __xplcore_H
 
 #include "Configuration.h"
 #include "Common.h"
-#include "Command.h"
-#include "DB.h"
-#include "Macro.h"
-#include "Params.h"
-#include "ReszBuf.h"
-#include "Session.h"
-#include "Wrappers.h"
-#include "abstraction/xpr.h"
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplbuffer.h>
+#include <libxpl/xplcommand.h>
+#include <libxpl/xpldb.h>
+#include <libxpl/xplmacro.h>
+#include <libxpl/xplparams.h>
+#include <libxpl/xplsession.h>
+#include <libxpl/xplwrappers.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -5,7 +5,7 @@
 #ifndef __getattributes_H
 #define __getattributes_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetAttributesPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

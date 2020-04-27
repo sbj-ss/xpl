@@ -1,7 +1,7 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "commands/Serialize.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Utils.h"
 
 void xplCmdSerializePrologue(xplCommandInfoPtr commandInfo)
 {

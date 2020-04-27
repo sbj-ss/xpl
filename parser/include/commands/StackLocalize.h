@@ -5,7 +5,7 @@
 #ifndef __stacklocalize_H
 #define __stacklocalize_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdStackLocalizePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdStackLocalizeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

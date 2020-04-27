@@ -5,7 +5,7 @@
 #ifndef __unstringer_H
 #define __unstringer_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdUnstringerPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

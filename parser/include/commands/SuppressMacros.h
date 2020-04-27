@@ -5,7 +5,7 @@
 #ifndef __suppressmacros_H
 #define __suppressmacros_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

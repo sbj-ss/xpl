@@ -5,7 +5,7 @@
 #ifndef __valueof_H
 #define __valueof_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdValueOfPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdValueOfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

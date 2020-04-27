@@ -5,7 +5,7 @@
 #ifndef __getelapsedtime_H
 #define __getelapsedtime_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetElapsedTimePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetElapsedTimeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

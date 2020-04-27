@@ -1,8 +1,8 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmacro.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "commands/ReplaceIfUndefined.h"
-#include "Core.h"
-#include "Macro.h"
-#include "Messages.h"
-#include "Utils.h"
 
 void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo)
 {

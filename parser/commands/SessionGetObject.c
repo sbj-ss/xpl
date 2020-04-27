@@ -1,9 +1,9 @@
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplsession.h>
+#include <libxpl/xplutils.h>
 #include "commands/SessionGetObject.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Session.h"
-#include "Utils.h"
-#include "abstraction/xpr.h"
 
 void xplCmdSessionGetObjectPrologue(xplCommandInfoPtr commandInfo)
 {

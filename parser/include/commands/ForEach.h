@@ -5,7 +5,7 @@
 #ifndef __foreach_H
 #define __foreach_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdForEachPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdForEachEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

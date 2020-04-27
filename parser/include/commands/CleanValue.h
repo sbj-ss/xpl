@@ -5,7 +5,7 @@
 #ifndef __cleanvalue_H
 #define __cleanvalue_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdCleanValuePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdCleanValueEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

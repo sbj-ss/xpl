@@ -5,7 +5,7 @@
 #ifndef __attribute_H
 #define __attribute_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdAttributePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

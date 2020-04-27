@@ -5,7 +5,7 @@
 #ifndef __switch_H
 #define __switch_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

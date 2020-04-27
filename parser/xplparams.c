@@ -1,5 +1,5 @@
-#include "Params.h"
-#include "Utils.h"
+#include <libxpl/xplparams.h>
+#include <libxpl/xplutils.h>
 
 xplExpectType xplExpectTypeFromString(const xmlChar *expect)
 {

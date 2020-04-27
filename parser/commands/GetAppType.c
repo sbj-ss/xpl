@@ -1,6 +1,6 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplutils.h>
 #include "commands/GetAppType.h"
-#include "Core.h"
-#include "Utils.h"
 
 
 void xplCmdGetAppTypePrologue(xplCommandInfoPtr commandInfo)

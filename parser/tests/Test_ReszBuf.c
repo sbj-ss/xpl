@@ -1,6 +1,6 @@
 #include "Test_ReszBuf.h"
-#include "ReszBuf.h"
 #include <assert.h>
+#include <xplbuffer.h>
 
 #define FAIL(x) do {\
 	ctxt->error = BAD_CAST x;\

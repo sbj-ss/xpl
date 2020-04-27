@@ -5,7 +5,7 @@
 #ifndef __debugbreak_H
 #define __debugbreak_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdDebugBreakPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdDebugBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

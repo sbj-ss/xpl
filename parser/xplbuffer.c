@@ -1,5 +1,5 @@
+#include <libxpl/xplbuffer.h>
 #include "Common.h"
-#include "ReszBuf.h"
 
 typedef struct _rbBuf
 {

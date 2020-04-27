@@ -5,7 +5,7 @@
 #ifndef __stackclear_H
 #define __stackclear_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdStackClearPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdStackClearEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

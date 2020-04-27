@@ -1,7 +1,7 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplutils.h>
 #include "commands/Otherwise.h"
-#include "Core.h"
-#include "Options.h"
-#include "Utils.h"
 
 void xplCmdOtherwisePrologue(xplCommandInfoPtr commandInfo)
 {

@@ -5,7 +5,7 @@
 #ifndef __setoutputdocument_H
 #define __setoutputdocument_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSetOutputDocumentPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

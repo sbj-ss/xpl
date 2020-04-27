@@ -5,7 +5,7 @@
 #ifndef __waitforthreads_H
 #define __waitforthreads_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdWaitForThreadsPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdWaitForThreadsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

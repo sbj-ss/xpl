@@ -5,7 +5,7 @@
 #ifndef __fileop_H
 #define __fileop_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdFileOpPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdFileOpEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

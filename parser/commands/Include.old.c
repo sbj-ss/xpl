@@ -1,12 +1,11 @@
 #include <commands/Include.h>
-#include "Utils.h"
-#include "ReszBuf.h"
-
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <share.h>
 #include <io.h>
+#include <xplbuffer.h>
+#include <xplutils.h>
 #include "libxml/nanoftp.h"
 #include "libxml/uri.h"
 /* HTML Tidy */

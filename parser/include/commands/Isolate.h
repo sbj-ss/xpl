@@ -5,7 +5,7 @@
 #ifndef __isolate_H
 #define __isolate_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdIsolatePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

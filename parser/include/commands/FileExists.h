@@ -5,7 +5,7 @@
 #ifndef __fileexists_H
 #define __fileexists_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdFileExistsPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdFileExistsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

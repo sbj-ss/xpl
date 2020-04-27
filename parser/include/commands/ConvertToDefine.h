@@ -5,7 +5,7 @@
 #ifndef __converttodefine_H
 #define __converttodefine_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdConvertToDefinePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

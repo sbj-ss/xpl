@@ -1,5 +1,5 @@
+#include <libxpl/xplutils.h>
 #include "commands/ModuleLoaded.h"
-#include "Utils.h"
 
 void xplCmdModuleLoadedPrologue(xplCommandInfoPtr commandInfo)
 {

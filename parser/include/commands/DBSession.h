@@ -5,7 +5,7 @@
 #ifndef __dbsession_H
 #define __dbsession_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdDBSessionPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdDBSessionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

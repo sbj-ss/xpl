@@ -1,9 +1,9 @@
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplutils.h>
 #include "commands/Save.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Options.h"
-#include "Utils.h"
-#include "abstraction/xpr.h"
 
 /* TODO: do we still need to dig into libxml2 guts? */
 

@@ -1,7 +1,6 @@
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "commands/RegexMatch.h"
-#include "Messages.h"
-#include "Utils.h"
-
 #include <oniguruma.h>
 
 void xplCmdRegexMatchPrologue(xplCommandInfoPtr commandInfo)

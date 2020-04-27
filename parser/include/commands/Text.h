@@ -5,7 +5,7 @@
 #ifndef __text_H
 #define __text_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdTextPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdTextEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

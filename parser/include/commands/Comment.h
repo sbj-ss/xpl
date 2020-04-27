@@ -5,7 +5,7 @@
 #ifndef __comment_H
 #define __comment_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdCommentPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdCommentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

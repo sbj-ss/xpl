@@ -5,7 +5,7 @@
 #ifndef __with_H
 #define __with_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdWithPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

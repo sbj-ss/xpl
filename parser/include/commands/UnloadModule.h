@@ -5,7 +5,7 @@
 #ifndef __unloadmodule_H
 #define __unloadmodule_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdUnloadModulePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdUnloadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

@@ -5,7 +5,7 @@
 #ifndef __default_H
 #define __default_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdDefaultPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdDefaultEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

@@ -5,7 +5,7 @@
 #ifndef __stringer_H
 #define __stringer_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdStringerPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

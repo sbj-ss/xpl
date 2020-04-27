@@ -5,7 +5,7 @@
 #ifndef __removedb_H
 #define __removedb_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdRemoveDBPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

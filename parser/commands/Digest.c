@@ -1,8 +1,7 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "commands/Digest.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Utils.h"
-
 #include "openssl/md4.h"
 #include "openssl/md5.h"
 #include "openssl/ripemd.h"

@@ -5,7 +5,7 @@
 #ifndef __commentnode_H
 #define __commentnode_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdCommentNodePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdCommentNodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

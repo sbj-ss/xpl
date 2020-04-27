@@ -5,7 +5,7 @@
 #ifndef __isdefined_H
 #define __isdefined_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdIsDefinedPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

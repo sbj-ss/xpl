@@ -5,7 +5,7 @@
 #ifndef __jsonserialize_H
 #define __jsonserialize_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdXJsonSerializePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

@@ -5,7 +5,7 @@
 #ifndef __getdocumentfilename_H
 #define __getdocumentfilename_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetDocumentFilenamePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetDocumentFilenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

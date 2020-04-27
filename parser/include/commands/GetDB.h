@@ -5,7 +5,7 @@
 #ifndef __getdb_H
 #define __getdb_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetDBPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

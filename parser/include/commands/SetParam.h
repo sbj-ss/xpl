@@ -5,7 +5,7 @@
 #ifndef __setparam_H
 #define __setparam_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSetParamPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

@@ -1,10 +1,10 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmacro.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplparams.h>
+#include <libxpl/xplsession.h>
+#include <libxpl/xplutils.h>
 #include "commands/Isolate.h"
-#include "Core.h"
-#include "Macro.h"
-#include "Messages.h"
-#include "Params.h"
-#include "Session.h"
-#include "Utils.h"
 
 void xplCmdIsolatePrologue(xplCommandInfoPtr commandInfo)
 {

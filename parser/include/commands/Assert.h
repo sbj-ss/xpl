@@ -5,7 +5,7 @@
 #ifndef __assert_H
 #define __assert_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdAssertPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

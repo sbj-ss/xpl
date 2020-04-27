@@ -5,7 +5,7 @@
 #ifndef __starttimer_H
 #define __starttimer_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdStartTimerPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdStartTimerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

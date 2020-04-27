@@ -1,11 +1,11 @@
 #include "Configuration.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Options.h"
+#include <stdio.h>
+#include <libxpl/abstraction/xef.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplutils.h>
 #include "Register.h"
-#include "Utils.h"
-#include "abstraction/ExtFeatures.h"
-#include <stdio.h> 
 
 /* internal statics */
 static bool parser_loaded = 0;

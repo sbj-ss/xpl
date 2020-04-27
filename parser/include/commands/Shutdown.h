@@ -5,7 +5,7 @@
 #ifndef __shutdown_H
 #define __shutdown_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdShutdownPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdShutdownEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

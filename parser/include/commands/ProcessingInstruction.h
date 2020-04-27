@@ -5,7 +5,7 @@
 #ifndef __processinginstruction_H
 #define __processinginstruction_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdProcessingInstructionPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdProcessingInstructionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

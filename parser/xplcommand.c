@@ -1,8 +1,7 @@
-#include "Command.h"
-
-#include "include/Messages.h"
-#include "Options.h"
-#include "Utils.h"
+#include <libxpl/xplcommand.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplutils.h>
 
 static xmlHashTablePtr commands = NULL;
 static xmlHashTablePtr loaded_modules = NULL;

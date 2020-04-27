@@ -5,7 +5,7 @@
 #ifndef __restart_H
 #define __restart_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdRestartPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdRestartEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

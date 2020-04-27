@@ -5,7 +5,7 @@
 #ifndef __getdocumentrole_H
 #define __getdocumentrole_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetDocumentRolePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetDocumentRoleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

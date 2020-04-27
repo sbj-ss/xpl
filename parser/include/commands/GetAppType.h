@@ -5,7 +5,7 @@
 #ifndef __getapptype_H
 #define __getapptype_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetAppTypePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetAppTypeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

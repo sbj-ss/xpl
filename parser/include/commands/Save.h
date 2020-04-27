@@ -5,7 +5,7 @@
 #ifndef __save_H
 #define __save_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSavePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

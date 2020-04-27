@@ -2,10 +2,11 @@
 /* Polaris project: the pure C XPL engine */
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
-#ifndef __reszbuf_H
-#define __reszbuf_H
+#ifndef __xplbuffer_H
+#define __xplbuffer_H
 
 #include "Configuration.h"
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {

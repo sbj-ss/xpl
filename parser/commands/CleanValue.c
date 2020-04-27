@@ -1,7 +1,7 @@
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplparams.h>
+#include <libxpl/xplutils.h>
 #include "commands/CleanValue.h"
-#include "Messages.h"
-#include "Params.h"
-#include "Utils.h"
 
 void xplCmdCleanValuePrologue(xplCommandInfoPtr commandInfo)
 {

@@ -5,7 +5,7 @@
 #ifndef __parsexml_H
 #define __parsexml_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdParseXmlPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

@@ -5,7 +5,7 @@
 #ifndef __getdocumentsource_H
 #define __getdocumentsource_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetDocumentSourcePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetDocumentSourceEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

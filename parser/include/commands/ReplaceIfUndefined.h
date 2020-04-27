@@ -5,7 +5,7 @@
 #ifndef __replaceifundefined_H
 #define __replaceifundefined_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdReplaceIfUndefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

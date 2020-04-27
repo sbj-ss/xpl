@@ -1,11 +1,11 @@
-#include "commands/Include.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Utils.h"
-#include "abstraction/ExtFeatures.h"
-#include "abstraction/xpr.h"
 #include <sys/stat.h>
 #include <unistd.h>
+#include <libxpl/abstraction/xef.h>
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
+#include "commands/Include.h"
 
 #define SELECT_ATTR (BAD_CAST "select")
 #define SOURCE_ATTR (BAD_CAST "source")

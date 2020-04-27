@@ -5,7 +5,7 @@
 #ifndef __if_H
 #define __if_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdIfPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdIfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

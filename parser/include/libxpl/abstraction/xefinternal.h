@@ -7,7 +7,7 @@
 
 #include "Configuration.h"
 #include "Common.h"
-#include "abstraction/ExtFeatures.h"
+#include <libxpl/abstraction/xef.h>
 
 /* subsystems list */
 typedef enum _xefSubsystem 

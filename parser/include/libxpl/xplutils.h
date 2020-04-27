@@ -2,12 +2,12 @@
 /* Polaris project: the pure C XPL engine */
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
-#ifndef __utils_H
-#define __utils_H
+#ifndef __xplutils_H
+#define __xplutils_H
 
 #include "Configuration.h"
 #include "Common.h"
-#include "abstraction/xpr.h"
+#include <libxpl/abstraction/xpr.h>
 
 #ifdef __cplusplus
 extern "C" {

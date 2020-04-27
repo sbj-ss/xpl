@@ -5,7 +5,7 @@
 #ifndef __commandsupported_H
 #define __commandsupported_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdCommandSupportedPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdCommandSupportedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

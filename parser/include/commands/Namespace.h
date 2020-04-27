@@ -5,7 +5,7 @@
 #ifndef __namespace_H
 #define __namespace_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdNamespacePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdNamespaceEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

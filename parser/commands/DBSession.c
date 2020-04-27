@@ -1,5 +1,5 @@
+#include <libxpl/xplutils.h>
 #include "commands/DBSession.h"
-#include "Utils.h"
 
 void xplCmdDBSessionPrologue(xplCommandInfoPtr commandInfo)
 {

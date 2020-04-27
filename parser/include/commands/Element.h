@@ -5,7 +5,7 @@
 #ifndef __element_H
 #define __element_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdElementPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdElementEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

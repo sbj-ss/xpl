@@ -5,7 +5,7 @@
 #ifndef __fatal_H
 #define __fatal_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdFatalPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdFatalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

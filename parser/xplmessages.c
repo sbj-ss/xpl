@@ -1,9 +1,8 @@
-#include "Messages.h"
-
-#include "Options.h"
-#include "Utils.h"
-#include "abstraction/xpr.h"
 #include <time.h>
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplutils.h>
 
 static FILE *log_file = NULL;
 static XPR_MUTEX console_interlock;

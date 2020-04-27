@@ -5,7 +5,7 @@
 #ifndef __debugprint_H
 #define __debugprint_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdDebugPrintPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdDebugPrintEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

@@ -1,6 +1,6 @@
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "commands/UriEncode.h"
-#include "Messages.h"
-#include "Utils.h"
 
 void xplCmdUriEncodePrologue(xplCommandInfoPtr commandInfo)
 {

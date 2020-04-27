@@ -1,9 +1,9 @@
-#include "commands/SuppressMacros.h"
-#include "Core.h"
-#include "Macro.h"
-#include "Messages.h"
-#include "Utils.h"
 #include <libxml/chvalid.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmacro.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
+#include "commands/SuppressMacros.h"
 
 void fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target, xmlNodeSetPtr nodeset)
 {

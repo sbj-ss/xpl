@@ -1,8 +1,8 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
+#include <libxpl/xplwrappers.h>
 #include "commands/SetOutputDocument.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Utils.h"
-#include "Wrappers.h"
 
 void xplCmdSetOutputDocumentPrologue(xplCommandInfoPtr commandInfo)
 {

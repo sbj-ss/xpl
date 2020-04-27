@@ -5,7 +5,7 @@
 #ifndef __uriencode_H
 #define __uriencode_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdUriEncodePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

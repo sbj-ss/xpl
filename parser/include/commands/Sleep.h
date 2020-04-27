@@ -5,7 +5,7 @@
 #ifndef __sleep_H
 #define __sleep_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSleepPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSleepEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

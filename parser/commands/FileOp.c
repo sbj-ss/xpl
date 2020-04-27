@@ -1,8 +1,8 @@
-#include "commands/FileOp.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Utils.h"
 #include <time.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
+#include "commands/FileOp.h"
 
 /* TODO review and probably rework getting rid of XPR_FS_ stuff */
 

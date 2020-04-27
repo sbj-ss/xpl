@@ -1,7 +1,7 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "commands/Replicate.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Utils.h"
 
 xmlNodePtr replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
 {

@@ -5,7 +5,7 @@
 #ifndef __inherit_H
 #define __inherit_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdInheritPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

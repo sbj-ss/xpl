@@ -1,7 +1,7 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplsession.h>
+#include <libxpl/xplutils.h>
 #include "commands/SessionClear.h"
-#include "Core.h"
-#include "Session.h"
-#include "Utils.h"
 
 void xplCmdSessionClearPrologue(xplCommandInfoPtr commandInfo)
 {

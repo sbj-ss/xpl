@@ -5,7 +5,7 @@
 #ifndef __uriescapeparam_H
 #define __uriescapeparam_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdUriEscapeParamPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

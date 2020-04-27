@@ -1,7 +1,7 @@
-#include "Wrappers.h"
-#include "Messages.h"
-#include "Utils.h"
-#include "abstraction/xpr.h"
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
+#include <libxpl/xplwrappers.h>
 #include <oniguruma.h>
 
 static XPR_MUTEX mapper_interlock;

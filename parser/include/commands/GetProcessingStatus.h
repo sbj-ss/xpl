@@ -5,7 +5,7 @@
 #ifndef __getprocessingstatus_H
 #define __getprocessingstatus_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetProcessingStatusPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetProcessingStatusEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

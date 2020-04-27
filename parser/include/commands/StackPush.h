@@ -5,7 +5,7 @@
 #ifndef __stackpush_H
 #define __stackpush_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdStackPushPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdStackPushEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

@@ -3,12 +3,12 @@
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
 
-#ifndef __params_H
-#define __params_H
+#ifndef __xplparams_H
+#define __xplparams_H
 
 #include "Configuration.h"
 #include "Common.h"
-#include "abstraction/xpr.h"
+#include <libxpl/abstraction/xpr.h>
 
 #ifdef __cplusplus
 extern "C" {

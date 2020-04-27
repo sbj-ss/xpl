@@ -5,7 +5,7 @@
 #ifndef __getthreadid_H
 #define __getthreadid_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetThreadIdPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetThreadIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

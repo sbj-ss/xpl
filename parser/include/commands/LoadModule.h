@@ -5,7 +5,7 @@
 #ifndef __loadmodule_H
 #define __loadmodule_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdLoadModulePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdLoadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

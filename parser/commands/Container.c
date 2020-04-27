@@ -1,6 +1,6 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplutils.h>
 #include "commands/Container.h"
-#include "Core.h"
-#include "Utils.h"
 
 void xplCmdContainerPrologue(xplCommandInfoPtr commandInfo)
 {

@@ -1,8 +1,8 @@
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplsession.h>
+#include <libxpl/xplutils.h>
 #include "commands/SessionIsPresent.h"
-#include "Core.h"
-#include "Session.h"
-#include "Utils.h"
-#include "abstraction/xpr.h"
 
 void xplCmdSessionIsPresentPrologue(xplCommandInfoPtr commandInfo)
 {

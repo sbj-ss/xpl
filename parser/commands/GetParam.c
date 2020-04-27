@@ -1,9 +1,9 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplparams.h>
+#include <libxpl/xplutils.h>
 #include "commands/GetParam.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Options.h"
-#include "Params.h"
-#include "Utils.h"
 
 void xplCmdGetParamPrologue(xplCommandInfoPtr commandInfo)
 {

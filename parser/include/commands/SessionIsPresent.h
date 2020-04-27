@@ -5,7 +5,7 @@
 #ifndef __sessionispresent_H
 #define __sessionispresent_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSessionIsPresentPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSessionIsPresentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

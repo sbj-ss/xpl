@@ -1,12 +1,11 @@
 #include <getopt.h>
 #include <stdio.h>
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/abstraction/xef.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "Common.h"
-#include "abstraction/xpr.h"
-#include "abstraction/ExtFeatures.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Utils.h"
-
 
 xmlChar* getAppType(void)
 {

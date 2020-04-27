@@ -5,7 +5,7 @@
 #ifndef __case_H
 #define __case_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdCasePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdCaseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

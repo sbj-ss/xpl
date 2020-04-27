@@ -1,6 +1,6 @@
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplmessages.h>
 #include "commands/DebugBreak.h"
-#include "Messages.h"
-#include "abstraction/xpr.h"
 
 void xplCmdDebugBreakPrologue(xplCommandInfoPtr commandInfo)
 {

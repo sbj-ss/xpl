@@ -6,7 +6,7 @@
 #ifndef __sql_H
 #define __sql_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 #ifdef __cplusplus
 extern "C" {

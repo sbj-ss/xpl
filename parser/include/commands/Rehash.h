@@ -5,7 +5,7 @@
 #ifndef __rehash_H
 #define __rehash_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdRehashPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdRehashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

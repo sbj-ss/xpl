@@ -1,7 +1,7 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "commands/GetProcessingStatus.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Utils.h"
 
 void xplCmdGetProcessingStatusPrologue(xplCommandInfoPtr commandInfo)
 {

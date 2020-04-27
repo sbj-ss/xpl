@@ -1,8 +1,8 @@
-#include "DB.h"
-#include "Utils.h"
-#include "abstraction/ExtFeatures.h"
-#include "abstraction/xpr.h"
-#include "Messages.h"
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/abstraction/xef.h>
+#include <libxpl/xpldb.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 
 static xmlHashTablePtr databases = NULL;
 static bool db_initialized = false;

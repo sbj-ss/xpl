@@ -5,7 +5,7 @@
 #ifndef __sessionclear_H
 #define __sessionclear_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSessionClearPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSessionClearEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

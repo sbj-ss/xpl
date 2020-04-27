@@ -1,7 +1,7 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplutils.h>
+#include <libxpl/xplwrappers.h>
 #include "commands/GetDocumentRole.h"
-#include "Core.h"
-#include "Utils.h"
-#include "Wrappers.h"
 
 void xplCmdGetDocumentRolePrologue(xplCommandInfoPtr commandInfo)
 {

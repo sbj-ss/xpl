@@ -5,7 +5,7 @@
 #ifndef __error_H
 #define __error_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdErrorPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdErrorEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

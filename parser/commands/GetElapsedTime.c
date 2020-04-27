@@ -1,7 +1,7 @@
-#include "commands/GetElapsedTime.h"
-#include "Core.h"
-#include "Utils.h"
 #include <time.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplutils.h>
+#include "commands/GetElapsedTime.h"
 
 void xplCmdProfileCheckpointPrologue(xplCommandInfoPtr commandInfo)
 {

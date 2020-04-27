@@ -1,8 +1,8 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplsession.h>
+#include <libxpl/xplutils.h>
 #include "commands/ChangeDB.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Session.h"
-#include "Utils.h"
 
 void xplCmdChangeDBPrologue(xplCommandInfoPtr commandInfo)
 {

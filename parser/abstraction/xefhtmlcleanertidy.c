@@ -1,10 +1,10 @@
-#include "Messages.h"
-#include "Options.h"
-#include "Utils.h"
-#include "abstraction/ExtFeatures.h"
-#include "abstraction/XefInternal.h"
-#include "tidy/tidy.h"
-#include "tidy/tidybuffio.h"
+#include <libxpl/abstraction/xef.h>
+#include <libxpl/abstraction/xefinternal.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplutils.h>
+#include <tidy/tidy.h>
+#include <tidy/tidybuffio.h>
 
 
 void* TIDY_CALL xml_tidyMalloc(size_t len)

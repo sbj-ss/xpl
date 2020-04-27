@@ -5,7 +5,7 @@
 #ifndef __getversion_H
 #define __getversion_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdGetVersionPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetVersionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

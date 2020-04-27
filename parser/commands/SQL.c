@@ -1,9 +1,9 @@
+#include <libxpl/abstraction/xef.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xpldb.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "commands/SQL.h"
-#include "Core.h"
-#include "DB.h"
-#include "Messages.h"
-#include "Utils.h"
-#include "abstraction/ExtFeatures.h"
 
 #define DEFAULT_RESPONSE_TAG_NAME (BAD_CAST "Row")
 #define DEFAULT_COLUMN_NAME (BAD_CAST "Col")

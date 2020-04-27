@@ -1,4 +1,4 @@
-#include "abstraction/xpr.h"
+#include <libxpl/abstraction/xpr.h>
 
 void xprConvertSlashes(xmlChar* path)
 {

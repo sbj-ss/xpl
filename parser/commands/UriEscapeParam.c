@@ -1,6 +1,6 @@
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "commands/UriEscapeParam.h"
-#include "Messages.h"
-#include "Utils.h"
 #include "libxml/uri.h"
 
 void xplCmdUriEscapeParamPrologue(xplCommandInfoPtr commandInfo)

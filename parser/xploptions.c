@@ -1,8 +1,8 @@
-#include "Options.h"
-#include "Messages.h"
-#include "Utils.h"
-#include "abstraction/xpr.h"
 #include <openssl/ripemd.h>
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplutils.h>
 
 int cfgCheckDbOnStartup;
 int cfgCheckSAMode;

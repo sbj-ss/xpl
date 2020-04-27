@@ -1,6 +1,6 @@
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "commands/ParseXml.h"
-#include "Messages.h"
-#include "Utils.h"
 
 void xplCmdParseXmlPrologue(xplCommandInfoPtr commandInfo)
 {

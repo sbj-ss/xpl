@@ -5,7 +5,7 @@
 #ifndef __moduleloaded_H
 #define __moduleloaded_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdModuleLoadedPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdModuleLoadedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

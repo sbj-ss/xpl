@@ -5,7 +5,7 @@
 #ifndef __append_H
 #define __append_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdAppendPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

@@ -5,7 +5,7 @@
 #ifndef __stackisempty_H
 #define __stackisempty_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdStackIsEmptyPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdStackIsEmptyEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

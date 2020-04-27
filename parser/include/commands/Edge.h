@@ -5,7 +5,7 @@
 #ifndef __edge_H
 #define __edge_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdEdgePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

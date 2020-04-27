@@ -5,7 +5,7 @@
 #ifndef __setlocal_H
 #define __setlocal_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSetLocalPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

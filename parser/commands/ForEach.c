@@ -1,7 +1,7 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 #include "commands/ForEach.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Utils.h"
 
 /* A short note for those wanting to replace children with error node inside prologue:
  * 1. the error node must replace the command and not reside inside it

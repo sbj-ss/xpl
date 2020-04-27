@@ -5,7 +5,7 @@
 #ifndef __digest_H
 #define __digest_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdDigestPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdDigestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

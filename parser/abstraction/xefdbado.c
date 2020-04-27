@@ -1,7 +1,7 @@
-#include "Utils.h"
-#include "Core.h"
-#include "abstraction/ExtFeatures.h"
-#include "abstraction/XefInternal.h"
+#include <libxpl/abstraction/xef.h>
+#include <libxpl/abstraction/xefinternal.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplutils.h>
 
 #ifdef __cplusplus
 #error This module must be compiled in C mode
@@ -9,8 +9,8 @@
 
 #define COBJMACROS
 #define INITGUID 
-// adoint.h для чистого Си не компилируется - проблемы где-то в MIDL.
-// допишем руками.
+// adoint.h пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅ MIDL.
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
 #include <ObjBase.h>
 typedef interface Property ADOProperty;
 typedef interface Properties ADOProperties;
@@ -25,7 +25,7 @@ typedef interface _ADORecord _ADORecord;
 typedef interface Field ADOField;
 typedef interface Fields ADOFields;
 typedef interface _Stream _ADOStream;
-// конец заплатки
+// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
 #include <ole2.h>
 /* avoid double wchar.h inclusion */
@@ -56,8 +56,8 @@ static xmlChar* _xefDbDecodeComError()
 	return xmlStrdup("Unknown COM error");
 }
 
-/* ================= низкоуровневый интерфейс для движка ================== */
-/* Освобождение ресурсов, связанных со структурой xplDb (указатель на функцию записывается в её член deallocator) */
+/* ================= пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ ================== */
+/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ xplDb (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅ пїЅпїЅпїЅпїЅ deallocator) */
 void xefDbDeallocateDb(void *db_handle)
 {
 	if (db_handle)
@@ -143,7 +143,7 @@ bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **m
 	{
 		stars = xmlStrdup(connString);
 		pw = BAD_CAST xmlStrcasestr(stars, BAD_CAST "Password=");
-		/* TODO: могут быть кавычки. вообще напрашивается парсер. */
+		/* TODO: пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ. */
 		if (pw)
 		{
 			pw += 9;
@@ -158,7 +158,7 @@ bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **m
 	return false;
 }
 
-/*====================== вспомогательные методы ==================== */
+/*====================== пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ ==================== */
 
 xmlChar* _xefDbCleanTextStream(xmlChar *src, size_t size, size_t *out_size)
 {
@@ -230,7 +230,7 @@ xmlChar* _xefDbConvertValueToString(VARIANT value, size_t size, bool cleanStream
 	case VT_UI8:
 		_ui64toa(value.ullVal, number, 10);
 		return xmlStrdup(number);		
-	case VT_CY: /* хитрозадие */
+	case VT_CY: /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 		sprintf(number, "%.4f", (double) value.cyVal.int64 / 10000);
 		return xmlStrdup(number);
 	case VT_R4:
@@ -242,11 +242,11 @@ xmlChar* _xefDbConvertValueToString(VARIANT value, size_t size, bool cleanStream
 		_removeTrailingZeros(number);
 		return xmlStrdup(number);
 	case VT_BOOL:
-		return xmlStrdup(value.boolVal? BAD_CAST "true": BAD_CAST "false"); /* Причём True = -1! */
-	case VT_INT: /* вылезут - разберёмся */
+		return xmlStrdup(value.boolVal? BAD_CAST "true": BAD_CAST "false"); /* пїЅпїЅпїЅпїЅпїЅпїЅ True = -1! */
+	case VT_INT: /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 	case VT_UINT:
 		return xmlStrdup(BAD_CAST "[machine int]");
-	case VT_DECIMAL: /* тот ещё тип, 96-битное целое с делителем */
+	case VT_DECIMAL: /* пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ, 96-пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 		if (value.decVal.Hi32)
 			return xmlStrdup(BAD_CAST "decimal > 2^64");
 		if (value.decVal.sign && (value.decVal.Lo64 & 0x8000000000000000ULL))
@@ -259,7 +259,7 @@ xmlChar* _xefDbConvertValueToString(VARIANT value, size_t size, bool cleanStream
 		} else
 			sprintf(number, "%I64d", (__int64) value.decVal.Lo64*(value.decVal.sign? -1: 1));
 		return xmlStrdup(number);
-	case VT_BSTR: /* VT_LPSTR/VT_LPWSTR теоретически сюда попасть не могут */
+	case VT_BSTR: /* VT_LPSTR/VT_LPWSTR пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ */
 		if (!value.bstrVal)
 			return NULL;
 		if (iconv_string("utf-8", "utf-16le", (char*) value.bstrVal, (char*) value.bstrVal + wcslen(value.bstrVal)*sizeof(OLECHAR), (char**) &str, NULL) == -1)
@@ -290,7 +290,7 @@ xmlChar* _xefDbConvertValueToString(VARIANT value, size_t size, bool cleanStream
 	}
 	return xmlStrdup("[unknown]");
 }
-/*============== связь с базовым кодом XEF ===============*/
+/*============== пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ XEF ===============*/
 XEF_STARTUP_PROTO(Database)
 {
 	return true;
@@ -300,7 +300,7 @@ XEF_SHUTDOWN_PROTO(Database)
 {
 }
 
-/* сейчас используем common-структуру, эти функции не будут вызываться */
+/* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ common-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 XEF_GET_ERROR_TEXT_PROTO(Database)
 {
 	return NULL;
@@ -310,8 +310,8 @@ XEF_FREE_ERROR_MESSAGE_PROTO(Database)
 {
 }
 
-/*================= Управление внутренними структурами ====================*/
-/* опережающие объявления */
+/*================= пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ====================*/
+/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 typedef struct xefDbContext 
 {
 	void *user_data;
@@ -321,7 +321,7 @@ typedef struct xefDbContext
 	xefDbStreamType stream_type;
 	bool cleanup_stream;
 	/* module-specific */
-	xplDBPtr db; /* ADOConnection - здесь */
+	xplDBPtr db; /* ADOConnection - пїЅпїЅпїЅпїЅпїЅ */
 	ADORecordset *rs;
 	ADOStream *xml_stream;
 	ADOCommand *command;
@@ -332,7 +332,7 @@ typedef struct xefDbContext
 void _xefDbSetContextError(xefDbContextPtr ctxt, xefErrorMessagePtr error);
 void _xefDbFreeRowDesc(xefDbRowDescPtr desc);
 
-/* Дескриптор строки */
+/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
 static void _xefDbCreateRowDesc(xefDbContextPtr ctxt)
 {
 	ADOFields *flds = NULL;
@@ -355,7 +355,7 @@ static void _xefDbCreateRowDesc(xefDbContextPtr ctxt)
 	desc = (xefDbRowDescPtr) xmlMalloc(sizeof(xefDbRowDesc));
 	if (!desc)
 	{
-		/* впрочем, это тоже свалится */
+		/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage("_xefDbCreateRowDesc(): insufficient memory for desc"));
 		return;
 	}
@@ -449,7 +449,7 @@ static void _xefDbFreeRowDesc(xefDbRowDescPtr desc)
 	xmlFree(desc);
 }
 
-/* строка */
+/* пїЅпїЅпїЅпїЅпїЅпїЅ */
 static xefDbRowPtr _xefDbCreateRow(xefDbRowDescPtr desc)
 {
 	xefDbRowPtr row;
@@ -471,7 +471,7 @@ static xefDbRowPtr _xefDbCreateRow(xefDbRowDescPtr desc)
 		return NULL;
 	}
 	memset(row->fields, 0, desc->count*sizeof(xefDbField));
-	/* вся прелесть в том, что здесь больше ничего не надо делать */
+	/* пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
 	return row;
 }
 
@@ -502,7 +502,7 @@ static void _xefDbFreeRow(xefDbRowPtr row)
 	xmlFree(row);
 }
 
-/* контекст */
+/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 xefDbRowDescPtr xefDbGetRowDesc(xefDbContextPtr ctxt)
 {
 	return ctxt? ctxt->row_desc: NULL;
@@ -570,7 +570,7 @@ static void _xefDbRefreshContext(xefDbContextPtr ctxt)
 	}
 	if (!ctxt->rs)
 		return;
-	/* установим новый дескриптор строки и место под строку */
+	/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
 	_xefDbCreateRowDesc(ctxt);
 	if (ctxt->error)
 		return;
@@ -599,12 +599,12 @@ void xefDbFreeContext(xefDbContextPtr ctxt)
 	{
 		_Command_Release(ctxt->command);
 	}
-	/* соединение не трогаем - пригодится */
+	/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 	_xefDbReleaseDB(ctxt->db);
 	xmlFree(ctxt);
 }
 
-/*=================== внутренности ADO ======================*/
+/*=================== пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ADO ======================*/
 static bool _xefDbCheckConnection(xefDbQueryParamsPtr params, ADOConnection *conn)
 {
 	long conn_state;
@@ -767,7 +767,7 @@ static bool _xefDbLocateNextNonemptyRecordset(xefDbContextPtr ctxt, bool advance
 		if (state != adStateClosed)
 		{
 			if (advance)
-				advance = false; /* пропустим текущий */
+				advance = false; /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 			else {
 				found = true;
 				break;
@@ -957,7 +957,7 @@ static void _xefDbUnaccessStreamData(xefDbContextPtr ctxt, xmlChar *data)
 	}
 }
 
-/*=============== высокоуровневый API ================*/
+/*=============== пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ API ================*/
 xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 {
 	ADOConnection *conn = NULL;
@@ -975,7 +975,7 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 		_xefDbSetParamsError(params, xefCreateCommonErrorMessage("xefDbQuery(): params->db_list is NULL"));
 		return NULL;
 	}
-	/* соединение */
+	/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 	db = _xefDbGetAvailDB(params->db_list);
 	if (!db)
 	{
@@ -983,17 +983,17 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 		return NULL;
 	}
 	conn = (ADOConnection*) db->connection;
-	if (!_xefDbCheckConnection(params, conn)) /* ошибка уже записана */
+	if (!_xefDbCheckConnection(params, conn)) /* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 		goto error;
-	/* команда */
+	/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 	cmd = _xefDbCreateCommand(params, conn);
-	if (!cmd) /* ошибка уже записана */
+	if (!cmd) /* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 		goto error;
-	/* поток */
+	/* пїЅпїЅпїЅпїЅпїЅ */
 	if (params->stream_type == XEF_DB_STREAM_XML)
 	{
 		stream = _xefDbCreateOutputStream(params, cmd);
-		if (!stream) /* ошибка уже записана */
+		if (!stream) /* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 			goto error;
 	}
 	if FAILED(_Command_Execute(cmd, NULL, NULL, params->stream_type == XEF_DB_STREAM_XML? adExecuteStream: adOptionUnspecified, &rs))
@@ -1002,7 +1002,7 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 		_xefDbSetParamsError(params, xefCreateCommonErrorMessage("xefDbQuery(): cmd->Execute() failed (%s)", error_text));
 		goto error;
 	}
-	/* готово. запишем данные для дальнейшего использования */
+	/* пїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 	ctxt = _xefDbCreateContext();
 	ctxt->db = db;
 	ctxt->rs = rs;
@@ -1011,7 +1011,7 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 	ctxt->stream_type = params->stream_type;
 	ctxt->user_data = params->user_data;
 	ctxt->cleanup_stream = params->cleanup_nonprintable;
-	/* подготовим контекст к первому считыванию */
+	/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 	_xefDbLocateNextNonemptyRecordset(ctxt, false);
 	if (ctxt->error)
 		goto error;
@@ -1099,7 +1099,7 @@ void xefDbEnumRows(xefDbContextPtr ctxt, xefDbGetRowCallback cb)
 		if (ctxt->error)
 			return;
 		if (!cb(ctxt->row_desc, ctxt->row, ctxt->user_data))
-			return; /* запрошен останов */
+			return; /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 		_xefDbNextRecord(ctxt);
 		if (ctxt->error)
 			return;

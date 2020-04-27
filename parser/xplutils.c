@@ -1,4 +1,3 @@
-#include "Utils.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -7,9 +6,11 @@
 #include <libxml/chvalid.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/uri.h>
+#include <libxpl/xplutils.h>
+
 #ifdef _USE_LIBIDN
-# include <idna.h>
-# include <idn-free.h>
+#include <idna.h>
+#include <idn-free.h>
 #endif
 
 xmlNodePtr detachContent(xmlNodePtr el)

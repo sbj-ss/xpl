@@ -1,10 +1,10 @@
-#include "Session.h"
-#include "Messages.h"
-#include "Options.h"
-#include "Utils.h"
-#include "abstraction/xpr.h"
 #include <stdlib.h>
 #include <openssl/ripemd.h>
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplsession.h>
+#include <libxpl/xplutils.h>
 
 /* inner singletons */
 static xmlHashTablePtr session_mgr = NULL;

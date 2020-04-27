@@ -5,7 +5,7 @@
 #ifndef __delete_H
 #define __delete_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdDeletePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

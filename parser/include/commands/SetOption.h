@@ -5,7 +5,7 @@
 #ifndef __setoption_H
 #define __setoption_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSetOptionPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

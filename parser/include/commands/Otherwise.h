@@ -5,7 +5,7 @@
 #ifndef __otherwise_H
 #define __otherwise_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdOtherwisePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdOtherwiseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

@@ -5,7 +5,7 @@
 #ifndef __currentmacro_H
 #define __currentmacro_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdCurrentMacroPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdCurrentMacroEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

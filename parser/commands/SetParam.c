@@ -1,8 +1,8 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplparams.h>
+#include <libxpl/xplutils.h>
 #include "commands/SetParam.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Params.h"
-#include "Utils.h"
 
 #define SP_MODE_ADD 1
 #define SP_MODE_REPLACE 2

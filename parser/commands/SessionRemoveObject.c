@@ -1,8 +1,9 @@
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplsession.h>
+#include <libxpl/xplutils.h>
 #include "commands/SessionRemoveObject.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Session.h"
-#include "Utils.h"
 
 void xplCmdSessionRemoveObjectPrologue(xplCommandInfoPtr commandInfo)
 {

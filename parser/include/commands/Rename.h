@@ -5,7 +5,7 @@
 #ifndef __rename_H
 #define __rename_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdRenamePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

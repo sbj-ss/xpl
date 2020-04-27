@@ -8,23 +8,23 @@ LIBS = -lxml2
 CFLAGS = -fpic -D_IN_DLL -g
 
 SRC = \
-abstraction/ExtFeatures.c\
+abstraction/xef.c\
 abstraction/xpr.c\
 abstraction/xpr_lin.c\
-abstraction/XefHtmlCleanerTidy.c\
-abstraction/XefDbODBC.c\
-Command.c\
-Core.c\
-DB.c\
-Macro.c\
-Messages.c\
-Options.c\
-Params.c\
-Register.c\
-ReszBuf.c\
-Session.c\
-Utils.c\
-Wrappers.c
+abstraction/xefhtmlcleanertidy.c\
+abstraction/xefdbodbc.c\
+xplcommand.c\
+xplcore.c\
+xpldb.c\
+xplmacro.c\
+xplmessages.c\
+xploptions.c\
+xplparams.c\
+xplbuffer.c\
+xplsession.c\
+xplutils.c\
+xplwrappers.c\
+Register.c
 
 COMMANDS = \
 commands/Append.c\
@@ -154,7 +154,7 @@ TEST_SRC=tests/Runner.c\
 tests/Test_ReszBuf.c\
 
 OBJS = $(SRC:.c=.o)
-TEST_OBJS = $(TEST_SRC:.c=.o) ReszBuf.o
+TEST_OBJS = $(TEST_SRC:.c=.o) xplbuffer.o
 TEST_BIN = tests/Runner
 
 .DEFAULT_GOAL = all

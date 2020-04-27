@@ -1,6 +1,6 @@
 #include "Common.h"
-#include "abstraction/xpr.h"
-#include "Utils.h"
+#include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplutils.h>
 
 #include <objbase.h>
 #include <shellapi.h>

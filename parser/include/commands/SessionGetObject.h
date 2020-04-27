@@ -5,7 +5,7 @@
 #ifndef __sessiongetobject_H
 #define __sessiongetobject_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdSessionGetObjectPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

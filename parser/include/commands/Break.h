@@ -5,7 +5,7 @@
 #ifndef __break_H
 #define __break_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdBreakPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

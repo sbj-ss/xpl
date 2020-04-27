@@ -1,8 +1,8 @@
-#include "abstraction/ExtFeatures.h"
-#include "abstraction/XefInternal.h"
-#include "Messages.h"
-#include "Utils.h"
 #include <stdarg.h>
+#include <libxpl/abstraction/xef.h>
+#include <libxpl/abstraction/xefinternal.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xplutils.h>
 
 static XEF_GET_ERROR_TEXT_PROTO(Common)
 {

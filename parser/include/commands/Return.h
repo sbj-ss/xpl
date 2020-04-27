@@ -5,7 +5,7 @@
 #ifndef __return_H
 #define __return_H
 
-#include "Command.h"
+#include <libxpl/xplcommand.h>
 
 void xplCmdReturnPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdReturnEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

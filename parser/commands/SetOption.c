@@ -1,9 +1,9 @@
+#include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplsession.h>
+#include <libxpl/xplutils.h>
 #include "commands/SetOption.h"
-#include "Core.h"
-#include "Messages.h"
-#include "Options.h"
-#include "Session.h"
-#include "Utils.h"
 
 void xplCmdSetOptionPrologue(xplCommandInfoPtr commandInfo)
 {
