@@ -5,10 +5,6 @@
 #include "Register.h"
 #include "Utils.h"
 #include "abstraction/ExtFeatures.h"
-
-/* TODO */
-//#include <locstdint.h>
-/* _***printf() */
 #include <stdio.h> 
 
 /* internal statics */
@@ -152,7 +148,7 @@ xmlXPathObjectPtr xplSelectNodes(xplDocumentPtr doc, xmlNodePtr src, xmlChar *ex
 	return xplSelectNodesInner(ctxt, src, expr);
 }
 
-void xplDeferNodeDeletion(ReszBufPtr buf, xmlNodePtr cur)
+void xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur)
 {
 	if (!buf | !cur)
 		return;
@@ -162,7 +158,7 @@ void xplDeferNodeDeletion(ReszBufPtr buf, xmlNodePtr cur)
 	rbAddDataToBuf(buf, &cur, sizeof(xmlNodePtr));
 }
 
-void xplDeferNodeListDeletion(ReszBufPtr buf, xmlNodePtr cur)
+void xplDeferNodeListDeletion(rbBufPtr buf, xmlNodePtr cur)
 {
 	if (!buf)
 		return;
@@ -195,7 +191,7 @@ void xplDocDeferNodeListDeletion(xplDocumentPtr doc, xmlNodePtr cur)
 		xmlFreeNodeList(cur);
 }
 
-void xplDeleteDeferredNodes(ReszBufPtr buf)
+void xplDeleteDeferredNodes(rbBufPtr buf)
 {
 	size_t i = 0;
 	xmlNodePtr *p = rbGetBufContent(buf);
@@ -325,7 +321,7 @@ xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xpl
 		xplDocumentFree(doc);
 		return NULL;
 	}
-	doc->deleted_nodes = rbCreateBufParams(32, RESZ_BUF_GROW_DOUBLE, 2);
+	doc->deleted_nodes = rbCreateBufParams(32, RB_GROW_DOUBLE, 2);
 	if (!doc->deleted_nodes)
 	{
 		xplDocumentFree(doc);

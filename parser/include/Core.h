@@ -65,7 +65,7 @@ struct _xplDocument
 	xmlChar *response;				/* for :set-response and app using the interpreter */
 	xmlNodePtr stack;				/* for :stack-xx */
 									/* threading support */
-	ReszBufPtr threads;				/* spawned threads */
+	rbBufPtr threads;				/* spawned threads */
 	XPR_MUTEX thread_landing_lock;	/* ditto */
 	xmlNodePtr landing_point;		/* landing point in spawning document */
 	xplDocumentPtr parent;			/* spawning document */
@@ -75,7 +75,7 @@ struct _xplDocument
 	int indent_spinlock;			/* for :text */
 	xmlNsPtr root_xpl_ns;			/* for fast XPL namespace checking */
 	time_t profile_checkpoint;		/* for :profile-xx */
-	ReszBufPtr deleted_nodes;		/* for deferred node deletion */
+	rbBufPtr deleted_nodes;		/* for deferred node deletion */
 	int iterator_spinlock;			/* for :with */
 };
 
@@ -133,15 +133,15 @@ XPLPUBFUN xmlNodePtr XPLCALL
 XPLPUBFUN xmlXPathObjectPtr XPLCALL
 	xplSelectNodes(xplDocumentPtr doc, xmlNodePtr src, xmlChar *expr);
 XPLPUBFUN void XPLCALL
-	xplDeferNodeDeletion(ReszBufPtr buf, xmlNodePtr cur);
+	xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur);
 XPLPUBFUN void XPLCALL
-	xplDeferNodeListDeletion(ReszBufPtr buf, xmlNodePtr cur);
+	xplDeferNodeListDeletion(rbBufPtr buf, xmlNodePtr cur);
 XPLPUBFUN void XPLCALL
 	xplDocDeferNodeDeletion(xplDocumentPtr doc, xmlNodePtr cur);
 XPLPUBFUN void XPLCALL
 	xplDocDeferNodeListDeletion(xplDocumentPtr doc, xmlNodePtr cur);
 XPLPUBFUN void XPLCALL 
-	xplDeleteDeferredNodes(ReszBufPtr buf);
+	xplDeleteDeferredNodes(rbBufPtr buf);
 
 /* application hooks */
 

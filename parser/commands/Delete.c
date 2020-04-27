@@ -77,7 +77,7 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlXPathObjectPtr dest_list = NULL;
 	size_t i, j;
 	bool double_pass_mode;
-	ReszBufPtr deleted_buf = NULL;
+	rbBufPtr deleted_buf = NULL;
 	
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
 	if (!select_attr || !*select_attr)
@@ -105,7 +105,7 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 									dest_list->nodesetval->nodeTab[j] = 0;
 					}
 				} else
-					deleted_buf = rbCreateBufParams((size_t) sizeof(xmlNodePtr)*dest_list->nodesetval->nodeNr, RESZ_BUF_GROW_FIXED, 0);
+					deleted_buf = rbCreateBufParams((size_t) sizeof(xmlNodePtr)*dest_list->nodesetval->nodeNr, RB_GROW_FIXED, 0);
 				for (i = 0; i < (size_t) dest_list->nodesetval->nodeNr; i++)
 				{
 					xmlNodePtr cur = dest_list->nodesetval->nodeTab[i];
