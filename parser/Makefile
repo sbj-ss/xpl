@@ -151,7 +151,7 @@ endif
 SRC += $(COMMANDS)
 
 TEST_SRC=tests/Runner.c\
-tests/Test_ReszBuf.c\
+tests/test_xplbuffer.c\
 
 OBJS = $(SRC:.c=.o)
 TEST_OBJS = $(TEST_SRC:.c=.o) xplbuffer.o

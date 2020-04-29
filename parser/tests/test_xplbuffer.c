@@ -1,4 +1,5 @@
-#include "Test_ReszBuf.h"
+#include "test_xplbuffer.h"
+
 #include <assert.h>
 #include <libxpl/xplbuffer.h>
 
