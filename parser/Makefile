@@ -152,6 +152,7 @@ SRC += $(COMMANDS)
 
 TEST_SRC=tests/Runner.c\
 tests/test_xplbuffer.c\
+tests/test_xpldb.c
 
 OBJS = $(SRC:.c=.o)
 TEST_OBJS = $(TEST_SRC:.c=.o) xplbuffer.o

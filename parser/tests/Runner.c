@@ -1,8 +1,10 @@
 #include "test_xplbuffer.h"
+#include "test_xpldb.h"
 
 xtsFixturePtr suite[] =
 {
 	&xtsTestReszBufFixture,
+	&xtsTestDBFixture,
 	NULL
 };
 
