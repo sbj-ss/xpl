@@ -2,8 +2,8 @@
 /* Polaris project: the pure C XPL engine */
 /* (c) НИЛ ИТС, Подковырин, 2006-2020     */
 /******************************************/
-#ifndef __sanity_H
-#define __sanity_H
+#ifndef __test_xplbuffer_H
+#define __test_xplbuffer_H
 
 #include "xts.h"
 
