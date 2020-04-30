@@ -28,7 +28,7 @@ void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no database name specified"), true, true);
 		goto done;
 	}
-	xplLockThreads(TRUE);
+	xplLockThreads(true);
 	cfg_result = xplRemoveDB(name_attr);
 	if (cfg_result == XPL_DBCR_OK)
 		ASSIGN_RESULT(NULL, false, true);
@@ -36,7 +36,7 @@ void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(
 			commandInfo->element, BAD_CAST "can't remove database \"%s\": %s", name_attr, xplDecodeDBConfigResult(cfg_result)
 		), true, true);
-	xplLockThreads(FALSE);
+	xplLockThreads(false);
 done:
 	if (name_attr)
 		xmlFree(name_attr);

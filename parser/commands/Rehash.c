@@ -14,9 +14,9 @@ void xplCmdRehashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 		return;
 	}
-	xplLockThreads(TRUE);
+	xplLockThreads(true);
 	xplReadConfig();
-	xplLockThreads(FALSE);
+	xplLockThreads(false);
 	ASSIGN_RESULT(NULL, false, true);
 }
 

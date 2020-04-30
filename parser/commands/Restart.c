@@ -16,7 +16,7 @@ void xplCmdRestartEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 		return;
 	}
-	xplLockThreads(TRUE);
+	xplLockThreads(true);
 	xprSpawnProcessCopy();
 	xprShutdownApp();
 }

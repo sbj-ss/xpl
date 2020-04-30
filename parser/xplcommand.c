@@ -68,7 +68,7 @@ bool xplCommandSupported(const xmlChar* name)
 			return true;
 	if (!commands)
 		return false;
-	return xmlHashLookup(commands, name)?TRUE:FALSE;
+	return xmlHashLookup(commands, name)? true: false;
 }
 
 typedef struct _CommandListScannerContext

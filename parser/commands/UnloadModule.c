@@ -20,9 +20,9 @@ void xplCmdUnloadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 		ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "no module name specified");
 		goto done;
 	}
-	xplLockThreads(TRUE);
+	xplLockThreads(true);
 	xplUnloadModule(name_attr);
-	xplLockThreads(FALSE);
+	xplLockThreads(false);
 done:
 	ASSIGN_RESULT(ret, true, true);
 	if (name_attr) xmlFree(name_attr);

@@ -72,7 +72,7 @@ void xplCmdCaseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	} else {
 		if ((repeat_attr = xmlGetNoNsProp(commandInfo->element, REPEAT_ATTR)))
 		{
-			if (!xmlStrcasecmp(repeat_attr, BAD_CAST "TRUE"))
+			if (!xmlStrcasecmp(repeat_attr, BAD_CAST "true"))
 				repeat = true;
 			xmlFree(repeat_attr);
 		}

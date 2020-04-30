@@ -35,7 +35,7 @@ void xplCmdSetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (!value_attr)
 		by_default = true;
 
-	xplLockThreads(TRUE);
+	xplLockThreads(true);
 	switch (xplSetOptionValue(name_attr, value_attr, by_default))
 	{
 	case XPL_SET_OPTION_OK: 
@@ -52,7 +52,7 @@ void xplCmdSetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		break;
 	}
 done:
-	xplLockThreads(FALSE);
+	xplLockThreads(false);
 	if (name_attr) xmlFree(name_attr);
 	if (value_attr) xmlFree(value_attr);
 }

@@ -47,7 +47,7 @@ void xplCmdChangeDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "connection string is empty"), true, true);
 		goto done;
 	}
-	xplLockThreads(TRUE);
+	xplLockThreads(true);
 	cfg_result = xplChangeDB(name_attr, content, check);
 	if (cfg_result == XPL_DBCR_OK)
 		ASSIGN_RESULT(NULL, false, true);
@@ -55,7 +55,7 @@ void xplCmdChangeDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(
 			commandInfo->element, BAD_CAST "can't modify database \"%s\": %s", name_attr, xplDecodeDBConfigResult(cfg_result)
 		), true, true);
-	xplLockThreads(FALSE);	
+	xplLockThreads(false);
 done:
 	if (name_attr)
 		xmlFree(name_attr);
