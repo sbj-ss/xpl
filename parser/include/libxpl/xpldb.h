@@ -49,31 +49,24 @@ XPLPUBFUN void XPLCALL
 	xplAddDBToDBList(xplDBListPtr list, xplDBPtr db);
 
 /* Dynaconf functions. Threads must be locked before calling. */
-XPLPUBFUN void XPLCALL
+typedef enum _xplDBConfigResult
+{
+	XPL_DBCR_OK = 0,
+	XPL_DBCR_ALREADY_EXISTS = -1,
+	XPL_DBCR_INSUFFICIENT_MEMORY = -2,
+	XPL_DBCR_CHECK_FAILED = -3,
+	XPL_DBCR_NO_PARSER = -4,
+	XPL_DBCR_NOT_FOUND = -5
+} xplDBConfigResult;
+
+XPLPUBFUN const xmlChar* XPLCALL
+	xplDecodeDBConfigResult(xplDBConfigResult result);
+
+XPLPUBFUN xplDBConfigResult XPLCALL
 	xplRemoveDB(xmlChar *name);
-
-typedef enum _xplAddDBResult
-{
-	XPL_ADD_DB_OK = 0,
-	XPL_ADD_DB_ALREADY_EXISTS = -1,
-	XPL_ADD_DB_INSUFFICIENT_MEMORY = -2,
-	XPL_ADD_DB_CHECK_FAILED = -3,
-	XPL_ADD_DB_NO_PARSER = -4
-} xplAddDBResult;
-
-XPLPUBFUN xplAddDBResult XPLCALL
+XPLPUBFUN xplDBConfigResult XPLCALL
 	xplAddDB(xmlChar *name, xmlChar *newConnString, bool withCheck);
-
-typedef enum _xplChangeDBResult
-{
-	XPL_CHANGE_DB_OK = 0,
-	XPL_CHANGE_DB_NOT_FOUND = -1,
-	XPL_CHANGE_DB_INSUFFICIENT_MEMORY = -2,
-	XPL_CHANGE_DB_CHECK_FAILED = -3,
-	XPL_CHANGE_DB_NO_PARSER = -4
-} xplChangeDBResult;
-
-XPLPUBFUN xplChangeDBResult XPLCALL
+XPLPUBFUN xplDBConfigResult XPLCALL
 	xplChangeDB(xmlChar *name, xmlChar *newConnString, bool withCheck);
 
 XPLPUBFUN xmlNodePtr XPLCALL

@@ -108,57 +108,90 @@ void xplAddDBToDBList(xplDBListPtr list, xplDBPtr db)
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 }
 
-void xplRemoveDB(xmlChar *name)
+const xmlChar* xplDecodeDBConfigResult(xplDBConfigResult result)
 {
-	xplDBListPtr db = xplLocateDBList(name);
-	if (db)
+	switch(result)
 	{
-		xplDBListFree(db);
-		xmlHashRemoveEntry(databases, name, NULL);
+		case XPL_DBCR_OK:
+			return BAD_CAST "no error";
+		case XPL_DBCR_ALREADY_EXISTS:
+			return BAD_CAST "database already exists";
+		case XPL_DBCR_INSUFFICIENT_MEMORY:
+			return BAD_CAST "insufficient memory";
+		case XPL_DBCR_CHECK_FAILED:
+			return BAD_CAST "couldn't connect to database";
+		case XPL_DBCR_NO_PARSER:
+			return BAD_CAST "XPL engine not initialized";
+		case XPL_DBCR_NOT_FOUND:
+			return BAD_CAST "database not known to the engine";
+		default:
+			return BAD_CAST "unknown error";
 	}
 }
 
-xplAddDBResult xplAddDB(xmlChar *name, xmlChar *newConnString, bool withCheck)
+static void dbDeallocator(void *payload, xmlChar *name)
+{
+	xplDBListFree((xplDBListPtr) payload);
+}
+
+xplDBConfigResult xplRemoveDB(xmlChar *name)
 {
 	xplDBListPtr db;
 
 	if (!databases)
-		return XPL_ADD_DB_NO_PARSER;
+		return XPL_DBCR_NO_PARSER;
+	if (xmlHashRemoveEntry(databases, name, dbDeallocator))
+		return XPL_DBCR_NOT_FOUND;
+	return XPL_DBCR_OK;
+}
+
+xplDBConfigResult xplAddDB(xmlChar *name, xmlChar *newConnString, bool withCheck)
+{
+	xplDBListPtr db;
+
+	if (!databases)
+		return XPL_DBCR_NO_PARSER;
 	if (xplLocateDBList(name))
-		return XPL_ADD_DB_ALREADY_EXISTS;
+		return XPL_DBCR_ALREADY_EXISTS;
 	if (withCheck)
 	{
 		if (!xefDbCheckAvail(newConnString, name, NULL)) // TODO здесь можно воспользоваться сообщением об ошибке
-			return XPL_ADD_DB_CHECK_FAILED;
+			return XPL_DBCR_CHECK_FAILED;
 	}
 	db = xplDBListCreate(newConnString);
 	if (!db)
-		return XPL_ADD_DB_INSUFFICIENT_MEMORY;
-	xmlHashAddEntry(databases, name, db);
-	return XPL_ADD_DB_OK;
+		return XPL_DBCR_INSUFFICIENT_MEMORY;
+	if (xmlHashAddEntry(databases, name, db))
+	{
+		xplDBListFree(db);
+		return XPL_DBCR_INSUFFICIENT_MEMORY;
+	}
+	return XPL_DBCR_OK;
 }
 
-xplChangeDBResult xplChangeDB(xmlChar *name, xmlChar *newConnString, bool withCheck)
+xplDBConfigResult xplChangeDB(xmlChar *name, xmlChar *newConnString, bool withCheck)
 {
 	xplDBListPtr db, new_db;
 
 	if (!databases)
-		return XPL_CHANGE_DB_NO_PARSER;
+		return XPL_DBCR_NO_PARSER;
 	db = xplLocateDBList(name);
 	if (!db)
-		return XPL_CHANGE_DB_NOT_FOUND;
+		return XPL_DBCR_NOT_FOUND;
 	if (withCheck)
 	{
 		if (!xefDbCheckAvail(newConnString, name, NULL)) // TODO передать наверх третий параметр
-			return XPL_CHANGE_DB_CHECK_FAILED;
+			return XPL_DBCR_CHECK_FAILED;
 	}
 	new_db = xplDBListCreate(newConnString);
 	if (!new_db)
-		return XPL_CHANGE_DB_INSUFFICIENT_MEMORY;
-	xplDBListFree(db);
-	xmlHashRemoveEntry(databases, name, NULL);
-	xmlHashAddEntry(databases, name, new_db);
-	return XPL_CHANGE_DB_OK;
+		return XPL_DBCR_INSUFFICIENT_MEMORY;
+	if (xmlHashUpdateEntry(databases, name, new_db, dbDeallocator))
+	{
+		xplDBListFree(new_db);
+		return XPL_DBCR_INSUFFICIENT_MEMORY;
+	}
+	return XPL_DBCR_OK;
 }
 
 typedef struct _getDBListContext
@@ -200,11 +233,6 @@ xmlNodePtr xplDatabasesToNodeList(xmlNodePtr parent, const xmlChar *tagName, boo
 	ctxt.show_tags = showTags;
 	xmlHashScan(databases, databaseListScanner, &ctxt);
 	return ctxt.head;
-}
-
-static void dbDeallocator(void *payload, xmlChar *name)
-{
-	xplDBListFree((xplDBListPtr) payload);
 }
 
 bool xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors)

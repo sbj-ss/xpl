@@ -18,6 +18,7 @@ void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	bool check;
 	xmlChar *content = NULL;
 	xmlNodePtr error;
+	xplDBConfigResult cfg_result;
 
 	if (!xplSessionGetSaMode(commandInfo->document->session))
 	{
@@ -48,26 +49,15 @@ void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "connection string is empty"), true, true);
 		goto done;
 	}
-	xplLockThreads(TRUE);
-	switch (xplAddDB(name_attr, content, check))
-	{
-	case XPL_ADD_DB_OK:
+	xplLockThreads(true);
+	cfg_result = xplAddDB(name_attr, content, check);
+	if (cfg_result == XPL_DBCR_OK)
 		ASSIGN_RESULT(NULL, false, true);
-		break;
-	case XPL_ADD_DB_ALREADY_EXISTS:
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "database \"%s\" already exists", name_attr), true, true);
-		break;
-	case XPL_ADD_DB_INSUFFICIENT_MEMORY:
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "insufficient memory"), true, true);
-		break;
-	case XPL_ADD_DB_CHECK_FAILED:
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "couldn't connect to database \"%s\"", name_attr), true, true);
-		break;
-	default:
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown error"), true, true);
-		break;
-	}
-	xplLockThreads(FALSE);	
+	else
+		ASSIGN_RESULT(xplCreateErrorNode(
+			commandInfo->element, BAD_CAST "can't add database \"%s\": %s", name_attr, xplDecodeDBConfigResult(cfg_result)
+		), true, true);
+	xplLockThreads(false);
 done:
 	if (name_attr)
 		xmlFree(name_attr);

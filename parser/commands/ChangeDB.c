@@ -18,6 +18,7 @@ void xplCmdChangeDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	bool check;
 	xmlChar *content = NULL;
 	xmlNodePtr error;
+	xplDBConfigResult cfg_result;
 
 	if (!xplSessionGetSaMode(commandInfo->document->session))
 	{
@@ -47,24 +48,13 @@ void xplCmdChangeDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		goto done;
 	}
 	xplLockThreads(TRUE);
-	switch (xplChangeDB(name_attr, content, check))
-	{
-	case XPL_CHANGE_DB_OK:
+	cfg_result = xplChangeDB(name_attr, content, check);
+	if (cfg_result == XPL_DBCR_OK)
 		ASSIGN_RESULT(NULL, false, true);
-			break;
-	case XPL_CHANGE_DB_NOT_FOUND:
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "database \"%s\" not found", name_attr), true, true);
-			break;
-	case XPL_CHANGE_DB_INSUFFICIENT_MEMORY:
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "insufficient memory, changes discarded"), true, true);
-			break;
-	case XPL_CHANGE_DB_CHECK_FAILED:
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "couldn't connect to database \"%s\", changes discarded", name_attr), true, true);
-			break;
-	default:
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown error"), true, true);
-			break;
-	}
+	else
+		ASSIGN_RESULT(xplCreateErrorNode(
+			commandInfo->element, BAD_CAST "can't modify database \"%s\": %s", name_attr, xplDecodeDBConfigResult(cfg_result)
+		), true, true);
 	xplLockThreads(FALSE);	
 done:
 	if (name_attr)

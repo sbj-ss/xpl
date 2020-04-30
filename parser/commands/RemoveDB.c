@@ -13,6 +13,7 @@ void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 #define NAME_ATTR (BAD_CAST "name")
 
 	xmlChar *name_attr = NULL;
+	xplDBConfigResult cfg_result;
 
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
 
@@ -28,9 +29,14 @@ void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		goto done;
 	}
 	xplLockThreads(TRUE);
-	xplRemoveDB(name_attr);
+	cfg_result = xplRemoveDB(name_attr);
+	if (cfg_result == XPL_DBCR_OK)
+		ASSIGN_RESULT(NULL, false, true);
+	else
+		ASSIGN_RESULT(xplCreateErrorNode(
+			commandInfo->element, BAD_CAST "can't remove database \"%s\": %s", name_attr, xplDecodeDBConfigResult(cfg_result)
+		), true, true);
 	xplLockThreads(FALSE);
-	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (name_attr)
 		xmlFree(name_attr);
