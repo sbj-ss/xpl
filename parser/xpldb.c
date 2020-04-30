@@ -5,7 +5,6 @@
 #include <libxpl/xplutils.h>
 
 static xmlHashTablePtr databases = NULL;
-static bool db_initialized = false;
 
 xplDBPtr xplDBCreate(const xplDBPtr aNext, const xplDBDeallocator aDealloc)
 {
@@ -123,7 +122,7 @@ xplAddDBResult xplAddDB(xmlChar *name, xmlChar *newConnString, bool withCheck)
 {
 	xplDBListPtr db;
 
-	if (!db_initialized)
+	if (!databases)
 		return XPL_ADD_DB_NO_PARSER;
 	if (xplLocateDBList(name))
 		return XPL_ADD_DB_ALREADY_EXISTS;
@@ -143,7 +142,7 @@ xplChangeDBResult xplChangeDB(xmlChar *name, xmlChar *newConnString, bool withCh
 {
 	xplDBListPtr db, new_db;
 
-	if (!db_initialized)
+	if (!databases)
 		return XPL_CHANGE_DB_NO_PARSER;
 	db = xplLocateDBList(name);
 	if (!db)
