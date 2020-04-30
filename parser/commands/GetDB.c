@@ -53,7 +53,7 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ret = xmlNewDocText(commandInfo->element->doc, db_list->conn_string);
 		repeat = false;
 	} else {
-		ret = xplDatabasesToNodeList(commandInfo->element->doc, commandInfo->element, 
+		ret = xplDatabasesToNodeList(commandInfo->element,
 			responsetagname_attr?responsetagname_attr:BAD_CAST "Database", show_tags);
 		downshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	}

@@ -189,13 +189,13 @@ static void databaseListScanner(void *payload, void *data, xmlChar *name)
 		ctxt->head = ctxt->tail = cur;
 }
 
-xmlNodePtr xplDatabasesToNodeList(xmlDocPtr doc, xmlNodePtr parent, const xmlChar *tagName, bool showTags)
+xmlNodePtr xplDatabasesToNodeList(xmlNodePtr parent, const xmlChar *tagName, bool showTags)
 {
 	getDBListContext ctxt;
 
 	if (!databases)
 		return NULL;
-	ctxt.doc = doc;
+	ctxt.doc = parent->doc;
 	ctxt.head = NULL;
 	EXTRACT_NS_AND_TAGNAME(tagName, ctxt.ns, ctxt.tag_name, parent)
 	ctxt.show_tags = showTags;

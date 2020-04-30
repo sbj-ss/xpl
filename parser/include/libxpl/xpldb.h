@@ -77,7 +77,7 @@ XPLPUBFUN xplChangeDBResult XPLCALL
 	xplChangeDB(xmlChar *name, xmlChar *newConnString, bool withCheck);
 
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplDatabasesToNodeList(xmlDocPtr doc, xmlNodePtr parent, const xmlChar *tagName, bool showTags);
+	xplDatabasesToNodeList(xmlNodePtr parent, const xmlChar *tagName, bool showTags);
 
 XPLPUBFUN bool XPLCALL
 	xplReadDatabases(xmlNodePtr cur);
