@@ -208,10 +208,11 @@ static void dbDeallocator(void *payload, xmlChar *name)
 	xplDBListFree((xplDBListPtr) payload);
 }
 
-bool xplReadDatabases(xmlNodePtr cur)
+bool xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors)
 {
 	xplDBListPtr db;
 	xmlChar *dbname;
+	bool ok = true;
 
 	xplCleanupDatabases();
 	databases = xmlHashCreate(16);
@@ -232,17 +233,23 @@ bool xplReadDatabases(xmlNodePtr cur)
 					{
 						db = xplDBListCreate(cur->children->content);
 						xmlHashAddEntry(databases, dbname, (void*) db); /* TODO check for dupes */
-					} else
+					} else {
 						xplDisplayMessage(xplMsgWarning, BAD_CAST "non-text connection string in config file (line %d), ignored", cur->line);
+						ok = false;
+					}
 					xmlFree(dbname);
-				} else
+				} else {
 					xplDisplayMessage(xplMsgWarning, BAD_CAST "missing dbname attribute in Database element in config file (line %d), ignored", cur->line);
-			} else
+					ok = false;
+				}
+			} else {
 				xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown node \"%s\" in Databases section in config file (line %d), ignored", cur->line);
+				ok = false;
+			}
 		}
 		cur = cur->next;
 	}
-	return true;
+	return !warningsAsErrors || ok;
 }
 
 static void checkDatabase(void *payload, void *data, xmlChar *name)

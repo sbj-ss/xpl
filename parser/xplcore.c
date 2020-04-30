@@ -1129,7 +1129,7 @@ bool xplReadConfig()
 		{
 			if (!xmlStrcmp(cur->name, BAD_CAST "Databases"))
 			{
-				if (!xplReadDatabases(cur))
+				if (!xplReadDatabases(cur, false)) /* TODO control warningsAsErrors */
 				{
 					xmlFreeDoc(cfg);
 					return false;

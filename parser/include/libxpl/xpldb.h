@@ -80,7 +80,7 @@ XPLPUBFUN xmlNodePtr XPLCALL
 	xplDatabasesToNodeList(xmlNodePtr parent, const xmlChar *tagName, bool showTags);
 
 XPLPUBFUN bool XPLCALL
-	xplReadDatabases(xmlNodePtr cur);
+	xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors);
 
 XPLPUBFUN void XPLCALL
 	xplCheckDatabases();
