@@ -124,29 +124,6 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN void XPLCALL
 	xplRegisterXPathExtensions(xmlXPathContextPtr ctxt);
 
-
-/* "Грязное" сохранение - пишется только заголовок, узлы и атрибуты
-   Не использует менеджер памяти */
-XPLPUBFUN void XPLCALL
-	safeSerializeContent(FILE *fp, xmlChar* content);
-XPLPUBFUN void XPLCALL
-	safeSerializeNode(FILE *fp, xmlNodePtr node, int indent);
-XPLPUBFUN void XPLCALL
-	safeSerializeNodeList(FILE *fp, xmlNodePtr list, int indent);
-XPLPUBFUN void XPLCALL
-	safeSerializeDocument(char *filename, xmlDocPtr doc);
-
-/* Сохранение документа в файл с учётом символов нац. алфавитов в путях */
-XPLPUBFUN bool XPLCALL
-	saveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int options);
-
-/* Для сериализаторов */
-XPLPUBFUN xmlChar* XPLCALL 
-	serializeNodeList(xmlNodePtr cur);
-XPLPUBFUN xmlChar* XPLCALL
-	serializeNodeSet(xmlNodeSetPtr set);
-
-
 XPLPUBFUN bool XPLCALL
 	checkNodeEquality(xmlNodePtr a, xmlNodePtr b);
 XPLPUBFUN bool XPLCALL

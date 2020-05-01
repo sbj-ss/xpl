@@ -4,6 +4,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
+#include <libxpl/xplsave.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
 #include "Register.h"

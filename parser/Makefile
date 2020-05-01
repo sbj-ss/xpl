@@ -21,6 +21,7 @@ xplmessages.c\
 xploptions.c\
 xplparams.c\
 xplbuffer.c\
+xplsave.c\
 xplsession.c\
 xplstring.c\
 xpltree.c\
