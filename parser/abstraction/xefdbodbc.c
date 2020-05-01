@@ -2,7 +2,7 @@
 #include <libxpl/abstraction/xefinternal.h>
 #include <libxpl/xpldb.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xplstring.h>
 #include <sql.h>
 #include <sqlext.h>
 

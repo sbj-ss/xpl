@@ -2,7 +2,7 @@
 #include <libxpl/xplmacro.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 
 xplMacroExpansionState xplMacroExpansionStateFromString(xmlChar *state, bool allowNoDefault)
 {

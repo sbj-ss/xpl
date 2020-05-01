@@ -1,5 +1,4 @@
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
 #include "commands/LoadModule.h"
 
 XPR_MUTEX load_module_locker;

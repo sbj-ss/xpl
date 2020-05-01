@@ -3,7 +3,7 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplparams.h>
 #include <libxpl/xplsession.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/Isolate.h"
 
 void xplCmdIsolatePrologue(xplCommandInfoPtr commandInfo)

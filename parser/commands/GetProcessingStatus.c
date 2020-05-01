@@ -1,6 +1,5 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
 #include "commands/GetProcessingStatus.h"
 
 void xplCmdGetProcessingStatusPrologue(xplCommandInfoPtr commandInfo)
@@ -24,9 +23,9 @@ void xplCmdGetProcessingStatusEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 	status = doc? (xplErrorToShortString(doc->status)): BAD_CAST "no_such_doc";
 	ret = xmlNewDocText(commandInfo->element->doc, status);
 	ASSIGN_RESULT(ret, false, true);
-
 done:
-	if (document_attr) xmlFree(document_attr);
+	if (document_attr)
+		xmlFree(document_attr);
 
 }
 

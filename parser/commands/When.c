@@ -1,6 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xploptions.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/When.h"
 
 void xplCmdWhenPrologue(xplCommandInfoPtr commandInfo)

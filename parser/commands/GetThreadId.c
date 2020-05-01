@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <libxpl/xplutils.h>
 #include "commands/GetThreadId.h"
 
 void xplCmdGetThreadIdPrologue(xplCommandInfoPtr commandInfo)

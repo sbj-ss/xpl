@@ -2,7 +2,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xpldb.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xplstring.h>
+#include <libxpl/xpltree.h>
 #include "commands/SQL.h"
 
 #define DEFAULT_RESPONSE_TAG_NAME (BAD_CAST "Row")

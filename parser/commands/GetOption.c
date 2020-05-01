@@ -2,7 +2,7 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xplsession.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/GetOption.h"
 
 void xplCmdGetOptionPrologue(xplCommandInfoPtr commandInfo)

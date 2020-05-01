@@ -2,7 +2,8 @@
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xplstring.h>
+#include <libxpl/xpltree.h>
 
 static FILE *log_file = NULL;
 static XPR_MUTEX console_interlock;

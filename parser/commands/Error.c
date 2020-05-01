@@ -1,5 +1,4 @@
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
 #include "commands/Error.h"
 
 void xplCmdErrorPrologue(xplCommandInfoPtr commandInfo)

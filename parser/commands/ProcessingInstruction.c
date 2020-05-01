@@ -1,5 +1,5 @@
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/ProcessingInstruction.h"
 
 void xplCmdProcessingInstructionPrologue(xplCommandInfoPtr commandInfo)

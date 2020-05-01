@@ -1,6 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/ForEach.h"
 
 /* A short note for those wanting to replace children with error node inside prologue:

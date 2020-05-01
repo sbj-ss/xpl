@@ -2,7 +2,8 @@
 #include <libxpl/abstraction/xef.h>
 #include <libxpl/xpldb.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xplstring.h>
+#include <libxpl/xpltree.h>
 
 static xmlHashTablePtr databases = NULL;
 
@@ -125,6 +126,7 @@ const xmlChar* xplDecodeDBConfigResult(xplDBConfigResult result)
 		case XPL_DBCR_NOT_FOUND:
 			return BAD_CAST "database not known to the engine";
 		default:
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
 			return BAD_CAST "unknown error";
 	}
 }
@@ -155,7 +157,7 @@ xplDBConfigResult xplAddDB(xmlChar *name, xmlChar *newConnString, bool withCheck
 		return XPL_DBCR_ALREADY_EXISTS;
 	if (withCheck)
 	{
-		if (!xefDbCheckAvail(newConnString, name, NULL)) // TODO здесь можно воспользоваться сообщением об ошибке
+		if (!xefDbCheckAvail(newConnString, name, NULL))
 			return XPL_DBCR_CHECK_FAILED;
 	}
 	db = xplDBListCreate(newConnString);
@@ -180,7 +182,7 @@ xplDBConfigResult xplChangeDB(xmlChar *name, xmlChar *newConnString, bool withCh
 		return XPL_DBCR_NOT_FOUND;
 	if (withCheck)
 	{
-		if (!xefDbCheckAvail(newConnString, name, NULL)) // TODO передать наверх третий параметр
+		if (!xefDbCheckAvail(newConnString, name, NULL))
 			return XPL_DBCR_CHECK_FAILED;
 	}
 	new_db = xplDBListCreate(newConnString);

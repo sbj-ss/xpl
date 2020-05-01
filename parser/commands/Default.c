@@ -1,7 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/Default.h"
 
 void xplCmdDefaultPrologue(xplCommandInfoPtr commandInfo)

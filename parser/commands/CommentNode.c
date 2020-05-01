@@ -1,5 +1,5 @@
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/CommentNode.h"
 
 void xplCmdCommentNodePrologue(xplCommandInfoPtr commandInfo)

@@ -2,7 +2,7 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xplparams.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/GetParam.h"
 
 void xplCmdGetParamPrologue(xplCommandInfoPtr commandInfo)

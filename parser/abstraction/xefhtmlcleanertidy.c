@@ -2,7 +2,6 @@
 #include <libxpl/abstraction/xefinternal.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
-#include <libxpl/xplutils.h>
 #include <tidy/tidy.h>
 #include <tidy/tidybuffio.h>
 

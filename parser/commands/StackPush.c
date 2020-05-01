@@ -1,5 +1,4 @@
 #include <libxpl/xplcore.h>
-#include <libxpl/xplutils.h>
 #include "commands/StackPush.h"
 
 void xplCmdStackPushPrologue(xplCommandInfoPtr commandInfo)

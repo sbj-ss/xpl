@@ -1,5 +1,4 @@
 #include <libxpl/xplcore.h>
-#include <libxpl/xplutils.h>
 #include "commands/StackPop.h"
 
 void xplCmdStackPopPrologue(xplCommandInfoPtr commandInfo)
@@ -16,7 +15,8 @@ void xplCmdStackPopEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (repeat_attr && !xmlStrcasecmp(repeat_attr, BAD_CAST "false"))
 		repeat = false;
 	ASSIGN_RESULT(xplPopFromDocStack(commandInfo->document, commandInfo->element->parent), repeat, true);
-	if (repeat_attr) xmlFree(repeat_attr);
+	if (repeat_attr)
+		xmlFree(repeat_attr);
 }
 
 xplCommand xplStackPopCommand = { xplCmdStackPopPrologue, xplCmdStackPopEpilogue };

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
 #include "commands/Sleep.h"
 
 void xplCmdSleepPrologue(xplCommandInfoPtr commandInfo)
@@ -41,8 +40,10 @@ void xplCmdSleepEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	ASSIGN_RESULT(NULL, false, true);
 done:
-	if (delay_attr) xmlFree(delay_attr);
-	if (until_attr) xmlFree(until_attr);
+	if (delay_attr)
+		xmlFree(delay_attr);
+	if (until_attr)
+		xmlFree(until_attr);
 }
 
 xplCommand xplSleepCommand = { xplCmdSleepPrologue, xplCmdSleepEpilogue };

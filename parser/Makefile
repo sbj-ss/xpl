@@ -22,7 +22,8 @@ xploptions.c\
 xplparams.c\
 xplbuffer.c\
 xplsession.c\
-xplutils.c\
+xplstring.c\
+xpltree.c\
 xplwrappers.c\
 Register.c
 

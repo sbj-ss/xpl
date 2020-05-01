@@ -1,6 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include <libxpl/xplwrappers.h>
 #include "commands/SetOutputDocument.h"
 

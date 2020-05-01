@@ -1,7 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmacro.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
 #include "commands/ConvertToDefine.h"
 
 void xplCmdConvertToDefinePrologue(xplCommandInfoPtr commandInfo)
@@ -40,7 +39,8 @@ void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr r
 	}
 	ASSIGN_RESULT(NULL, false, true);
 done:
-	if (defaultexpand_attr) xmlFree(defaultexpand_attr);
+	if (defaultexpand_attr)
+		xmlFree(defaultexpand_attr);
 }
 
 xplCommand xplConvertToDefineCommand = { xplCmdConvertToDefinePrologue, xplCmdConvertToDefineEpilogue };

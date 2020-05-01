@@ -2,7 +2,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsession.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xplstring.h>
 #include "commands/SessionSetObject.h"
 
 void xplCmdSessionSetObjectPrologue(xplCommandInfoPtr commandInfo)

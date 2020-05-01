@@ -1,6 +1,6 @@
 #include <libxpl/xplmacro.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/ListMacros.h"
 
 void xplCmdListMacrosPrologue(xplCommandInfoPtr commandInfo)

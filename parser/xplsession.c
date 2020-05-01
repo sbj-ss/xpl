@@ -4,7 +4,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xplsession.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xplstring.h>
+#include <libxpl/xpltree.h>
 
 /* inner singletons */
 static xmlHashTablePtr session_mgr = NULL;

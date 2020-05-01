@@ -1,4 +1,4 @@
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/CommandSupported.h"
 
 void xplCmdCommandSupportedPrologue(xplCommandInfoPtr commandInfo)

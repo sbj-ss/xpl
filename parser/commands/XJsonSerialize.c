@@ -1,6 +1,7 @@
 #include <libxpl/xplbuffer.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xplstring.h>
+#include <libxpl/xpltree.h>
 #include "commands/XJsonSerialize.h"
 
 #define XJSON_SCHEMA_URI BAD_CAST "http://www.ibm.com/xmlns/prod/2009/jsonx"

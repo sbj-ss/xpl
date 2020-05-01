@@ -1,6 +1,5 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
 #include "commands/UnloadModule.h"
 
 void xplCmdUnloadModulePrologue(xplCommandInfoPtr commandInfo)

@@ -1,5 +1,5 @@
 #include <libxpl/xplcore.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/Text.h"
 
 void xplCmdTextPrologue(xplCommandInfoPtr commandInfo)

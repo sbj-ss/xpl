@@ -2,7 +2,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmacro.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xplstring.h>
+#include <libxpl/xpltree.h>
 #include "commands/SuppressMacros.h"
 
 void fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target, xmlNodeSetPtr nodeset)
@@ -96,7 +97,7 @@ void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo)
 				fillMacroHashFromNodeset(commandInfo->element, macros, sel->nodesetval);
 			}
 		} 
-		if (list_attr) /* ������� �� ������ ��� ����� */
+		if (list_attr)
 		{
 			if (!macros)
 				macros = xmlHashCreate(16);

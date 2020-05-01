@@ -2,7 +2,7 @@
 #include <libxpl/abstraction/xef.h>
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/GetVersion.h"
 
 #ifdef __GNUC__

@@ -1,6 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xplstring.h>
+#include <libxpl/xpltree.h>
 #include "commands/RegexSplit.h"
 #include <oniguruma.h>
 

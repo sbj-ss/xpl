@@ -1,6 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/Switch.h"
 
 void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo)

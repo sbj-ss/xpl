@@ -1,5 +1,4 @@
 #include <libxpl/xplcore.h>
-#include <libxpl/xplutils.h>
 #include "commands/StartThreadsAndWait.h"
 
 void xplCmdStartThreadsAndWaitPrologue(xplCommandInfoPtr commandInfo)

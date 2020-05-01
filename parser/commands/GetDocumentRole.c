@@ -1,5 +1,4 @@
 #include <libxpl/xplcore.h>
-#include <libxpl/xplutils.h>
 #include <libxpl/xplwrappers.h>
 #include "commands/GetDocumentRole.h"
 

@@ -1,7 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
-#include <libxpl/xplutils.h>
 #include "commands/Stringer.h"
 
 void xplCmdStringerPrologue(xplCommandInfoPtr commandInfo)

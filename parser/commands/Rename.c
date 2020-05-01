@@ -1,6 +1,5 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
 #include "commands/Rename.h"
 
 void xplCmdRenamePrologue(xplCommandInfoPtr commandInfo)
@@ -33,6 +32,7 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "newname attribute is missing"), true, true);
 		goto done;
 	}
+	/* TODO check name */
 	sel = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
 	if (!sel)
 	{
@@ -44,7 +44,7 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath \"%s\" evaluated to non-nodeset value", select_attr), true, true);
 		goto done;
 	}
-	{
+	{/* TODO EXTRACT_NS_AND_TAGNAME */
 		new_name = BAD_CAST xmlStrchr(newname_attr, ':');
 		if (!new_name)
 			new_name = newname_attr;

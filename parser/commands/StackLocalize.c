@@ -1,5 +1,5 @@
 #include <libxpl/xplcore.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/StackLocalize.h"
 
 void xplCmdStackLocalizePrologue(xplCommandInfoPtr commandInfo)

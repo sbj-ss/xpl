@@ -1,7 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplparams.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/SetParam.h"
 
 #define SP_MODE_ADD 1

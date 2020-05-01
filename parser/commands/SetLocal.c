@@ -1,6 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplparams.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/SetLocal.h"
 
 void xplCmdSetLocalPrologue(xplCommandInfoPtr commandInfo)
