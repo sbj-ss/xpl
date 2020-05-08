@@ -156,13 +156,22 @@ TEST_SRC=tests/Runner.c\
 tests/test_xplbuffer.c\
 tests/test_xpldb.c
 
-OBJS = $(SRC:.c=.o)
-TEST_OBJS = $(TEST_SRC:.c=.o)
+BUILD_DIR = build
+OBJS = $(SRC:%.c=$(BUILD_DIR)/%.o)
+TEST_OBJS = $(TEST_SRC:%.c=$(BUILD_DIR)/%.o)
 TEST_BIN = tests/Runner
 
 .DEFAULT_GOAL = all
 
-.c.o:
+build_dirs: $(BUILD_DIR) $(BUILD_DIR)/abstraction $(BUILD_DIR)/commands
+$(BUILD_DIR):
+	mkdir $@
+$(BUILD_DIR)/abstraction:
+	mkdir -p $@
+$(BUILD_DIR)/commands:
+	mkdir -p $@
+
+$(BUILD_DIR)/%.o: %.c
 	gcc $(CFLAGS) $(INCLUDE) -c $< -o $@
 	
 $(OBJS): $(SRC)
@@ -179,6 +188,6 @@ test: $(TEST_BIN)
 	$(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
 	
 clean:
-	rm -f *.o *.so tests/*.o abstraction/*.o commands/*.o
+	rm -rf $(BUILD_DIR) *.so
 	
-all: libxpl.so
+all: build_dirs libxpl.so
