@@ -163,12 +163,14 @@ TEST_BIN = tests/Runner
 
 .DEFAULT_GOAL = all
 
-build_dirs: $(BUILD_DIR) $(BUILD_DIR)/abstraction $(BUILD_DIR)/commands
+build_dirs: $(BUILD_DIR) $(BUILD_DIR)/abstraction $(BUILD_DIR)/commands $(BUILD_DIR)/tests
 $(BUILD_DIR):
 	mkdir $@
 $(BUILD_DIR)/abstraction:
 	mkdir -p $@
 $(BUILD_DIR)/commands:
+	mkdir -p $@
+$(BUILD_DIR)/tests:
 	mkdir -p $@
 
 $(BUILD_DIR)/%.o: %.c
