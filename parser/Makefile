@@ -174,8 +174,6 @@ $(BUILD_DIR)/commands:
 $(BUILD_DIR)/%.o: %.c
 	gcc $(CFLAGS) $(INCLUDE) -c $< -o $@
 	
-$(OBJS): $(SRC)
-
 $(TEST_OBJS): $(TEST_SRC)
 
 libxpl.so: $(OBJS)
