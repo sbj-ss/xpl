@@ -1,3 +1,4 @@
+#include <string.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
 #include "commands/RegexMatch.h"

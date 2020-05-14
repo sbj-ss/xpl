@@ -367,12 +367,8 @@ void deleteNeighbours(xmlNodePtr cur, xmlNodePtr boundary, bool markAncestorAxis
 	}
 }
 
-/* ����� libxml2 ����� �������, ������� ��������� �� ��������,
-   �� ��� �������, ��� ��������� �� Ns ������ �������� �������������
-   �� ��������� � ��������. ��� ���������, ����� ���� �������� NsDef
-   ����� ����������� ���������� libxml2. �� ���� ������� ����������
-   ����������� �� �������� ����� ���������� ����������� �������.
-*/
+/* a lot of useful libxml2 functions is made static to avoid namespace
+   definition transfers between documents - so we have to copy them here. */
 #define UPDATE_LAST_CHILD_AND_PARENT(n) \
 if ((n))								\
 {										\
@@ -390,9 +386,7 @@ if ((n))								\
 	}									\
 }
 
-/* ��������� �� ����������� ������ � ����������, 
-   ������� ���������������� �� ������.
- */
+/* pointers to static node names are hidden and have to be re-initialized */
 
 static xmlChar* xmlStringText;
 static xmlChar* xmlStringComment;
@@ -452,7 +446,6 @@ xmlNsPtr newReconciliedNs(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns)
     return def;
 }
 
-
 xmlAttrPtr clonePropInternal(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, xmlNodePtr top_clone) 
 {
     xmlAttrPtr ret;
@@ -479,11 +472,9 @@ xmlAttrPtr clonePropInternal(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, x
 		ns = xmlSearchNs(target->doc, target, cur->ns->prefix);
 		if (!ns) 
 		{
-			/*
-			* Humm, we are copying an element whose namespace is defined
-			* out of the new tree scope. Search it in the original tree
-			* and add it at the top of the new tree
-			*/
+			/* Hmm, we are copying an attribute whose namespace is defined
+			  out of the new tree scope. Search it in the original tree
+			  and add it at the top of the new tree. */
 			ns = xmlSearchNs(cur->doc, cur->parent, cur->ns->prefix);
 			if (ns) 
 			{
@@ -492,45 +483,26 @@ xmlAttrPtr clonePropInternal(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, x
 				{	
 					if (root == top_clone)
 						break;
-					else
-						root = root->parent;
+					root = root->parent;
 				}
 				ret->ns = xmlNewNs(root, ns->href, ns->prefix);
 			}
 		} else {
-	        /*
-		     * we have to find something appropriate here since
-			 * we cant be sure, that the namespce we found is identified
-			 * by the prefix
-			 */
+	        /* we have to find something appropriate here since we can't be sure
+	           that the namespace we found is identified by the prefix */
 			if (xmlStrEqual(ns->href, cur->ns->href)) 
-			{
 				/* this is the nice case */
 				ret->ns = ns;
-			} else {
-				/*
-				* we are in trouble: we need a new reconcilied namespace.
-				* This is expensive
-				*/
+			else
+				/* we are in trouble: we need a new reconciled namespace.
+				   This is expensive. */
 				ret->ns = newReconciliedNs(target->doc, target, cur->ns);
-			}
 		}
     } else
         ret->ns = NULL;
 
     if (cur->children) 
-	{
-		xmlNodePtr tmp;
-		ret->children = cloneNodeList(cur->children, (xmlNodePtr) ret, ret->doc);
-		ret->last = NULL;
-		tmp = ret->children;
-		while (tmp) 
-		{
-		    if (!tmp->next)
-				ret->last = tmp;
-			tmp = tmp->next;
-		}
-    }
+		setChildren((xmlNodePtr) ret, cloneNodeList(cur->children, (xmlNodePtr) ret, ret->doc));
     /*
      * Try to handle IDs
      */
@@ -553,20 +525,20 @@ xmlAttrPtr clonePropInternal(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, x
 xmlAttrPtr clonePropListInner(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, xmlNodePtr top_clone) 
 {
     xmlAttrPtr ret = NULL;
-    xmlAttrPtr p = NULL,q;
+    xmlAttrPtr last = NULL, tmp;
 
     while (cur) 
 	{
-        q = clonePropInternal(doc, target, cur, top_clone);
-		if (!q)
+        tmp = clonePropInternal(doc, target, cur, top_clone);
+		if (!tmp)
 			return(NULL);
-		if (!p) 
+		if (!last)
 		{
-			ret = p = q;
+			ret = last = tmp;
 		} else {
-			p->next = q;
-			q->prev = p;
-			p = q;
+			last->next = tmp;
+			tmp->prev = last;
+			last = tmp;
 		}
 		cur = cur->next;
     }
@@ -593,19 +565,18 @@ xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xml
         case XML_COMMENT_NODE:
         case XML_XINCLUDE_START:
         case XML_XINCLUDE_END:
-	    break;
+        	break;
         case XML_ATTRIBUTE_NODE:
-		return (xmlNodePtr) clonePropInternal(doc, parent, (xmlAttrPtr) node, NULL);
+        	return (xmlNodePtr) clonePropInternal(doc, parent, (xmlAttrPtr) node, NULL);
         case XML_NAMESPACE_DECL:
-	    return (xmlNodePtr) xmlCopyNamespaceList((xmlNsPtr) node);
-
+        	return (xmlNodePtr) xmlCopyNamespaceList((xmlNsPtr) node);
         case XML_DOCUMENT_NODE:
         case XML_HTML_DOCUMENT_NODE:
 #ifdef LIBXML_DOCB_ENABLED
         case XML_DOCB_DOCUMENT_NODE:
 #endif
 #ifdef LIBXML_TREE_ENABLED
-	    return (xmlNodePtr) xmlCopyDoc((xmlDocPtr) node, 1);
+        	return (xmlNodePtr) xmlCopyDoc((xmlDocPtr) node, 1);
 #endif /* LIBXML_TREE_ENABLED */
         case XML_DOCUMENT_TYPE_NODE:
         case XML_NOTATION_NODE:
@@ -631,7 +602,7 @@ xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xml
 		top_clone = ret;
     if (node->name == xmlStringText)
 		ret->name = xmlStringText;
-	/* ���� ������ �������� ������ ��� ������ � libxslt */
+	/* this is only possible in libxslt */
 	/*
     else if (node->name == xmlStringTextNoenc)
 		ret->name = xmlStringTextNoenc;
@@ -660,7 +631,7 @@ xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xml
 	{
 		xmlNodePtr tmp;
 
-		/* ��� �� �� ���������� */
+		/* we don't use this */
 		/*
 		if ((__xmlRegisterCallbacks) && (xmlRegisterNodeDefaultValue))
 			xmlRegisterNodeDefaultValue((xmlNodePtr)ret);
@@ -729,7 +700,7 @@ xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xml
 		UPDATE_LAST_CHILD_AND_PARENT(ret)
     }
 
-    /* ��� �� �� ���������� */
+    /* we don't use this */
 	/*
     if ((!parent) && ((__xmlRegisterCallbacks) && (xmlRegisterNodeDefaultValue)))
 		xmlRegisterNodeDefaultValue((xmlNodePtr)ret);
@@ -832,7 +803,7 @@ void downshiftNodeNsDef(xmlNodePtr cur, xmlNsPtr ns_list)
 			ns_cur = ns_cur->next;
 		}
 	}
-	/* ������ �� ���� ��������� */
+	/* check all attributes */
 	prop = cur->properties;
 	while (prop)
 	{
@@ -960,11 +931,9 @@ void makeNsIndepTree(xmlNodePtr top)
 	xmlFree(ctxt.new_ns);
 }
 
-/* ������ �������� ������ - �������� ���������� nsdef. */
+/* now the opposite task - getting rid of duplicated definitions */
 
-/* �������� ������������ ������������ ���. �������, ��� carrier - 
-   �������, ������� ��� ����������� (�� NULL!)
- */
+/* carrier holds the maybe-dupe namespace definition */
 static xmlNsPtr getIrredundantNsByAncestor(xmlNsPtr ns, xmlNodePtr carrier)
 {
 	xmlNsPtr cur_ns, ret = ns, six;
@@ -975,7 +944,7 @@ static xmlNsPtr getIrredundantNsByAncestor(xmlNsPtr ns, xmlNodePtr carrier)
 		{
 			if (!xmlStrcmp(cur_ns->href, ret->href))
 			{
-				/* ������ ���������� ����������� ����� �����, ����� �� ������������ �������� */
+				/* remove right here */
 				if (carrier->nsDef == ret)
 					carrier->nsDef = six->next;
 				else {
@@ -985,7 +954,7 @@ static xmlNsPtr getIrredundantNsByAncestor(xmlNsPtr ns, xmlNodePtr carrier)
 					six->next = ret->next;
 				}
 				xmlFreeNs(ret);
-				ret = cur_ns; /* ��������� */
+				ret = cur_ns; /* we're at the parent definition */
 				break;
 			}
 		}
@@ -1052,6 +1021,7 @@ void replaceRedundantNamespaces(xmlNodePtr top)
 
 /* XPath extensions */
 /* not now: some heavy funcs in libxml2 are static */
+/* TODO this should be in xplcore anyway */
 #if 0
 void xplXPathIsDefinedFunction(xmlXPathParserContextPtr ctxt, int nargs) 
 {
@@ -1128,7 +1098,6 @@ bool checkNodeEquality(xmlNodePtr a, xmlNodePtr b)
 			return true;
 		a = (xmlNodePtr) xmlGetDocEntity(a->doc, a->name);
 		b = (xmlNodePtr) xmlGetDocEntity(b->doc, b->name);
-		/* ���� a == b == null, ���� �� �����: ������ �� �������������� �������� ����� ����� ���� ������ */
 		if (!a || !b)
 			return false;
 		return checkNodeListEquality(a->children, b->children);
@@ -1163,10 +1132,10 @@ bool checkNodeListEquality(xmlNodePtr a, xmlNodePtr b)
 
 bool checkPropListEquality(xmlAttrPtr a, xmlAttrPtr b)
 {
-	/* ��������� ����������� � ��������� �� ������� ����������, �������� �������� "��������������, �� �� ��������� ����������" */
+	/* the same attributes can be written in different order - so we imply sorting but don't require it */
 	xmlAttrPtr prop_a, prop_b, cur_b;
 	bool match;
-	/* ������� ��-���, ��� ����������� ��� �������, ��� ��������� ������ ��������� */
+	/* first check if there's the same number of props */
 	prop_a = a, prop_b = b;
 	while (prop_a && prop_b)
 	{
@@ -1175,7 +1144,7 @@ bool checkPropListEquality(xmlAttrPtr a, xmlAttrPtr b)
 	}
 	if (prop_a || prop_b)
 		return false;
-	/* ���������� �����, �������� ������ */
+	/* iterate through all props */
 	prop_a = a, prop_b = b;
 	while (prop_a)
 	{
@@ -1203,7 +1172,7 @@ bool checkNodeSetIdentity(xmlNodeSetPtr a, xmlNodeSetPtr b)
 {
 	size_t i, j, max;
 	bool match;
-	/* �������, ��������, �� �����: ��������� ����� ������� ������ ������, ������� �� ��� ���-������. */
+	/* empty sets are most probably NOT identical: we have no idea what was requested by selectors */
 	if (!a || !b)
 		return false;
 	if (a->nodeNr != b->nodeNr)
@@ -1231,7 +1200,7 @@ bool checkNodeSetEquality(xmlNodeSetPtr a, xmlNodeSetPtr b)
 {
 	size_t i, j, max;
 	bool match;
-	/* ������� ����� */
+	/* empty sets are equal */
 	if (!a && !b)
 		return true;
 	if (!a || !b)
@@ -1280,5 +1249,6 @@ bool compareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool check
 			return checkNodeSetIdentity(a->nodesetval, b->nodesetval);
 	default:
 		return false;
+	/* TODO XPATH_POINT, XPATH_RANGE, XPATH_LOCATIONSET, XPATH_USER - do we ever encounter them? */
 	}
 }

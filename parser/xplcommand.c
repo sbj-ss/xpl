@@ -1,3 +1,4 @@
+#include <string.h>
 #include <libxpl/xplcommand.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>

@@ -1,5 +1,8 @@
 #include "Configuration.h"
 #include <stdio.h>
+#include <string.h>
+#include <libxml/xmlsave.h>
+#include <libxml/xpathInternals.h>
 #include <libxpl/abstraction/xef.h>
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>

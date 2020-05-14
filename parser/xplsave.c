@@ -13,7 +13,7 @@ void safeSerializeContent(FILE *fp, xmlChar* content)
 	buf_ptr = buf;
 	while (*content)
 	{
-		switch (*content++)
+		switch (*content)
 		{
 		case '<':
 			*buf_ptr++ = '&';
@@ -45,6 +45,7 @@ void safeSerializeContent(FILE *fp, xmlChar* content)
 		default:
 			*buf_ptr++ = *content;
 		}
+		content++;
 		if ((buf_ptr - buf) >= (BUF_SIZE - 8))
 		{
 			*buf_ptr = 0;
@@ -117,6 +118,9 @@ void safeSerializeNode(FILE *fp, xmlNodePtr node, int indent)
 		break;
 	case XML_ENTITY_REF_NODE:
 		/* ToDo */
+		break;
+	case XML_PI_NODE:
+		/* TODO */
 		break;
 	default:
 		return;

@@ -80,7 +80,7 @@ XPLPUBFUN xmlNodePtr XPLCALL
 XPLPUBFUN xmlNodePtr XPLCALL
 	cloneAttrAsText(xmlNodePtr cur, xmlNodePtr parent);
 
-/* checks for text/CDATA/entity refs only */ /* TODO: entity refs? */
+/* checks for text/CDATA/entity refs only */
 XPLPUBFUN bool XPLCALL
 	checkNodeListForText(xmlNodePtr start);
 XPLPUBFUN bool XPLCALL
@@ -89,18 +89,17 @@ XPLPUBFUN bool XPLCALL
 /* marks ancestor axis part from bottom to top (both inclusive) for deferred deletion */
 XPLPUBFUN void XPLCALL 
 	markAncestorAxisForDeletion(xmlNodePtr bottom, xmlNodePtr top);
-/* TODO description */
+/* mark/unmark cur, its props and all of its descendants for deletion.
+   if doMark, set bitwiseAttribute, otherwise clear it. */
 XPLPUBFUN void XPLCALL
 	markDOSAxisForDeletion(xmlNodePtr cur, int bitwiseAttribute, bool doMark);
-/* TODO description */
+/* delete everything but ancestor axis starting at cur and stopping at boundary (exclusive).
+   if markAncestorAxis is set, also mark the nodes on the axis for deletion. */
 XPLPUBFUN void XPLCALL
 	deleteNeighbours(xmlNodePtr cur, xmlNodePtr boundary, bool markAncestorAxis);
 
-/* Копирование узла и списка узлов с учётом иерархии
-   (см. комментарии в реализации)
-   Родитель используется как подсказка при поиске пространств имён
-   и НЕ приписывается элементу!
- */
+/* Copy nodes or node lists wrt their hierarchy.
+   parent is only used for namespace search and IS NOT assigned to new nodes */
 XPLPUBFUN void XPLCALL
 	initNamePointers(void);
 XPLPUBFUN xmlNodePtr XPLCALL
@@ -108,37 +107,33 @@ XPLPUBFUN xmlNodePtr XPLCALL
 XPLPUBFUN xmlNodePtr XPLCALL
 	cloneNodeList(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc);
 
-/* Трансляция NsDef вниз перед удалением узла (списка узлов)
-   Считаем, что они уже отцеплены. ns_list - список nsDef бывшего родителя.
- */
+/* Translate parent's ns_list to cur before deleting its parent. Assume cur is already detached. */
 XPLPUBFUN void XPLCALL
 	downshiftNodeNsDef(xmlNodePtr cur, xmlNsPtr ns_list);
 XPLPUBFUN void XPLCALL
 	downshiftNodeListNsDef(xmlNodePtr cur, xmlNsPtr ns_list);
 
-/* Скопировать все определения ns на элемент верхнего уровня */
+/* Copy all higher namespace definitions to top */
 XPLPUBFUN void XPLCALL
 	makeNsIndepTree(xmlNodePtr top);
   
-/* Расширения XPath */
 XPLPUBFUN void XPLCALL
 	xplRegisterXPathExtensions(xmlXPathContextPtr ctxt);
 
+/* Comparison.
+   Identity: exactly the same nodes
+   Equality: node names/contents/props must be equal and written in the same order (except props) */
 XPLPUBFUN bool XPLCALL
 	checkNodeEquality(xmlNodePtr a, xmlNodePtr b);
 XPLPUBFUN bool XPLCALL
 	checkNodeListEquality(xmlNodePtr a, xmlNodePtr b);
 XPLPUBFUN bool XPLCALL
 	checkPropListEquality(xmlAttrPtr a, xmlAttrPtr b);
-/* Сравнить два набора узлов по декартову произведению */
+/* the following functions are using Cartesian products */
 XPLPUBFUN bool XPLCALL
 	checkNodeSetEquality(xmlNodeSetPtr a, xmlNodeSetPtr b);
-/* Сравнить два набора узлов по декартову произведению */
 XPLPUBFUN bool XPLCALL
 	checkNodeSetIdentity(xmlNodeSetPtr a, xmlNodeSetPtr b);
-
-/* Сравнить два результата XPath-выборок. В случае набора узлов сравнение идёт по декартову произведению.
-   При типах, отличных от string/boolean/number/nodeset, всегда возвращает false. */
 XPLPUBFUN bool XPLCALL
 	compareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool checkEquality);
 

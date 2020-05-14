@@ -6,7 +6,9 @@
 #define __xplcommand_H
 
 #include "Configuration.h"
-#include "Common.h"
+#include <stdbool.h>
+#include <libxml/tree.h>
+#include <libxml/xmlstring.h>
 #include <libxpl/abstraction/xpr.h>
 
 #ifdef __cplusplus

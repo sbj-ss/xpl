@@ -6,7 +6,7 @@
 #define __xplwrappers_H
 
 #include "Configuration.h"
-#include "Common.h"
+#include <libxml/xmlstring.h>
 
 #ifdef __cplusplus
 extern "C" {

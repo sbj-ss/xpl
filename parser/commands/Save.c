@@ -1,3 +1,4 @@
+#include <libxml/xmlsave.h>
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>

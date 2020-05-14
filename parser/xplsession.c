@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <openssl/ripemd.h>
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplmessages.h>

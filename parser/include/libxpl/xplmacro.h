@@ -6,7 +6,9 @@
 #define __xplmacro_H
 
 #include "Configuration.h"
-#include "Common.h"
+#include <stdbool.h>
+#include <libxml/xmlstring.h>
+#include <libxml/tree.h>
 
 #ifdef __cplusplus
 extern "C" {

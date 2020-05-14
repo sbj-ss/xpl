@@ -1,3 +1,4 @@
+#include <string.h>
 #include <libxpl/abstraction/xef.h>
 #include <libxpl/xplcore.h>
 #include <libxpl/xpldb.h>

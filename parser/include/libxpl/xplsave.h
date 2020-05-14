@@ -16,8 +16,7 @@
 extern "C" {
 #endif
 
-/* "Грязное" сохранение - пишется только заголовок, узлы и атрибуты
-   Не использует менеджер памяти */
+/* header, elements, props and text only. doesn't use memory manager. */
 XPLPUBFUN void XPLCALL
 	safeSerializeContent(FILE *fp, xmlChar* content);
 XPLPUBFUN void XPLCALL
@@ -27,11 +26,11 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN void XPLCALL
 	safeSerializeDocument(char *filename, xmlDocPtr doc);
 
-/* Сохранение документа в файл с учётом символов нац. алфавитов в путях */
+/* saves using correct utf-8 paths */
 XPLPUBFUN bool XPLCALL
 	saveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int options);
 
-/* Для сериализаторов */
+/* for serialization commands */
 XPLPUBFUN xmlChar* XPLCALL
 	serializeNodeList(xmlNodePtr cur);
 XPLPUBFUN xmlChar* XPLCALL

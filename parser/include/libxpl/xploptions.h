@@ -6,7 +6,9 @@
 #define __xploptions_H
 
 #include "Configuration.h"
-#include "Common.h"
+#include <stdbool.h>
+#include <libxml/tree.h>
+#include <libxml/xmlstring.h>
 
 #ifdef __cplusplus
 extern "C" {

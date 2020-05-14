@@ -1,5 +1,6 @@
+#include <string.h>
+#include <libxml/xmlmemory.h>
 #include <libxpl/xplbuffer.h>
-#include "Common.h"
 
 typedef struct _rbBuf
 {

@@ -6,7 +6,8 @@
 #define __xpldb_H
 
 #include "Configuration.h"
-#include "Common.h"
+#include <libxml/tree.h>
+#include <libxml/xmlstring.h>
 #include <libxpl/abstraction/xpr.h>
 
 #ifdef __cplusplus

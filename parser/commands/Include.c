@@ -1,4 +1,5 @@
 #include <sys/stat.h>
+#include <string.h>
 #include <unistd.h>
 #include <libxpl/abstraction/xef.h>
 #include <libxpl/abstraction/xpr.h>

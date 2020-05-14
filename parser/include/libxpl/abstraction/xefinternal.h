@@ -6,7 +6,8 @@
 #define __xefinternal_H
 
 #include "Configuration.h"
-#include "Common.h"
+#include <stdbool.h>
+#include <libxml/xmlstring.h>
 #include <libxpl/abstraction/xef.h>
 
 /* subsystems list */

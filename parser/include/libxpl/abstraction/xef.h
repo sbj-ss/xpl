@@ -6,7 +6,9 @@
 #define __xef_H
 
 #include "Configuration.h"
-#include "Common.h"
+#include <stdbool.h>
+#include <libxml/xmlstring.h>
+#include <libxpl/xpldb.h>
 
 #ifdef __cplusplus
 extern "C" {

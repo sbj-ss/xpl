@@ -6,7 +6,6 @@
 #define __register_H
 
 #include "Configuration.h"
-#include "Common.h"
 
 #ifdef __cplusplus
 extern "C" {

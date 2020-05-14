@@ -7,7 +7,7 @@
 #define __xplcore_H
 
 #include "Configuration.h"
-#include "Common.h"
+#include <libxml/xpath.h>
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplbuffer.h>
 #include <libxpl/xplcommand.h>

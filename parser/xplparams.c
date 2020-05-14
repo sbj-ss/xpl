@@ -1,3 +1,5 @@
+#include <ctype.h>
+#include <string.h>
 #include <libxpl/xplparams.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
