@@ -154,7 +154,8 @@ SRC += $(COMMANDS)
 
 TEST_SRC=tests/Runner.c\
 tests/test_xplbuffer.c\
-tests/test_xpldb.c
+tests/test_xpldb.c\
+tests/test_xplsave.c
 
 BUILD_DIR = build
 OBJS = $(SRC:%.c=$(BUILD_DIR)/%.o)
@@ -176,8 +177,6 @@ $(BUILD_DIR)/tests:
 $(BUILD_DIR)/%.o: %.c
 	gcc $(CFLAGS) $(INCLUDE) -c $< -o $@
 	
-$(TEST_OBJS): $(TEST_SRC)
-
 libxpl.so: $(OBJS)
 	gcc -shared -o $@ $(OBJS)
 
