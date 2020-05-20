@@ -106,6 +106,8 @@ bool xtsRunFixture(const xtsFixturePtr fixture, xtsContextPtr ctxt)
 	if (fixture->setup)
 		if (!fixture->setup(ctxt))
 		{
+			if (fixture->teardown)
+				fixture->teardown(ctxt);
 			xmlHashFree(ctxt->env, NULL);
 			if (ctxt->verbosity >= XTS_VERBOSITY_FIXTURE)
 				xmlGenericError(xmlGenericErrorContext, "Fixture.setup() %sFAILED%s: %s\n",
