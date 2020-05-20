@@ -29,13 +29,13 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN xmlChar* XPLCALL
 	getLastLibxmlError(void);
 
-/* Проверка на корректную utf-8 запись */
+/* Checks if s is in utf-8 encoding. isCompleteString requires the last char to be a complete sequence */
 XPLPUBFUN bool XPLCALL
 	isValidUtf8Sample(xmlChar *s, size_t len, bool isCompleteString);
-/* Получение смещения до следующего UTF-8 символа. При неверной записи возвращает 0! */
+/* Returns offset to the next utf-8 char. 0 if input sequence is incorrect. */
 XPLPUBFUN size_t XPLCALL
 	getOffsetToNextUTF8Char(xmlChar *cur);
-/* Поддержка кириллических (и не только) URI */
+/* International characters URI encoding (xn--...) */
 XPLPUBFUN xmlChar* XPLCALL
 	encodeUriIdn(xmlChar *uri);
 
@@ -49,29 +49,32 @@ XPLPUBFUN xmlChar* XPLCALL
 
 #define DEFAULT_ENC_DET_SAMPLE_LEN 256
 
-/* Автоматическое определение кодировки */
+/* Detects cyrillic encoding automatically */
 XPLPUBFUN int XPLCALL
 	detectEncoding(char* str, size_t sampleLen);
 
-/* Перекодировка строки */
+/* Recodes start..end. resultp is allocated inside */
 XPLPUBFUN int XPLCALL
 	iconv_string (const char* tocode, const char* fromcode,
 				  const char* start, const char* end,
 				  char** resultp, size_t* lengthp);
 
-/* Шестнадцатеричный дамп буфера. Результат необходимо освободить. */
+/* Returns a hex representation of a buffer. Result must be freed. */
 XPLPUBFUN xmlChar* XPLCALL
 	bufferToHex(void* buf, size_t len, bool prefix);
-/* base-64 запись буфера. Память под результат должна быть выделена до вызова функции, result и resultSize заполнены! */
+/* Base64 conversion. result must be preallocated and both result and resultSize set! */
+/* TODO alloc inside */
 XPLPUBFUN int XPLCALL
 	base64encode(const void* data_buf, size_t dataLength, char* result, size_t resultSize);
+/* TODO alloc inside */
 XPLPUBFUN size_t XPLCALL
 	base64decode(const char* data_buf, size_t dataLength, char* result, size_t resultSize);
 
+/* Converts "/a/b"+"c/d" to "/a/b/c"+"d" etc */
 XPLPUBFUN void XPLCALL
 	composeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **normalizedPath, xmlChar **normalizedFilename);
 
-/* Дописать в конец строки шестнадцатиричную запись id. Возвращает указатель на новую строку (xmlRealloc). */
+/* Reallocates str appending id decimal representation to its end. */
 /* TODO remove */
 XPLPUBFUN xmlChar* XPLCALL
 	appendThreadIdToString(xmlChar *str, XPR_THREAD_ID id);
