@@ -8,5 +8,11 @@ xtsFixturePtr suite[] =
 
 int main(int argc, char **argv)
 {
-	return xtsRun(argc, argv, suite);
+	xtsContext ctxt;
+	int ret;
+
+	ret = xtsInit(argc, argv, &ctxt, suite);
+	if (ret)
+		return ret;
+	return xtsWrap(suite, &ctxt);
 }

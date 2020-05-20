@@ -46,6 +46,7 @@ typedef struct _xtsContext
 	int total;
 	int passed;
 	int skipped;
+	int initial_mem_blocks;
 } xtsContext, *xtsContextPtr;
 
 void xtsInitContext(xtsContextPtr ctxt, xtsFailMode fail_mode, xtsVerbosity verbosity);
@@ -107,7 +108,9 @@ bool xtsSkipTest(xtsFixturePtr *suite, const xmlChar *fixture_id, const xmlChar 
 bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error);
 
 void xtsDisplayUsage(char *prog_name);
-int xtsRun(int argc, char **argv, xtsFixturePtr *suite);
+
+int xtsInit(int argc, char **argv, xtsContextPtr ctxt, xtsFixturePtr *suite);
+int xtsWrap(xtsFixturePtr *suite, xtsContextPtr ctxt);
 
 #ifdef __cplusplus
 }

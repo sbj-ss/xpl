@@ -21,6 +21,7 @@ void xtsInitContext(xtsContextPtr ctxt, xtsFailMode fail_mode, xtsVerbosity verb
 	ctxt->passed = 0;
 	ctxt->skipped = 0;
 	ctxt->total = 0;
+	ctxt->initial_mem_blocks = xmlMemBlocks();
 }
 
 bool xtsRunTest(const xtsTestPtr test, xtsContextPtr ctxt)
@@ -421,13 +422,10 @@ void xtsDisplayUsage(char *prog_name)
 	printf("\t-s LIST: skip/include various tests\n");
 }
 
-int xtsRun(int argc, char** argv, xtsFixturePtr *suite)
+int xtsInit(int argc, char** argv, xtsContextPtr ctxt, xtsFixturePtr *suite)
 {
 	int c;
 	xmlChar *skip_list = NULL, *error;
-	bool ok;
-	xtsContext ctxt;
-	int initial_blocks, mem_delta;
 
 	while (1)
 	{
@@ -451,8 +449,7 @@ int xtsRun(int argc, char** argv, xtsFixturePtr *suite)
 		}
 	}
 	xmlMemSetup(xmlMemFree, xmlMemMalloc, xmlMemRealloc, xmlMemoryStrdup);
-	initial_blocks = xmlMemBlocks();
-	xtsInitContext(&ctxt, XTS_FAIL_ALL, XTS_VERBOSITY_TEST);
+	xtsInitContext(ctxt, XTS_FAIL_ALL, XTS_VERBOSITY_TEST); /* TODO command line switches */
 	if (skip_list)
 		if (!xtsApplySkipList(skip_list, suite, &error))
 		{
@@ -460,10 +457,18 @@ int xtsRun(int argc, char** argv, xtsFixturePtr *suite)
 			xmlFree(error);
 			return 1;
 		}
-	ok = xtsRunSuite(suite, &ctxt);
+	return 0;
+}
+
+int xtsWrap(xtsFixturePtr *suite, xtsContextPtr ctxt)
+{
+	bool ok;
+	int mem_delta;
+
+	ok = xtsRunSuite(suite, ctxt);
 	if (!ok)
 		return 2;
-	mem_delta = xmlMemBlocks() - initial_blocks;
+	mem_delta = xmlMemBlocks() - ctxt->initial_mem_blocks;
 	if (mem_delta)
 	{
 		xmlGenericError(xmlGenericErrorContext, "ERROR: expected 0 extra memory blocks, got %d\n", mem_delta);
