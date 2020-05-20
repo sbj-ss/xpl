@@ -30,7 +30,7 @@ $(TEST_BIN): $(TEST_OBJS)
 	gcc -L. $(TEST_OBJS) -o $@ $(LIBS) -lxts 
 
 test: $(TEST_BIN)
-	$(TEST_BIN)
+	$(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
 	
 clean:
 	rm -f *.o *.a $(TEST_BIN)
