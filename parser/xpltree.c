@@ -245,11 +245,11 @@ xmlNodePtr replaceWithList(xmlNodePtr el, xmlNodePtr list)
 	if (el->next)
 		el->next->prev = tail;
 	tail->next = el->next;
-	el->prev = el->next = el->parent = NULL;
 	if (el->parent && el->parent->children == el)
 		el->parent->children = list;
 	if (el->parent && el->parent->last == el)
 		el->parent->last = tail;
+	el->prev = el->next = el->parent = NULL;
 	return el;
 }
 
