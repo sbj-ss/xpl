@@ -35,10 +35,10 @@
 # tests
 /parser/tests/Runner
 /xts/Runner
-# build dirs
-x64
-Debug
-Release
+# other binaries
+/cmdline/cmdline
+# build directories
+**/build/
 # specific files
 mt.dep
 # IDE
