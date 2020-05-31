@@ -243,6 +243,8 @@ bool xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors)
 	xplDBListPtr db;
 	xmlChar *dbname;
 	bool ok = true;
+	const xplMsgType msg_type = warningsAsErrors? xplMsgError: xplMsgWarning;
+	const xmlChar *tail = BAD_CAST warningsAsErrors? "stopping": "ignored";
 
 	xplCleanupDatabases();
 	databases = xmlHashCreate(16);
@@ -262,18 +264,22 @@ bool xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors)
 					if (cur->children->type == XML_TEXT_NODE)
 					{
 						db = xplDBListCreate(cur->children->content);
-						xmlHashAddEntry(databases, dbname, (void*) db); /* TODO check for dupes */
+						if (xmlHashAddEntry(databases, dbname, (void*) db))
+						{
+							xplDisplayMessage(msg_type, BAD_CAST "duplicate database name in config file (line %d), %s", cur->line, tail);
+							ok = false;
+						}
 					} else {
-						xplDisplayMessage(xplMsgWarning, BAD_CAST "non-text connection string in config file (line %d), ignored", cur->line);
+						xplDisplayMessage(msg_type, BAD_CAST "non-text connection string in config file (line %d), %s", cur->line, tail);
 						ok = false;
 					}
 					xmlFree(dbname);
 				} else {
-					xplDisplayMessage(xplMsgWarning, BAD_CAST "missing dbname attribute in Database element in config file (line %d), ignored", cur->line);
+					xplDisplayMessage(msg_type, BAD_CAST "missing dbname attribute in Database element in config file (line %d), %s", cur->line, tail);
 					ok = false;
 				}
 			} else {
-				xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown node \"%s\" in Databases section in config file (line %d), ignored", cur->line);
+				xplDisplayMessage(msg_type, BAD_CAST "unknown node \"%s\" in Databases section in config file (line %d), %s", cur->name, cur->line, tail);
 				ok = false;
 			}
 		}
