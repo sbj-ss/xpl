@@ -1,3 +1,4 @@
+#include <libxml/parser.h>
 #include "test_xplbuffer.h"
 #include "test_xpldb.h"
 
@@ -10,5 +11,16 @@ xtsFixturePtr suite[] =
 
 int main(int argc, char **argv)
 {
-	return xtsRun(argc, argv, suite);
+	xtsContext ctxt;
+	int ret;
+
+	LIBXML_TEST_VERSION
+	ret = xtsInit(argc, argv, &ctxt, suite);
+	if (ret)
+		return ret;
+	xmlMemSetup(xmlMemFree, xmlMemMalloc, xmlMemRealloc, xmlMemoryStrdup);
+	xmlInitParser();
+	ret = xtsWrap(suite, &ctxt);
+	xmlCleanupParser();
+	return ret;
 }
