@@ -164,17 +164,30 @@ bool xprSemaphoreInit(XPR_SEMAPHORE *s, int initial_value)
 {
 	return sem_init(s, 0, initial_value) == 0? true: false;
 }
+
 bool xprSemaphoreAcquire(XPR_SEMAPHORE *s)
 {
 	return sem_wait(s) == 0? true: false;
 }
+
 bool xprSemaphoreRelease(XPR_SEMAPHORE *s)
 {
 	return sem_post(s) == 0? true: false;
 }
+
 bool xprSemaphoreCleanup(XPR_SEMAPHORE *s)
 {
 	return sem_destroy(s) == 0? true: false;
+}
+
+void xprInterlockedDecrement(int *value)
+{
+	__atomic_fetch_sub(value, 1, __ATOMIC_ACQ_REL);
+}
+
+void xprInterlockedIncrement(int *value)
+{
+	__atomic_fetch_add(value, 1, __ATOMIC_ACQ_REL);
 }
 
 XPR_THREAD_ID xprGetCurrentThreadId()

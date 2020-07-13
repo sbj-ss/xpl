@@ -67,6 +67,11 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN bool XPLCALL
 	xprSemaphoreCleanup(XPR_SEMAPHORE *s);
 
+XPLPUBFUN void XPLCALL
+	xprInterlockedDecrement(int *value);
+XPLPUBFUN void XPLCALL
+	xprInterlockedIncrement(int *value);
+
 XPLPUBFUN XPR_THREAD_ID XPLCALL
 	xprGetCurrentThreadId();
 
