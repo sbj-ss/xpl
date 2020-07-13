@@ -211,9 +211,10 @@ void xprSleep(int ms)
     } while (res && errno == EINTR);
 }
 
-void xprParseCommandLine(void)
+bool xprParseCommandLine(void)
 {
 	// TODO
+	return true;
 }
 
 void xprSetConsoleColor(int color)
