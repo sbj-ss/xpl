@@ -18,12 +18,6 @@ extern "C" {
 
 /* header, elements, props and text only. doesn't use memory manager. */
 XPLPUBFUN void XPLCALL
-	safeSerializeContent(FILE *fp, xmlChar* content);
-XPLPUBFUN void XPLCALL
-	safeSerializeNode(FILE *fp, xmlNodePtr node, int indent);
-XPLPUBFUN void XPLCALL
-	safeSerializeNodeList(FILE *fp, xmlNodePtr list, int indent);
-XPLPUBFUN void XPLCALL
 	safeSerializeDocument(char *filename, xmlDocPtr doc);
 
 /* saves using correct utf-8 paths */
