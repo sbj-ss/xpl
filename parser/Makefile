@@ -23,6 +23,7 @@ xplparams.c\
 xplbuffer.c\
 xplsave.c\
 xplsession.c\
+xplstart.c\
 xplstring.c\
 xpltree.c\
 xplwrappers.c\
