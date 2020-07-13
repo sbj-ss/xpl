@@ -86,7 +86,7 @@ XPLPUBFUN xmlChar* XPLCALL
 
 /* Мы не передаём сюда строку: может оказаться так, что библиотека собрана
    в юникоде, а использующая её программа - в мультибайте. */
-XPLPUBFUN void XPLCALL
+XPLPUBFUN bool XPLCALL
 	xprParseCommandLine(void);
 
 XPLPUBFUN void XPLCALL
