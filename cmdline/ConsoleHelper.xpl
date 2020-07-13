@@ -10,7 +10,7 @@
     * Save - чтение сеанса и запись в файл  (параметры не записываются никогда; файл сеанса должен существовать)
   ss, 11.2013
 -->
-<Root xmlns:xpl="http://tch.org/xpl">
+<Root xmlns:xpl="http://xpl-dev.org/xpl">
   <xpl:define name="error">
     <xpl:fatal/>
   </xpl:define>
@@ -19,11 +19,11 @@
     <xpl:choose>
       <xpl:when>
         <xpl:test>
-         '<xpl:file-exists>
+          <xpl:file-exists>
             <xpl:attribute name="file">
               <xpl:content/>
             </xpl:attribute>
-          </xpl:file-exists>' = 'true'
+          </xpl:file-exists>()
         </xpl:test>
         <xpl:text>false</xpl:text>
       </xpl:when>
