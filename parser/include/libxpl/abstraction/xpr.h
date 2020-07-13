@@ -116,6 +116,8 @@ XPLPUBFUN bool XPLCALL
 
 XPLPUBFUN bool XPLCALL
 	xprStartup(int what);
+XPLPUBFUN int XPLCALL
+	xprGetActiveSubsystems(void);
 XPLPUBFUN void XPLCALL
 	xprShutdown(int what);
 #ifdef __cplusplus

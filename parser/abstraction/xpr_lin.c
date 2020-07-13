@@ -249,6 +249,8 @@ bool xprIsDebuggerPresent(void)
    return debugged;
 }
 
+static int active_subsystems = 0;
+
 bool xprStartup(int what)
 {
 	if (what & XPR_STARTSTOP_LOW_LEVEL)
@@ -263,6 +265,7 @@ bool xprStartup(int what)
 	{
 		NOOP();
 	}
+	active_subsystems |= what;
 	return true;
 }
 
@@ -280,4 +283,10 @@ void xprShutdown(int what)
 	{
 		NOOP();
 	}
+	active_subsystems &= ~what;
+}
+
+int xprGetActiveSubsystems(void)
+{
+	return active_subsystems;
 }
