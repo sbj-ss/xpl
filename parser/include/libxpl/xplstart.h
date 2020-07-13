@@ -23,8 +23,16 @@ typedef struct _xplStartParams
 
 const xplStartParams xplDefaultStartParams =
 {
+#ifdef _USE_TCMALLOC
+	SFINIT(.use_tcmalloc, true),
+#else
 	SFINIT(.use_tcmalloc, false),
+#endif
+#ifdef _LEAK_DETECTION
+	SFINIT(.debug_allocation, true),
+#else
 	SFINIT(.debug_allocation, false),
+#endif
 	SFINIT(.xpr_start_flags, XPR_STARTSTOP_EVERYTHING),
 	SFINIT(.config_file_name, BAD_CAST "xpl.xml")
 };
