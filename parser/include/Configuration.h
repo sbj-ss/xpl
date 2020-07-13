@@ -44,6 +44,8 @@
 	#define SFINIT(f, ...) __VA_ARGS__
 #endif
 
+#define UNUSED_PARAM(x) (void) (x);
+
 /* Hard-coded params */
 /* Should be changed only together with all existing XPL code. */
 #define ERROR_NODE_NAME (BAD_CAST "error")
