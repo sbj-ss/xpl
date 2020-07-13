@@ -3,14 +3,21 @@
 #include <libxml/xmlsave.h>
 #include <unistd.h>
 
-void safeSerializeContent(FILE *fp, xmlChar* content)
+static void safeSerializeIndent(FILE *fp, int indent)
+{
+	int i;
+
+	for (i = 0; i < indent; i++)
+		fprintf(fp, " ");
+}
+
+static void safeSerializeNodeList(FILE *fp, xmlNodePtr list, int indent);
+
+static void safeSerializeContent(FILE *fp, xmlChar* content)
 {
 #define BUF_SIZE 1024
-	xmlChar buf[BUF_SIZE], *buf_ptr;
+	xmlChar buf[BUF_SIZE], *buf_ptr = buf;
 
-	if (!fp || !content)
-		return;
-	buf_ptr = buf;
 	while (*content)
 	{
 		switch (*content)
@@ -61,73 +68,88 @@ void safeSerializeContent(FILE *fp, xmlChar* content)
 #undef BUF_SIZE
 }
 
-void safeSerializeNode(FILE *fp, xmlNodePtr node, int indent)
+static void safeSerializeElement(FILE *fp, xmlNodePtr node, int indent)
 {
 	xmlNsPtr nsdefs;
-	int i;
 
+	/* start element */
+	safeSerializeIndent(fp, indent);
+	if (node->ns)
+		fprintf(fp, "<%s:%s", node->ns->prefix, node->name);
+	else
+		fprintf(fp, "<%s", node->name);
+	/* cycle through namespace definitions */
+	nsdefs = node->nsDef;
+	while (nsdefs)
+	{
+		if (nsdefs->prefix)
+			fprintf(fp, " xmlns:%s=\"%s\"", nsdefs->prefix, nsdefs->href);
+		else
+			fprintf(fp, " xmlns=\"%s\"", nsdefs->href);
+		nsdefs = nsdefs->next;
+	}
+	/* cycle through attributes */
+	safeSerializeNodeList(fp, (xmlNodePtr) node->properties, indent);
+	fprintf(fp, ">");
+	/* serialize children */
+	safeSerializeNodeList(fp, node->children, indent + 2);
+	/* end element */
+	safeSerializeIndent(fp, indent);
+	if (node->ns)
+		fprintf(fp, "</%s:%s>\n", node->ns->prefix, node->name);
+	else
+		fprintf(fp, "</%s>\n", node->name);
+}
+
+static void safeSerializeProp(FILE *fp, xmlNodePtr node, int indent)
+{
+	if (node->ns)
+		fprintf(fp, "%s:%s=\"", node->ns->prefix, node->name);
+	else
+		fprintf(fp, "%s=\"", node->name);
+	safeSerializeNodeList(fp, node->children, indent);
+	fprintf(fp, "\"");
+}
+
+static void safeSerializeEntityRef(FILE *fp, xmlNodePtr node, int indent)
+{
+	xmlEntityPtr entity;
+
+	/* dump entities literally */
+	if (!(entity = xmlGetDocEntity(node->doc, node->name)))
+		return;
+	safeSerializeNodeList(fp, entity->children, indent);
+}
+
+static void safeSerializeNode(FILE *fp, xmlNodePtr node, int indent)
+{
 	if (!fp || !node)
 		return;
 	switch(node->type)
 	{
 	case XML_ELEMENT_NODE:
-		/* start element */
-		for (i = 0; i < indent; i++)
-			fprintf(fp, " ");
-		if (node->ns)
-			fprintf(fp, "<%s:%s", node->ns->prefix, node->name);
-		else
-			fprintf(fp, "<%s", node->name);
-		/* cycle through nsdefs */
-		nsdefs = node->nsDef;
-		while (nsdefs)
-		{
-			if (nsdefs->prefix)
-				fprintf(fp, " xmlns:%s=\"%s\"", nsdefs->prefix, nsdefs->href);
-			else
-				fprintf(fp, " xmlns=\"%s\"", nsdefs->href);
-			nsdefs = nsdefs->next;
-		}
-		/* cycle through attributes */
-		safeSerializeNodeList(fp, (xmlNodePtr) node->properties, indent);
-		fprintf(fp, ">");
-		/* serialize children */
-		safeSerializeNodeList(fp, node->children, indent + 2);
-		/* end element */
-		for (i = 0; i < indent; i++)
-			fprintf(fp, " ");
-		if (node->ns)
-			fprintf(fp, "</%s:%s>\n", node->ns->prefix, node->name);
-		else
-			fprintf(fp, "</%s>\n", node->name);
+		safeSerializeElement(fp, node, indent);
 		break;
 	case XML_TEXT_NODE:
+	case XML_CDATA_SECTION_NODE:
 		if (node->content)
 			safeSerializeContent(fp, node->content);
 		break;
 	case XML_ATTRIBUTE_NODE:
-		if (node->ns)
-			fprintf(fp, "%s:%s=\"", node->ns->prefix, node->name);
-		else
-			fprintf(fp, "%s=\"", node->name);
-		safeSerializeNodeList(fp, node->children, indent);
-		fprintf(fp, "\"");
-		break;
-	case XML_ENTITY_NODE:
-		/* ToDo */
+		safeSerializeProp(fp, node, indent);
 		break;
 	case XML_ENTITY_REF_NODE:
-		/* ToDo */
+		safeSerializeEntityRef(fp, node, indent);
 		break;
 	case XML_PI_NODE:
-		/* TODO */
+		/* this is mostly a session saving mechanism - and PIs are unlikely to be present here. */
 		break;
 	default:
 		return;
 	}
 }
 
-void safeSerializeNodeList(FILE *fp, xmlNodePtr list, int indent)
+static void safeSerializeNodeList(FILE *fp, xmlNodePtr list, int indent)
 {
 	if (!fp)
 		return;
@@ -168,6 +190,8 @@ bool saveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int opti
 	int fh, ret;
 	xmlSaveCtxtPtr save_ctxt;
 
+	if (!doc || !filename)
+		return false;
 	fh = xprSOpen(filename, O_CREAT | O_TRUNC | O_RDWR | O_BINARY, 0, S_IREAD | S_IWRITE);
 	if (fh == -1)
 		return false;
