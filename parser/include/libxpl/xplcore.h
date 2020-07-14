@@ -145,15 +145,6 @@ XPLPUBFUN void XPLCALL
 
 /* application hooks */
 
-XPLPUBFUN XPR_SEMAPHORE * XPLCALL
-	xplGetGlobalThreadSemaphore(void);
-XPLPUBFUN XPR_SEMAPHORE * XPLCALL
-	xplSetGlobalThreadSemaphore(XPR_SEMAPHORE *p);
-
-typedef void (*xplLockThreadsFunc)(bool doLock);
-
-XPLPUBFUN xplLockThreadsFunc XPLCALL
-	xplSetLockThreadsFunc(xplLockThreadsFunc f);
 XPLPUBFUN void XPLCALL
 	xplLockThreads(bool doLock);
 

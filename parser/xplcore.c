@@ -15,9 +15,9 @@
 /* internal statics */
 static bool parser_loaded = 0;
 static xmlChar *config_file_path = NULL;
-XPR_SEMAPHORE *global_thread_semaphore = NULL;
-xplLockThreadsFunc lock_threads_func = NULL;
-xplGetAppTypeFunc get_app_type_func = NULL;
+static xplGetAppTypeFunc get_app_type_func = NULL;
+volatile int active_thread_count = 0;
+static XPR_MUTEX global_conf_mutex;
 
 const xmlChar* xplErrorToString(xplError error)
 {
@@ -93,7 +93,7 @@ xmlNodePtr xplPopFromDocStack(xplDocumentPtr doc, xmlNodePtr parent)
 
 	if (!doc || !doc->stack)
 		return NULL;
-	/* Мы вынуждены использовать клонирование, т.к. могут возникнуть проблемы с ns */
+	/* we have to clone due to possible namespace problems */
 	ret = cloneNodeList(doc->stack->children, parent, parent->doc);
 	tmp = doc->stack;
 	doc->stack = tmp->prev;
@@ -209,29 +209,20 @@ void xplDeleteDeferredNodes(rbBufPtr buf)
 	rbRewindBuf(buf);
 }
 
-XPR_SEMAPHORE *xplGetGlobalThreadSemaphore(void)
-{
-	return global_thread_semaphore;
-}
-
-XPR_SEMAPHORE *xplSetGlobalThreadSemaphore(XPR_SEMAPHORE *p)
-{
-	XPR_SEMAPHORE *tmp = global_thread_semaphore;
-	global_thread_semaphore = p;
-	return tmp;
-}
-
-xplLockThreadsFunc xplSetLockThreadsFunc(xplLockThreadsFunc f)
-{
-	xplLockThreadsFunc tmp = lock_threads_func;
-	lock_threads_func = f;
-	return tmp;
-}
-
 void xplLockThreads(bool doLock)
 {
-	if (lock_threads_func)
-		lock_threads_func(doLock);
+	if (doLock)
+	{
+		xprInterlockedDecrement(&active_thread_count);
+		if (!xprMutexAcquire(&global_conf_mutex))
+			DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
+		while (active_thread_count)
+			xprSleep(100);
+	} else {
+		xprInterlockedIncrement(&active_thread_count);
+		if (!xprMutexRelease(&global_conf_mutex))
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
+	}
 }
 
 xplGetAppTypeFunc xplSetGetAppTypeFunc(xplGetAppTypeFunc f)
@@ -394,7 +385,7 @@ void xplDocumentFree(xplDocumentPtr doc)
 #ifdef _THREADING_SUPPORT
 	if (doc->threads)
 	{
-		/* Перестрахуемся */
+		/* better safe than sorry */
 		doc->discard_suspended_threads = true;
 		xplStartDelayedThreads(doc);
 		xplWaitForChildThreads(doc);
@@ -409,10 +400,8 @@ void xplDocumentFree(xplDocumentPtr doc)
 	if (doc->xpath_ctxt) xmlXPathFreeContext(doc->xpath_ctxt);
 	if (doc->response) xmlFree(doc->response);
 	xplClearDocStack(doc);
-	/* ещё раз перестрахуемся */
 	xplDeleteDeferredNodes(doc->deleted_nodes);
 	rbFreeBuf(doc->deleted_nodes);
-	/* Освободим документ последним */
 	if (doc->document) xmlFreeDoc(doc->document);
 	xmlFree(doc);
 }
@@ -420,11 +409,6 @@ void xplDocumentFree(xplDocumentPtr doc)
 #ifdef _THREADING_SUPPORT
 void xplEnsureDocThreadSupport(xplDocumentPtr doc)
 {
-	if (!global_thread_semaphore)
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return false;
-	}
 	if (doc->threads)
 		return;
 	if (!xprMutexInit(&doc->thread_landing_lock))
@@ -465,30 +449,23 @@ XPR_THREAD_ROUTINE_RESULT XPR_THREAD_ROUTINE_CALL xplDocThreadWrapper(XPR_THREAD
 
 	if (!doc)
 	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE;
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		XPR_EXIT_THREAD(-1);
 	}
 	if (!(doc->parent->discard_suspended_threads && doc->thread_was_suspended))
 	{
-		if (!xprSemaphoreAcquire(global_thread_semaphore))
-		{
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-			/* don't unlink/free the landing point here - possible race condition */
-			goto done;
-		}
 		err = xplDocumentApply(doc);
 		if ((err != XPL_ERR_NO_ERROR) && (err != XPL_ERR_FATAL_CALLED))
-			/* Такого не должно быть, но… */
+			/* this shouldn't happen, but… */
 			content = xplCreateErrorNode(doc->landing_point, BAD_CAST "error processing child document: \"%s\"", xplErrorToString(err));
 		else 
-			/* Корневой элемент фиктивен */
+			/* root element is a stub */
 			content = detachContent((xmlNodePtr) doc->document->children);
-		XPR_ACQUIRE_LOCK(doc->parent->thread_landing_lock);
+		if (!xprMutexAcquire(&doc->parent->thread_landing_lock))
+			DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
 		xmlSetListDoc(content, doc->parent->document);
 		xplDocDeferNodeDeletion(doc, replaceWithList(doc->landing_point, content));
 		if (!xprMutexRelease(&doc->parent->thread_landing_lock))
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-		if (!xprSemaphoreRelease(global_thread_semaphore))
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 	} else {
 		xmlUnlinkNode(doc->landing_point);
@@ -550,7 +527,7 @@ void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, c
 
 xmlNodeSetPtr getContentList(xplDocumentPtr doc, xmlNodePtr root, const xmlChar* id)
 {
-	/* на ReszBuf можно не переписывать, набор узлов и так растёт по удвоению */
+	/* ReszBuf not needed here: node sets grow by doubling */
 	xmlNodeSetPtr nodeset = xmlXPathNodeSetCreate(NULL);
 	if (!nodeset)
 		return NULL;
@@ -572,7 +549,7 @@ void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, c
 		}
 		if (xplCheckNodeForXplNs(doc, c))
 		{
-			/* мы в пространстве имён языка, сделаем несколько дополнительных проверок */
+			/* we're in the language namespace, let's make some more checks */
 			if (!xmlStrcmp(c->name, BAD_CAST "content"))
 			{
 				if (!defContent)
@@ -586,7 +563,7 @@ void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, c
 					}
                 } else
 					xmlXPathNodeSetAddUnique(list, c);
-            } else if (!xmlStrcmp(c->name, BAD_CAST "define") /* после попадания в команду, имеющую контент, убираем флаг "контент по умолчанию" */
+            } else if (!xmlStrcmp(c->name, BAD_CAST "define") /* these commands may have there own content */
 				|| !xmlStrcmp(c->name, BAD_CAST "for-each")
 				|| !xmlStrcmp(c->name, BAD_CAST "with")
 				|| !xmlStrcmp(c->name, BAD_CAST "do")) {
@@ -617,14 +594,15 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 	if (!ret)
 		return NULL;
 	content_cmds = getContentList(doc, ret, id);
-	if (!content_cmds) /* чтобы здесь не путаться: это не "нет команд content", это "нет памяти под хранилище" */
+	if (!content_cmds) /* out of memory */
 	{
 		xmlFreeNodeList(ret);
 		return NULL;
 	}
-	if ((cfgMacroContentCachingThreshold) >= 0 /* кэширование включено */
-		&& (content_cmds->nodeNr > 1) /* нет смысла кэшировать одиночную выборку */
-		&& (cfgMacroContentCachingThreshold < content_cmds->nodeNr) /* кэширование уместно */)
+	if ((cfgMacroContentCachingThreshold >= 0)
+		&& (content_cmds->nodeNr > 1)
+		&& (cfgMacroContentCachingThreshold < content_cmds->nodeNr)
+	)
 		content_cache = xmlHashCreate(content_cmds->nodeNr);
     for (i = 0; i < content_cmds->nodeNr; i++)
 	{
@@ -647,7 +625,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 					new_content = cloneNodeList(new_content, oldElement, oldElement->doc);
 			} else
 				new_content = NULL;
-			if (!new_content) /* получим новое содержимое по селектору */
+			if (!new_content) /* get new content by selector */
 			{
 				sel = xplSelectNodesInner(doc->xpath_ctxt, oldElement, select_attr);
 				if (sel)
@@ -690,10 +668,10 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 		}
 		if (ret == cur)
 			ret = new_content; /* <xpl:define name="A"><xpl:content/></xpl:define> */
-		/* если выполнять замену сразу - сломается кэширование: предыдущее содержимое уже встроено в документ, и клонирование вернёт лишнее */
+		/* don't insert right now: we'll break caching */
 		cur->_private = new_content;
     }
-	for (i = 0; i < content_cmds->nodeNr; i++) /* выполним саму замену */
+	for (i = 0; i < content_cmds->nodeNr; i++) /* actual replace */
 	{
 		cur = content_cmds->nodeTab[i];
 		replaceWithList(cur, (xmlNodePtr) cur->_private);
@@ -741,14 +719,13 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, bool expand, xplR
 	{
 		if (c->type == XML_ELEMENT_NODE)
 		{
-			/* xpl:break отсюда ушёл :) */
 			xplNodeApply(doc, c, expand, result);
 			if (!c->parent || (c->parent->type & XML_NODE_DELETION_MASK))
 			{
-				/* родитель удалён изнутри, немедленное прерывание */
+				/* parent removed from inside, immediate stop */
 				c->type = (xmlElementType) ((int) c->type & ~XML_NODE_DELETION_MASK);
 				if (result->has_list)
-					xmlFreeNodeList(result->list); /* не пригодится */
+					xmlFreeNodeList(result->list); /* won't be used anyway */
 				break;
 			}
 			tail = c->next;
@@ -758,31 +735,31 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, bool expand, xplR
 				{
 					c->type = (xmlElementType) ((int) c->type & ~XML_NODE_DELETION_REQUEST_FLAG);
 					xmlUnlinkNode(c);
-					xmlFreeNode(c); /* с детьми */
+					xmlFreeNode(c); /* with children */
 				} else
-					; /* если установлен флажок DELETION_DEFERRED - не здесь, оно удалится само в конце обработки */
-			} else if (result->has_list) { /* если список создан, */
-				if (result->list && result->repeat) /* в нём существуют узлы и заказан повтор */
+					; /* if DELETION_DEFERRED is set contents will be deleted after processing */
+			} else if (result->has_list) {
+				if (result->list && result->repeat)
 						tail = result->list;
 				replaceWithList(c, result->list);
-				/* xpl:delete, удаляющий сам себя, например */
+				/* e.g. :delete removing itself */
 				c->type = (xmlElementType) ((int) c->type & ~XML_NODE_DELETION_MASK);
 				xmlFreeNode(c);
-			} /* Иначе ничего не делаем */
+			} /* otherwise do nothing */
 		} else if (c->type == XML_TEXT_NODE) {
 			tail = c->next;
-			if (!strNonblank(c->content) && !doc->indent_spinlock) /* удаляем форматирование, если явно не запрошено обратное */
+			if (!strNonblank(c->content) && !doc->indent_spinlock) /* remove formatting unless instructed otherwise */
 			{
 				xmlUnlinkNode(c);
 				xmlFreeNode(c);
 			}
 		} else if (c->type == XML_COMMENT_NODE) {
-			/* незачем показывать юзеру наши безобразные комментарии */
+			/* remove comments */
 			tail = c->next;
 			xmlUnlinkNode(c);
 			xmlFreeNode(c);
 		} else 
-			/* DTD, PI и иже с ними - скопировать в выходной поток */
+			/* DTD, PI etc - copy to output */
 			tail = c->next;
 		c = tail;
 	}
@@ -821,14 +798,14 @@ void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr mac
 	{
 	case XPL_MACRO_EXPAND_ALWAYS:
 	case XPL_MACRO_EXPAND_ONCE:
-		/* возможно, где-то будет вызвана xpl:inherit - прибережём содержимое. намеренно не сбрасываем ему родителя - т.к. он может возвращаться */
+		/* :inherit may be called, let's keep contents. not clearing parent intentionally */
 		macro->node_original_content = element->children; 
 		out = xplReplaceContentEntries(doc, macro->id, element, macro->content);
 		setChildren(element, out);
 		xplNodeListApply(doc, element->children, true, result);
 		downshiftNodeListNsDef(out, element->nsDef);
 		out = detachContent(element);
-		if (!out) /* содержимое могло быть удалено командой return */
+		if (!out) /* contents could be removed by :return */
 			out = macro->return_value;
 		break;
 	case XPL_MACRO_EXPANDED:
@@ -864,7 +841,7 @@ void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xpl
 
 	if (expand && !xmlStrcmp(element->name, BAD_CAST "define"))
 	{ 
-		content = xplAddMacro(doc, element, element->parent, false, XPL_MACRO_EXPAND_NO_DEFAULT, true); /* content - буфер ошибки */
+		content = xplAddMacro(doc, element, element->parent, false, XPL_MACRO_EXPAND_NO_DEFAULT, true); /* content is used as error buffer */
 		ASSIGN_RESULT(content, content? true: false, true);
 	} else if (!xmlStrcmp(element->name, BAD_CAST "no-expand")) {
 		xplNodeListApply(doc, element->children, false, result);
@@ -889,10 +866,10 @@ void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xpl
 				cmdInfo.document = doc;
 				cmdInfo._private = NULL;
 				cmd->prologue(&cmdInfo); 
-				/* элемент мб удалён из пролога (with) */
+				/* element could be removed (:with) */
 				if (!(element->type & XML_NODE_DELETION_MASK))
 					xplNodeListApply(doc, cmdInfo.element->children, expand, result);
-				/* дети могли похерить эл-т */
+				/* element could be removed by its children */
 				if ((!(element->type & XML_NODE_DELETION_MASK)) || (cmd->flags & XPL_CMD_FLAG_CONTENT_SAFE))
 					cmd->epilogue(&cmdInfo, result);
 			} else {
@@ -950,7 +927,7 @@ xmlNodePtr xplAddMacro(
 		}
 	} else
 		replace = defaultReplace;
-	if (replace && cfgWarnOnMacroRedefinition) /* Отладочная проверка */
+	if (replace && cfgWarnOnMacroRedefinition) /* debug check */
 	{
 		if ((prev_def = xplMacroLookup(macro->parent, ns? ns->href: NULL, tagname)))
 			xplDisplayMessage(xplMsgWarning, BAD_CAST "macro \"%s\" redefined, previous line: %d (file \"%s\", line %d)", name_attr, prev_def->line, doc->document->URL, macro->line);
@@ -996,16 +973,15 @@ xmlNodePtr xplAddMacro(
 		macros = xmlHashCreate(cfgInitialMacroTableSize);
 		destination->_private = macros;
 	}
-	/* Имя узла - ПЕРВЫЙ параметр */
+	/* node name is the 1st param */
 	if (xmlHashAddEntry2(macros, tagname, ns? ns->href: NULL, mb) == -1) /* уже есть */
 		xmlHashUpdateEntry2(macros, tagname, ns? ns->href: NULL, mb, xplMacroDeallocator);
-	/* Запишем информационные поля */
 	mb->name = xmlStrdup(tagname);
 	mb->ns = ns;
 	ns = macro->nsDef;
 	while (ns)
 	{
-		if (mb->ns == ns) /* ns на самой команде */
+		if (mb->ns == ns)
 		{
 			mb->ns_is_duplicated = true;
 			mb->ns = xmlCopyNamespace(ns);
@@ -1033,7 +1009,7 @@ static void xplCheckRootNs(xplDocumentPtr doc, xmlNodePtr root)
 		if (!xmlStrcmp(ns->href, cfgXplNsUri))
 		{
 			doc->root_xpl_ns = ns;
-			return; /* Всё чисто */
+			return;
 		}
 		ns = ns->next;
 	}
@@ -1076,6 +1052,11 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 			root_element = root_element->next;
 		if (root_element)
 		{
+			if (!xprMutexAcquire(&global_conf_mutex))
+				DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
+			xprInterlockedIncrement(&active_thread_count);
+			if (!xprMutexRelease(&global_conf_mutex))
+				DISPLAY_INTERNAL_ERROR_MESSAGE();
 			xplCheckRootNs(doc, root_element);
 			xplNodeApply(doc, root_element, true, &res);
 #ifdef _THREADING_SUPPORT
@@ -1088,18 +1069,19 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 				doc->threads = NULL;
 			}
 #endif
-			if (doc->fatal_content) /* Была вызвана xpl:fatal */
+			if (doc->fatal_content) /* xpl:fatal called */
 			{
 				root_element->type = XML_ELEMENT_NODE;
 				xplDeleteDeferredNodes(doc->deleted_nodes);
-				xmlFreeNodeList(doc->document->children); /* списки не пересекаются, DDN вызывает xmlUnlinkNode() */
+				xmlFreeNodeList(doc->document->children); /* lists don't overlap, DDN calls xmlUnlinkNode() */
 				doc->document->children = doc->document->last = doc->fatal_content;
 				doc->fatal_content->parent = (xmlNodePtr) doc->document;
 				ret = doc->status = XPL_ERR_FATAL_CALLED;
 			} else {
 				xplDeleteDeferredNodes(doc->deleted_nodes);
 				ret = doc->status = XPL_ERR_NO_ERROR;
-			}				
+			}
+			xprInterlockedDecrement(&active_thread_count);
 		} /* if (root_element) */
 	} else {
 		error_doc = xmlNewDoc(BAD_CAST "1.0");
@@ -1108,7 +1090,7 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 		doc->document = error_doc;
 		ret = doc->status = XPL_ERR_INVALID_DOCUMENT;
 	}
-	if (cfgDebugSaveFile && !doc->parent) /* Нет смысла сохранять содержимое порождённых документов */
+	if (cfgDebugSaveFile && !doc->parent) /* saving derived documents makes no sense */
 	{
 		if (!saveXmlDocToFile(doc->document, cfgDebugSaveFile, (char*) cfgDefaultEncoding, XML_SAVE_FORMAT))
 			xplDisplayMessage(xplMsgWarning, BAD_CAST "Cannot save debug output to \"%s\", check that the file location exists and is writable", cfgDebugSaveFile);
@@ -1227,7 +1209,7 @@ void xplSetDocRoot(xmlChar *new_root)
 {
 	if (cfgDocRoot)
 		xmlFree(cfgDocRoot);
-	/* убравший отсюда дублирование строки потратит часа два-три на поиски причины вылета. */
+	/* don't remove strdup() here unless you want to spent the rest of your evening debugging code */
 	cfgDocRoot = xmlStrdup(new_root);
 }
 
@@ -1235,7 +1217,7 @@ xmlChar* xplFullFilename(const xmlChar* file, const xmlChar* appPath)
 {
 	xmlChar* ret;
 	int len;
-	if (file && xmlStrlen(file) && ((*file == '/') || (*file == '\\'))) /* от корня системы */
+	if (file && xmlStrlen(file) && ((*file == '/') || (*file == '\\'))) /* from FS root */
 	{
 		appPath = xplGetDocRoot();
 	}
@@ -1256,7 +1238,7 @@ void checkCoalescing(xmlNodePtr cur)
 	{
 		if ((cur->type == XML_TEXT_NODE) && cur->next && (cur->next->type == XML_TEXT_NODE))
 		{
-			/* Сбой: два текстовых узла подряд. */
+			/* oops: two text nodes in row */
 			printf("Coalescing error: cur \"%s\", next \"%s\"\n", cur->content, cur->next->content);
 		}
 		checkCoalescing(cur->children);
@@ -1304,8 +1286,8 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 		return main_status;
 	}
 
-	/* Придётся заранее создать все обвязки, не вычисляя их - некоторые команды на это рассчитывают.
-	   На всякий случай присвоим ссылки "prologue-main-epilogue" как декартово произведение. 
+	/* We'll have to create all wrappers right now as certain commands expect them.
+	   Set "prologue-main-epilogue" links (Cartesian product).
 	 */
 	prologue_file = xplMapDocWrapper(relativePath, XPL_DOC_ROLE_PROLOGUE);
 	main_file = xplMapDocWrapper(relativePath, XPL_DOC_ROLE_MAIN);
@@ -1316,7 +1298,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 		main_source = XPL_DOC_SOURCE_ORIGINAL;
 	}
 	epilogue_file = xplMapDocWrapper(relativePath, XPL_DOC_ROLE_EPILOGUE);
-	/* Пролог */
+
 	if (prologue_file)
 	{
 		composeAndSplitPath(basePath, prologue_file, &norm_path, &norm_filename);
@@ -1330,7 +1312,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 			prologue_status = XPL_ERR_DOC_NOT_CREATED;
 		if (norm_path) xmlFree(norm_path);
 	}
-	/* Основной файл */
+
 	composeAndSplitPath(basePath, main_file, &norm_path, &norm_filename);
 	doc_main = xplDocumentCreateFromFile(norm_path, norm_filename, environment, session);
 	if (doc_main)
@@ -1344,7 +1326,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 	} else
 		main_status = XPL_ERR_DOC_NOT_CREATED;
 	if (norm_path) xmlFree(norm_path);
-	/* Эпилог */
+
 	if (epilogue_file)
 	{
 		composeAndSplitPath(basePath, epilogue_file, &norm_path, &norm_filename);
@@ -1364,7 +1346,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 			epilogue_status = XPL_ERR_DOC_NOT_CREATED;
 		if (norm_path) xmlFree(norm_path);
 	} 
-	/* Теперь - собственно вычисление */
+
 	if (doc_prologue)
 	{
 		prologue_status = xplDocumentApply(doc_prologue);
@@ -1373,7 +1355,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 	if (doc_main)
 	{
 		if (doc_main->source == XPL_DOC_SOURCE_OVERRIDDEN) 
-			main_status = prologue_status; /* вернём детерминированный статус */
+			main_status = prologue_status;
 		else {
 			main_status = xplDocumentApply(doc_main);
 			doc_main->status = main_status;
