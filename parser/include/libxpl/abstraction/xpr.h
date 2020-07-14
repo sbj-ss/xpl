@@ -68,9 +68,9 @@ XPLPUBFUN bool XPLCALL
 	xprSemaphoreCleanup(XPR_SEMAPHORE *s);
 
 XPLPUBFUN void XPLCALL
-	xprInterlockedDecrement(int *value);
+	xprInterlockedDecrement(volatile int *value);
 XPLPUBFUN void XPLCALL
-	xprInterlockedIncrement(int *value);
+	xprInterlockedIncrement(volatile int *value);
 
 XPLPUBFUN XPR_THREAD_ID XPLCALL
 	xprGetCurrentThreadId();

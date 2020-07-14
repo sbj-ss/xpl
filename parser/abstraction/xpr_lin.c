@@ -180,12 +180,12 @@ bool xprSemaphoreCleanup(XPR_SEMAPHORE *s)
 	return sem_destroy(s) == 0? true: false;
 }
 
-void xprInterlockedDecrement(int *value)
+void xprInterlockedDecrement(volatile int *value)
 {
 	__atomic_fetch_sub(value, 1, __ATOMIC_ACQ_REL);
 }
 
-void xprInterlockedIncrement(int *value)
+void xprInterlockedIncrement(volatile int *value)
 {
 	__atomic_fetch_add(value, 1, __ATOMIC_ACQ_REL);
 }
