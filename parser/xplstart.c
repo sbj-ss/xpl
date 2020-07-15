@@ -115,7 +115,6 @@ static bool startXef(const xplStartParamsPtr params, int argc, const char **argv
 	UNUSED_PARAM(argc);
 	UNUSED_PARAM(argv);
 
-	xplDisplayMessage(xplMsgInfo, BAD_CAST "Starting external libraries...");
 	if (!xefStartup(&xef_params))
 	{
 		if (xef_params.error)
@@ -150,6 +149,7 @@ static bool startXpl(const xplStartParamsPtr params, int argc, const char **argv
 		{
 			conf_path = (xmlChar*) xmlMalloc(strlen(argv[0]) + xmlStrlen(params->config_file_name) + 1);
 			strncpy((char*) conf_path, argv[0], fn_pos - argv[0] + 1);
+			conf_path[fn_pos - argv[0] + 1] = 0;
 			strcat((char*) conf_path, params->config_file_name);
 		} else
 			conf_path = xmlStrdup(BAD_CAST params->config_file_name);
