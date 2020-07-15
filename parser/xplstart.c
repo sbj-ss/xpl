@@ -205,6 +205,6 @@ void xplShutdownEngine()
 {
 	int i;
 
-	for (i = START_STOP_STEP_COUNT; i >= 0; i--)
+	for (i = START_STOP_STEP_COUNT - 1; i >= 0; i--)
 		start_stop_steps[i].stop_fn();
 }
