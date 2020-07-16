@@ -305,22 +305,23 @@ static void _xefDbCreateRowDesc(xefDbContextPtr ctxt)
 		}
 		if (len)
 		{
-			w_name = (wchar_t*) xmlMalloc(len+2);
+			w_name = (wchar_t*) xmlMalloc((len+1)*sizeof(wchar_t)); /* certain ODBC drivers are crazy */
+			*w_name = 0;
 			if (!w_name)
 			{
 				_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): insufficient memory for column name", __FUNCTION__));
 				goto error;
 			}
-			r = SQLColAttributeW(ctxt->statement, i, SQL_DESC_NAME, w_name, len+1, &len, NULL);
+			r = SQLColAttributeW(ctxt->statement, i, SQL_DESC_NAME, w_name, len+3, &len, NULL);
 			if (!SQL_SUCCEEDED(r))
 			{
 				error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
-				_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): SQLColAttributeW(): %s", __FUNCTION__, error_text));
+				_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): SQLColAttributeW(SQL_DESC_NAME): %s", __FUNCTION__, error_text));
 				goto error;
 			}
-			w_name[len/sizeof(wchar_t)] = 0;
+			w_name[len/sizeof(wchar_t) + 1] = 0;
 			col_name = NULL;
-			if (iconv_string("utf-8", "utf-16le", (const char*) w_name, (const char*) (w_name + len), (char**) &col_name, NULL) == -1)
+			if (iconv_string("utf-8", "utf-16le", (const char*) w_name, ((const char*) w_name) + len + 2, (char**) &col_name, NULL) == -1)
 			{
 				_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): cannot represent column name in UTF-8 encoding", __FUNCTION__));
 				xmlFree(w_name);
@@ -350,9 +351,24 @@ static void _xefDbCreateRowDesc(xefDbContextPtr ctxt)
 		if (!SQL_SUCCEEDED(r))
 		{
 			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
-			_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): SQLColAttribute(): %s", __FUNCTION__, error_text));
+			_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): SQLColAttributeW(SQL_DESC_DISPLAY_SIZE): %s", __FUNCTION__, error_text));
 			goto error;
 		}	
+		if (!attr_len) /* smells like MSSQL on Linux */
+		{
+			r = SQLColAttributeW(ctxt->statement, i+1, SQL_DESC_OCTET_LENGTH, NULL, 0, NULL, &attr_len);
+			if (!SQL_SUCCEEDED(r))
+			{
+				error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
+				_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): SQLColAttributeW(SQL_DESC_OCTET_LENGTH): %s", __FUNCTION__, error_text));
+				goto error;
+			}
+			if (!attr_len)
+			{
+				_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): Field max octet length is zero", __FUNCTION__));
+				goto error;
+			}
+		}
 		/* desc->db_objects is of type void** */
 		buf = &((xefDbRowBufferPtr) desc->db_objects)[i];
 		buf->data = (wchar_t*) xmlMalloc((attr_len+1)*sizeof(wchar_t));
@@ -527,7 +543,10 @@ void xefDbFreeContext(xefDbContextPtr ctxt)
 	if (ctxt->error)
 		xefFreeErrorMessage(ctxt->error);
 	if (ctxt->statement)
+	{
+		SQLFreeStmt(ctxt->statement, SQL_UNBIND);
 		SQLFreeHandle(SQL_HANDLE_STMT, ctxt->statement);
+	}
 	_xefDbReleaseDB(ctxt->db);
 	xmlFree(ctxt);
 }
