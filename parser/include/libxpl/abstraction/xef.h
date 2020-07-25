@@ -90,41 +90,38 @@ XPLPUBFUN bool XPLCALL
 
 typedef enum _xefDbStreamType 
 {
+	XEF_DB_STREAM_UNKNOWN = -1,
 	XEF_DB_STREAM_TDS,
 	XEF_DB_STREAM_XML
 } xefDbStreamType;
 
-typedef struct _xefDbRowDesc 
-{
-	size_t count;
-	xmlChar **names;
-	void **db_objects;
-} xefDbRowDesc, *xefDbRowDescPtr;
-
 typedef struct _xefDbField 
 {
-	bool is_null;
+	xmlChar *name;
 	xmlChar *value;
-	size_t value_size; /* в пересчёте на байты, включая нуль-терминатор */
+	bool is_null;
+	size_t value_size; /* in bytes without null terminator */
 	bool needs_copy;
+	void *db_object; /* implementation specific */
 } xefDbField, *xefDbFieldPtr;
 
 typedef struct _xefDbRow 
 {
+	int field_count;
 	xefDbFieldPtr fields;
 } xefDbRow, *xefDbRowPtr;
 
-/* скроем реализацию */
+/* implementation is opaque */
 typedef struct xefDbContext *xefDbContextPtr;
 
-typedef bool (*xefDbGetRowCallback)(xefDbRowDescPtr desc, xefDbRowPtr row, void *userData);
-
+typedef bool (*xefDbGetRowCallback)(xefDbRowPtr row, void *userData);
+/* decouple with xpldb.h */
 typedef struct _xplDBList xplDBList, *xplDBListPtr;
 
 typedef struct _xefDbQueryParams 
 {
 	/* input */
-	xefDbStreamType stream_type;
+	xefDbStreamType desired_stream_type;
 	bool cleanup_nonprintable;
 	xmlChar *query;
 	xplDBListPtr db_list;
@@ -133,8 +130,6 @@ typedef struct _xefDbQueryParams
 	xefErrorMessagePtr error;
 } xefDbQueryParams, *xefDbQueryParamsPtr;
 
-XPLPUBFUN xefDbRowDescPtr XPLCALL
-	xefDbGetRowDesc(xefDbContextPtr ctxt);
 XPLPUBFUN xefDbRowPtr XPLCALL
 	xefDbGetRow(xefDbContextPtr ctxt);
 XPLPUBFUN xefErrorMessagePtr XPLCALL
@@ -143,13 +138,17 @@ XPLPUBFUN void* XPLCALL
 	xefDbGetUserData(xefDbContextPtr ctxt);
 XPLPUBFUN bool XPLCALL
 	xefDbHasRecordset(xefDbContextPtr ctxt);
+XPLPUBFUN bool XPLCALL
+	xefDbGetStreamType(xefDbContextPtr ctxt);
+XPLPUBFUN ssize_t XPLCALL
+	xefDbGetRowCount(xefDbContextPtr ctxt);
 
 XPLPUBFUN xefDbContextPtr XPLCALL
 	xefDbQuery(xefDbQueryParamsPtr params);
 XPLPUBFUN bool XPLCALL
 	xefDbNextRowset(xefDbContextPtr ctxt);
 XPLPUBFUN void XPLCALL 
-	xefDbEnumRows(xefDbContextPtr ctxt, xefDbGetRowCallback cb);
+	xefDbEnumRows(xefDbContextPtr ctxt, xefDbGetRowCallback cb, void *user_data);
 XPLPUBFUN xmlChar* XPLCALL
 	xefDbAccessStreamData(xefDbContextPtr ctxt, size_t *size);
 XPLPUBFUN void XPLCALL

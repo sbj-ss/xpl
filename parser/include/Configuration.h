@@ -44,7 +44,26 @@
 	#define SFINIT(f, ...) __VA_ARGS__
 #endif
 
-#define UNUSED_PARAM(x) (void) (x);
+#define UNUSED_PARAM(x) (void) (x)
+
+/* Macros for enabling compiler-specific checks for printf-like arguments. Borrowed from civetweb. */
+#undef PRINTF_FORMAT_STRING
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+	#include <sal.h>
+	#if _MSC_VER > 1400
+		#define PRINTF_FORMAT_STRING(s) _Printf_format_string_ s
+	#else
+		#define PRINTF_FORMAT_STRING(s) __format_string s
+	#endif
+#else
+	#define PRINTF_FORMAT_STRING(s) s
+#endif
+
+#ifdef __GNUC__
+	#define PRINTF_ARGS(x, y) __attribute__((format(printf, x, y)))
+#else
+	#define PRINTF_ARGS(x, y)
+#endif
 
 /* Hard-coded params */
 /* Should be changed only together with all existing XPL code. */
@@ -103,10 +122,10 @@
 #define _USE_LIBIDN
 
 /* Version info */
-#define XPL_VERSION_MAJOR 1
-#define XPL_VERSION_MINOR 5
+#define XPL_VERSION_MAJOR 2
+#define XPL_VERSION_MINOR 0
 #define XPL_VERSION ((XPL_VERSION_MAJOR << 8) | XPL_VERSION_MINOR)
-#define XPL_VERSION_BETA 1
+#define XPL_VERSION_BETA
 
 #ifdef XPL_VERSION_BETA
 # define XPL_VERSION_BETA_STRING " beta"
@@ -121,7 +140,7 @@
 #endif
 
 #define STRING_VERSION_VALUE(x) #x
-#define XPL_VERSION_FULL_M(major, minor) BAD_CAST "C XPL interpreter (codename Polaris) v " \
+#define XPL_VERSION_FULL_M(major, minor) BAD_CAST "C XPL interpreter (codename Polaris) v" \
 	STRING_VERSION_VALUE(major) \
 	"." \
 	STRING_VERSION_VALUE(minor) \
