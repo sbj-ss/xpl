@@ -299,8 +299,9 @@ static bool _xefDbExecSQL(xefDbContextPtr ctxt, xmlChar *sql)
 	iconv_string("utf-16le", "utf-8", sql, sql + xmlStrlen(sql), (char**) &w_sql, NULL);
 	r = SQLExecDirectW(ctxt->statement, w_sql, SQL_NTS);
 	xmlFree(w_sql);
-	if (!SQL_SUCCEEDED(r))
-	{
+	if (r == SQL_NO_DATA)
+		ctxt->end_of_recordsets = true;
+	else if (!SQL_SUCCEEDED(r))	{
 		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): SQLExecDirect(): %s", __FUNCTION__, error_text));
 		xmlFree(error_text);
@@ -317,6 +318,8 @@ static bool _xefDbLocateNextNonemptyRecordset(xefDbContextPtr ctxt, bool advance
 	SQLSMALLINT ncols;
 
 	if (!ctxt)
+		return false;
+	if (ctxt->end_of_recordsets)
 		return false;
 	while (1)
 	{
