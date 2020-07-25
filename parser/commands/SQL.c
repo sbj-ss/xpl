@@ -476,7 +476,6 @@ static xmlNodePtr _buildDoc(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_
 	if ((error = xefDbGetError(db_ctxt)))
 	{
 		error_text = xefGetErrorText(error);
-		xefFreeErrorMessage(error);
 		*repeat = true;
 		return xplCreateErrorNode(row_ctxt->parent, error_text);
 	}

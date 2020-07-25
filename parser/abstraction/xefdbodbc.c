@@ -398,7 +398,7 @@ static void _xefDbClearRow(xefDbRowPtr row, bool clear_names)
 				field->name = NULL;
 			}
 			if (field->value && field->needs_copy)
-				xmlFree(field->value);
+				xmlFree(field->value); /* otherwise the value is consumed into a text node */
 			field->value = NULL;
 		}
 	}
@@ -412,6 +412,7 @@ static void _xefDbFreeRow(xefDbRowPtr row)
 	if (!row)
 		return;
 	_xefDbClearRow(row, true);
+	xmlFree(row->fields);
 	xmlFree(row);
 }
 
@@ -593,8 +594,6 @@ static void _xefDbRefreshContext(xefDbContextPtr ctxt)
 		return;
 	if (ctxt->error)
 		return;
-	if (ctxt->stream_type != XEF_DB_STREAM_TDS)
-		return;
 	if (ctxt->row)
 	{
 		_xefDbFreeRow(ctxt->row);
@@ -609,15 +608,17 @@ void xefDbFreeContext(xefDbContextPtr ctxt)
 {
 	if (!ctxt)
 		return;
-	if (ctxt->row)
-		_xefDbFreeRow(ctxt->row);
 	if (ctxt->error)
 		xefFreeErrorMessage(ctxt->error);
+	if (ctxt->row)
+		_xefDbFreeRow(ctxt->row);
 	if (ctxt->statement)
 	{
 		SQLFreeStmt(ctxt->statement, SQL_UNBIND);
 		SQLFreeHandle(SQL_HANDLE_STMT, ctxt->statement);
 	}
+	if (ctxt->buffer)
+		xmlFree(ctxt->buffer);
 	_xefDbReleaseDB(ctxt->db);
 	xmlFree(ctxt);
 }
