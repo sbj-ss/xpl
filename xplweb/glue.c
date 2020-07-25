@@ -333,7 +333,7 @@ int serveXpl(struct mg_connection *conn, void *user_data)
 			break;
 		case XPL_ERR_INVALID_DOCUMENT:
 			/* always return error as XML */
-			mg_printf(conn, "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/xml; charset=%s\r\n\r\n", encoding);
+			mg_printf(conn, "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/xml; charset=%s\r\n", encoding);
 			if (doc && doc->document)
 				serializeDoc(conn, doc->document, encoding, om);
 			http_code = 500;
