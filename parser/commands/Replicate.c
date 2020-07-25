@@ -16,7 +16,7 @@ xmlNodePtr replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
 #ifdef _DEBUG
 		if (!cur)
 		{
-			DISPLAY_INTERNAL_ERROR_MESSAGE
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
 			__debugbreak();
 		}
 #endif
