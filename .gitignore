@@ -37,9 +37,12 @@
 /xts/Runner
 # other binaries
 /cmdline/cmdline
+/xplweb/xplweb
 # build directories
 **/build/
 # specific files
 mt.dep
 # IDE
 **/.settings
+# core dumps
+**/core
