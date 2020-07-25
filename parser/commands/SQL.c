@@ -416,6 +416,11 @@ static bool _TdsDocRowScanner(xefDbRowPtr row, void *payload)
 		ctxt->out_of_memory = true;
 		return false;
 	}
+	if (!row->fields[0].needs_copy) /* free data as we've copied them */
+	{
+		xmlFree(row->fields[0].value);
+		row->fields[0].value = NULL;
+	}
 	return true;
 }
 
