@@ -1,3 +1,4 @@
+#include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
@@ -17,7 +18,7 @@ xmlNodePtr replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
 		if (!cur)
 		{
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
-			__debugbreak();
+			xprDebugBreak();
 		}
 #endif
 		if (!ret) 
