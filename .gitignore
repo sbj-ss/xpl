@@ -1,4 +1,4 @@
-# extensions
+# intermediate and binary files
 *.a
 *.bak
 *.cod
@@ -32,12 +32,12 @@
 /plugins
 /sql_sp
 /test_anything
-# tests
-/parser/tests/Runner
-/xts/Runner
-# other binaries
+/test_stuff
+# executables
 /cmdline/cmdline
 /xplweb/xplweb
+/parser/tests/Runner
+/xts/Runner
 # build directories
 **/build/
 # specific files
@@ -46,3 +46,7 @@ mt.dep
 **/.settings
 # core dumps
 **/core
+# parser test configs
+**/xpl.xml
+# internal todo list
+/ToDo.txt
