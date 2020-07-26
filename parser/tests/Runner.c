@@ -1,10 +1,12 @@
 #include <libxml/parser.h>
 #include "test_xplbuffer.h"
 #include "test_xpldb.h"
+#include "test_xplsave.h"
 
 xtsFixturePtr suite[] =
 {
 	&xtsTestReszBufFixture,
+	&xtsTestSaveFixture,
 	&xtsTestDBFixture,
 	NULL
 };
