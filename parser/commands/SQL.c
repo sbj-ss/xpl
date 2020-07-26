@@ -396,18 +396,36 @@ typedef struct _xplTdsDocRowContext
 {
 	rbBufPtr buf;
 	bool out_of_memory;
+	bool buf_needs_reallocation;
 	xmlNodePtr parent;
+	ssize_t row_count;
 } xplTdsDocRowContext, *xplTdsDocRowContextPtr;
 
 static bool _TdsDocRowScanner(xefDbRowPtr row, void *payload)
 {
 	xplTdsDocRowContextPtr ctxt = (xplTdsDocRowContextPtr) payload;
 	xmlChar *part;
+	size_t buf_size;
 
 	if (!row->field_count)
 		return false;
 	if (row->fields[0].is_null)
 		return false;
+
+	if (ctxt->buf_needs_reallocation)
+	{
+		if (ctxt->row_count == 1)
+			buf_size = row->fields[0].value_size;
+		else
+			buf_size = ctxt->row_count * (row->fields[0].value_size + 3);
+		buf_size += xmlStrlen(DOC_END) + 1; /* DOC_START is already in buffer */
+		if (rbEnsureBufFreeSize(ctxt->buf, buf_size) != RB_RESULT_OK)
+		{
+			ctxt->out_of_memory = true;
+			return false;
+		}
+		ctxt->buf_needs_reallocation = false;
+	}
 	part = row->fields[0].value;
 	if (!part || !*part)
 		return false;
@@ -436,6 +454,7 @@ static xmlNodePtr _buildDocFromUnknownSizeTds(xefDbContextPtr db_ctxt, xplTdsDoc
 		goto oom;
 	row_ctxt->buf = buf;
 	row_ctxt->out_of_memory = false;
+	row_ctxt->buf_needs_reallocation = false;
 	xefDbEnumRows(db_ctxt, _TdsDocRowScanner, row_ctxt);
 	if ((error = xefDbGetError(db_ctxt)))
 	{
@@ -462,14 +481,44 @@ done:
 
 static xmlNodePtr _buildDocFromKnownSizeTds(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_ctxt, bool *repeat)
 {
-	DISPLAY_INTERNAL_ERROR_MESSAGE();
-	return _buildDocFromUnknownSizeTds(db_ctxt, row_ctxt, repeat); // TODO write more effective code for this case
+	rbBufPtr buf;
+	xmlNodePtr ret;
+	xefErrorMessagePtr error;
+	xmlChar *error_text = NULL;
+
+	buf = rbCreateBufParams(4096, RB_GROW_EXACT, 0);
+	if (rbAddDataToBuf(buf, DOC_START, xmlStrlen(DOC_START)) != RB_RESULT_OK)
+		goto oom;
+	row_ctxt->buf = buf;
+	row_ctxt->out_of_memory = false;
+	row_ctxt->buf_needs_reallocation = true;
+	xefDbEnumRows(db_ctxt, _TdsDocRowScanner, row_ctxt);
+	if ((error = xefDbGetError(db_ctxt)))
+	{
+		error_text = xefGetErrorText(error);
+		*repeat = true;
+		ret = xplCreateErrorNode(row_ctxt->parent, error_text);
+		goto done;
+	}
+	if (row_ctxt->out_of_memory)
+		goto oom;
+	if (rbAddDataToBuf(buf, DOC_END, xmlStrlen(DOC_END) + 1) != RB_RESULT_OK)
+		goto oom;
+	ret = _buildDocFromMemory(rbGetBufContent(buf), rbGetBufContentSize(buf), row_ctxt->parent, repeat);
+	goto done;
+oom:
+	ret = xplCreateErrorNode(row_ctxt->parent, BAD_CAST "out of memory");
+	*repeat = true;
+done:
+	if (error_text)
+		xmlFree(error_text);
+	rbFreeBuf(buf);
+	return ret;
 }
 
 static xmlNodePtr _buildDoc(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_ctxt, bool *repeat)
 {
 	xefDbStreamType real_stream_type;
-	ssize_t row_count;
 	xefErrorMessagePtr error;
 	xmlChar *error_text = NULL;
 
@@ -477,16 +526,16 @@ static xmlNodePtr _buildDoc(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_
 	if (real_stream_type == XEF_DB_STREAM_XML)
 		return _buildDocFromXmlStream(db_ctxt, row_ctxt->parent, repeat);
 	/* no stream support (not ADO backend) */
-	row_count = xefDbGetRowCount(db_ctxt);
+	row_ctxt->row_count = xefDbGetRowCount(db_ctxt);
 	if ((error = xefDbGetError(db_ctxt)))
 	{
 		error_text = xefGetErrorText(error);
 		*repeat = true;
 		return xplCreateErrorNode(row_ctxt->parent, error_text);
 	}
-	if (row_count == -1) /* driver doesn't know */
+	if (row_ctxt->row_count == -1) /* driver doesn't know */
 		return _buildDocFromUnknownSizeTds(db_ctxt, row_ctxt, repeat);
-	else if (!row_count)
+	else if (!row_ctxt->row_count)
 		return NULL;
 	else
 		return _buildDocFromKnownSizeTds(db_ctxt, row_ctxt, repeat);
