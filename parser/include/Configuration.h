@@ -109,7 +109,7 @@
 	#define LEAK_DETECTION_STOP
 	#define XPL_MALLOC(size) malloc((size))
 	#define XPL_REALLOC(ptr, size) realloc((ptr), (size))
-	#define XPL_STRDUP(str) ((xmlChar*) strdup((str)))
+	#define XPL_STRDUP(str) strdup((str))
 	#define XPL_FREE(ptr) free((ptr))
 #endif
 
