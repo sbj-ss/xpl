@@ -72,9 +72,9 @@ void xplCmdDigestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ASSIGN_RESULT(ret, false, true);
 done:
 	if (method_attr)
-		xmlFree(method_attr);
+		XPL_FREE(method_attr);
 	if (content)
-		xmlFree(content);
+		XPL_FREE(content);
 }
 
 xplCommand xplDigestCommand = { xplCmdDigestPrologue, xplCmdDigestEpilogue };

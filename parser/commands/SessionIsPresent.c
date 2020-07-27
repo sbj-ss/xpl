@@ -36,7 +36,7 @@ void xplCmdSessionIsPresentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 	ret = xmlNewDocText(commandInfo->document->document, ret_value? BAD_CAST "true": BAD_CAST "false");
 	ASSIGN_RESULT(ret, false, true);	
 done:
-	if (name_attr) xmlFree(name_attr);
+	if (name_attr) XPL_FREE(name_attr);
 }
 
 xplCommand xplSessionIsPresentCommand = { xplCmdSessionIsPresentPrologue, xplCmdSessionIsPresentEpilogue };

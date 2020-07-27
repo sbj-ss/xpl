@@ -320,7 +320,7 @@ cleanup:
 	rbFreeBuf(buf);
 	if (flush_buf)
 	{
-		xmlFree(flush_buf);
+		XPL_FREE(flush_buf);
 		flush_buf = NULL;
 	}
 	return ok;
@@ -482,7 +482,7 @@ static bool xtsTestReszBuf_DetachContent_Fixed(xtsContextPtr ctxt)
 		FAIL("adding data to a growable buffer must succeed");
 	if (!(content = rbDetachBufContent(buf)))
 		FAIL("detached content must not be NULL");
-	xmlFree(content);
+	XPL_FREE(content);
 	if (rbAddDataToBuf(buf, src_bytes, 9) != RB_RESULT_OK)
 		FAIL("adding data after detaching content must succeed");
 	if (rbGetBufContentSize(buf) != 9)
@@ -507,7 +507,7 @@ static bool xtsTestReszBuf_DetachContent_Exact(xtsContextPtr ctxt)
 		FAIL("adding data to a growable buffer must succeed");
 	if (!(content = rbDetachBufContent(buf)))
 		FAIL("detached content must not be NULL");
-	xmlFree(content);
+	XPL_FREE(content);
 	if (rbAddDataToBuf(buf, src_bytes, 9) != RB_RESULT_OK)
 		FAIL("adding data after detaching content must succeed");
 	if (rbGetBufContentSize(buf) != 9)
@@ -532,7 +532,7 @@ static bool xtsTestReszBuf_DetachContent_Increment(xtsContextPtr ctxt)
 		FAIL("adding data to a growable buffer must succeed");
 	if (!(content = rbDetachBufContent(buf)))
 		FAIL("detached content must not be NULL");
-	xmlFree(content);
+	XPL_FREE(content);
 	if (rbAddDataToBuf(buf, src_bytes, 9) != RB_RESULT_OK)
 		FAIL("adding data after detaching content must succeed");
 	if (rbGetBufContentSize(buf) != 9)
@@ -557,7 +557,7 @@ static bool xtsTestReszBuf_DetachContent_Double(xtsContextPtr ctxt)
 		FAIL("adding data to a growable buffer must succeed");
 	if (!(content = rbDetachBufContent(buf)))
 		FAIL("detached content must not be NULL");
-	xmlFree(content);
+	XPL_FREE(content);
 	if (rbAddDataToBuf(buf, src_bytes, 9) != RB_RESULT_OK)
 		FAIL("adding data after detaching content must succeed");
 	if (rbGetBufContentSize(buf) != 9)
@@ -582,7 +582,7 @@ static bool xtsTestReszBuf_DetachContent_Flush(xtsContextPtr ctxt)
 		FAIL("adding data to a growable buffer must succeed");
 	if (!(content = rbDetachBufContent(buf))) /* should anyone ever need a tail? */
 		FAIL("detached content must not be NULL");
-	xmlFree(content);
+	XPL_FREE(content);
 	if (rbAddDataToBuf(buf, src_bytes, 30) != RB_RESULT_OK)
 		FAIL("adding data after detaching content must succeed");
 	if (rbGetBufContentSize(buf) != 14)

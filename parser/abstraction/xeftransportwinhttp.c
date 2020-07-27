@@ -25,7 +25,7 @@ typedef struct _xefTransportErrorMessage
 
 xefErrorMessagePtr xefCreateTransportErrorMessage(xmlChar *src)
 {
-	xefTransportErrorMessagePtr ret = (xefTransportErrorMessagePtr) xmlMalloc(sizeof(xefTransportErrorMessage));
+	xefTransportErrorMessagePtr ret = (xefTransportErrorMessagePtr) XPL_MALLOC(sizeof(xefTransportErrorMessage));
 	if (!ret)
 		return NULL;
 	ret->header.subsystem = XEF_SUBSYSTEM_TRANSPORT;
@@ -45,9 +45,9 @@ XEF_GET_ERROR_TEXT_PROTO(Transport)
 		iconv_string("utf-8", "utf-16le", (char*) buffer, (char*) buffer + wcslen(buffer)*sizeof(wchar_t), (char**) &sys_error, NULL);
 		LocalFree(buffer);
 		ret = xplFormatMessage("%s: %s", real_msg->message_text, sys_error);
-		xmlFree(sys_error);
+		XPL_FREE(sys_error);
 	} else
-		ret = xmlStrdup(real_msg->message_text);
+		ret = XPL_STRDUP(real_msg->message_text);
 	return ret;
 }
 
@@ -57,8 +57,8 @@ XEF_FREE_ERROR_MESSAGE_PROTO(Transport)
 	if (!msg)
 		return;
 	if (real_msg->message_text) 
-		xmlFree(real_msg->message_text);
-	xmlFree(msg);
+		XPL_FREE(real_msg->message_text);
+	XPL_FREE(msg);
 }
 
 #define INT_RETRYTIMES 3
@@ -110,11 +110,11 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	memset(&urlComp, 0, sizeof(urlComp));
 	urlComp.dwStructSize = sizeof(urlComp);
 	urlComp.dwHostNameLength = 256;
-	urlComp.lpszHostName = (wchar_t*) xmlMalloc((size_t) urlComp.dwHostNameLength);
+	urlComp.lpszHostName = (wchar_t*) XPL_MALLOC((size_t) urlComp.dwHostNameLength);
 	urlComp.dwUrlPathLength = 1024*2;
-	urlComp.lpszUrlPath = (wchar_t*) xmlMalloc((size_t) urlComp.dwUrlPathLength); 
+	urlComp.lpszUrlPath = (wchar_t*) XPL_MALLOC((size_t) urlComp.dwUrlPathLength);
 	urlComp.dwExtraInfoLength = 1024*32;
-	urlComp.lpszExtraInfo = (wchar_t*) xmlMalloc((size_t) urlComp.dwExtraInfoLength); /* ������� ������ - � POST */
+	urlComp.lpszExtraInfo = (wchar_t*) XPL_MALLOC((size_t) urlComp.dwExtraInfoLength); /* ������� ������ - � POST */
 	iconv_string("utf-16le", "utf-8", params->uri, params->uri + strlen(params->uri), (char**) &wszRequestUrl, NULL);
 	if (!WinHttpCrackUrl(wszRequestUrl, 0, 0, &urlComp))
 	{
@@ -222,7 +222,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 		bOpResult = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_CONTENT_ENCODING, WINHTTP_HEADER_NAME_BY_INDEX, NULL, &dwSize, WINHTTP_NO_HEADER_INDEX);
 		if (bOpResult || (!bOpResult && (GetLastError() == ERROR_INSUFFICIENT_BUFFER)))
 		{
-			wszHeader = (wchar_t*) xmlMalloc(dwSize*sizeof(wchar_t));
+			wszHeader = (wchar_t*) XPL_MALLOC(dwSize*sizeof(wchar_t));
 			if (wszHeader)
 			{
 				memset(wszHeader, 0, dwSize* sizeof(wchar_t));
@@ -235,7 +235,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 						//swscanf_s(six, L"%d", &content_length, dwSize - (six - wszHeader));
 					}
 				} /* if header queried successfully */
-				xmlFree(wszHeader);
+				XPL_FREE(wszHeader);
 			} /* if the header is allocated */
 		} /* query headers */
 #endif
@@ -247,7 +247,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 		bOpResult = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE, WINHTTP_HEADER_NAME_BY_INDEX, NULL, &dwSize, WINHTTP_NO_HEADER_INDEX);
 		if (bOpResult || (!bOpResult && (GetLastError() == ERROR_INSUFFICIENT_BUFFER)))
 		{
-			wszHeader = (wchar_t*) xmlMalloc((size_t) dwSize*sizeof(wchar_t));
+			wszHeader = (wchar_t*) XPL_MALLOC((size_t) dwSize*sizeof(wchar_t));
 			if (wszHeader != NULL)
 			{
 				memset(wszHeader, 0, (size_t) dwSize* sizeof(wchar_t));
@@ -256,7 +256,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 					swscanf_s(wszHeader, L"%d", &status_code, dwSize);
 					params->status_code = status_code;
 				}
-				xmlFree(wszHeader);
+				XPL_FREE(wszHeader);
 			}
 		} /* if status queried */
 
@@ -305,14 +305,14 @@ done:
 	if (hRequest) WinHttpCloseHandle(hRequest);
 	if (hConnect) WinHttpCloseHandle(hConnect);
 
-	if (wszRequestUrl) xmlFree(wszRequestUrl);
-	if (urlComp.lpszHostName) xmlFree(urlComp.lpszHostName);
-	if (urlComp.lpszUrlPath) xmlFree(urlComp.lpszUrlPath);
-	if (urlComp.lpszExtraInfo) xmlFree(urlComp.lpszExtraInfo);
-	if (szProxy) xmlFree(szProxy);
-	if (proxyInfo.lpszProxy) xmlFree(proxyInfo.lpszProxy);
-	if (wszProxyUser) xmlFree(wszProxyUser);
-	if (wszProxyPassword) xmlFree(wszProxyPassword);
+	if (wszRequestUrl) XPL_FREE(wszRequestUrl);
+	if (urlComp.lpszHostName) XPL_FREE(urlComp.lpszHostName);
+	if (urlComp.lpszUrlPath) XPL_FREE(urlComp.lpszUrlPath);
+	if (urlComp.lpszExtraInfo) XPL_FREE(urlComp.lpszExtraInfo);
+	if (szProxy) XPL_FREE(szProxy);
+	if (proxyInfo.lpszProxy) XPL_FREE(proxyInfo.lpszProxy);
+	if (wszProxyUser) XPL_FREE(wszProxyUser);
+	if (wszProxyPassword) XPL_FREE(wszProxyPassword);
 
 	if (buf) rbFreeBuf(buf);
 

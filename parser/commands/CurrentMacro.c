@@ -44,7 +44,7 @@ void xplCmdCurrentMacroEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 		ASSIGN_RESULT(xmlNewDocText(commandInfo->element->doc, commandInfo->document->current_macro->name), false, true);
 	}
 done:
-	if (tagname_attr) xmlFree(tagname_attr);
+	if (tagname_attr) XPL_FREE(tagname_attr);
 }
 
 xplCommand xplCurrentMacroCommand = { xplCmdCurrentMacroPrologue, xplCmdCurrentMacroEpilogue };

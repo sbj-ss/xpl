@@ -13,7 +13,7 @@ void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo)
 		nodes = xplSelectNodes(commandInfo->document, commandInfo->element, key_attr);
 		if (!nodes)
 			commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid key XPath expression \"%s\"", key_attr);
-		xmlFree(key_attr);
+		XPL_FREE(key_attr);
 	} else 
 		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing key attribute");
 	if (commandInfo->_private)

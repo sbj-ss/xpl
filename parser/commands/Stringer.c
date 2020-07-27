@@ -104,7 +104,7 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					cur_len = xmlStrlen(cur_str);
 					ret_str_pos = (xmlChar*) ret_len; // remember previous offset
 					ret_len += cur_len + delims_len;
-					ret_str = (xmlChar*) xmlRealloc(ret_str, ret_len + 1);
+					ret_str = (xmlChar*) XPL_REALLOC(ret_str, ret_len + 1);
 					ret_str_pos += (size_t) ret_str; // start of current part
 					if (start_delimiter_attr)
 					{
@@ -127,7 +127,7 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					*ret_str_pos = 0;
 				}
 			}
-			if (cur_str) xmlFree(cur_str);
+			if (cur_str) XPL_FREE(cur_str);
 		}
 		// advance to next node
 		if (sel)
@@ -148,13 +148,13 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ASSIGN_RESULT(ret, false, true);
 done:
 	if (select_attr)
-		xmlFree(select_attr);
+		XPL_FREE(select_attr);
 	if (delimiter_attr)
-		xmlFree(delimiter_attr);
+		XPL_FREE(delimiter_attr);
 	if (start_delimiter_attr)
-		xmlFree(start_delimiter_attr);
+		XPL_FREE(start_delimiter_attr);
 	if (end_delimiter_attr)
-		xmlFree(end_delimiter_attr);
+		XPL_FREE(end_delimiter_attr);
 	if (sel)
 		xmlXPathFreeObject(sel);
 	if (unique_hash)

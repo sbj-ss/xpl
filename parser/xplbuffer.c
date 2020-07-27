@@ -31,15 +31,15 @@ rbBufPtr rbCreateBufParams(size_t initialSize, rbGrowStrategy strategy, size_t i
 		return NULL;
 	if (strategy == RB_GROW_INCREMENT && !increment)
 		return NULL;
-	ret = (rbBufPtr) xmlMalloc(sizeof(rbBuf));
+	ret = (rbBufPtr) XPL_MALLOC(sizeof(rbBuf));
 	if (!ret)
 		return NULL;
 	if (initialSize)
 	{
-		if ((ret->start = ret->current = xmlMalloc(initialSize)))
+		if ((ret->start = ret->current = XPL_MALLOC(initialSize)))
 			ret->original_size = ret->size = initialSize;
 		else {
-			xmlFree(ret);
+			XPL_FREE(ret);
 			return NULL;
 		}
 	} else {
@@ -181,7 +181,7 @@ rbOpResult rbEnsureBufFreeSize(rbBufPtr buf, size_t minfree)
 		case RB_GROW_FIXED:
 			if (!buf->size)
 			{
-				if (!(buf->start = buf->current = xmlMalloc(buf->original_size)))
+				if (!(buf->start = buf->current = XPL_MALLOC(buf->original_size)))
 					return RB_RESULT_NO_MEMORY;
 				buf->size = buf->original_size;
 				return RB_RESULT_OK;
@@ -220,9 +220,9 @@ rbOpResult rbEnsureBufFreeSize(rbBufPtr buf, size_t minfree)
 			return RB_RESULT_INVALID;
 	}
 	if (!buf->start)
-		start = xmlMalloc(buf->size);
+		start = XPL_MALLOC(buf->size);
 	else
-		start = xmlRealloc(buf->start, buf->size);
+		start = XPL_REALLOC(buf->start, buf->size);
 	if (!start)
 		return RB_RESULT_NO_MEMORY;
 	buf->start = start;
@@ -243,7 +243,7 @@ rbOpResult rbAddDataToBuf(rbBufPtr buf, void* content, size_t size)
 	{ /* special case. we need to flush the buffer instead of growing it */
 		if (!buf->start)
 		{
-			if (!(buf->start = buf->current = xmlMalloc(buf->original_size)))
+			if (!(buf->start = buf->current = XPL_MALLOC(buf->original_size)))
 				return RB_RESULT_NO_MEMORY;
 			buf->size = buf->original_size;
 		}
@@ -324,6 +324,6 @@ void rbFreeBuf(rbBufPtr buf)
 	if (!buf)
 		return;
 	if (buf->start)
-		xmlFree(buf->start);
-	xmlFree(buf);
+		XPL_FREE(buf->start);
+	XPL_FREE(buf);
 }

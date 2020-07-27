@@ -318,7 +318,7 @@ static bool xtsTestSanity_FixtureSetupTeardown(xtsContextPtr ctxt)
 //----------------------------------------
 static bool leaky_test(xtsContextPtr ctxt)
 {
-	xmlHashAddEntry(ctxt->env, BAD_CAST "leak", xmlMalloc(sizeof(int)));
+	xmlHashAddEntry(ctxt->env, BAD_CAST "leak", XPL_MALLOC(sizeof(int)));
 	return true;
 }
 
@@ -333,7 +333,7 @@ static xtsTest unexpected_leak_test =
 
 static void leak_deallocator(void *payload, xmlChar *name)
 {
-	xmlFree(payload);
+	XPL_FREE(payload);
 }
 
 static void teardown_leaky_fixture(xtsContextPtr ctxt)
@@ -793,14 +793,14 @@ static bool xplTestSanity_ApplySkipListInvalidInput(xtsContextPtr ctxt)
 			ctxt->error = BAD_CAST "error not filled in";
 			return false;
 		}
-		xmlFree(error);
+		XPL_FREE(error);
 	} while (1);
 	return true;
 }
 //------------------------------------------------
 static bool testMallocingError(xtsContextPtr ctxt)
 {
-	ctxt->error = xmlStrdup(BAD_CAST "error");
+	ctxt->error = XPL_STRDUP(BAD_CAST "error");
 	ctxt->error_malloced = true;
 	return false;
 }

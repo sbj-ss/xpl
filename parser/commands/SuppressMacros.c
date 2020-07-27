@@ -108,8 +108,8 @@ void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo)
 	commandInfo->_private = macros;
 done:
 	if (sel) xmlXPathFreeObject(sel);
-	if (select_attr) xmlFree(select_attr);
-	if (list_attr) xmlFree(list_attr);
+	if (select_attr) XPL_FREE(select_attr);
+	if (list_attr) XPL_FREE(list_attr);
 }
 
 void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)

@@ -49,9 +49,9 @@ void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (tagname_attr)
-		xmlFree(tagname_attr);
+		XPL_FREE(tagname_attr);
 	if (delimiter_attr)
-		xmlFree(delimiter_attr);
+		XPL_FREE(delimiter_attr);
 }
 
 xplCommand xplListMacrosCommand = { xplCmdListMacrosPrologue, xplCmdListMacrosEpilogue };

@@ -79,7 +79,7 @@ void xplCmdTestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			point_attr = xmlGetNoNsProp(commandInfo->element, POINT_ATTR);
 			ASSIGN_RESULT(createBreak(commandInfo, NULL, point_attr), repeat, true);
-			if (point_attr) xmlFree(point_attr);
+			if (point_attr) XPL_FREE(point_attr);
 		} else {
 			parent = commandInfo->element->parent;
 			if (parent && parent->ns && !xmlStrcmp(parent->name, BAD_CAST("when")) && xplCheckNodeForXplNs(commandInfo->document, parent))
@@ -90,7 +90,7 @@ void xplCmdTestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		 ASSIGN_RESULT(createBreak(commandInfo, xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath expression (%s)", txt), NULL), true, true);
 	}
 done:
-	if (txt) xmlFree(txt);
+	if (txt) XPL_FREE(txt);
 }
 
 xplCommand xplTestCommand = { xplCmdTestPrologue, xplCmdTestEpilogue };

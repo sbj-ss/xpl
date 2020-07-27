@@ -46,9 +46,9 @@ void xplCmdModuleLoadedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	}
 done:
 	if (name_attr)
-		xmlFree(name_attr);
+		XPL_FREE(name_attr);
 	if (tagname_attr)
-		xmlFree(tagname_attr);
+		XPL_FREE(tagname_attr);
 }
 
 xplCommand xplModuleLoadedCommand = { xplCmdModuleLoadedPrologue, xplCmdModuleLoadedEpilogue };

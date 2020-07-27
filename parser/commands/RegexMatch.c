@@ -57,15 +57,15 @@ void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 #endif
 	ret = xmlNewDocText(commandInfo->element->doc, NULL);
 	if (match)
-		ret->content = xmlStrdup(BAD_CAST "true");
+		ret->content = XPL_STRDUP(BAD_CAST "true");
 	else
-		ret->content = xmlStrdup(BAD_CAST "false");
+		ret->content = XPL_STRDUP(BAD_CAST "false");
 	ASSIGN_RESULT(ret, false, true);
 done:
 	if (regex_attr)
-		xmlFree(regex_attr);
+		XPL_FREE(regex_attr);
 	if (content)
-		xmlFree(content);
+		XPL_FREE(content);
 	if (regex)
 		onig_free(regex);
 	if (region)

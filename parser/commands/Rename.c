@@ -70,9 +70,9 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (select_attr)
-		xmlFree(select_attr);
+		XPL_FREE(select_attr);
 	if (newname_attr)
-		xmlFree(newname_attr);
+		XPL_FREE(newname_attr);
 	if (sel)
 		xmlXPathFreeObject(sel);
 }

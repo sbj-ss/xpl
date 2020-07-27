@@ -31,7 +31,7 @@ xmlChar* xplFormatMessage(xmlChar *fmt, ...)
 
 	va_start(args, fmt);
 	ret_size = _vscprintf((const char*) fmt, args);
-	ret = (xmlChar*) xmlMalloc(ret_size + 1);
+	ret = (xmlChar*) XPL_MALLOC(ret_size + 1);
 	if (!ret)
 		return NULL;
 	vsnprintf((char*) ret, ret_size + 1, (const char*) fmt, args);
@@ -44,7 +44,7 @@ xmlChar* xplVFormatMessage(xmlChar *fmt, va_list args)
 	size_t ret_size;
 
 	ret_size = _vscprintf((const char*) fmt, args);
-	ret = (xmlChar*) xmlMalloc(ret_size + 1);
+	ret = (xmlChar*) XPL_MALLOC(ret_size + 1);
 	if (!ret)
 		return NULL;
 	vsnprintf((char*) ret, ret_size + 1, (const char*) fmt, args);
@@ -111,8 +111,8 @@ void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
 		xprSetConsoleColor(XPR_DEFAULT_CONSOLE_COLOR);
 	(void) xprMutexRelease(&console_interlock);
 	if (encoded_msg != encoding_msg)
-		xmlFree(encoded_msg);
-	xmlFree(msg);
+		XPL_FREE(encoded_msg);
+	XPL_FREE(msg);
 }
 
 xmlNodePtr xplCreateSimpleErrorNode(xmlDocPtr doc, xmlChar *msg, const xmlChar *src)
@@ -151,7 +151,7 @@ xmlNodePtr xplCreateErrorNode(const xmlNodePtr cmd, const xmlChar *fmt_msg, ...)
 			cmd->line);
 	va_start(arg_list, fmt_msg);
 	msg = xplVFormatMessage(fmt, arg_list);
-	xmlFree(fmt);
+	XPL_FREE(fmt);
 	ret = xplCreateSimpleErrorNode(cmd->doc, msg, cmd->name);
 	if (cfgErrorsToConsole)
 		xplDisplayMessage(xplMsgError, msg);
@@ -188,7 +188,7 @@ void xplStackTrace(const xmlNodePtr startPoint)
 				xmlGenericError(xmlGenericErrorContext, " %s:%s=\"%s\"", attr->ns->prefix, attr->name, attr_value);
 			else
 				xmlGenericError(xmlGenericErrorContext, " %s=\"%s\"", attr->name, attr_value);
-			if (attr_value) xmlFree(attr_value);
+			if (attr_value) XPL_FREE(attr_value);
 			attr = attr->next;
 		}
 		xmlGenericError(xmlGenericErrorContext, ">\n");
@@ -217,8 +217,8 @@ static bool xplInitLogger()
 		log_file = xprFOpen(log_file_full_name, "a");
 		if (!log_file)
 			xplDisplayMessage(xplMsgWarning, BAD_CAST "cannot open log file \"%s\" for writing", cfgLogFileName);
-		xmlFree(log_file_full_name);
-		xmlFree(executable_path);
+		XPL_FREE(log_file_full_name);
+		XPL_FREE(executable_path);
 		return log_file? true: false;
 	} else
 		return true;

@@ -162,7 +162,7 @@ int main(int argc, char* argv[])
 		{
 			xef_error_text = xefGetErrorText(xef_params.error);
 			xplDisplayMessage(xplMsgError, xef_error_text);
-			xmlFree(xef_error_text);
+			XPL_FREE(xef_error_text);
 			xefFreeErrorMessage(xef_params.error);
 		} else
 			xplDisplayMessage(xplMsgError, BAD_CAST "external libraries startup failed (unknown error)");
@@ -174,10 +174,10 @@ int main(int argc, char* argv[])
 	/* figure out parameter values */
 	app_path = xprGetProgramPath();
 	if (conf_file)
-		real_conf_file = xmlStrdup(conf_file);
+		real_conf_file = XPL_STRDUP(conf_file);
 	else {
-		real_conf_file = xmlStrdup(app_path);
-		real_conf_file = xmlStrcat(real_conf_file, BAD_CAST XPR_PATH_DELIM_STR"xpl.xml");
+		real_conf_file = XPL_STRDUP(app_path);
+		real_conf_file = XPL_STRDUP(real_conf_file, BAD_CAST XPR_PATH_DELIM_STR"xpl.xml");
 	}
 
 	/* start XPL engine */
@@ -201,9 +201,9 @@ int main(int argc, char* argv[])
 	 * the quickest way is to run a special xpl file over xml input files and reuse filled environment and session. */
 	if (params_file || session_file)
 	{
-		xplParamAddValue(env, BAD_CAST "ParamsFile", xmlStrdup(params_file), XPL_PARAM_TYPE_USERDATA);
-		xplParamAddValue(env, BAD_CAST "SessionFile", xmlStrdup(session_file), XPL_PARAM_TYPE_USERDATA);
-		xplParamAddValue(env, BAD_CAST "HelperFunction", xmlStrdup(BAD_CAST "Load"), XPL_PARAM_TYPE_USERDATA);
+		xplParamAddValue(env, BAD_CAST "ParamsFile", XPL_STRDUP(params_file), XPL_PARAM_TYPE_USERDATA);
+		xplParamAddValue(env, BAD_CAST "SessionFile", XPL_STRDUP(session_file), XPL_PARAM_TYPE_USERDATA);
+		xplParamAddValue(env, BAD_CAST "HelperFunction", XPL_STRDUP(BAD_CAST "Load"), XPL_PARAM_TYPE_USERDATA);
 		err_code = xplProcessFile(app_path, HELPER_FILE, env, session, &doc);
 		xplDocumentFree(doc);
 		if (err_code != XPL_ERR_NO_ERROR)
@@ -229,8 +229,8 @@ int main(int argc, char* argv[])
 	 * use the helper file again */
 	if (save_session)
 	{
-		xplParamReplaceValue(env, BAD_CAST "SessionFile", xmlStrdup(session_file), XPL_PARAM_TYPE_USERDATA);
-		xplParamReplaceValue(env, BAD_CAST "HelperFunction", xmlStrdup(BAD_CAST "Save"), XPL_PARAM_TYPE_USERDATA);
+		xplParamReplaceValue(env, BAD_CAST "SessionFile", XPL_STRDUP(session_file), XPL_PARAM_TYPE_USERDATA);
+		xplParamReplaceValue(env, BAD_CAST "HelperFunction", XPL_STRDUP(BAD_CAST "Save"), XPL_PARAM_TYPE_USERDATA);
 		err_code = xplProcessFile(app_path, HELPER_FILE, env, session, &doc);
 		xplDocumentFree(doc);
 		if (err_code != XPL_ERR_NO_ERROR)

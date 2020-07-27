@@ -64,8 +64,8 @@ void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ret = xmlNewDocText(commandInfo->document->document, value);
 	ASSIGN_RESULT(ret, false, true);
 done:
-	if (name_attr) xmlFree(name_attr);
-	if (at_attr) xmlFree(at_attr);
+	if (name_attr) XPL_FREE(name_attr);
+	if (at_attr) XPL_FREE(at_attr);
 	if (sel) xmlXPathFreeObject(sel);
 }
 

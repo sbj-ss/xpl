@@ -33,12 +33,12 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		return;
 	}
 	doc = xmlParseMemory((const char*) txt, xmlStrlen(txt));
-	xmlFree(txt);
+	XPL_FREE(txt);
 	if (!doc)
 	{
 		parse_error = getLastLibxmlError();
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "document parsing error: %s", parse_error), true, true);
-		xmlFree(parse_error);
+		XPL_FREE(parse_error);
 	} else {
 		/* ToDo: replaceRedundantNamespaces */
 		ret = detachContent((xmlNodePtr) doc);

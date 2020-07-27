@@ -16,7 +16,7 @@ void xplCmdSetResponseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resul
 		return;
 	}
 	response = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, true);
-	if (commandInfo->document->response) xmlFree(commandInfo->document->response);
+	if (commandInfo->document->response) XPL_FREE(commandInfo->document->response);
 	commandInfo->document->response = response;
 	ASSIGN_RESULT(NULL, false, true);
 }

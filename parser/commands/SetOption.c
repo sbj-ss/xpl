@@ -53,8 +53,8 @@ void xplCmdSetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 done:
 	xplLockThreads(false);
-	if (name_attr) xmlFree(name_attr);
-	if (value_attr) xmlFree(value_attr);
+	if (name_attr) XPL_FREE(name_attr);
+	if (value_attr) XPL_FREE(value_attr);
 }
 
 xplCommand xplSetOptionCommand = { xplCmdSetOptionPrologue, xplCmdSetOptionEpilogue };

@@ -30,7 +30,7 @@ void xplCmdFileExistsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		goto done;
 	}
 	if (abs_path)
-		filename = xmlStrdup(file_attr);
+		filename = XPL_STRDUP(file_attr);
 	else
 		filename = xplFullFilename(file_attr, commandInfo->document->app_path);
 
@@ -41,8 +41,8 @@ void xplCmdFileExistsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	ret = xmlNewDocText(commandInfo->document->document, value);
 	ASSIGN_RESULT(ret, false, true);
 done:
-	if (file_attr) xmlFree(file_attr);
-	if (filename) xmlFree(filename);
+	if (file_attr) XPL_FREE(file_attr);
+	if (filename) XPL_FREE(filename);
 }
 
 xplCommand xplFileExistsCommand = { xplCmdFileExistsPrologue, xplCmdFileExistsEpilogue };

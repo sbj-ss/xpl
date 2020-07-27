@@ -41,9 +41,9 @@ void xplCmdSleepEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (delay_attr)
-		xmlFree(delay_attr);
+		XPL_FREE(delay_attr);
 	if (until_attr)
-		xmlFree(until_attr);
+		XPL_FREE(until_attr);
 }
 
 xplCommand xplSleepCommand = { xplCmdSleepPrologue, xplCmdSleepEpilogue };

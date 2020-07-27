@@ -57,7 +57,7 @@ void xplCmdSetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 	xpl_doc = commandInfo->document->main;
 	if (!xpl_doc)
 	{
-		xpl_doc = (xplDocumentPtr) xmlMalloc(sizeof(xplDocument));
+		xpl_doc = (xplDocumentPtr) XPL_MALLOC(sizeof(xplDocument));
 		memset(xpl_doc, 0, sizeof(xplDocument));
 		xpl_doc->prologue = commandInfo->document->prologue;
 		xpl_doc->epilogue = commandInfo->document->epilogue;

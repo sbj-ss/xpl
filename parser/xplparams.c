@@ -92,7 +92,7 @@ xmlChar* xplCleanTextValue(xmlChar *data_buf, xplExpectType expect)
 	xmlChar *ret;
 	if (!data_buf)
 		return NULL;
-	ret = (xmlChar*) xmlMalloc(xmlStrlen(data_buf) + 1);
+	ret = (xmlChar*) XPL_MALLOC(xmlStrlen(data_buf) + 1);
 	xplCleanTextValueInner(data_buf, expect, ret);
 	return ret;
 }
@@ -139,7 +139,7 @@ xplParamFileInfoPtr xplParamFileInfoCreate(xmlChar *realPath, xmlChar *filename,
 {
 	xplParamFileInfoPtr ret;
 
-	ret = (xplParamFileInfoPtr) xmlMalloc(sizeof(xplParamFileInfo));
+	ret = (xplParamFileInfoPtr) XPL_MALLOC(sizeof(xplParamFileInfo));
 	if (!ret)
 		return NULL;
 	ret->real_path = realPath;
@@ -153,8 +153,8 @@ xplParamFileInfoPtr xplParamFileInfoCopy(const xplParamFileInfoPtr src)
 	if (!src)
 		return NULL;
 	return xplParamFileInfoCreate(
-		xmlStrdup(src->real_path), 
-		xmlStrdup(src->filename), 
+		XPL_STRDUP(src->real_path),
+		XPL_STRDUP(src->filename),
 		src->size
 	);
 }
@@ -164,10 +164,10 @@ void xplParamFileInfoFree(xplParamFileInfoPtr info)
 	if (!info)
 		return;
 	if (info->filename)
-		xmlFree(info->filename);
+		XPL_FREE(info->filename);
 	if (info->real_path)
-		xmlFree(info->real_path);
-	xmlFree(info);
+		XPL_FREE(info->real_path);
+	XPL_FREE(info);
 }
 
 /* xplParamValues */
@@ -175,10 +175,10 @@ void xplParamFileInfoFree(xplParamFileInfoPtr info)
 
 static xplParamValuesPtr xplParamValuesCreateInner(int size)
 {
-	xplParamValuesPtr ret = (xplParamValuesPtr) xmlMalloc(sizeof(xplParamValues));
+	xplParamValuesPtr ret = (xplParamValuesPtr) XPL_MALLOC(sizeof(xplParamValues));
 	if (!ret)
 		return NULL;
-	ret->param_tab = (void**) xmlMalloc(sizeof(void*) * size);
+	ret->param_tab = (void**) XPL_MALLOC(sizeof(void*) * size);
 	if (ret->param_tab)
 		ret->param_max = size;
 	else
@@ -207,7 +207,7 @@ xplParamValuesPtr xplParamValuesCopy(const xplParamValuesPtr src)
 	for (i = 0; i < src->param_nr; i++)
 	{
 		if (xplParamTypeIsAtomic(src->type))
-			ret->param_tab[i] = xmlStrdup((const xmlChar*) src->param_tab[i]);
+			ret->param_tab[i] = XPL_STRDUP(src->param_tab[i]);
 		else if (src->type == XPL_PARAM_TYPE_FILE)
 			ret->param_tab[i] = xplParamFileInfoCopy((const xplParamFileInfoPtr) src->param_tab[i]);
 		else {
@@ -229,9 +229,9 @@ static xplParamResult xplParamValuesAddSomething(xplParamValuesPtr values, void 
 		if (values->param_tab)
 		{
 			values->param_max *= 2;
-			values->param_tab = (void**) xmlRealloc(values->param_tab, values->param_max * sizeof(void*));
+			values->param_tab = (void**) XPL_REALLOC(values->param_tab, values->param_max * sizeof(void*));
 		} else {
-			values->param_tab = (void**) xmlMalloc(INITIAL_VALUES_SIZE * sizeof(void*));
+			values->param_tab = (void**) XPL_MALLOC(INITIAL_VALUES_SIZE * sizeof(void*));
 			values->param_max = INITIAL_VALUES_SIZE;
 		}
 		if (!values->param_tab)
@@ -293,10 +293,10 @@ xplParamResult xplParamValuesReplace(xplParamValuesPtr values, xmlChar *value, x
 	if (values->param_tab)
 	{
 		for (i = 0; i < values->param_nr; i++)
-			xmlFree(values->param_tab[i]);
-		values->param_tab = (void**) xmlRealloc(values->param_tab, INITIAL_VALUES_SIZE * sizeof(xmlChar*));
+			XPL_FREE(values->param_tab[i]);
+		values->param_tab = (void**) XPL_REALLOC(values->param_tab, INITIAL_VALUES_SIZE * sizeof(xmlChar*));
 	} else
-		values->param_tab = (void**) xmlMalloc(INITIAL_VALUES_SIZE * sizeof(xmlChar*));
+		values->param_tab = (void**) XPL_MALLOC(INITIAL_VALUES_SIZE * sizeof(xmlChar*));
 	if (!values->param_tab)
 	{
 		values->param_nr = values->param_max = 0;
@@ -322,15 +322,15 @@ void xplParamValuesFree(xplParamValuesPtr values)
 			if (xplParamTypeIsAtomic(values->type))
 			{
 				if (values->param_tab[i])
-					xmlFree(values->param_tab[i]);
+					XPL_FREE(values->param_tab[i]);
 			} else if ((values->type == XPL_PARAM_TYPE_FILE) && values->param_tab[i])
 				xplParamFileInfoFree((xplParamFileInfoPtr) values->param_tab[i]);
 			else
 				/* we missed something */;
 		}
-		xmlFree(values->param_tab);
+		XPL_FREE(values->param_tab);
 	}
-	xmlFree(values);
+	XPL_FREE(values);
 }
 
 xmlChar* xplParamValuesToString(const xplParamValuesPtr values, bool unique, const xmlChar *delim, xplExpectType expect)
@@ -352,7 +352,7 @@ xmlChar* xplParamValuesToString(const xplParamValuesPtr values, bool unique, con
 	total_len += (values->param_nr - 1)*delim_len;
 	if (!total_len)
 		return NULL;
-	cur = ret = (xmlChar*) xmlMalloc(total_len + 1);
+	cur = ret = (xmlChar*) XPL_MALLOC(total_len + 1);
 	if (!ret)
 		return NULL;
 	if (unique)
@@ -399,7 +399,7 @@ xmlNodePtr xplParamValuesToList(const xplParamValuesPtr values, bool unique, xpl
 		{
 			clean_value = xplCleanTextValue((xmlChar*) values->param_tab[i], expect);
 			if (unique_table && (xmlHashAddEntry(unique_table, clean_value, (void*) 1) == -1))
-				xmlFree(clean_value); // dup
+				XPL_FREE(clean_value); // dup
 			else {
 				cur = xmlNewDocNode(parent->doc, ns, nodeName, NULL);
 				txt = xmlNewDocText(parent->doc, NULL);
@@ -445,7 +445,7 @@ static xmlChar *decodeUrl(const xmlChar *url, size_t *nbytes)
 	xmlChar *out, *ptr;
 	const xmlChar *c;
    
-	if (!(out = ptr = (xmlChar*) xmlMalloc(xmlStrlen(url)+1)))
+	if (!(out = ptr = (xmlChar*) XPL_MALLOC(xmlStrlen(url)+1)))
 		return NULL;
 	for (c = url;  *c;  c++) 
 	{
@@ -493,7 +493,7 @@ int xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xpl
 						iconv_string("utf-8", fallbackEncoding, (char*) param_value, (char*) param_value + xmlStrlen(param_value), (char**) &recoded_value, NULL);
 						if (recoded_value && !isValidUtf8Sample(recoded_value, xmlStrlen(recoded_value), true))
 						{
-							xmlFree(recoded_value);
+							XPL_FREE(recoded_value);
 							recoded_value = NULL;
 						}
 					} else
@@ -502,7 +502,7 @@ int xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xpl
 					recoded_value = param_value;
 				xplParamAddValue(ret, param, recoded_value, XPL_PARAM_TYPE_USERDATA); /* eats recoded_value */
 				if (param_value && recoded_value && (param_value != recoded_value))
-					xmlFree(param_value);
+					XPL_FREE(param_value);
 				*eq_pos = '=';
 			} 
 		}

@@ -33,7 +33,7 @@ void xplCmdSessionRemoveObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 	xplSessionRemoveObject(commandInfo->document->main->session, name_attr);
 	ASSIGN_RESULT(NULL, false, true);
 done:
-	if (name_attr) xmlFree(name_attr);
+	if (name_attr) XPL_FREE(name_attr);
 }
 
 xplCommand xplSessionRemoveObjectCommand = { xplCmdSessionRemoveObjectPrologue, xplCmdSessionRemoveObjectEpilogue };

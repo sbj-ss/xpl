@@ -25,7 +25,7 @@ void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo)
 		xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
 		commandInfo->_private = xmlNewDocNode(commandInfo->element->doc, ns, tagname, NULL);
 	}
-	xmlFree(name_attr);
+	XPL_FREE(name_attr);
 }
 
 void xplCmdReplaceIfUndefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)

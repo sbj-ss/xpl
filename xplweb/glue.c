@@ -40,8 +40,8 @@ static int field_found(const char *key, const char *filename, char *path, size_t
 	if (filename && *filename)
 	{
 		printf("about to create file %s...\n", filename);
-		parse_ctxt->file_key = xmlStrdup(BAD_CAST key);
-		parse_ctxt->file_name = xmlStrdup(BAD_CAST filename);
+		parse_ctxt->file_key = XPL_STRDUP(BAD_CAST key);
+		parse_ctxt->file_name = XPL_STRDUP(BAD_CAST filename);
 		return MG_FORM_FIELD_STORAGE_STORE; /* file */
 	} else
 		return MG_FORM_FIELD_STORAGE_GET; /* regular parameter */
@@ -51,7 +51,7 @@ static int field_get(const char *key, const char *value, size_t valuelen, void *
 {
 	ParseFormCtxtPtr parse_ctxt = (ParseFormCtxtPtr) user_data;
 
-	xplParamAddValue(parse_ctxt->params, BAD_CAST key, xmlStrdup(BAD_CAST value), XPL_PARAM_TYPE_USERDATA);
+	xplParamAddValue(parse_ctxt->params, BAD_CAST key, XPL_STRDUP(BAD_CAST value), XPL_PARAM_TYPE_USERDATA);
 	return MG_FORM_FIELD_HANDLE_NEXT; /* TODO how do we determine there're more chunks? */
 }
 
@@ -61,12 +61,12 @@ static int field_store(const char *path, long long file_size, void *user_data)
 
 	if (parse_ctxt->file_key)
 		xplParamAddFileInfo(parse_ctxt->params, parse_ctxt->file_key,
-			parse_ctxt->file_name, xmlStrdup(BAD_CAST path), file_size);
+			parse_ctxt->file_name, XPL_STRDUP(BAD_CAST path), file_size);
 	else
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	if (parse_ctxt->file_key)
 	{
-		xmlFree(parse_ctxt->file_key);
+		XPL_FREE(parse_ctxt->file_key);
 		parse_ctxt->file_key = NULL;
 	}
 	if (parse_ctxt->file_name)
@@ -95,17 +95,17 @@ xplParamsPtr buildParams(struct mg_connection *conn, const struct mg_request_inf
 	xplParamReplaceValue(params, DOC_ROOT_PARAM, xmlEncodeSpecialChars(NULL, BAD_CAST app_path), XPL_PARAM_TYPE_USERDATA);
 	xplParamReplaceValue(params, RESOURCE_PARAM, xmlEncodeSpecialChars(NULL, BAD_CAST request_info->local_uri), XPL_PARAM_TYPE_USERDATA);
 	if (!xplParamGet(params, ENCODING_PARAM))
-		xplParamAddValue(params, ENCODING_PARAM, xmlStrdup(BAD_CAST DEFAULT_OUTPUT_ENC), XPL_PARAM_TYPE_USERDATA);
+		xplParamAddValue(params, ENCODING_PARAM, XPL_STRDUP(BAD_CAST DEFAULT_OUTPUT_ENC), XPL_PARAM_TYPE_USERDATA);
 	if (!xplParamGet(params, OUTPUT_METHOD_PARAM))
-		xplParamAddValue(params, OUTPUT_METHOD_PARAM, xmlStrdup(BAD_CAST DEFAULT_OUTPUT_METHOD), XPL_PARAM_TYPE_USERDATA);
-	xplParamReplaceValue(params, REMOTE_ADDRESS_PARAM, xmlStrdup(request_info->remote_addr), XPL_PARAM_TYPE_USERDATA);
+		xplParamAddValue(params, OUTPUT_METHOD_PARAM, XPL_STRDUP(BAD_CAST DEFAULT_OUTPUT_METHOD), XPL_PARAM_TYPE_USERDATA);
+	xplParamReplaceValue(params, REMOTE_ADDRESS_PARAM, XPL_STRDUP(request_info->remote_addr), XPL_PARAM_TYPE_USERDATA);
 
 	xplParamsLockValue(params, DOC_ROOT_PARAM, TRUE);
 	xplParamsLockValue(params, REMOTE_ADDRESS_PARAM, TRUE);
 	xplParamsLockValue(params, RESOURCE_PARAM, TRUE);
 
 	for (i = 0; i < request_info->num_headers; i++)
-		xplParamAddValue(params, BAD_CAST request_info->http_headers[i].name, xmlStrdup(BAD_CAST request_info->http_headers[i].value), XPL_PARAM_TYPE_HEADER);
+		xplParamAddValue(params, BAD_CAST request_info->http_headers[i].name, XPL_STRDUP(BAD_CAST request_info->http_headers[i].value), XPL_PARAM_TYPE_HEADER);
 
 	return params;
 }
@@ -200,9 +200,9 @@ void serializeDoc(struct mg_connection *conn, xmlDocPtr doc, xmlChar *encoding, 
 					mg_printf(conn, "Content-Length: %ld\r\n\r\n", iconv_size);
 					mg_write(conn, out_txt, iconv_size);
 					if (BAD_CAST out_txt != txt)
-						xmlFree(out_txt);
+						XPL_FREE(out_txt);
 				}
-				xmlFree(txt);
+				XPL_FREE(txt);
 			} else
 				mg_printf(conn, "Content-Length: 0\r\n\r\n");
 			break;

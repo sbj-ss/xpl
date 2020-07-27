@@ -36,7 +36,7 @@ void xplCmdValueOfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	} else {
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr), true, true);
 	}
-	xmlFree(select_attr);
+	XPL_FREE(select_attr);
 }
 
 xplCommand xplValueOfCommand = { xplCmdValueOfPrologue, xplCmdValueOfEpilogue };

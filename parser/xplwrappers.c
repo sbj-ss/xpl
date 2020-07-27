@@ -77,7 +77,7 @@ xplWrapperMapEntryDecl wrapper_map_entries[] =
 
 static xplWrapperMapEntryPtr xplWrapperMapEntryCreate(xmlChar *regexString, xmlChar *wrapperFile, regex_t *regex)
 {
-	xplWrapperMapEntryPtr ret = (xplWrapperMapEntryPtr) xmlMalloc(sizeof(xplWrapperMapEntry));
+	xplWrapperMapEntryPtr ret = (xplWrapperMapEntryPtr) XPL_MALLOC(sizeof(xplWrapperMapEntry));
 	if (!ret)
 		return NULL;
 	ret->regex_string = regexString;
@@ -91,10 +91,10 @@ static void xplFreeWrapperMapEntry(xplWrapperMapEntryPtr cur)
 {
 	if (cur)
 	{
-		if (cur->regex_string) xmlFree(cur->regex_string);
-		if (cur->wrapper_file) xmlFree(cur->wrapper_file);
+		if (cur->regex_string) XPL_FREE(cur->regex_string);
+		if (cur->wrapper_file) XPL_FREE(cur->wrapper_file);
 		if (cur->regex) onig_free(cur->regex);
-		xmlFree(cur);
+		XPL_FREE(cur);
 	}
 }
 
@@ -136,7 +136,7 @@ static void xplAssignWrapperMapEntry(xplWrapperMapEntryPtr *head, xplWrapperMapE
 	if (!checkNodeListForText(cur->children))
 	{
 		xplDisplayMessage(xplMsgWarning, BAD_CAST "Non-text content in prologue/epilogue in config file (line %d), ignored.", cur->line);
-		xmlFree(regex_string);
+		XPL_FREE(regex_string);
 		return;
 	}
 	wrapper_file = xmlNodeListGetString(cur->doc, cur->children, 1);
@@ -146,8 +146,8 @@ static void xplAssignWrapperMapEntry(xplWrapperMapEntryPtr *head, xplWrapperMapE
 		if (onig_error_code_to_str(err_str, ret_code) != ONIG_NORMAL)
 			strcpy((char*) err_str, "unknown error");
 		xplDisplayMessage(xplMsgWarning, BAD_CAST "Invalid prologue/epilogue path regex \"%s\" in config file (line %d), ignored.", regex_string, cur->line);
-		xmlFree(regex_string);
-		xmlFree(wrapper_file);
+		XPL_FREE(regex_string);
+		XPL_FREE(wrapper_file);
 		return;
 	}
 	entry = xplWrapperMapEntryCreate(regex_string, wrapper_file, regex);
@@ -159,8 +159,8 @@ static void xplAssignWrapperMapEntry(xplWrapperMapEntryPtr *head, xplWrapperMapE
 		if (!*head)
 			*head = entry;
 	} else {
-		xmlFree(regex_string);
-		xmlFree(wrapper_file);
+		XPL_FREE(regex_string);
+		XPL_FREE(wrapper_file);
 		onig_free(regex);
 	}
 }

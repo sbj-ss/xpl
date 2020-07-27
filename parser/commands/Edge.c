@@ -71,7 +71,7 @@ xmlChar* flattenTextSet(xmlNodeSetPtr set)
 		if (txt)
 		{
 			ret = xmlStrcat(ret, txt);
-			xmlFree(txt);
+			XPL_FREE(txt);
 		}
 	}
 	return ret;
@@ -263,13 +263,13 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (name_attr)
-		xmlFree(name_attr);
+		XPL_FREE(name_attr);
 	if (type_attr)
-		xmlFree(type_attr);
+		XPL_FREE(type_attr);
 	if (source_attr)
-		xmlFree(source_attr);
+		XPL_FREE(source_attr);
 	if (destination_attr)
-		xmlFree(destination_attr);
+		XPL_FREE(destination_attr);
 	if (src) 
 	{	
 		if (src->nodesetval)
@@ -279,7 +279,7 @@ done:
 			xmlFreeNodeList(source_list);
 	}
 	if (source_text)
-		xmlFree(source_text);
+		XPL_FREE(source_text);
 	if (dst) 
 	{
 		if (dst->nodesetval)

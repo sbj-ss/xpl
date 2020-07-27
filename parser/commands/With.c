@@ -154,9 +154,9 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	}
 done:
 	commandInfo->document->iterator_spinlock--;
-	if (select_attr) xmlFree(select_attr);
-	if (id_attr) xmlFree(id_attr);
-	if (mode_attr) xmlFree(mode_attr);
+	if (select_attr) XPL_FREE(select_attr);
+	if (id_attr) XPL_FREE(id_attr);
+	if (mode_attr) XPL_FREE(mode_attr);
 	if (sel)
 	{
 		if (sel->nodesetval)

@@ -16,7 +16,7 @@ void xplCmdStackPopEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		repeat = false;
 	ASSIGN_RESULT(xplPopFromDocStack(commandInfo->document, commandInfo->element->parent), repeat, true);
 	if (repeat_attr)
-		xmlFree(repeat_attr);
+		XPL_FREE(repeat_attr);
 }
 
 xplCommand xplStackPopCommand = { xplCmdStackPopPrologue, xplCmdStackPopEpilogue };

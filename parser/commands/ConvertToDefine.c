@@ -40,7 +40,7 @@ void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr r
 	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (defaultexpand_attr)
-		xmlFree(defaultexpand_attr);
+		XPL_FREE(defaultexpand_attr);
 }
 
 xplCommand xplConvertToDefineCommand = { xplCmdConvertToDefinePrologue, xplCmdConvertToDefineEpilogue };

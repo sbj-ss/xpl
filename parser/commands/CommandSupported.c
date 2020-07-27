@@ -47,8 +47,8 @@ void xplCmdCommandSupportedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 		ASSIGN_RESULT(ret, false, true);
 	}
 done:
-	if (name_attr) xmlFree(name_attr);
-	if (tagname_attr) xmlFree(tagname_attr);
+	if (name_attr) XPL_FREE(name_attr);
+	if (tagname_attr) XPL_FREE(tagname_attr);
 }
 
 xplCommand xplCommandSupportedCommand = { xplCmdCommandSupportedPrologue, xplCmdCommandSupportedEpilogue };

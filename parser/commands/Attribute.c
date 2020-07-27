@@ -88,9 +88,9 @@ void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		assignAttribute(commandInfo->element, commandInfo->element->parent, name_attr, attr_value, replace);
 	ASSIGN_RESULT(NULL, false, true);
 done:
-	if (txt) xmlFree(txt);
-	if (name_attr) xmlFree(name_attr);
-	if (dst_attr) xmlFree(dst_attr);
+	if (txt) XPL_FREE(txt);
+	if (name_attr) XPL_FREE(name_attr);
+	if (dst_attr) XPL_FREE(dst_attr);
 	if (dest_list) xmlXPathFreeObject(dest_list);
 }
 

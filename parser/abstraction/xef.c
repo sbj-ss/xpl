@@ -6,7 +6,7 @@
 static XEF_GET_ERROR_TEXT_PROTO(Common)
 {
 	xefCommonErrorMessagePtr real_msg = (xefCommonErrorMessagePtr) msg;
-	return xmlStrdup(real_msg->error_text);
+	return XPL_STRDUP(real_msg->error_text);
 }
 
 static XEF_FREE_ERROR_MESSAGE_PROTO(Common)
@@ -15,14 +15,14 @@ static XEF_FREE_ERROR_MESSAGE_PROTO(Common)
 	if (!msg)
 		return;
 	if (real_msg->error_text)
-		xmlFree(real_msg->error_text);
-	xmlFree(msg);
+		XPL_FREE(real_msg->error_text);
+	XPL_FREE(msg);
 }
 
 xefErrorMessagePtr xefCreateCommonErrorMessage(xmlChar *format, ...)
 {
 	va_list arg_list;
-	xefCommonErrorMessagePtr ret = (xefCommonErrorMessagePtr) xmlMalloc(sizeof(xefCommonErrorMessage));
+	xefCommonErrorMessagePtr ret = (xefCommonErrorMessagePtr) XPL_MALLOC(sizeof(xefCommonErrorMessage));
 	if (!ret)
 		return NULL;
 	ret->header.subsystem = XEF_SUBSYSTEM_COMMON;
@@ -229,11 +229,11 @@ void xefFreeErrorMessage(xefErrorMessagePtr msg)
 void xefFetchParamsClear(xefFetchDocumentParamsPtr params)
 {
 	if (params->document)
-		xmlFree(params->document);
+		XPL_FREE(params->document);
 	if (params->encoding)
-		xmlFree(params->encoding);
+		XPL_FREE(params->encoding);
 	if (params->real_uri)
-		xmlFree(params->real_uri);
+		XPL_FREE(params->real_uri);
 }
 #endif
 

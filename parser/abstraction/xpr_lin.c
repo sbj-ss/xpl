@@ -37,7 +37,7 @@ static xmlChar *convertToFSPath(const xmlChar *path)
 {
 	xmlChar *internal_path;
 
-	internal_path = xmlStrdup(path);
+	internal_path = XPL_STRDUP(path);
 	if (!internal_path)
 		return NULL;
 	xprConvertSlashes(internal_path);
@@ -54,7 +54,7 @@ FILE *xprFOpen(const xmlChar *path, const char *mode)
 	if (!(internal_path = convertToFSPath(path)))
 		return NULL;
 	ret = fopen(internal_path, mode);
-	xmlFree(internal_path);
+	XPL_FREE(internal_path);
 	return ret;
 }
 
@@ -68,7 +68,7 @@ int xprSOpen(const xmlChar *path, int mode, int sharing, int perms)
 	if (!(internal_path = convertToFSPath(path)))
 		return -1;
 	ret = open(internal_path, mode | sharing, perms);
-	xmlFree(internal_path);
+	XPL_FREE(internal_path);
 	return ret;
 }
 
@@ -83,7 +83,7 @@ bool xprCheckFilePresence(const xmlChar *path)
 	if (!(internal_path = convertToFSPath(path)))
 		return false;
 	stat_ret = stat(path, &st);
-	xmlFree(internal_path);
+	XPL_FREE(internal_path);
 	/* in EACCES etc error cases file isn't available anyway */
 	return stat_ret == 0? true: false;
 }
@@ -106,7 +106,7 @@ bool xprEnsurePathExistence(const xmlChar *path)
 		{
 			if (mkdir(internal_path, 0755) != 0)
 			{
-				xmlFree(internal_path);
+				XPL_FREE(internal_path);
 				return false;
 			}
 		} else if (!xprCheckFilePresence(internal_path))
@@ -114,7 +114,7 @@ bool xprEnsurePathExistence(const xmlChar *path)
 		*slash_pos = tmp;
 		slash_pos++;
 	}
-	xmlFree(internal_path);
+	XPL_FREE(internal_path);
 	return true;
 }
 
@@ -131,7 +131,7 @@ xmlChar* xprGetProgramPath(void)
     last_slash = strrchr(buf, '/');
     if (last_slash)
     	size = last_slash - buf;
-    ret = xmlMalloc(size + 1);
+    ret = XPL_MALLOC(size + 1);
     if (!ret)
     	return NULL;
     memcpy(ret, buf, size);

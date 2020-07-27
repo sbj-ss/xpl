@@ -70,11 +70,11 @@ done:
 	if (sel)
 		xmlXPathFreeObject(sel);
 	if (prefix_attr)
-		xmlFree(prefix_attr);
+		XPL_FREE(prefix_attr);
 	if (destination_attr)
-		xmlFree(destination_attr);
+		XPL_FREE(destination_attr);
 	if (uri)
-		xmlFree(uri);
+		XPL_FREE(uri);
 	ASSIGN_RESULT(ret, ret? true: false, true);
 }
 

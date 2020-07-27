@@ -25,7 +25,7 @@ void xplCmdGetDocumentSourceEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 	ASSIGN_RESULT(ret, false, true);
 done:
 	if (document_attr)
-		xmlFree(document_attr);
+		XPL_FREE(document_attr);
 }
 
 xplCommand xplGetDocumentSourceCommand = { xplCmdGetDocumentSourcePrologue, xplCmdGetDocumentSourceEpilogue };

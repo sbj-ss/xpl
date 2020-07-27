@@ -134,19 +134,19 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (name_attr)
-		xmlFree(name_attr);
+		XPL_FREE(name_attr);
 	if (expect_attr)
-		xmlFree(expect_attr);
+		XPL_FREE(expect_attr);
 	if (response_tag_name_attr)
-		xmlFree(response_tag_name_attr);
+		XPL_FREE(response_tag_name_attr);
 	if (delim_attr)
-		xmlFree(delim_attr);
+		XPL_FREE(delim_attr);
 	if (type_attr)
-		xmlFree(type_attr);
+		XPL_FREE(type_attr);
 	if (free_needed)
 		xplParamValuesFree(values);
 	else if (default_attr)
-		xmlFree(default_attr);
+		XPL_FREE(default_attr);
 }
 
 xplCommand xplGetParamCommand = { xplCmdGetParamPrologue, xplCmdGetParamEpilogue };

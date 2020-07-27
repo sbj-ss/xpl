@@ -35,7 +35,7 @@ void xplCmdSessionSetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 	xplSessionSetObject(commandInfo->document->main->session, commandInfo->element, name_attr);
 done:
 	if (name_attr)
-		xmlFree(name_attr);
+		XPL_FREE(name_attr);
 	ASSIGN_RESULT(NULL, false, true);
 }
 

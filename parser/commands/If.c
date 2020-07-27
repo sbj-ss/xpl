@@ -25,7 +25,7 @@ void xplCmdIfPrologue(xplCommandInfoPtr commandInfo)
 		prependList(commandInfo->element->children, test_el);
 	}
 done:
-	if (test_attr) xmlFree(test_attr);
+	if (test_attr) XPL_FREE(test_attr);
 }
 
 void xplCmdIfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)

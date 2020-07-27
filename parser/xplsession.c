@@ -55,10 +55,10 @@ static void xplSessionFree(xplSessionPtr session)
 		/* we don't specify a deallocator here because items are doc children */
 		xmlHashFree(session->items, NULL);
 		xmlFreeDoc(session->doc);
-		xmlFree(session->id);
+		XPL_FREE(session->id);
 		if (!xprMutexCleanup(&session->locker))
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
-		xmlFree(session);
+		XPL_FREE(session);
 	}
 }
 
@@ -87,13 +87,13 @@ static xplSessionPtr xplSessionCreateInner(const xmlChar *id)
 	xplSessionPtr ret;
 	xmlNodePtr root;
 
-	ret = (xplSessionPtr) xmlMalloc(sizeof(xplSession));
+	ret = (xplSessionPtr) XPL_MALLOC(sizeof(xplSession));
 	if (!ret)
 		return NULL;
 	memset(ret, 0, sizeof(xplSession));
 	if (!xprMutexInit(&ret->locker))
 	{
-		xmlFree(ret);
+		XPL_FREE(ret);
 		return NULL;
 	}
 	ret->items = xmlHashCreate(16);
@@ -102,7 +102,7 @@ static xplSessionPtr xplSessionCreateInner(const xmlChar *id)
 	(void) xmlNewProp(root, BAD_CAST "id", id);
 	ret->doc->children = root;
 	time(&ret->init_ts);
-	ret->id = xmlStrdup(id);
+	ret->id = XPL_STRDUP(id);
 	ret->valid = true;
 	ret->just_created = true;
 	xmlHashAddEntry(session_mgr, id, (void*) ret);
@@ -371,7 +371,7 @@ bool xplSessionSetSaMode(xplSessionPtr session, bool enable, xmlChar *password)
 		ret = true;
 	} else
 		ret = false;
-	xmlFree(digest_str);
+	XPL_FREE(digest_str);
 	return ret;
 }
 

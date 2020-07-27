@@ -68,11 +68,11 @@ static XPR_FS_CHAR* makeFSPath(const xmlChar *source, const xmlChar *appPath, bo
 	xprConvertSlashes(full_path);
 	if (iconv_string(XPR_FS_ENCODING, "utf-8", (char*) full_path, (char*) full_path + xmlStrlen(full_path), (char**) &fs_path, NULL) == -1)
 	{
-		xmlFree(full_path);
+		XPL_FREE(full_path);
 		return NULL;
 	}
 	if (full_path != source)
-		xmlFree(full_path);
+		XPL_FREE(full_path);
 	return fs_path;
 }
 
@@ -142,14 +142,14 @@ static void scanThisLevel(
 			XPR_FS_STRCMP(XPR_FILE_NAME_FROM_FDP(&ctxt->data), XPR_MK_FS_STRING("..")))
 			/* skip . and .. */
 		{
-			ctxt->full_name = (XPR_FS_CHAR*) xmlMalloc((source_path_len + XPR_FS_STRLEN(XPR_FILE_NAME_FROM_FDP(&ctxt->data)) + 1)*sizeof(XPR_FS_CHAR));
+			ctxt->full_name = (XPR_FS_CHAR*) XPL_MALLOC((source_path_len + XPR_FS_STRLEN(XPR_FILE_NAME_FROM_FDP(&ctxt->data)) + 1)*sizeof(XPR_FS_CHAR));
 			/* d:\somedir\ */
 			XPR_FS_STRNCPY(ctxt->full_name, source, source_path_len);
 			/* d:\somedir\file.ext */
 			XPR_FS_STRCPY(ctxt->full_name + source_path_len, XPR_FILE_NAME_FROM_FDP(&ctxt->data));
 			if (destination)
 			{
-				ctxt->destination = (XPR_FS_CHAR*) xmlMalloc((destination_len 
+				ctxt->destination = (XPR_FS_CHAR*) XPL_MALLOC((destination_len
 					+ XPR_FS_STRLEN(XPR_FILE_NAME_FROM_FDP(&ctxt->data))
 					+ XPR_FS_STRLEN(XPR_FS_PATH_DELIM_STR) 
 					+ 1
@@ -164,9 +164,9 @@ static void scanThisLevel(
 			} else
 				ctxt->destination = NULL;
 			scanner(ctxt);
-			xmlFree(ctxt->full_name);
+			XPL_FREE(ctxt->full_name);
 			if (ctxt->destination)
-				xmlFree(ctxt->destination);
+				XPL_FREE(ctxt->destination);
 		}
 	} while (!XPR_FILE_FIND_DONE(XPR_FILE_FIND_NEXT(search_handle, &ctxt->data)));
 	XPR_FILE_FIND_CLOSE(search_handle);
@@ -201,7 +201,7 @@ static void scanSublevels(
 	filename = XPR_FS_STRDUP(source_path_end);
 	filename_len = XPR_FS_STRLEN(filename);
 	/* d:\somedir\file.ext -> d:\somedir\* */
-	fs_subdir = (XPR_FS_CHAR*) xmlMalloc((source_path_len + 2)*sizeof(XPR_FS_CHAR)); /* +2: '*', \0 */
+	fs_subdir = (XPR_FS_CHAR*) XPL_MALLOC((source_path_len + 2)*sizeof(XPR_FS_CHAR)); /* +2: '*', \0 */
 	XPR_FS_STRNCPY(fs_subdir, source, source_path_len);
 	fs_subdir[source_path_len] = XPR_MK_FS_CHAR('*');
 	fs_subdir[source_path_len + 1] = 0;
@@ -216,7 +216,7 @@ static void scanSublevels(
 			if (!XPR_FS_STRCMP(XPR_FILE_NAME_FROM_FDP(&ctxt->data), XPR_MK_FS_STRING(".")) || 
 				!XPR_FS_STRCMP(XPR_FILE_NAME_FROM_FDP(&ctxt->data), XPR_MK_FS_STRING("..")))
 				continue;
-			rec_source = (XPR_FS_CHAR*) xmlMalloc((source_path_len 
+			rec_source = (XPR_FS_CHAR*) XPL_MALLOC((source_path_len
 				+ XPR_FS_STRLEN(XPR_FILE_NAME_FROM_FDP(&ctxt->data)) 
 				+ filename_len 
 				+ 1
@@ -229,7 +229,7 @@ static void scanSublevels(
 			XPR_FS_STRCAT(rec_source, filename);
 			if (destination)
 			{
-				rec_destination = (XPR_FS_CHAR*) xmlMalloc((destination_len 
+				rec_destination = (XPR_FS_CHAR*) XPL_MALLOC((destination_len
 					+ XPR_FS_STRLEN(XPR_FILE_NAME_FROM_FDP(&ctxt->data)) 
 					+ 2
 				)*sizeof(XPR_FS_CHAR));
@@ -243,13 +243,13 @@ static void scanSublevels(
 			} else
 				rec_destination = NULL;
 			scanFolder(rec_source, filemask, rec_destination, true, scanner, ctxt, subfoldersFirst);
-			xmlFree(rec_source);
+			XPL_FREE(rec_source);
 			if (rec_destination)
-				xmlFree(rec_destination);
+				XPL_FREE(rec_destination);
 		} while (!XPR_FILE_FIND_DONE(XPR_FILE_FIND_NEXT(search_handle, &ctxt->data)));
 		XPR_FILE_FIND_CLOSE(search_handle);
 	}
-	xmlFree(fs_subdir);
+	XPL_FREE(fs_subdir);
 	free(filename); /* NOT xmlFree! */
 }
 
@@ -263,7 +263,7 @@ static void deleteFilesScanner(FileScanContextPtr ctxt)
 		iconv_string("utf-8", XPR_FS_ENCODING, (const char*) ctxt->full_name, 
 		(const char*) ctxt->full_name + XPR_FS_STRLEN(ctxt->full_name)*sizeof(XPR_FS_CHAR), (char**) &utf8name, NULL);
 		error = xplCreateErrorNode(ctxt->command_info->element, BAD_CAST "cannot erase file \"%s\"", utf8name);
-		xmlFree(utf8name);
+		XPL_FREE(utf8name);
 
 		if (!ctxt->head)
 			ctxt->head = ctxt->tail = error;
@@ -314,7 +314,7 @@ static void listFilesScanner(FileScanContextPtr ctxt)
 	iconv_string("utf-8", XPR_FS_ENCODING, (const char*) ctxt->full_name, (const char*) ctxt->full_name + XPR_FS_STRLEN(ctxt->full_name)*2, (char**) &utf8name, NULL);
 	ret = xmlNewDocNode(ctxt->doc, ctxt->ns, ctxt->tag_name, NULL);
 	xmlNewProp(ret, BAD_CAST "name", utf8name);
-	xmlFree(utf8name);
+	XPL_FREE(utf8name);
 	markAttribute(ret, BAD_CAST "archive",   XPR_FILE_IS_ARCHIVE(&ctxt->data));
 	markAttribute(ret, BAD_CAST "directory", XPR_FILE_IS_DIRECTORY(&ctxt->data));
 	markAttribute(ret, BAD_CAST "hidden",    XPR_FILE_IS_HIDDEN(&ctxt->data));
@@ -368,9 +368,9 @@ static void copyFilesScanner(FileScanContextPtr ctxt)
 		iconv_string("utf-8", XPR_FS_ENCODING, (const char*) ctxt->destination, 
 				(const char*) ctxt->destination + XPR_FS_STRLEN(ctxt->destination)*sizeof(XPR_FS_CHAR), (char**) &utf8dst, NULL);
 		error = xplCreateErrorNode(ctxt->command_info->element, BAD_CAST "cannot copy file \"%s\" to \"%s\", OS error \"%s\"", utf8name, utf8dst, utf8error_msg);
-		if (utf8dst) xmlFree(utf8dst);
-		if (utf8name) xmlFree(utf8name);
-		if (utf8error_msg) xmlFree(utf8error_msg);
+		if (utf8dst) XPL_FREE(utf8dst);
+		if (utf8name) XPL_FREE(utf8name);
+		if (utf8error_msg) XPL_FREE(utf8error_msg);
 		if (!ctxt->head)
 			ctxt->head = ctxt->tail = error;
 		else
@@ -410,9 +410,9 @@ static void moveFilesScanner(FileScanContextPtr ctxt)
 		iconv_string("utf-8", XPR_FS_ENCODING, (const char*) ctxt->destination, 
 			(const char*) ctxt->destination + XPR_FS_STRLEN(ctxt->destination)*sizeof(XPR_FS_CHAR), (char**) &utf8dst, NULL);
 		error = xplCreateErrorNode(ctxt->command_info->element, BAD_CAST "cannot move file \"%s\" to \"%s\", OS error \"%s\"", utf8name, utf8dst, utf8error_msg);
-		if (utf8dst) xmlFree(utf8dst);
-		if (utf8name) xmlFree(utf8name);
-		if (utf8error_msg) xmlFree(utf8error_msg);
+		if (utf8dst) XPL_FREE(utf8dst);
+		if (utf8name) XPL_FREE(utf8name);
+		if (utf8error_msg) XPL_FREE(utf8error_msg);
 		if (!ctxt->head)
 			ctxt->head = ctxt->tail = error;
 		else
@@ -570,7 +570,7 @@ void xplCmdFileOpEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		src_len = XPR_FS_STRLEN(fs_source);
 		if (fs_source[src_len - 1] != XPR_FS_PATH_DELIM)
 		{
-			fs_source = (XPR_FS_CHAR*) xmlRealloc(fs_source, (src_len + 2)*sizeof(XPR_FS_CHAR));
+			fs_source = (XPR_FS_CHAR*) XPL_REALLOC(fs_source, (src_len + 2)*sizeof(XPR_FS_CHAR));
 			fs_source[src_len] = XPR_FS_PATH_DELIM;
 			fs_source[src_len+1] = 0;
 		}
@@ -581,14 +581,14 @@ void xplCmdFileOpEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	ASSIGN_RESULT(ctxt.head, repeat, true);
 done:
-	if (source_attr) xmlFree(source_attr);
-	if (filemask_attr) xmlFree(filemask_attr);
-	if (destination_attr) xmlFree(destination_attr);
-	if (operation_attr) xmlFree(operation_attr);
-	if (tagname_attr) xmlFree(tagname_attr);
-	if (fs_source) xmlFree(fs_source);
-	if (fs_destination) xmlFree(fs_destination);
-	if (fs_filemask) xmlFree(fs_filemask);
+	if (source_attr) XPL_FREE(source_attr);
+	if (filemask_attr) XPL_FREE(filemask_attr);
+	if (destination_attr) XPL_FREE(destination_attr);
+	if (operation_attr) XPL_FREE(operation_attr);
+	if (tagname_attr) XPL_FREE(tagname_attr);
+	if (fs_source) XPL_FREE(fs_source);
+	if (fs_destination) XPL_FREE(fs_destination);
+	if (fs_filemask) XPL_FREE(fs_filemask);
 }
 
 xplCommand xplFileOpCommand = { xplCmdFileOpPrologue, xplCmdFileOpEpilogue };

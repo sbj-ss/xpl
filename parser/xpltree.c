@@ -53,9 +53,9 @@ xmlChar* getPropValue(xmlAttrPtr prop)
 	if (prop->type != XML_ATTRIBUTE_NODE)
 		return NULL;
 	if (!prop->children)
-		return xmlStrdup(BAD_CAST "");
+		return XPL_STRDUP("");
 	if (!prop->children->next && ((prop->children->type == XML_TEXT_NODE) || (prop->children->type == XML_CDATA_SECTION_NODE)))
-		return xmlStrdup(prop->children->content);
+		return XPL_STRDUP(prop->children->content);
 	return xmlNodeListGetString(prop->doc, prop->children, 1);
 }
 
@@ -395,10 +395,10 @@ void initNamePointers()
 {
 	xmlNodePtr cur = xmlNewText(NULL);
 	xmlStringText = BAD_CAST cur->name;
-	xmlFree(cur);
+	XPL_FREE(cur);
 	cur = xmlNewComment(NULL);
 	xmlStringComment = BAD_CAST cur->name;
-	xmlFree(cur);
+	XPL_FREE(cur);
 }
 
 xmlNsPtr newReconciliedNs(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns) 
@@ -515,7 +515,7 @@ xmlAttrPtr clonePropInternal(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, x
 		    if (id) 
 			{
 				xmlAddID(NULL, target->doc, id, ret);
-				xmlFree(id);
+				XPL_FREE(id);
 			}
 		}
     }
@@ -590,7 +590,7 @@ xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xml
     /*
      * Allocate a new node and fill the fields.
      */
-    ret = (xmlNodePtr) xmlMalloc(sizeof(xmlNode));
+    ret = (xmlNodePtr) XPL_MALLOC(sizeof(xmlNode));
     if (!ret) 
 		return NULL;
     memset(ret, 0, sizeof(xmlNode));
@@ -614,7 +614,7 @@ xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xml
         if ((doc != NULL) && (doc->dict != NULL))
 		    ret->name = xmlDictLookup(doc->dict, node->name, -1);
 		else
-			ret->name = xmlStrdup(node->name);
+			ret->name = XPL_STRDUP(node->name);
     }
     if ((node->type != XML_ELEMENT_NODE) &&
 		(node->content != NULL) &&
@@ -622,7 +622,7 @@ xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xml
 		(node->type != XML_XINCLUDE_END) &&
 		(node->type != XML_XINCLUDE_START)) 
 	{
-		ret->content = xmlStrdup(node->content);
+		ret->content = XPL_STRDUP(node->content);
     } else {
       if (node->type == XML_ELEMENT_NODE)
         ret->line = node->line;
@@ -882,8 +882,8 @@ static xmlNsPtr getIndepNs(NsReplacementContextPtr ctxt, xmlNodePtr top, xmlNode
 	if (++ctxt->count > ctxt->cache_size)
 	{
 		ctxt->cache_size *= 2;
-		ctxt->old_ns = (xmlNsPtr*) xmlRealloc(ctxt->old_ns, ctxt->cache_size);
-		ctxt->new_ns = (xmlNsPtr*) xmlRealloc(ctxt->new_ns, ctxt->cache_size);
+		ctxt->old_ns = (xmlNsPtr*) XPL_REALLOC(ctxt->old_ns, ctxt->cache_size);
+		ctxt->new_ns = (xmlNsPtr*) XPL_REALLOC(ctxt->new_ns, ctxt->cache_size);
 	}
 	if (nsIsIndep(ns, top, elem))
 		ret = ns;
@@ -924,11 +924,11 @@ void makeNsIndepTree(xmlNodePtr top)
 		return;
 	ctxt.count = 0;
 	ctxt.cache_size = 16;
-	ctxt.old_ns = (xmlNsPtr*) xmlMalloc(sizeof(xmlNsPtr)*ctxt.cache_size);
-	ctxt.new_ns = (xmlNsPtr*) xmlMalloc(sizeof(xmlNsPtr)*ctxt.cache_size);
+	ctxt.old_ns = (xmlNsPtr*) XPL_MALLOC(sizeof(xmlNsPtr)*ctxt.cache_size);
+	ctxt.new_ns = (xmlNsPtr*) XPL_MALLOC(sizeof(xmlNsPtr)*ctxt.cache_size);
 	makeNsIndepTreeInner(&ctxt, top, top);
-	xmlFree(ctxt.old_ns);
-	xmlFree(ctxt.new_ns);
+	XPL_FREE(ctxt.old_ns);
+	XPL_FREE(ctxt.new_ns);
 }
 
 /* now the opposite task - getting rid of duplicated definitions */
@@ -973,8 +973,8 @@ static xmlNsPtr getIrredundantNs(NsReplacementContextPtr ctxt, xmlNodePtr carrie
 	if (++ctxt->count > ctxt->cache_size)
 	{
 		ctxt->cache_size *= 2;
-		ctxt->old_ns = (xmlNsPtr*) xmlRealloc(ctxt->old_ns, ctxt->cache_size);
-		ctxt->new_ns = (xmlNsPtr*) xmlRealloc(ctxt->new_ns, ctxt->cache_size);
+		ctxt->old_ns = (xmlNsPtr*) XPL_REALLOC(ctxt->old_ns, ctxt->cache_size);
+		ctxt->new_ns = (xmlNsPtr*) XPL_REALLOC(ctxt->new_ns, ctxt->cache_size);
 	}
 	ret = getIrredundantNsByAncestor(carrier->ns, carrier);
 	ctxt->old_ns[ctxt->count] = carrier->ns;
@@ -1012,11 +1012,11 @@ void replaceRedundantNamespaces(xmlNodePtr top)
 		return;
 	ctxt.count = 0;
 	ctxt.cache_size = 16;
-	ctxt.old_ns = (xmlNsPtr*) xmlMalloc(sizeof(xmlNsPtr)*ctxt.cache_size);
-	ctxt.new_ns = (xmlNsPtr*) xmlMalloc(sizeof(xmlNsPtr)*ctxt.cache_size);
+	ctxt.old_ns = (xmlNsPtr*) XPL_MALLOC(sizeof(xmlNsPtr)*ctxt.cache_size);
+	ctxt.new_ns = (xmlNsPtr*) XPL_MALLOC(sizeof(xmlNsPtr)*ctxt.cache_size);
 	replaceRedundantNamespacesInner(&ctxt, top);
-	xmlFree(ctxt.old_ns);
-	xmlFree(ctxt.new_ns);
+	XPL_FREE(ctxt.old_ns);
+	XPL_FREE(ctxt.new_ns);
 }
 
 /* XPath extensions */

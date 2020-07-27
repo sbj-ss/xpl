@@ -139,7 +139,7 @@ static xmlXPathObjectPtr xplSelectNodesInner(xmlXPathContextPtr ctxt, xmlNodePtr
 	ctxt->doc = src->doc;
 	ret = xmlXPathEvalExpression(expr, ctxt);
     if (ctxt->namespaces)
-		xmlFree(ctxt->namespaces);
+		XPL_FREE(ctxt->namespaces);
     return ret;
 }
 
@@ -280,7 +280,7 @@ xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xpl
 	xplDocumentPtr doc;
 	xmlChar delim;
 	
-	doc = (xplDocumentPtr) xmlMalloc(sizeof(xplDocument));
+	doc = (xplDocumentPtr) XPL_MALLOC(sizeof(xplDocument));
 	if (!doc)
 		return NULL;
 	memset(doc, 0, sizeof(xplDocument));
@@ -295,7 +295,7 @@ xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xpl
 			delim = XPR_PATH_DELIM;
 		else if (aAppPath[path_len - 1] != XPR_PATH_DELIM)
 			path_len++;
-		doc->app_path = (xmlChar*) xmlMalloc(path_len + 1);
+		doc->app_path = (xmlChar*) XPL_MALLOC(path_len + 1);
 		if (!doc->app_path) 
 		{
 			xplDocumentFree(doc);
@@ -340,7 +340,7 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aAppPath, xmlChar *aFilename, 
 	ret = xplDocumentInit(aAppPath, aEnvironment, aSession);
 	path_len = xmlStrlen(ret->app_path);
 	max_fn_len = path_len + xmlStrlen(aFilename) + 1;
-	ret->filename = (xmlChar*) xmlMalloc(max_fn_len);
+	ret->filename = (xmlChar*) XPL_MALLOC(max_fn_len);
 	if (!ret->filename)
 	{
 		xplDocumentFree(ret);
@@ -394,16 +394,16 @@ void xplDocumentFree(xplDocumentPtr doc)
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 	}
 #endif
-	if (doc->app_path) xmlFree(doc->app_path);
-	if (doc->filename) xmlFree(doc->filename);
-	if (doc->error) xmlFree(doc->error);
+	if (doc->app_path) XPL_FREE(doc->app_path);
+	if (doc->filename) XPL_FREE(doc->filename);
+	if (doc->error) XPL_FREE(doc->error);
 	if (doc->xpath_ctxt) xmlXPathFreeContext(doc->xpath_ctxt);
-	if (doc->response) xmlFree(doc->response);
+	if (doc->response) XPL_FREE(doc->response);
 	xplClearDocStack(doc);
 	xplDeleteDeferredNodes(doc->deleted_nodes);
 	rbFreeBuf(doc->deleted_nodes);
 	if (doc->document) xmlFreeDoc(doc->document);
-	xmlFree(doc);
+	XPL_FREE(doc);
 }
 
 #ifdef _THREADING_SUPPORT
@@ -559,7 +559,7 @@ void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, c
 					{
 						if (!xmlStrcmp(attr_id, id))
 							xmlXPathNodeSetAddUnique(list, c);
-						xmlFree(attr_id);
+						XPL_FREE(attr_id);
 					}
                 } else
 					xmlXPathNodeSetAddUnique(list, c);
@@ -614,7 +614,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 			required_attr = xmlGetNoNsProp(cur, BAD_CAST "required");
 			if (required_attr && !xmlStrcasecmp(required_attr, BAD_CAST "true"))
 				required = true;
-			xmlFree(required_attr);
+			XPL_FREE(required_attr);
 		}
 		if (select_attr)
 		{
@@ -660,7 +660,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 				new_content = NULL;
 			if (required && !new_content)
 				xplDisplayMessage(xplMsgWarning, BAD_CAST "missing macro content \"%s\" (file \"%s\", line %d)", select_attr, oldElement->doc->URL, oldElement->line);
-			xmlFree(select_attr);
+			XPL_FREE(select_attr);
 		} else { /* if (select_attr) */
 			new_content = cloneNodeList(oldElement->children, cur->parent, oldElement->doc);
 			if (required && !new_content)
@@ -910,7 +910,7 @@ xmlNodePtr xplAddMacro(
 
 	if (fromNonCommand)
 	{
-		tagname = name_attr = xmlStrdup(macro->name);
+		tagname = name_attr = XPL_STRDUP(macro->name);
 		ns = macro->ns;
 	} else {
 		name_attr = xmlGetNoNsProp(macro, BAD_CAST "name");
@@ -922,7 +922,7 @@ xmlNodePtr xplAddMacro(
 	{
 		if ((ret = xplDecodeCmdBoolParam(macro, BAD_CAST "replace", &replace, true)))
 		{
-			xmlFree(name_attr);
+			XPL_FREE(name_attr);
 			return ret;
 		}
 	} else
@@ -934,7 +934,7 @@ xmlNodePtr xplAddMacro(
 	}
 	if (!replace && xplMacroLookup(macro->parent, ns? ns->href: NULL, tagname))
 	{
-		xmlFree(name_attr);
+		XPL_FREE(name_attr);
 		return NULL;
 	}
 	id_attr = xmlGetNoNsProp(macro, BAD_CAST "id");
@@ -976,7 +976,7 @@ xmlNodePtr xplAddMacro(
 	/* node name is the 1st param */
 	if (xmlHashAddEntry2(macros, tagname, ns? ns->href: NULL, mb) == -1) /* уже есть */
 		xmlHashUpdateEntry2(macros, tagname, ns? ns->href: NULL, mb, xplMacroDeallocator);
-	mb->name = xmlStrdup(tagname);
+	mb->name = XPL_STRDUP(tagname);
 	mb->ns = ns;
 	ns = macro->nsDef;
 	while (ns)
@@ -991,9 +991,9 @@ xmlNodePtr xplAddMacro(
 	mb->line = macro->line;
 	mb->parent = destination;
 done:
-	if (name_attr) xmlFree(name_attr);
-	if (id_attr) xmlFree(id_attr);
-	if (expand_attr) xmlFree(expand_attr);
+	if (name_attr) XPL_FREE(name_attr);
+	if (id_attr) XPL_FREE(id_attr);
+	if (expand_attr) XPL_FREE(expand_attr);
 	return ret;
 }
 
@@ -1145,7 +1145,7 @@ xplError xplInitParser(xmlChar *cfgFile)
 		return XPL_ERR_NO_PARSER;
 	if (!cfgFile)
 		return XPL_ERR_NO_CONFIG_FILE;
-	config_file_path = xmlStrdup(cfgFile);
+	config_file_path = XPL_STRDUP(cfgFile);
 	if (!xplReadConfig())
 	{
 		parser_loaded = true;
@@ -1187,7 +1187,7 @@ void xplDoneParser()
 	xplCleanupWrapperMap();
 	if (config_file_path)
 	{
-		xmlFree(config_file_path);
+		XPL_FREE(config_file_path);
 		config_file_path = NULL;
 	}
 	xplSessionManagerCleanup();
@@ -1208,9 +1208,9 @@ xmlChar* xplGetDocRoot()
 void xplSetDocRoot(xmlChar *new_root)
 {
 	if (cfgDocRoot)
-		xmlFree(cfgDocRoot);
+		XPL_FREE(cfgDocRoot);
 	/* don't remove strdup() here unless you want to spent the rest of your evening debugging code */
-	cfgDocRoot = xmlStrdup(new_root);
+	cfgDocRoot = XPL_STRDUP(new_root);
 }
 
 xmlChar* xplFullFilename(const xmlChar* file, const xmlChar* appPath)
@@ -1222,7 +1222,7 @@ xmlChar* xplFullFilename(const xmlChar* file, const xmlChar* appPath)
 		appPath = xplGetDocRoot();
 	}
 	len = xmlStrlen(appPath) + xmlStrlen(file) + 1;
-	ret = (xmlChar*) xmlMalloc(len);
+	ret = (xmlChar*) XPL_MALLOC(len);
 	*ret = 0;
 	if (appPath)
 		strcpy((char*) ret, (const char*) appPath);
@@ -1282,7 +1282,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 	{ 
 		composeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename);
 		main_status = xplProcessFile(norm_path, norm_filename, environment, session, docOut);
-		if (norm_path) xmlFree(norm_path);
+		if (norm_path) XPL_FREE(norm_path);
 		return main_status;
 	}
 
@@ -1310,7 +1310,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 			doc_prologue->prologue = doc_prologue;
 		} else
 			prologue_status = XPL_ERR_DOC_NOT_CREATED;
-		if (norm_path) xmlFree(norm_path);
+		if (norm_path) XPL_FREE(norm_path);
 	}
 
 	composeAndSplitPath(basePath, main_file, &norm_path, &norm_filename);
@@ -1325,7 +1325,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 		doc_main->main = doc_main;
 	} else
 		main_status = XPL_ERR_DOC_NOT_CREATED;
-	if (norm_path) xmlFree(norm_path);
+	if (norm_path) XPL_FREE(norm_path);
 
 	if (epilogue_file)
 	{
@@ -1344,7 +1344,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 				doc_main->epilogue = doc_epilogue;
 		} else
 			epilogue_status = XPL_ERR_DOC_NOT_CREATED;
-		if (norm_path) xmlFree(norm_path);
+		if (norm_path) XPL_FREE(norm_path);
 	} 
 
 	if (doc_prologue)

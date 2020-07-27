@@ -61,7 +61,7 @@ void xplCmdForEachPrologue(xplCommandInfoPtr commandInfo)
 done:
 	xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
 	setChildren(commandInfo->element, ret);	
-	if (select_attr) xmlFree(select_attr);
+	if (select_attr) XPL_FREE(select_attr);
 	if (id_attr) xmlFree (id_attr);
 	if (sel) xmlXPathFreeObject(sel);
 }

@@ -50,3 +50,5 @@ mt.dep
 **/xpl.xml
 # internal todo list
 /ToDo.txt
+# debug memory dumps
+**/.memdump

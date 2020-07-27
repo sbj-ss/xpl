@@ -72,17 +72,17 @@ static void _freeRowTagNames(xplSqlRowTagNamesPtr names)
 	{
 		for (i = 0; i < names->count; i++)
 			if(names->names[i])
-				xmlFree(names->names[i]);
-		xmlFree(names->names);
+				XPL_FREE(names->names[i]);
+		XPL_FREE(names->names);
 	}
-	xmlFree(names);
+	XPL_FREE(names);
 }
 
 static xplSqlRowTagNamesPtr _createRowTagNames(xmlChar *list)
 {
 	xplSqlTokenizerState state = XS_TS_INITIAL;
 	xmlChar *value_start = NULL, *p;
-	xplSqlRowTagNamesPtr ret = (xplSqlRowTagNamesPtr) xmlMalloc(sizeof(xplSqlRowTagNames));
+	xplSqlRowTagNamesPtr ret = (xplSqlRowTagNamesPtr) XPL_MALLOC(sizeof(xplSqlRowTagNames));
 
 	if (!ret)
 		return NULL;
@@ -98,10 +98,10 @@ static xplSqlRowTagNamesPtr _createRowTagNames(xmlChar *list)
 			p++;
 		}
 	}
-	ret->names = (xmlChar **) xmlMalloc(ret->count * sizeof(xmlChar*));
+	ret->names = (xmlChar**) XPL_MALLOC(ret->count * sizeof(xmlChar*));
 	if (!ret->names)
 	{
-		xmlFree(ret);
+		XPL_FREE(ret);
 		return NULL;
 	}
 	if (!list)
@@ -134,7 +134,7 @@ static xplSqlRowTagNamesPtr _createRowTagNames(xmlChar *list)
 			if (value_start)
 				ret->names[ret->pos] = xmlStrndup(value_start, (int) (list - value_start));
 			else
-				ret->names[ret->pos] = xmlStrdup(BAD_CAST "");
+				ret->names[ret->pos] = XPL_STRDUP("");
 			ret->pos++;
 			value_start = NULL;
 			break;
@@ -162,31 +162,31 @@ static void _freeXmlRowDesc(xplSqlXmlRowDescPtr desc)
 	if (!desc)
 		return;
 	if (desc->names)
-		xmlFree(desc->names);
+		XPL_FREE(desc->names);
 	if (desc->namespaces)
-		xmlFree(desc->namespaces);
-	xmlFree(desc);
+		XPL_FREE(desc->namespaces);
+	XPL_FREE(desc);
 }
 
 static xplSqlXmlRowDescPtr _createXmlRowDesc(xefDbRowPtr row, xmlNodePtr parent, xmlChar* defaultColumnName)
 {
 	size_t i;
-	xplSqlXmlRowDescPtr ret = (xplSqlXmlRowDescPtr) xmlMalloc(sizeof(xplSqlXmlRowDesc));
+	xplSqlXmlRowDescPtr ret = (xplSqlXmlRowDescPtr) XPL_MALLOC(sizeof(xplSqlXmlRowDesc));
 	xmlChar *field_name;
 
 	if (!ret)
 		return NULL;
-	ret->names = (xmlChar**) xmlMalloc(row->field_count * sizeof(xmlChar*));
+	ret->names = (xmlChar**) XPL_MALLOC(row->field_count * sizeof(xmlChar*));
 	if (!ret->names)
 	{
-		xmlFree(ret);
+		XPL_FREE(ret);
 		return NULL;
 	}
-	ret->namespaces = (xmlNsPtr*) xmlMalloc(row->field_count * sizeof(xmlNsPtr));
+	ret->namespaces = (xmlNsPtr*) XPL_MALLOC(row->field_count * sizeof(xmlNsPtr));
 	if (!ret->namespaces)
 	{
-		xmlFree(ret->names);
-		xmlFree(ret);
+		XPL_FREE(ret->names);
+		XPL_FREE(ret);
 		return NULL;
 	}
 	ret->count = row->field_count;
@@ -266,9 +266,9 @@ static bool _TdsFragmentRowScanner(xefDbRowPtr row, void *payload)
 			{
 				col->children = col->last = xmlNewDocText(ctxt->parent->doc, NULL);
 				col->children->parent = col;
-				col->children->content = row->fields[i].needs_copy? xmlStrdup(row->fields[i].value): row->fields[i].value;
+				col->children->content = row->fields[i].needs_copy? BAD_CAST XPL_STRDUP(row->fields[i].value): row->fields[i].value;
 			} else if (!row->fields[i].needs_copy)
-				xmlFree(row->fields[i].value);
+				XPL_FREE(row->fields[i].value);
 		}
 	}
 	if (row_el)
@@ -372,7 +372,7 @@ static xmlNodePtr _buildDocFromXmlStream(xefDbContextPtr db_ctxt, xmlNodePtr car
 		goto done;
 	}
 	xml_doc_size = stream_size + xmlStrlen(DOC_START) + xmlStrlen(DOC_END);
-	xml_doc_start = xml_doc_cur = (xmlChar*) xmlMalloc(xml_doc_size + 1);
+	xml_doc_start = xml_doc_cur = (xmlChar*) XPL_MALLOC(xml_doc_size + 1);
 	if (!xml_doc_start)
 	{
 		*repeat = true;
@@ -388,7 +388,7 @@ static xmlNodePtr _buildDocFromXmlStream(xefDbContextPtr db_ctxt, xmlNodePtr car
 done:
 	xefDbUnaccessStreamData(db_ctxt, stream_text);
 	if (xml_doc_start)
-		xmlFree(xml_doc_start);
+		XPL_FREE(xml_doc_start);
 	return ret;
 }
 
@@ -436,7 +436,7 @@ static bool _TdsDocRowScanner(xefDbRowPtr row, void *payload)
 	}
 	if (!row->fields[0].needs_copy) /* free data as we've copied them */
 	{
-		xmlFree(row->fields[0].value);
+		XPL_FREE(row->fields[0].value);
 		row->fields[0].value = NULL;
 	}
 	return true;
@@ -474,7 +474,7 @@ oom:
 	*repeat = true;
 done:
 	if (error_text)
-		xmlFree(error_text);
+		XPL_FREE(error_text);
 	rbFreeBuf(buf);
 	return ret;
 }
@@ -511,7 +511,7 @@ oom:
 	*repeat = true;
 done:
 	if (error_text)
-		xmlFree(error_text);
+		XPL_FREE(error_text);
 	rbFreeBuf(buf);
 	return ret;
 }
@@ -677,19 +677,19 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 done:
 	if (error_text)
-		xmlFree(error_text);
+		XPL_FREE(error_text);
 	if (db_ctxt)
 		xefDbFreeContext(db_ctxt);
 	if (dbname_attr)
-		xmlFree(dbname_attr);
+		XPL_FREE(dbname_attr);
 	if (sql)
-		xmlFree(sql);
+		XPL_FREE(sql);
 	if (row_tag_names)
 		_freeRowTagNames(row_tag_names);
 	if (response_tag_name_attr)
-		xmlFree(response_tag_name_attr);
+		XPL_FREE(response_tag_name_attr);
 	if (default_column_name_attr)
-		xmlFree(default_column_name_attr);
+		XPL_FREE(default_column_name_attr);
 }
 #endif
 

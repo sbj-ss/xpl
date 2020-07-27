@@ -36,7 +36,7 @@ static bool startMem(const xplStartParamsPtr params, int argc, const char **argv
 	if (params->debug_allocation && params->use_tcmalloc)
 	{
 		if (error)
-			*error = xmlStrdup(BAD_CAST ".debug_allocation and .use_tcmalloc can't be set simultaneously");
+			*error = XPL_STRDUP(".debug_allocation and .use_tcmalloc can't be set simultaneously");
 		return false;
 	}
 	if (params->use_tcmalloc)
@@ -45,7 +45,7 @@ static bool startMem(const xplStartParamsPtr params, int argc, const char **argv
 		ret = xmlMemSetup(tc_free, tc_malloc, tc_realloc, tc_strdup);
 #else
 		if (error)
-			*error = xmlStrdup(BAD_CAST "tcmalloc support not compiled in");
+			*error = XPL_STRDUP("tcmalloc support not compiled in");
 		return false;
 #endif
 	}
@@ -54,7 +54,7 @@ static bool startMem(const xplStartParamsPtr params, int argc, const char **argv
 	if (ret)
 	{
 		if (error)
-			*error = xmlStrdup(BAD_CAST "xmlMemSetup() failed");
+			*error = XPL_STRDUP("xmlMemSetup() failed");
 		return false;
 	}
 	return true;
@@ -73,13 +73,13 @@ static bool startXpr(const xplStartParamsPtr params, int argc, const char **argv
 	if (!xprParseCommandLine())
 	{
 		if (error)
-			*error = xmlStrdup(BAD_CAST "xprParseCommandLine() failed");
+			*error = XPL_STRDUP("xprParseCommandLine() failed");
 		return false;
 	}
 	if (!xprStartup(params->xpr_start_flags))
 	{
 		if (error)
-			*error = xmlStrdup(BAD_CAST "xplStartup() failed");
+			*error = XPL_STRDUP("xplStartup() failed");
 		return false;
 	}
 	return true;
@@ -123,7 +123,7 @@ static bool startXef(const xplStartParamsPtr params, int argc, const char **argv
 				*error = xefGetErrorText(xef_params.error);
 			xefFreeErrorMessage(xef_params.error);
 		} else if (error)
-			*error = xmlStrdup(BAD_CAST "external libraries startup failed (unknown error)");
+			*error = XPL_STRDUP("external libraries startup failed (unknown error)");
 		return false;
 	}
 	return true;
@@ -141,22 +141,22 @@ static bool startXpl(const xplStartParamsPtr params, int argc, const char **argv
 	xplError err_code;
 
 	if (xmlStrchr(params->config_file_name, XPR_PATH_DELIM))
-		conf_path = xmlStrdup(params->config_file_name);
+		conf_path = XPL_STRDUP(params->config_file_name);
 	else {
 		/* argv[0] can be just "xplweb" on windows :\ */
 		fn_pos = strrchr(argv[0], XPR_PATH_DELIM);
 		if (fn_pos)
 		{
-			conf_path = (xmlChar*) xmlMalloc(strlen(argv[0]) + xmlStrlen(params->config_file_name) + 1);
+			conf_path = (xmlChar*) XPL_MALLOC(strlen(argv[0]) + xmlStrlen(params->config_file_name) + 1);
 			strncpy((char*) conf_path, argv[0], fn_pos - argv[0] + 1);
 			conf_path[fn_pos - argv[0] + 1] = 0;
 			strcat((char*) conf_path, params->config_file_name);
 		} else
-			conf_path = xmlStrdup(BAD_CAST params->config_file_name);
+			conf_path = XPL_STRDUP(params->config_file_name);
 	}
 
 	err_code = xplInitParser(conf_path);
-	xmlFree(conf_path);
+	XPL_FREE(conf_path);
 	if (err_code != XPL_ERR_NO_ERROR)
 	{
 		if (error)

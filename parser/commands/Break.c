@@ -97,7 +97,7 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (point) xmlXPathFreeObject(point);
-	if (point_attr) xmlFree(point_attr);
+	if (point_attr) XPL_FREE(point_attr);
 }
 
 xplCommand xplBreakCommand = { xplCmdBreakPrologue, xplCmdBreakEpilogue };

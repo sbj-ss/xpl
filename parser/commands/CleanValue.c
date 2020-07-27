@@ -47,7 +47,7 @@ void xplCmdCleanValueEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	clean_value = xplCleanTextValue(value, expect);
 	if (remove_on_nonmatch && (xmlStrlen(value) != xmlStrlen(clean_value)))
 	{
-		xmlFree(clean_value);
+		XPL_FREE(clean_value);
 		clean_value = NULL;
 	}
 	if (clean_value)
@@ -59,8 +59,8 @@ void xplCmdCleanValueEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		ASSIGN_RESULT(NULL, false, true);
 	}
 done:
-	if (expect_attr) xmlFree(expect_attr);
-	if (value) xmlFree(value);
+	if (expect_attr) XPL_FREE(expect_attr);
+	if (value) XPL_FREE(value);
 }
 
 xplCommand xplCleanValueCommand = { xplCmdCleanValuePrologue, xplCmdCleanValueEpilogue };

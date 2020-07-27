@@ -28,7 +28,7 @@ void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		} else
 			ret = NULL;
 		ASSIGN_RESULT(ret, false, true);
-		xmlFree(content);
+		XPL_FREE(content);
 	} else
 		ASSIGN_RESULT(NULL, false, true);
 #else

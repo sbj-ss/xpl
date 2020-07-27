@@ -73,7 +73,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
 	encoding_attr = xmlGetNoNsProp(commandInfo->element, ENCODING_ATTR);
 	if (!encoding_attr || !*encoding_attr)
-		encoding_attr = xmlStrdup(cfgDefaultEncoding);
+		encoding_attr = XPL_STRDUP(cfgDefaultEncoding);
 	if ((error = xplDecodeCmdBoolParam(commandInfo->element, FORMAT_ATTR, &format, true)))
 	{
 		ASSIGN_RESULT(error, true, true);
@@ -104,7 +104,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	root_attr = xmlGetNoNsProp(commandInfo->element, ROOT_ATTR);
 
 	if (abs_path)
-		filename = xmlStrdup(file_attr);
+		filename = XPL_STRDUP(file_attr);
 	else
 		filename = xplFullFilename(file_attr, commandInfo->document->app_path);
 	if (format)
@@ -187,17 +187,17 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (file_attr)
-		xmlFree(file_attr);
+		XPL_FREE(file_attr);
 	if (select_attr)
-		xmlFree(select_attr);
+		XPL_FREE(select_attr);
 	if (encoding_attr)
-		xmlFree(encoding_attr);
+		XPL_FREE(encoding_attr);
 	if (root_attr)
-		xmlFree(root_attr);
+		XPL_FREE(root_attr);
 	if (deserialize_attr)
-		xmlFree(deserialize_attr);
+		XPL_FREE(deserialize_attr);
 	if (filename)
-		xmlFree(filename);
+		XPL_FREE(filename);
 	if (doc)
 		xmlFreeDoc(doc);
 	if (sel)

@@ -30,13 +30,13 @@ void xplCmdLoadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	error = xplModuleCmdResultToString(code, error_data);
 	ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot load module %s: %s", name_attr, error);
 	if (error)
-		xmlFree(error);
+		XPL_FREE(error);
 	if (error_data)
-		xmlFree(error_data);
+		XPL_FREE(error_data);
 done:
 	ASSIGN_RESULT(ret, true, true);
 	if (name_attr)
-		xmlFree(name_attr);
+		XPL_FREE(name_attr);
 }
 
 xplCommand xplLoadModuleCommand = 

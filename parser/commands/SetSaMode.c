@@ -32,7 +32,7 @@ void xplCmdSetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	else
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "the password is missing or incorrect"), true, true);
 	if (password_attr)
-		xmlFree(password_attr);
+		XPL_FREE(password_attr);
 }
 
 xplCommand xplSetSaModeCommand = { xplCmdSetSaModePrologue, xplCmdSetSaModeEpilogue };

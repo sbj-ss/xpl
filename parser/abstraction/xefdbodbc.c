@@ -86,21 +86,21 @@ static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, 
 	xmlChar *conv, *ret = NULL;
 
 	if (RetCode == SQL_INVALID_HANDLE)
-		return xmlStrdup(BAD_CAST "invalid handle");
+		return XPL_STRDUP("invalid handle");
 
 	while (1)
 	{
 		msg = NULL;
 		r = SQLGetDiagRecW(handleType, handle, rec_no, state, &error, msg, 0, &msg_len);
 		if (r == SQL_NO_DATA)
-			return ret? ret: xmlStrdup(BAD_CAST "no information available");
+			return ret? ret: BAD_CAST XPL_STRDUP("no information available");
 		if (SQL_SUCCEEDED(r))
 		{
-			msg = (SQLWCHAR*) xmlRealloc(msg, (msg_len+1)*sizeof(SQLWCHAR));
+			msg = (SQLWCHAR*) XPL_REALLOC(msg, (msg_len+1)*sizeof(SQLWCHAR));
 			if (!msg)
 			{
 				if (ret)
-					xmlFree(ret);
+					XPL_FREE(ret);
 				return xplFormatMessage(BAD_CAST "%s(): SQLGetDiagRecW(): insufficient memory", __FUNCTION__);
 			}
 			r = SQLGetDiagRecW(handleType, handle, rec_no, state, &error, msg, msg_len+1, &msg_len);
@@ -108,7 +108,7 @@ static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, 
 		if (!SQL_SUCCEEDED(r))
 		{
 			if (msg)
-				xmlFree(msg);
+				XPL_FREE(msg);
 			if (ret)
 				return xplFormatMessage(BAD_CAST "%s, %s(): SQLGetDiagRecW() failed", ret, __FUNCTION__);
 			return xplFormatMessage(BAD_CAST "%s(): SQLGetDiagRecW() failed", __FUNCTION__);
@@ -118,7 +118,7 @@ static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, 
 		iconv_string("utf-8", "utf-16le", (const char*) msg, (const char*) (msg + msg_len), (char**) &conv, NULL);
 		ret = ret? xmlStrcat(xmlStrcat(ret, BAD_CAST ", "), conv): conv;
 		if (ret != conv)
-			xmlFree(conv);
+			XPL_FREE(conv);
 	}
 }
 
@@ -178,20 +178,20 @@ static SQLHDBC _xefDbEstablishConnection(const xmlChar* connString, xmlChar **er
 		{
 			odbc_error = _xefDbDecodeOdbcError(hEnv, SQL_HANDLE_ENV, r);
 			*error = xplFormatMessage("%s(): SQLAllocHandle(): %s", __FUNCTION__, odbc_error);
-			xmlFree(odbc_error);
+			XPL_FREE(odbc_error);
 		}
-		xmlFree(w_conn_string);
+		XPL_FREE(w_conn_string);
 		return SQL_NULL_HANDLE;
 	}
 	r = SQLDriverConnectW(db_handle, NULL, w_conn_string, (SQLSMALLINT) w_conn_string_len, NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
-	xmlFree(w_conn_string);
+	XPL_FREE(w_conn_string);
 	if (!SQL_SUCCEEDED(r))
 	{
 		if (error)
 		{
 			odbc_error = _xefDbDecodeOdbcError(db_handle, SQL_HANDLE_DBC, r);
 			*error = xplFormatMessage("%s(): SQLDriverConnectW(): %s", __FUNCTION__, odbc_error);
-			xmlFree(odbc_error);
+			XPL_FREE(odbc_error);
 		}
 		SQLFreeHandle(SQL_HANDLE_DBC, db_handle);
 		return SQL_NULL_HANDLE;
@@ -246,7 +246,7 @@ bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **m
 
 	if (msg)
 	{
-		stars = xmlStrdup(connString);
+		stars = XPL_STRDUP(connString);
 		pw = BAD_CAST xmlStrcasestr(stars, BAD_CAST "PWD=");
 		/* TODO: there may be quotes. we need some parsing here */
 		if (pw)
@@ -256,8 +256,8 @@ bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **m
 				*pw++ = '*';
 		}
 		*msg = xplFormatMessage(BAD_CAST "Cannot connect to database \"%s\" (connection string \"%s\"), ODBC error \"%s\"", name, stars, error);
-		xmlFree(error);
-		xmlFree(stars);
+		XPL_FREE(error);
+		XPL_FREE(stars);
 	}
 	return false;
 }
@@ -276,7 +276,7 @@ static SQLHSTMT _xefCreateStmt(SQLHDBC hConn, xmlChar **error)
 		{
 			error_text = _xefDbDecodeOdbcError(hConn, SQL_HANDLE_DBC, r);
 			*error = xplFormatMessage(BAD_CAST "%s(): SQLAllocHandle(): %s", __FUNCTION__, error_text);
-			xmlFree(error_text);
+			XPL_FREE(error_text);
 		}
 		return SQL_NULL_HANDLE;
 	}
@@ -298,13 +298,13 @@ static bool _xefDbExecSQL(xefDbContextPtr ctxt, xmlChar *sql)
 	}
 	iconv_string("utf-16le", "utf-8", sql, sql + xmlStrlen(sql), (char**) &w_sql, NULL);
 	r = SQLExecDirectW(ctxt->statement, w_sql, SQL_NTS);
-	xmlFree(w_sql);
+	XPL_FREE(w_sql);
 	if (r == SQL_NO_DATA)
 		ctxt->end_of_recordsets = true;
 	else if (!SQL_SUCCEEDED(r))	{
 		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): SQLExecDirect(): %s", __FUNCTION__, error_text));
-		xmlFree(error_text);
+		XPL_FREE(error_text);
 		return false;
 	}
 	return true;
@@ -358,7 +358,7 @@ static bool _xefDbLocateNextNonemptyRecordset(xefDbContextPtr ctxt, bool advance
 	goto done;
 error:
 	if (error_text)
-		xmlFree(error_text);
+		XPL_FREE(error_text);
 	return false;
 done:
 	return found;
@@ -378,7 +378,7 @@ static bool _xefDbNextRecord(xefDbContextPtr ctxt)
 	{
 		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): SQLFetch(): %s", __FUNCTION__, error_text));
-		xmlFree(error_text);
+		XPL_FREE(error_text);
 		return false;
 	}
 	return true;
@@ -397,11 +397,11 @@ static void _xefDbClearRow(xefDbRowPtr row, bool clear_names)
 			field = &(row->fields[i]);
 			if (clear_names && field->name)
 			{
-				xmlFree(field->name);
+				XPL_FREE(field->name);
 				field->name = NULL;
 			}
 			if (field->value && field->needs_copy)
-				xmlFree(field->value); /* otherwise the value is consumed into a text node */
+				XPL_FREE(field->value); /* otherwise the value is consumed into a text node */
 			field->value = NULL;
 		}
 	}
@@ -415,8 +415,8 @@ static void _xefDbFreeRow(xefDbRowPtr row)
 	if (!row)
 		return;
 	_xefDbClearRow(row, true);
-	xmlFree(row->fields);
-	xmlFree(row);
+	XPL_FREE(row->fields);
+	XPL_FREE(row);
 }
 
 static void _xefDbCreateRow(xefDbContextPtr ctxt)
@@ -431,7 +431,7 @@ static void _xefDbCreateRow(xefDbContextPtr ctxt)
 
 	if (!ctxt)
 		return;
-	row = (xefDbRowPtr) xmlMalloc(sizeof(xefDbRow));
+	row = (xefDbRowPtr) XPL_MALLOC(sizeof(xefDbRow));
 	if (!row)
 	{
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): insufficient memory for ctxt->row", __FUNCTION__));
@@ -443,10 +443,10 @@ static void _xefDbCreateRow(xefDbContextPtr ctxt)
 		ctxt->row = row;
 		return;
 	}
-	row->fields = (xefDbFieldPtr) xmlMalloc(ctxt->col_count * sizeof(xefDbField));
+	row->fields = (xefDbFieldPtr) XPL_MALLOC(ctxt->col_count * sizeof(xefDbField));
 	if (!row->fields)
 	{
-		xmlFree(row);
+		XPL_FREE(row);
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): insufficient memory for ctxt->row->fields", __FUNCTION__));
 		return;
 	}
@@ -464,7 +464,7 @@ static void _xefDbCreateRow(xefDbContextPtr ctxt)
 		}
 		if (len)
 		{
-			w_name = (SQLWCHAR*) xmlMalloc((len+2)*sizeof(SQLWCHAR)); /* certain ODBC drivers are crazy */
+			w_name = (SQLWCHAR*) XPL_MALLOC((len+2)*sizeof(SQLWCHAR)); /* certain ODBC drivers are crazy */
 			*w_name = 0;
 			if (!w_name)
 			{
@@ -483,10 +483,10 @@ static void _xefDbCreateRow(xefDbContextPtr ctxt)
 			if (iconv_string("utf-8", "utf-16le", (const char*) w_name, ((const char*) w_name) + len + 2, (char**) &col_name, NULL) == -1)
 			{
 				_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): cannot represent column name in UTF-8 encoding", __FUNCTION__));
-				xmlFree(w_name);
+				XPL_FREE(w_name);
 				goto error;
 			}
-			xmlFree(w_name);
+			XPL_FREE(w_name);
 			if (!col_name)
 			{
 				_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): insufficient memory for column name", __FUNCTION__));
@@ -499,7 +499,7 @@ static void _xefDbCreateRow(xefDbContextPtr ctxt)
 	goto done;
 error:
 	if (error_text)
-		xmlFree(error_text);
+		XPL_FREE(error_text);
 	_xefDbFreeRow(row);
 	return;
 done:
@@ -534,11 +534,11 @@ static int rowno = 0;
 		do {
 			if (!ctxt->buffer)
 			{
-				ctxt->buffer = (SQLWCHAR*) xmlMalloc(INITIAL_FIELD_BUFFER_SIZE);
+				ctxt->buffer = (SQLWCHAR*) XPL_MALLOC(INITIAL_FIELD_BUFFER_SIZE);
 				ctxt->buffer_size = INITIAL_FIELD_BUFFER_SIZE;
 				buffer = ctxt->buffer;
 			} else if (would_grow) {
-				ctxt->buffer = (SQLWCHAR*) xmlRealloc(ctxt->buffer, ctxt->buffer_size*2);
+				ctxt->buffer = (SQLWCHAR*) XPL_REALLOC(ctxt->buffer, ctxt->buffer_size*2);
 				field_size += ctxt->buffer_size;
 				buffer = ctxt->buffer + ctxt->buffer_size / sizeof(SQLWCHAR) - 1;
 				ctxt->buffer_size *= 2;
@@ -556,7 +556,7 @@ static int rowno = 0;
 		{
 			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
 			_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): SQLGetData(): %s", __FUNCTION__, error_text));
-			xmlFree(error_text);
+			XPL_FREE(error_text);
 			goto error;
 		}
 		if (len_or_ind == SQL_NULL_DATA)
@@ -585,7 +585,7 @@ error:
 /* =============== XEF context =============== */
 static xefDbContextPtr _xefDbCreateContext()
 {
-	xefDbContextPtr ret = (xefDbContextPtr) xmlMalloc(sizeof(xefDbContext));
+	xefDbContextPtr ret = (xefDbContextPtr) XPL_MALLOC(sizeof(xefDbContext));
 	memset(ret, 0, sizeof(xefDbContext));
 	ret->stream_type = XEF_DB_STREAM_UNKNOWN;
 	return ret;
@@ -621,9 +621,9 @@ void xefDbFreeContext(xefDbContextPtr ctxt)
 		SQLFreeHandle(SQL_HANDLE_STMT, ctxt->statement);
 	}
 	if (ctxt->buffer)
-		xmlFree(ctxt->buffer);
+		XPL_FREE(ctxt->buffer);
 	_xefDbReleaseDB(ctxt->db);
-	xmlFree(ctxt);
+	XPL_FREE(ctxt);
 }
 
 xefDbRowPtr xefDbGetRow(xefDbContextPtr ctxt)
@@ -671,7 +671,7 @@ ssize_t xefDbGetRowCount(xefDbContextPtr ctxt)
 	{
 		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): SQLGetData(): %s", __FUNCTION__, error_text));
-		xmlFree(error_text);
+		XPL_FREE(error_text);
 		return -2;
 	}
 	return len;
@@ -695,7 +695,7 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 	if (!db)
 	{
 		_xefDbSetParamsError(params, xefCreateCommonErrorMessage(BAD_CAST "%s(): cannot connect to requested database: %s", __FUNCTION__, error_text));
-		xmlFree(error_text);
+		XPL_FREE(error_text);
 		return NULL;
 	}
 	ctxt = _xefDbCreateContext();
@@ -707,7 +707,7 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 	if (!(ctxt->statement = _xefCreateStmt((SQLHDBC)db->connection, &error_text)))
 	{
 		_xefDbSetParamsError(params, xefCreateCommonErrorMessage(BAD_CAST "%s(): %s", __FUNCTION__, error_text));
-		xmlFree(error_text);
+		XPL_FREE(error_text);
 		goto done;
 	}
 
@@ -723,7 +723,7 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 	goto done;
 error:
 	if (error_text)
-		xmlFree(error_text);
+		XPL_FREE(error_text);
 	if (ctxt)
 	{
 		if (!params->error)
@@ -813,9 +813,9 @@ void xefDbFreeParams(xefDbQueryParamsPtr params, bool freeCarrier)
 	if (!params)
 		return;
 	if (params->query)
-		xmlFree(params->query);
+		XPL_FREE(params->query);
 	if (params->error)
 		xefFreeErrorMessage(params->error);
 	if (freeCarrier)
-		xmlFree(params);
+		XPL_FREE(params);
 }

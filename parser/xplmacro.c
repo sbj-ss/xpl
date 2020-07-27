@@ -23,11 +23,11 @@ xplMacroExpansionState xplMacroExpansionStateFromString(xmlChar *state, bool all
 
 xplMacroPtr xplMacroCreate(xmlChar *aId, xmlNodePtr aContent, xplMacroExpansionState expansionState)
 {
-	xplMacroPtr macro = (xplMacroPtr) xmlMalloc(sizeof(xplMacro));
+	xplMacroPtr macro = (xplMacroPtr) XPL_MALLOC(sizeof(xplMacro));
 	if (!macro)
 		return NULL;
 	memset(macro, 0, sizeof(xplMacro));
-	macro->id = xmlStrdup(aId);
+	macro->id = XPL_STRDUP(aId);
 	macro->disabled_spin = 0;
 	macro->content = aContent;
 	macro->expansion_state = expansionState;
@@ -39,14 +39,14 @@ void xplMacroFree(xplMacroPtr macro)
 	if (!macro)
 		return;
 	if (macro->id)
-		xmlFree(macro->id);
+		XPL_FREE(macro->id);
 	if (macro->content)
 		xmlFreeNodeList(macro->content);
 	if (macro->name)
-		xmlFree(macro->name);
+		XPL_FREE(macro->name);
 	if (macro->ns && macro->ns_is_duplicated)
 		xmlFreeNs(macro->ns);
-	xmlFree(macro);
+	XPL_FREE(macro);
 }
 
 xplMacroPtr xplMacroCopy(xplMacroPtr macro, xmlNodePtr parent)
@@ -58,7 +58,7 @@ xplMacroPtr xplMacroCopy(xplMacroPtr macro, xmlNodePtr parent)
 	ret = xplMacroCreate(macro->id, cloneNodeList(macro->content, parent, parent->doc), macro->expansion_state);
 	if (!ret)
 		return NULL;
-	ret->name = xmlStrdup(macro->name);
+	ret->name = XPL_STRDUP(macro->name);
 	ret->ns_is_duplicated = true;
 	ret->ns = xmlCopyNamespace(macro->ns);
 	ret->line = -1;
@@ -179,7 +179,7 @@ xmlChar* xplMacroTableToString(xmlNodePtr element, xmlChar* delimiter, bool uniq
 	else
 		ctxt.delimiter_len = 0;
 	ret_len = ctxt.len + ctxt.count*ctxt.delimiter_len + 1;
-	ret = (xmlChar*) xmlMalloc(ret_len);
+	ret = (xmlChar*) XPL_MALLOC(ret_len);
 	if (!ret)
 		return NULL;
 	ctxt.cur = ret;
@@ -220,12 +220,12 @@ static xmlNodePtr xplMacroToNodeInner(xplMacroPtr macro, xmlNsPtr ns, xmlChar *t
 	xmlNewProp(ret, BAD_CAST "line", BAD_CAST num_buf);
 	if (macro->parent->ns && macro->parent->ns->href)
 	{
-		parent_name = xmlStrdup(macro->parent->ns->prefix);
+		parent_name = XPL_STRDUP(macro->parent->ns->prefix);
 		parent_name = xmlStrcat(parent_name, BAD_CAST ":");
 	}
 	parent_name = xmlStrcat(parent_name, macro->parent->name);
 	xmlNewProp(ret, BAD_CAST "parentname", parent_name);
-	xmlFree(parent_name);
+	XPL_FREE(parent_name);
 	snprintf(num_buf, 12, "%d", macro->parent->line);
 	xmlNewProp(ret, BAD_CAST "parentline", BAD_CAST num_buf);
 	snprintf(num_buf, 12, "%d", macro->times_encountered);

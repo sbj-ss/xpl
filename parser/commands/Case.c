@@ -55,7 +55,7 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 done:
 	if (commandInfo->_private)
 		xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
-	if (key_attr) xmlFree(key_attr);
+	if (key_attr) XPL_FREE(key_attr);
 	if (sel)
 		xmlXPathFreeObject(sel);
 }
@@ -74,7 +74,7 @@ void xplCmdCaseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			if (!xmlStrcasecmp(repeat_attr, BAD_CAST "true"))
 				repeat = true;
-			xmlFree(repeat_attr);
+			XPL_FREE(repeat_attr);
 		}
 		ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
 	}

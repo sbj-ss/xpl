@@ -75,13 +75,13 @@ static void initIncludeContext(IncludeContextPtr ctxt, const xplCommandInfoPtr c
 static void clearIncludeContext(IncludeContextPtr ctxt)
 {
 	if (ctxt->encoding_str) 
-		xmlFree(ctxt->encoding_str);
+		XPL_FREE(ctxt->encoding_str);
 	if (ctxt->uri) 
-		xmlFree(ctxt->uri);
+		XPL_FREE(ctxt->uri);
 	if ((ctxt->input_source != INPUT_SOURCE_LOCAL) && ctxt->src_node)
 		xmlFreeDoc((xmlDocPtr) ctxt->src_node);
 	if (ctxt->content)
-		xmlFree(ctxt->content);
+		XPL_FREE(ctxt->content);
 }
 
 static void getSourceStep(IncludeContextPtr ctxt)
@@ -93,8 +93,8 @@ static void getSourceStep(IncludeContextPtr ctxt)
 	if (uri_attr && file_attr)
 	{
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "file and uri can't be specified simultaneously");
-		xmlFree(uri_attr);
-		xmlFree(file_attr);
+		XPL_FREE(uri_attr);
+		XPL_FREE(file_attr);
 	} else if (file_attr) {
 		ctxt->error = xplDecodeCmdBoolParam(ctxt->command_element, ABS_PATH_ATTR, &abspath, false);
 		if (ctxt->error)
@@ -103,21 +103,21 @@ static void getSourceStep(IncludeContextPtr ctxt)
 			ctxt->uri = file_attr;
 		else {
 			ctxt->uri = xplFullFilename(file_attr, ctxt->doc->app_path);
-			xmlFree(file_attr);
+			XPL_FREE(file_attr);
 		}
 		ctxt->input_source = INPUT_SOURCE_FILE;
 	} else if (uri_attr) {
 		if (xmlStrstr(uri_attr, BAD_CAST "file:///") == uri_attr)
 		{
-			ctxt->uri = xmlStrdup(file_attr + 8);
+			ctxt->uri = XPL_STRDUP(file_attr + 8);
 			ctxt->input_source = INPUT_SOURCE_FILE;
-			xmlFree(uri_attr);
+			XPL_FREE(uri_attr);
 		} else if ((xmlStrstr(uri_attr, BAD_CAST "ftp://") == uri_attr) || (xmlStrstr(uri_attr, BAD_CAST "http://") == uri_attr)) {
 			ctxt->uri = uri_attr;
 			ctxt->input_source = INPUT_SOURCE_XTP;
 		} else {
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "invalid uri: \"%s\"", uri_attr);
-			xmlFree(uri_attr);
+			XPL_FREE(uri_attr);
 		}
 	} else
 		ctxt->input_source = INPUT_SOURCE_LOCAL;	
@@ -170,8 +170,8 @@ static void getFormatsStep(IncludeContextPtr ctxt)
 		goto done;
 	}
 done:
-	if (input_format_attr) xmlFree(input_format_attr);
-	if (output_format_attr) xmlFree(output_format_attr);
+	if (input_format_attr) XPL_FREE(input_format_attr);
+	if (output_format_attr) XPL_FREE(output_format_attr);
 }
 
 static void fetchFileContent(IncludeContextPtr ctxt)
@@ -189,7 +189,7 @@ static void fetchFileContent(IncludeContextPtr ctxt)
 	}
 	fstat(fd, &stat); /* TODO where's stat64? */
 	file_size = stat.st_size;
-	ctxt->content = file_content = (char*) xmlMalloc(file_size + 2);
+	ctxt->content = file_content = (char*) XPL_MALLOC(file_size + 2);
 	if (!file_content)
 	{
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "insufficient memory");
@@ -203,7 +203,7 @@ static void fetchFileContent(IncludeContextPtr ctxt)
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot read from file \"%s\"", ctxt->uri);
 			ctxt->content = NULL;
 			ctxt->content_size = 0;
-			xmlFree(file_content);
+			XPL_FREE(file_content);
 			return;
 		}
 		file_content += num_read;
@@ -232,13 +232,13 @@ static void fetchXTPContent(IncludeContextPtr ctxt)
 		{
 			error_text = xefGetErrorText(params.error);
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "fetch error \"%s\"", error_text);
-			xmlFree(error_text);
+			XPL_FREE(error_text);
 			xefFreeErrorMessage(params.error);
 		} else
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "unknown fetch error");
 	}
 	if (params.extra_query)
-		xmlFree(params.extra_query);
+		XPL_FREE(params.extra_query);
 	xefFetchParamsClear(&params);
 #else
 	ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "remote transport support not compiled in");
@@ -312,30 +312,30 @@ static void updateCtxtEncoding(IncludeContextPtr ctxt)
 		ctxt->encoding_str = encoding_attr;
 		return;
 	}
-	xmlFree(encoding_attr); // was "auto"
+	XPL_FREE(encoding_attr); // was "auto"
 	/* run detection */
 	ctxt->encoding = fastDetectEncoding(ctxt->content, ctxt->content_size);
 	switch (ctxt->encoding)
 	{
 	case DETECTED_ENC_1251:
-		ctxt->encoding_str = xmlStrdup(BAD_CAST "CP1251"); 
+		ctxt->encoding_str = XPL_STRDUP("CP1251");
 		break;
 	case DETECTED_ENC_UTF8: 
 	case DETECTED_ENC_UNKNOWN:
-		ctxt->encoding_str = xmlStrdup(BAD_CAST "utf-8"); 
+		ctxt->encoding_str = XPL_STRDUP("utf-8");
 		ctxt->encoding = DETECTED_ENC_UTF8;
 		break;
 	case DETECTED_ENC_UTF16LE: 
-		ctxt->encoding_str = xmlStrdup(BAD_CAST "utf-16le"); 
+		ctxt->encoding_str = XPL_STRDUP("utf-16le");
 		break;
 	case DETECTED_ENC_UTF16BE: 
-		ctxt->encoding_str = xmlStrdup(BAD_CAST "utf-16be"); 
+		ctxt->encoding_str = XPL_STRDUP("utf-16be");
 		break;
 	case DETECTED_ENC_866: 
-		ctxt->encoding_str = xmlStrdup(BAD_CAST "cp866"); 
+		ctxt->encoding_str = XPL_STRDUP("cp866");
 		break;
 	case DETECTED_ENC_KOI8: 
-		ctxt->encoding_str = xmlStrdup(BAD_CAST "KOI8-R"); 
+		ctxt->encoding_str = XPL_STRDUP("KOI8-R");
 		break;
 	default: 
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -358,7 +358,7 @@ static void recodeStep(IncludeContextPtr ctxt)
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "error converting data from encoding \"%s\"", ctxt->encoding_str);
 		return;
 	}
-	xmlFree(ctxt->content);
+	XPL_FREE(ctxt->content);
 	ctxt->content = recoded_content;
 	ctxt->content_size = recoded_size;
 }
@@ -413,13 +413,13 @@ static void cleanStep(IncludeContextPtr ctxt)
 	params.document = ctxt->content;
 	if (xefCleanHtml(&params))
 	{
-		xmlFree(ctxt->content);
+		XPL_FREE(ctxt->content);
 		ctxt->content = params.clean_document;
 		ctxt->content_size = params.clean_document_size;
 	} else if (params.error) {
 		error_txt = xefGetErrorText(params.error);
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, "Error cleaning HTML document: \"%s\"", error_txt);
-		xmlFree(error_txt);
+		XPL_FREE(error_txt);
 		xefFreeErrorMessage(params.error);
 	} else
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot clean HTML document: unknown error");
@@ -449,7 +449,7 @@ static void buildDocumentStep(IncludeContextPtr ctxt)
 			{
 				error_txt = getLastLibxmlError();
 				ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "error parsing input document: \"%s\"", error_txt);
-				xmlFree(error_txt);
+				XPL_FREE(error_txt);
 				return;
 			}
 		}
@@ -477,7 +477,7 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 	if (select_attr && (ctxt->input_format == INPUT_FORMAT_RAW)) 
 	{
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot select nodes from non-structured source");
-		xmlFree(select_attr);
+		XPL_FREE(select_attr);
 		return;
 	}
 	if (ctxt->input_format == INPUT_FORMAT_RAW)
@@ -509,14 +509,14 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 					xmlNodeSetName(cur, response_tag_name_attr);
 				cur = cur->next;
 			}
-			xmlFree(response_tag_name_attr);
+			XPL_FREE(response_tag_name_attr);
 		}
 		return;
 	}
 	/* select nodes */
 	if ((ctxt->error = xplDecodeCmdBoolParam(ctxt->command_element, REMOVE_SOURCE_ATTR, &remove_source, false)))
 	{
-		xmlFree(select_attr);
+		XPL_FREE(select_attr);
 		return;
 	}
 	if (ctxt->input_source == INPUT_SOURCE_LOCAL)
@@ -559,7 +559,7 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 					}
 				}
 				if (response_tag_name_attr)
-					xmlFree(response_tag_name_attr);
+					XPL_FREE(response_tag_name_attr);
 			}
 		} else if (sel->type != XPATH_UNDEFINED) 
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "select XPath expression \"%s\" evaluated to non-nodeset value", select_attr);
@@ -570,7 +570,7 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 	ctxt->ret = head;
 	if (sel)
 		xmlXPathFreeObject(sel);
-	xmlFree(select_attr);
+	XPL_FREE(select_attr);
 }
 
 static void computeRetStep(IncludeContextPtr ctxt)
@@ -582,7 +582,7 @@ static void computeRetStep(IncludeContextPtr ctxt)
 	{
 		/* we have a node list and need an optionally encoded string. */
 		if (ctxt->content)
-			xmlFree(ctxt->content);
+			XPL_FREE(ctxt->content);
 		ctxt->content = serializeNodeList(ctxt->ret);
 		ctxt->content_size = xmlStrlen(ctxt->content);
 		xmlFreeNodeList(ctxt->ret);
@@ -599,14 +599,14 @@ static void computeRetStep(IncludeContextPtr ctxt)
 			return;
 		}
 		encoded_size = (size_t) (ctxt->content_size*4.0/3 + 4); /* rounding down, padding and terminating zero */
-		encoded_content = (xmlChar*) xmlMalloc(encoded_size);
+		encoded_content = (xmlChar*) XPL_MALLOC(encoded_size);
 		if (!encoded_content)
 		{
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "insufficient memory");
 			return;
 		}
 		base64encode(ctxt->content, ctxt->content_size, (char*) encoded_content, encoded_size);
-		xmlFree(ctxt->content);
+		XPL_FREE(ctxt->content);
 		ctxt->content = encoded_content;
 		ctxt->content_size = encoded_size;
 		break;
@@ -616,7 +616,7 @@ static void computeRetStep(IncludeContextPtr ctxt)
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "insufficient memory");
 			return;
 		}
-		xmlFree(ctxt->content);
+		XPL_FREE(ctxt->content);
 		ctxt->content = encoded_content;
 		ctxt->content_size *= 2;
 		break;

@@ -102,12 +102,12 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 			cur = xmlNewDocNode(commandInfo->element->doc, ns, tagname, NULL);
 			if (prop->ns && prop->ns->prefix)
 			{
-				name = (xmlChar*) xmlMalloc((size_t) xmlStrlen(prop->ns->prefix) + xmlStrlen(prop->name) + 2);
+				name = (xmlChar*) XPL_MALLOC((size_t) xmlStrlen(prop->ns->prefix) + xmlStrlen(prop->name) + 2);
 				strcpy((char*) name, (char*) prop->ns->prefix);
 				strcat((char*) name, ":");
 				strcat((char*) name, (char*) prop->name);
 			} else
-				name = xmlStrdup(prop->name);
+				name = XPL_STRDUP(prop->name);
 			temp_prop = xmlNewProp(cur, BAD_CAST "name", NULL);
 			temp_prop->children = xmlNewDocText(commandInfo->element->doc, NULL);
 			temp_prop->children->content = name;
@@ -126,9 +126,9 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (select_attr)
-		xmlFree(select_attr);
+		XPL_FREE(select_attr);
 	if (tagname_attr)
-		xmlFree(tagname_attr);
+		XPL_FREE(tagname_attr);
 	if (sel)
 		xmlXPathFreeObject(sel);
 }

@@ -78,7 +78,7 @@ void xplCmdGetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 	}
 	ASSIGN_RESULT(ret, repeat, true);
 done:
-	if (select_attr) xmlFree(select_attr);
+	if (select_attr) XPL_FREE(select_attr);
 	if (sel) xmlXPathFreeObject(sel);
 }
 

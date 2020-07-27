@@ -58,9 +58,9 @@ void xplCmdChangeDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplLockThreads(false);
 done:
 	if (name_attr)
-		xmlFree(name_attr);
+		XPL_FREE(name_attr);
 	if (content)
-		xmlFree(content);
+		XPL_FREE(content);
 }
 
 xplCommand xplChangeDBCommand = { xplCmdChangeDBPrologue, xplCmdChangeDBEpilogue };

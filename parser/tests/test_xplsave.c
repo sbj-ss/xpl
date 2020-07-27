@@ -89,7 +89,7 @@ cleanup:
 	if (node_a)
 		xmlFreeNodeList(node_a);
 	if (result)
-		xmlFree(result);
+		XPL_FREE(result);
 	return ok;
 }
 
@@ -120,7 +120,7 @@ cleanup:
 	if (set)
 		xmlXPathFreeNodeSet(set);
 	if (result)
-		xmlFree(result);
+		XPL_FREE(result);
 	return ok;
 }
 

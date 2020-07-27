@@ -35,7 +35,7 @@ void xplCmdProcessingInstructionEpilogue(xplCommandInfoPtr commandInfo, xplResul
 	ASSIGN_RESULT(ret, false, true);
 done:
 	if (name_attr)
-		xmlFree(name_attr);
+		XPL_FREE(name_attr);
 
 }
 

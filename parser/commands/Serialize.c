@@ -37,7 +37,7 @@ void xplCmdSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ret->content = txt;
 	ASSIGN_RESULT(ret, false, true);
 done:
-	if (select_attr) xmlFree(select_attr);
+	if (select_attr) XPL_FREE(select_attr);
 	if (obj) xmlXPathFreeObject(obj);
 }
 

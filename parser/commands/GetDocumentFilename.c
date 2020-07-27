@@ -27,7 +27,7 @@ void xplCmdGetDocumentFilenameEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 	ret = xmlNewDocText(commandInfo->element->doc, fn);
 	ASSIGN_RESULT(ret, false, true);
 done:
-	if (document_attr) xmlFree(document_attr);
+	if (document_attr) XPL_FREE(document_attr);
 }
 
 xplCommand xplGetDocumentFilenameCommand = { xplCmdGetDocumentFilenamePrologue, xplCmdGetDocumentFilenameEpilogue };

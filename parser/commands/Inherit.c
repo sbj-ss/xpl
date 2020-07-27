@@ -71,7 +71,7 @@ void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	} else
 		ret = NULL;
 	ASSIGN_RESULT(ret, true, true);
-	if (name_attr) xmlFree(name_attr);
+	if (name_attr) XPL_FREE(name_attr);
 }
 
 xplCommand xplInheritCommand = { xplCmdInheritPrologue, xplCmdInheritEpilogue }; 

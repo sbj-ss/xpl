@@ -35,14 +35,14 @@ void xplCmdDebugPrintEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	if (commandInfo->element->children)
 		content = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
 	if (!content)
-		content = xmlStrdup(BAD_CAST "<no text provided>");
+		content = XPL_STRDUP(BAD_CAST "<no text provided>");
 	xplDisplayMessage(severity, BAD_CAST "%s", content);
 	ASSIGN_RESULT(NULL, true, true);
 done:
 	if (content)
-		xmlFree(content);
+		XPL_FREE(content);
 	if (severity_attr)
-		xmlFree(severity_attr);
+		XPL_FREE(severity_attr);
 }
 
 xplCommand xplDebugPrintCommand = { xplCmdDebugPrintPrologue, xplCmdDebugPrintEpilogue };

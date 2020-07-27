@@ -10,7 +10,7 @@ static xmlHashTablePtr databases = NULL;
 
 xplDBPtr xplDBCreate(const xplDBPtr aNext, const xplDBDeallocator aDealloc)
 {
-	xplDBPtr db = (xplDBPtr) xmlMalloc(sizeof(xplDB));
+	xplDBPtr db = (xplDBPtr) XPL_MALLOC(sizeof(xplDB));
 	if (!db)
 		return NULL;
 	memset(db, 0, sizeof(xplDB));
@@ -23,22 +23,22 @@ void xplDBFree(xplDBPtr cur)
 {
 	if (cur->dealloc)
 		cur->dealloc(cur->connection);
-	xmlFree(cur);
+	XPL_FREE(cur);
 }
 
 xplDBListPtr xplDBListCreate(const xmlChar *connString)
 {
-	xplDBListPtr ret = (xplDBListPtr) xmlMalloc(sizeof(xplDBList));
+	xplDBListPtr ret = (xplDBListPtr) XPL_MALLOC(sizeof(xplDBList));
 	if (!ret)
 		return NULL;
 	memset(ret, 0, sizeof(xplDBList));
 	if (!xprMutexInit(&ret->lock))
 	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		xmlFree(ret);
+		XPL_FREE(ret);
 		return NULL;
 	}
-	ret->conn_string = xmlStrdup(connString);
+	ret->conn_string = XPL_STRDUP(connString);
 	return ret;
 }
 
@@ -55,10 +55,10 @@ void xplDBListFree(xplDBListPtr cur)
 		xplDBFree(cur_db);
 		cur_db = next_db;
 	}
-	xmlFree(cur->conn_string);
+	XPL_FREE(cur->conn_string);
 	if (!xprMutexCleanup(&cur->lock))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	xmlFree(cur);
+	XPL_FREE(cur);
 }
 
 xplDBListPtr xplLocateDBList(const xmlChar *name)
@@ -273,7 +273,7 @@ bool xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors)
 						xplDisplayMessage(msg_type, BAD_CAST "non-text connection string in config file (line %d), %s", cur->line, tail);
 						ok = false;
 					}
-					xmlFree(dbname);
+					XPL_FREE(dbname);
 				} else {
 					xplDisplayMessage(msg_type, BAD_CAST "missing dbname attribute in Database element in config file (line %d), %s", cur->line, tail);
 					ok = false;
@@ -295,7 +295,7 @@ static void checkDatabase(void *payload, void *data, xmlChar *name)
 	if (msg)
 	{
 		xplDisplayMessage(is_avail? xplMsgInfo: xplMsgWarning, msg);
-		xmlFree(msg);
+		XPL_FREE(msg);
 	}
 }
 

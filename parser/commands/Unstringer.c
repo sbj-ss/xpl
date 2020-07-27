@@ -269,7 +269,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	}
 
 	if (!select_attr)
-		select_attr = xmlStrdup(BAD_CAST ".");
+		select_attr = XPL_STRDUP(".");
 	EXTRACT_NS_AND_TAGNAME(tag_name_attr, ctxt.ns, ctxt.tag_name, commandInfo->element)
 	EXTRACT_NS_AND_TAGNAME(delimiter_tag_name_attr, ctxt.delimiter_ns, ctxt.delimiter_tag_name, commandInfo->element);
 	if (!ctxt.delimiter_tag_name)
@@ -302,7 +302,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 					else
 						appendList(tail, out);
 					tail = findTail(out);
-					xmlFree(ctxt.input_str);
+					XPL_FREE(ctxt.input_str);
 				}
 			}
 		} else if (sel->type == XPATH_STRING) {
@@ -323,18 +323,18 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (select_attr)
-		xmlFree(select_attr);
+		XPL_FREE(select_attr);
 	if (tag_name_attr)
-		xmlFree(tag_name_attr);
+		XPL_FREE(tag_name_attr);
 	if (delimiter_tag_name_attr)
-		xmlFree(delimiter_tag_name_attr);
+		XPL_FREE(delimiter_tag_name_attr);
 
 	if (ctxt.delimiter)
-		xmlFree(ctxt.delimiter);
+		XPL_FREE(ctxt.delimiter);
 	if (ctxt.start_delimiter)
-		xmlFree(ctxt.start_delimiter);
+		XPL_FREE(ctxt.start_delimiter);
 	if (ctxt.end_delimiter)
-		xmlFree(ctxt.end_delimiter);
+		XPL_FREE(ctxt.end_delimiter);
 	if (ctxt.unique_hash)
 		xmlHashFree(ctxt.unique_hash, NULL);
 

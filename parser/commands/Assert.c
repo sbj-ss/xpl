@@ -70,8 +70,8 @@ void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath expression (%s)", txt), true, true);
 	}
 done:
-	if (txt) xmlFree(txt);
-	if (message_attr) xmlFree(message_attr);
+	if (txt) XPL_FREE(txt);
+	if (message_attr) XPL_FREE(message_attr);
 }
 
 xplCommand xplAssertCommand = { xplCmdAssertPrologue, xplCmdAssertEpilogue };

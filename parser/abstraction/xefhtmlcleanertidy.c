@@ -8,15 +8,15 @@
 
 void* TIDY_CALL xml_tidyMalloc(size_t len)
 {
-	return xmlMalloc(len);
+	return XPL_MALLOC(len);
 }
 void* TIDY_CALL xml_tidyRealloc(void* buf, size_t len)
 {
-	return xmlRealloc(buf, len);
+	return XPL_REALLOC(buf, len);
 }
 void TIDY_CALL xml_tidyFree(void* buf)
 {
-	xmlFree(buf);
+	XPL_FREE(buf);
 }
 
 XEF_STARTUP_PROTO(HtmlCleaner)

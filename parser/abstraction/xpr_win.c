@@ -92,7 +92,7 @@ void xprSpawnProcessCopy()
 	printf("! Original command line: %s\n", GetCommandLineA());
 	params = GetCommandLineW();
 	params_len = wcslen(params);
-	new_cmdline = (wchar_t*) xmlMalloc((params_len + 16)*sizeof(wchar_t));
+	new_cmdline = (wchar_t*) XPL_MALLOC((params_len + 16)*sizeof(wchar_t));
 	wcscpy(new_cmdline, params);
 	wcscat(new_cmdline, L" +wait=");
 	pid = GetCurrentProcessId();
@@ -301,14 +301,14 @@ bool xprEnsurePathExistence(const XPR_FS_CHAR *path)
 xmlChar* xprGetProgramPath()
 {
 	DWORD buf_size = MAX_PATH;
-	wchar_t *module_fn = (wchar_t*) xmlMalloc(buf_size*sizeof(wchar_t));
+	wchar_t *module_fn = (wchar_t*) XPL_MALLOC(buf_size*sizeof(wchar_t));
 	wchar_t *last_slash_pos;
 	xmlChar *ret = NULL;
 
 	while (GetModuleFileNameW(NULL, module_fn, buf_size) == buf_size)
 	{
 		buf_size *= 2;
-		module_fn = (wchar_t*) xmlRealloc(module_fn, (size_t) buf_size);
+		module_fn = (wchar_t*) XPL_REALLOC(module_fn, (size_t) buf_size);
 	}
 	last_slash_pos = wcsrchr(module_fn, XPR_FS_PATH_DELIM);
 	if (last_slash_pos)

@@ -79,12 +79,12 @@ void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	if (err_node)
 	{
-		xmlFree(txt);
+		XPL_FREE(txt);
 		ASSIGN_RESULT(err_node, true, true);
 	}
 done:
-	if (name_attr) xmlFree(name_attr);
-	if (mode_attr) xmlFree(mode_attr);
+	if (name_attr) XPL_FREE(name_attr);
+	if (mode_attr) XPL_FREE(mode_attr);
 }
 
 xplCommand xplSetParamCommand = {xplCmdSetParamPrologue, xplCmdSetParamEpilogue };

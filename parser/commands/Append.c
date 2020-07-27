@@ -175,9 +175,9 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	ASSIGN_RESULT(NULL, false, true);
 done:
-	if (position_attr) xmlFree(position_attr);
-	if (select_attr) xmlFree(select_attr);
-	if (source_attr) xmlFree(source_attr);
+	if (position_attr) XPL_FREE(position_attr);
+	if (select_attr) XPL_FREE(select_attr);
+	if (source_attr) XPL_FREE(source_attr);
 	if (src) xmlXPathFreeObject(src);
 	if (dst) xmlXPathFreeObject(dst);
 }

@@ -172,7 +172,7 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	ASSIGN_RESULT(NULL, false, true);
 done:
-	if (select_attr) xmlFree(select_attr);
+	if (select_attr) XPL_FREE(select_attr);
 	if (dest_list) 
 	{
 		if (dest_list->nodesetval)

@@ -74,7 +74,7 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	}
 	select_attr = xmlGetNoNsProp(commandInfo->element, BAD_CAST "select");
 	if (!select_attr)
-		select_attr = xmlStrdup(BAD_CAST ".");
+		select_attr = XPL_STRDUP(BAD_CAST ".");
 	if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEPDELIMITER_ATTR, &keepdelimiter, false)))
 	{
 		ASSIGN_RESULT(error, true, true);
@@ -149,7 +149,7 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 				cur = xmlNewDocNode(commandInfo->element->doc, ns, tagname, NULL);
 				APPEND()
 			}
-			if (content) xmlFree(content);
+			if (content) XPL_FREE(content);
 			continue;
 		}
 		content_end = content + xmlStrlen(content);
@@ -199,19 +199,19 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 					cur = xmlNewDocNode(commandInfo->element->doc, ns, tagname, prev_boundary);
 				APPEND()
 			} 
-			xmlFree(content);
+			XPL_FREE(content);
 		} /* first match found */
 	} /* outer loop */
 	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (select_attr)
-		xmlFree(select_attr);
+		XPL_FREE(select_attr);
 	if (regex_attr)
-		xmlFree(regex_attr);
+		XPL_FREE(regex_attr);
 	if (delimitertagname_attr && (delimitertagname_attr != tagname_attr))
-		xmlFree(delimitertagname_attr);
+		XPL_FREE(delimitertagname_attr);
 	if (tagname_attr)
-		xmlFree(tagname_attr);
+		XPL_FREE(tagname_attr);
 	if (unique_hash)
 		xmlHashFree(unique_hash, NULL);
 	if (regex)

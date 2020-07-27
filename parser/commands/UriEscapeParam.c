@@ -30,14 +30,14 @@ void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 				if (iconv_string((char*) encoding_attr, "utf-8", content, content + xmlStrlen(content), (char**) &param, NULL) == -1)
 				{
 					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot convert parameter value \"%s\" to encoding \"%s\"", content, encoding_attr), true, true);
-					xmlFree(content);
-					xmlFree(encoding_attr);
+					XPL_FREE(content);
+					XPL_FREE(encoding_attr);
 					return;
 				}
-				xmlFree(content);
+				XPL_FREE(content);
 			} else
 				param = content;
-			xmlFree(encoding_attr);
+			XPL_FREE(encoding_attr);
 		} else
 			param = content;
 		if (param)
@@ -45,7 +45,7 @@ void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 			ret = xmlNewDocText(commandInfo->element->doc, NULL);
 			/* ToDo: there will be problems with utf-16 */
 			ret->content = xmlURIEscapeStr(param, NULL);
-			xmlFree(param);
+			XPL_FREE(param);
 		} else
 			ret = NULL;
 		ASSIGN_RESULT(ret, false, true);

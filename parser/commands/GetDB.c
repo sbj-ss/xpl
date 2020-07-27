@@ -59,8 +59,8 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	ASSIGN_RESULT(ret, repeat, true);
 done:
-	if (name_attr) xmlFree(name_attr);
-	if (responsetagname_attr) xmlFree(responsetagname_attr);
+	if (name_attr) XPL_FREE(name_attr);
+	if (responsetagname_attr) XPL_FREE(responsetagname_attr);
 }
 
 xplCommand xplGetDBCommand = { xplCmdGetDBPrologue, xplCmdGetDBEpilogue };

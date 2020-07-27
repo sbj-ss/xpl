@@ -33,7 +33,7 @@ void shutdownServer(void)
 	exit_flag = 1;
 	mg_stop(ctx);
 	fflush(stdout);
-	exit(EXIT_SUCCESS);
+	//exit(EXIT_SUCCESS);
 }
 
 void handle_non_cw_args(int argc, char **argv)
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 	{
 		printf("Error starting XPL engine: %s\n", error);
 		if (error)
-			xmlFree(error);
+			XPL_FREE(error);
 		mg_exit_library();
 		exit(EXIT_FAILURE);
 	}
@@ -115,5 +115,9 @@ int main(int argc, char* argv[])
 	xprSleep(1000);
 	free_system_info();
 	mg_exit_library();
+#ifdef _DEBUG
+	printf("Starting memory dump...\n");
+	xmlMemDisplay(stdout);
+#endif
 	return (EXIT_SUCCESS);
 }

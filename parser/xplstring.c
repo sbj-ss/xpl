@@ -32,7 +32,7 @@ xmlChar* strTrim(xmlChar* str)
 	if (start > end)
 		return NULL;
 	out_size = end - start + 1;
-	out = (xmlChar*) xmlMalloc(out_size + 1);
+	out = (xmlChar*) XPL_MALLOC(out_size + 1);
 	strncpy((char*) out, (const char*) start, out_size + 1);
 	return out;
 }
@@ -79,17 +79,17 @@ xmlChar* getLastLibxmlError()
 
 	err = xmlGetLastError();
 	if (!err)
-		return xmlStrdup(BAD_CAST "unknown error");
+		return XPL_STRDUP("unknown error");
 	max_err_len = (err->message?strlen(err->message):0) + (err->file?strlen(err->file):0) + 127;
 	if (err->str1) max_err_len += strlen(err->str1);
 	if (err->str2) max_err_len += strlen(err->str2);
 	if (err->str3) max_err_len += strlen(err->str3);
-	error = (xmlChar*) xmlMalloc(max_err_len + 1);
+	error = (xmlChar*) XPL_MALLOC(max_err_len + 1);
 	if (!error)
 		return NULL;
 	snprintf((char*) error, max_err_len, "file %s, %d:%d, problem: %s, extra info [%s, %s, %s]", err->file, err->line, err->int2, err->message, err->str1, err->str2, err->str3);
 	encError = xmlEncodeSpecialChars(NULL, error);
-	xmlFree(error);
+	XPL_FREE(error);
 	return encError;
 }
 
@@ -207,7 +207,7 @@ xmlChar* encodeUriIdn(xmlChar *uri)
 #endif
 	return ret;
 #else
-	return xmlStrdup(uri);
+	return XPL_STRDUP(uri);
 #endif
 }
 
@@ -273,7 +273,7 @@ int iconv_string (const char* tocode, const char* fromcode,
 	insize = end - start;
 	if (!strcmp(tocode, fromcode)) /* just copy */
 	{
-		result = *resultp = (char*) (*resultp == NULL? xmlMalloc(insize+2): xmlRealloc(*resultp, insize+2));
+		result = *resultp = (char*) (*resultp == NULL? XPL_MALLOC(insize+2): XPL_REALLOC(*resultp, insize+2));
 		memcpy(*resultp, start, insize);
 		result[insize] = result[insize+1] = 0; /* in case of utf-16 */
 		if (lengthp)
@@ -283,7 +283,7 @@ int iconv_string (const char* tocode, const char* fromcode,
 	cd = iconv_open(tocode, fromcode);
 	if (cd == (iconv_t) (-1))
 		return -1;
-	result = (char*) xmlMalloc((end - start + 1)*sizeof(uint32_t)); /* up to 4 bytes per char */
+	result = (char*) XPL_MALLOC((end - start + 1)*sizeof(uint32_t)); /* up to 4 bytes per char */
 	if (!result)
 	{
 		iconv_close(cd);
@@ -309,7 +309,7 @@ int iconv_string (const char* tocode, const char* fromcode,
 	*outptr = *(outptr + 1) = 0;
 	if (lengthp)
 		*lengthp = outptr - result;
-	result = (char*) xmlRealloc(result, outptr - result + 2);
+	result = (char*) XPL_REALLOC(result, outptr - result + 2);
 	if (resultp)
 		*resultp = result;
 	return 0;
@@ -322,7 +322,7 @@ xmlChar* bufferToHex(void* buf, size_t len, bool prefix)
 	xmlChar *ret, *ret_start;
 	size_t i;
 
-	ret = ret_start = (xmlChar*) xmlMalloc(len*2 + (prefix? 3: 1));
+	ret = ret_start = (xmlChar*) XPL_MALLOC(len*2 + (prefix? 3: 1));
 	if (!ret)
 		return NULL;
 	if (prefix)
@@ -502,7 +502,7 @@ void composeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **nor
 	if (*normalizedFilename)
 	{
 		(*normalizedFilename)++;
-		*normalizedPath = (xmlChar*) xmlMalloc(xmlStrlen(basePath) + (*normalizedFilename - relativePath) + 1);
+		*normalizedPath = (xmlChar*) XPL_MALLOC(xmlStrlen(basePath) + (*normalizedFilename - relativePath) + 1);
 		if ((basePath[base_path_len - 1] != XPR_PATH_DELIM) && (basePath[base_path_len - 1] != XPR_PATH_INVERSE_DELIM))
 			strcpy((char*) *normalizedPath, (char*) basePath);
 		else {
@@ -512,7 +512,7 @@ void composeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **nor
 		strncat((char*) *normalizedPath, (char*) relativePath, *normalizedFilename - relativePath);
 	} else {
 		*normalizedFilename = relativePath;
-		*normalizedPath = xmlStrdup(basePath);
+		*normalizedPath = XPL_STRDUP(basePath);
 	}
 	if (*normalizedPath)
 		xprConvertSlashes(*normalizedPath);
@@ -524,7 +524,7 @@ xmlChar* appendThreadIdToString(xmlChar *str, XPR_THREAD_ID id)
 	char buf[17];
 
 	len = xmlStrlen(str);
-	str = (xmlChar*) xmlRealloc(str, len + sizeof(buf));
+	str = (xmlChar*) XPL_REALLOC(str, len + sizeof(buf));
 	if (!str)
 		return NULL;
 	/* TODO x64 */

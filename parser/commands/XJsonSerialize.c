@@ -133,7 +133,7 @@ static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 			return _createMemoryError(ctxt);
 	}
 done:
-	if (content) xmlFree(content);
+	if (content) XPL_FREE(content);
 	return ret;
 }
 
@@ -195,7 +195,7 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	else if (ctxt->strict_tag_names)
 		ret = xplCreateErrorNode(ctxt->command_element, "unknown tag name: \"%s\"", cur->name);
 done:
-	if (name) xmlFree(name);
+	if (name) XPL_FREE(name);
 	return ret;
 }
 

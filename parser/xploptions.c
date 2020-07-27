@@ -289,7 +289,7 @@ static void xplReadOption(xplConfigEntryPtr opt, xmlChar *value)
 	switch (opt->cfg_type)
 	{
 		case CFG_TYPE_STRING:
-			*((xmlChar**) opt->value_ptr) = xmlStrdup(value);
+			*((xmlChar**) opt->value_ptr) = XPL_STRDUP(value);
 			break;
 		case CFG_TYPE_INT:
 			if (sscanf((char*) value, "%d", (int*) opt->value_ptr) != 1)
@@ -324,7 +324,7 @@ static void xplAssignDefaultToOption(xplConfigEntryPtr opt)
 	{
 		case CFG_TYPE_STRING:
 			if (opt->default_value)
-				*((xmlChar**) opt->value_ptr) = xmlStrdup((xmlChar*) opt->default_value);
+				*((xmlChar**) opt->value_ptr) = XPL_STRDUP(opt->default_value);
 			else
 				*((xmlChar**) opt->value_ptr) = NULL;
 			break;
@@ -380,7 +380,7 @@ int xplReadOptions(xmlNodePtr opt_root)
 						xplReadOption(opt, cur->children?cur->children->content:NULL);
 					else
 						xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown config option \"%s\" (line %d), ignored\n", opt_name, cur->line);
-					xmlFree(opt_name);
+					XPL_FREE(opt_name);
 				} else
 					xplDisplayMessage(xplMsgWarning, BAD_CAST "missing option name in config file (line %d), ignored\n", cur->line);
 			} else
@@ -407,7 +407,7 @@ void xplCleanupOptions(void)
 			continue;
 		if ((configEntries[i].cfg_type == CFG_TYPE_STRING) && *((xmlChar**) configEntries[i].value_ptr))
 		{
-			xmlFree(*((xmlChar**)configEntries[i].value_ptr));
+			XPL_FREE(*((xmlChar**)configEntries[i].value_ptr));
 			*((xmlChar**) configEntries[i].value_ptr) = NULL;
 		}
 	}
@@ -426,17 +426,17 @@ static xmlChar *xplGetOptionValueInner(xplConfigEntryPtr p, bool showPasswords)
 	{
 		case CFG_TYPE_BOOL:
 			if (*((int*) p->value_ptr))
-				return xmlStrdup(BAD_CAST "true");
+				return XPL_STRDUP("true");
 			else
-				return xmlStrdup(BAD_CAST "false");
+				return XPL_STRDUP("false");
 		case CFG_TYPE_INT:
 			snprintf((char*) int_buf, 12, "%d", *((int*) p->value_ptr));
-			return xmlStrdup(int_buf);
+			return XPL_STRDUP(int_buf);
 		case CFG_TYPE_STRING:
 			if ((p->options & CFG_OPTION_IS_PASSWORD) && !showPasswords)
 				return NULL;
 			else
-				return xmlStrdup(*((xmlChar**) p->value_ptr));
+				return XPL_STRDUP(*((xmlChar**) p->value_ptr));
 		case CFG_TYPE_DEFERRED: /* ToDo */
 			break;
 		default:
@@ -529,7 +529,7 @@ xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool b
 				value = bufferToHex(digest, RIPEMD160_DIGEST_LENGTH, false);
 				*((xmlChar**) p->value_ptr) = value;
 			} else
-				*((xmlChar**) p->value_ptr) = xmlStrdup(value);
+				*((xmlChar**) p->value_ptr) = XPL_STRDUP(value);
 			return XPL_SET_OPTION_OK;
 		case CFG_TYPE_INT:
 			if (!sscanf((char*) value, "%d", &int_value))

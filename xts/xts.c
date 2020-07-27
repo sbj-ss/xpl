@@ -76,7 +76,7 @@ bool xtsRunTest(const xtsTestPtr test, xtsContextPtr ctxt)
 	}
 	if (ctxt->error && ctxt->error_malloced)
 	{
-		xmlFree(ctxt->error);
+		XPL_FREE(ctxt->error);
 		ctxt->error_malloced = false;
 	}
 	ctxt->error = NULL;
@@ -266,7 +266,7 @@ static xmlChar* xtsExtractEntityId(xtsSkipListParserCtxtPtr ctxt)
 	)
 		ent_end++;
 	ent_id_len = ent_end - ctxt->cur;
-	ent_id = (xmlChar*) xmlMalloc(ent_id_len + 1);
+	ent_id = (xmlChar*) XPL_MALLOC(ent_id_len + 1);
 	strncpy(ent_id, ctxt->cur, ent_id_len);
 	*(ent_id + ent_id_len) = 0;
 	ctxt->new_cur = ent_end;
@@ -296,7 +296,7 @@ static bool xtsParseSkipListTest(xtsSkipListParserCtxtPtr ctxt)
 	xtsOmitSkipListSpace(ctxt);
 	test_id = xtsExtractEntityId(ctxt);
 	test = xtsLocateTest(ctxt->fixture, test_id);
-	xmlFree(test_id);
+	XPL_FREE(test_id);
 	if (!test)
 	{
 		ctxt->error = BAD_CAST "can't locate test";
@@ -331,7 +331,7 @@ static bool xtsParseSkipListFixture(xtsSkipListParserCtxtPtr ctxt)
 	xtsOmitSkipListSpace(ctxt);
 	fixture_id = xtsExtractEntityId(ctxt);
 	ctxt->fixture = xtsLocateFixture(ctxt->suite, fixture_id);
-	xmlFree(fixture_id);
+	XPL_FREE(fixture_id);
 	if (!ctxt->fixture)
 	{
 		ctxt->error = "can't locate fixture";
@@ -405,7 +405,7 @@ bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error)
 		strncpy(part, ctxt.cur, sizeof(part));
 		part[20] = 0;
 		error_len = 128; /* introducing XPR dependency is bad */
-		*error = xmlMalloc(error_len + 1);
+		*error = XPL_MALLOC(error_len + 1);
 		snprintf(*error, error_len, fmt, ctxt.error, part);
 		(*error)[error_len] = 0;
 	} else
@@ -454,7 +454,7 @@ int xtsInit(int argc, char** argv, xtsContextPtr ctxt, xtsFixturePtr *suite)
 		if (!xtsApplySkipList(skip_list, suite, &error))
 		{
 			xmlGenericError(xmlGenericErrorContext, "error parsing skip list: %s\n", error);
-			xmlFree(error);
+			XPL_FREE(error);
 			return 1;
 		}
 	return 0;

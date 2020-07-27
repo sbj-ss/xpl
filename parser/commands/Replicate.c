@@ -61,7 +61,7 @@ void xplCmdReplicatePrologue(xplCommandInfoPtr commandInfo)
 		setChildren(commandInfo->element, new_children);
 	}
 done:
-	if (before_count_attr) xmlFree(before_count_attr);
+	if (before_count_attr) XPL_FREE(before_count_attr);
 }
 
 void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
@@ -104,7 +104,7 @@ void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ASSIGN_RESULT(ret, repeat, true);	
 done:
 	if (after_count_attr)
-		xmlFree(after_count_attr);
+		XPL_FREE(after_count_attr);
 }
 
 xplCommand xplReplicateCommand = { xplCmdReplicatePrologue, xplCmdReplicateEpilogue };

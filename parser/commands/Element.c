@@ -36,7 +36,7 @@ void xplCmdElementEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	setChildren(el, detachContent(commandInfo->element));
 	ASSIGN_RESULT(el, repeat, true);
 done:
-	if (name_attr) xmlFree(name_attr);
+	if (name_attr) XPL_FREE(name_attr);
 }
 
 xplCommand xplElementCommand = { xplCmdElementPrologue, xplCmdElementEpilogue };

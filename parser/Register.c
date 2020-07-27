@@ -253,7 +253,7 @@ bool xplRegisterBuiltinCommands()
 			xplDisplayMessage(xplMsgError, BAD_CAST "command \"%s\" failed to initialize, error \"%s\"",
 				builtinCommands[i].name, cmd_error);
 			if (cmd_error)
-				xmlFree(cmd_error);
+				XPL_FREE(cmd_error);
 			return false;
 		}
 	}
