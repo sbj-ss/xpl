@@ -20,7 +20,7 @@ extern "C" {
 #define XPL_SESSION_ID_SIZE 8
 typedef struct _xplSession* xplSessionPtr;
 /* start/stop */
-XPLPUBFUN int XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplSessionManagerInit(time_t max_lifetime);
 XPLPUBFUN void XPLCALL
 	xplSessionManagerCleanup(void);

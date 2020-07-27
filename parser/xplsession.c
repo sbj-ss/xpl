@@ -26,20 +26,20 @@ typedef struct _xplSession
 	XPR_MUTEX locker;
 } xplSession;
 
-/* start/stop */ /* TODO bool ret */
-int xplSessionManagerInit(time_t max_lifetime)
+/* start/stop */
+bool xplSessionManagerInit(time_t max_lifetime)
 {
 	if (!session_mgr)
 		session_mgr = xmlHashCreate(16);
 	if (!session_mgr)
-		return -1;
+		return false;
 	max_session_lifetime = max_lifetime;
 	if (!xprMutexInit(&session_interlock))
 	{
 		xmlHashFree(session_mgr, NULL);
-		return -1;
+		return false;
 	}
-	return 0;
+	return true;
 }
 
 static void freeObjectCallback(void *payload, xmlChar *name)

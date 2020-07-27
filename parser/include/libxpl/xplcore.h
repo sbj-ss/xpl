@@ -31,7 +31,7 @@ typedef enum _xplError
 	XPL_ERR_NO_PARSER = -3,
 	XPL_ERR_INVALID_INPUT = -4,
 	XPL_ERR_NO_CONFIG_FILE = -5,
-	XPL_ERR_NOT_YET_REACHED = -6,
+	XPL_ERR_NOT_YET_REACHED = -6
 } xplError;
 
 XPLPUBFUN const xmlChar* XPLCALL 

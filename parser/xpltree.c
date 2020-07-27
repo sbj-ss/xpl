@@ -391,14 +391,19 @@ if ((n))								\
 static xmlChar* xmlStringText;
 static xmlChar* xmlStringComment;
 
-void initNamePointers()
+bool initNamePointers()
 {
 	xmlNodePtr cur = xmlNewText(NULL);
+	if (!cur)
+		return false;
 	xmlStringText = BAD_CAST cur->name;
 	XPL_FREE(cur);
 	cur = xmlNewComment(NULL);
+	if (!cur)
+		return false;
 	xmlStringComment = BAD_CAST cur->name;
 	XPL_FREE(cur);
+	return true;
 }
 
 xmlNsPtr newReconciliedNs(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns) 

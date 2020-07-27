@@ -132,12 +132,11 @@ static void FreeModulesCallback(void *payload, xmlChar *name)
 	xplUnloadModule(name);
 }
 
-int xplLoadableModulesCleanup(void)
+void xplLoadableModulesCleanup(void)
 {
 	xmlHashFree(loaded_modules, FreeModulesCallback);
 	if (!xprMutexCleanup(&module_locker))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	return 1;
 }
 
 xplModuleCmdResult xplLoadableModulesInit(void)

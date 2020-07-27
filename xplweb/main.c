@@ -70,6 +70,7 @@ int main(int argc, char* argv[])
 	xmlChar *error;
 	struct mg_callbacks callbacks;
 
+	xplInitMemory(xplDefaultDebugAllocation, xplDefaultUseTcmalloc);
 	init_server_name();
 	init_system_info();
 	mg_init_library(0);
@@ -115,9 +116,10 @@ int main(int argc, char* argv[])
 	xprSleep(1000);
 	free_system_info();
 	mg_exit_library();
-#ifdef _DEBUG
+#ifdef _LEAK_DETECTION
 	printf("Starting memory dump...\n");
 	xmlMemDisplay(stdout);
 #endif
+	xplCleanupMemory();
 	return (EXIT_SUCCESS);
 }

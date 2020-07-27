@@ -100,7 +100,7 @@ XPLPUBFUN void XPLCALL
 
 /* Copy nodes or node lists wrt their hierarchy.
    parent is only used for namespace search and IS NOT assigned to new nodes */
-XPLPUBFUN void XPLCALL
+XPLPUBFUN bool XPLCALL
 	initNamePointers(void);
 XPLPUBFUN xmlNodePtr XPLCALL
 	cloneNode(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc);

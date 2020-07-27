@@ -1137,61 +1137,88 @@ bool xplReadConfig()
 	return true;
 }
 
+static bool _ssLoadableModulesInit()
+{
+	return xplLoadableModulesInit() == XPL_MODULE_CMD_OK;
+}
+
+static bool _ssSessionManagerInit()
+{
+	return xplSessionManagerInit(cfgSessionLifetime);
+}
+
+static void _ssReleaseConfigBasedResources()
+{
+	xplCleanupDatabases();
+	xplCleanupOptions();
+	xplCleanupWrapperMap();
+}
+
+typedef struct _ParserStartStopStep
+{
+	bool (*start_fn)(void);
+	void (*stop_fn)(void);
+} ParserStartStopStep, *ParserStartStopStepPtr;
+
+static ParserStartStopStep start_stop_steps[] =
+{
+	{ _ssLoadableModulesInit, xplLoadableModulesCleanup },
+	{ xplReadConfig, _ssReleaseConfigBasedResources }, // TODO this should be split into individual steps
+	{ xplInitMessages, xplCleanupMessages },
+	{ xplInitCommands, xplCleanupCommands },
+	{ xplRegisterBuiltinCommands, NULL },
+	{ initNamePointers, NULL },
+	{ _ssSessionManagerInit, xplSessionManagerCleanup }
+};
+#define START_STOP_STEP_COUNT (sizeof(start_stop_steps) / sizeof(start_stop_steps[0]))
+
 xplError xplInitParser(xmlChar *cfgFile)
 {
+	int i, j;
+
 	if (parser_loaded)
 		return XPL_ERR_NO_ERROR;
-	if (xplLoadableModulesInit() != XPL_MODULE_CMD_OK)
-		return XPL_ERR_NO_PARSER;
 	if (!cfgFile)
 		return XPL_ERR_NO_CONFIG_FILE;
 	config_file_path = XPL_STRDUP(cfgFile);
-	if (!xplReadConfig())
+	for (i = 0; i < START_STOP_STEP_COUNT; i++)
 	{
-		parser_loaded = true;
-		xplDoneParser();
-		return XPL_ERR_NO_CONFIG_FILE;
+		if (!start_stop_steps[i].start_fn)
+			continue;
+		if (!start_stop_steps[i].start_fn())
+		{
+			for (j = i - 1; j >= 0; j--)
+			{
+				if (!start_stop_steps[j].stop_fn)
+					continue;
+				start_stop_steps[j].stop_fn();
+			}
+			XPL_FREE(config_file_path);
+			config_file_path = NULL;
+			return XPL_ERR_NO_PARSER;
+		}
 	}
-	if (!xplInitMessages())
-	{
-		parser_loaded = true;
-		xplDoneParser();
-		return XPL_ERR_NO_PARSER;
-	}
-	if (!xplInitCommands())
-	{
-		parser_loaded = true;
-		xplDoneParser();
-		return XPL_ERR_NO_PARSER;
-	}
-	if (!xplRegisterBuiltinCommands())
-	{
-		parser_loaded = true;
-		xplDoneParser();
-		return XPL_ERR_NO_PARSER;
-	}
-	initNamePointers();
-	xplSessionManagerInit(cfgSessionLifetime);
 	parser_loaded = true;
 	return XPL_ERR_NO_ERROR;
 }
 
 void xplDoneParser()
 {
+	int i;
+
 	if (!parser_loaded)
 		return;
-	xplLoadableModulesCleanup();
-	xplCleanupCommands();
-	xplCleanupDatabases();
-	xplCleanupOptions();
-	xplCleanupWrapperMap();
+	for (i = START_STOP_STEP_COUNT - 1; i >= 0; i--)
+	{
+		if (!start_stop_steps[i].stop_fn)
+			continue;
+		start_stop_steps[i].stop_fn();
+	}
 	if (config_file_path)
 	{
 		XPL_FREE(config_file_path);
 		config_file_path = NULL;
 	}
-	xplSessionManagerCleanup();
-	xplCleanupMessages();
 	parser_loaded = false;
 }
 

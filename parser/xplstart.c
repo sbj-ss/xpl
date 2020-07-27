@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <Configuration.h>
+#include <libxpl/abstraction/xpr.h>
 #include <libxpl/abstraction/xef.h>
 #include <libxpl/xplstart.h>
 #include <libxpl/xplcore.h>
@@ -26,41 +27,26 @@ static char* XMLCALL tc_strdup(const char *src)
 }
 #endif
 
-static bool startMem(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error)
+bool xplInitMemory(bool debugAllocation, bool useTcmalloc)
 {
-	int ret = 0;
-
-	UNUSED_PARAM(argc);
-	UNUSED_PARAM(argv);
-
-	if (params->debug_allocation && params->use_tcmalloc)
-	{
-		if (error)
-			*error = XPL_STRDUP(".debug_allocation and .use_tcmalloc can't be set simultaneously");
+	if (debugAllocation && useTcmalloc)
 		return false;
-	}
-	if (params->use_tcmalloc)
+	if (useTcmalloc)
 	{
 #ifdef _USE_TCMALLOC
 		ret = xmlMemSetup(tc_free, tc_malloc, tc_realloc, tc_strdup);
 #else
-		if (error)
-			*error = XPL_STRDUP("tcmalloc support not compiled in");
+		fprintf(stderr, "tcmalloc support not compiled in");
 		return false;
 #endif
 	}
-	if (params->debug_allocation)
-		ret = xmlMemSetup(xmlMemFree, xmlMemMalloc, xmlMemRealloc, xmlMemoryStrdup);
-	if (ret)
-	{
-		if (error)
-			*error = XPL_STRDUP("xmlMemSetup() failed");
-		return false;
-	}
+	if (debugAllocation)
+		if (xmlMemSetup(xmlMemFree, xmlMemMalloc, xmlMemRealloc, xmlMemoryStrdup))
+			return false;
 	return true;
 }
 
-static void stopMem(void)
+void xplCleanupMemory(void)
 {
 	xmlMemSetup(free, malloc, realloc, strdup);
 }
@@ -179,7 +165,6 @@ typedef struct _StartStopStep
 
 static StartStopStep start_stop_steps[] =
 {
-	{ startMem, stopMem },
 	{ startXpr, stopXpr },
 	{ startXml, stopXml },
 	{ startXef, stopXef },
@@ -208,3 +193,21 @@ void xplShutdownEngine()
 	for (i = START_STOP_STEP_COUNT - 1; i >= 0; i--)
 		start_stop_steps[i].stop_fn();
 }
+
+#ifdef _LEAK_DETECTION
+	const bool xplDefaultDebugAllocation = true;
+#else
+	const bool xplDefaultDebugAllocation = false;
+#endif
+
+#ifdef _USE_TCMALLOC
+	const bool xplDefaultUseTcmalloc = true;
+#else
+	const bool xplDefaultUseTcmalloc = false;
+#endif
+
+const xplStartParams xplDefaultStartParams =
+{
+	SFINIT(.xpr_start_flags, XPR_STARTSTOP_EVERYTHING),
+	SFINIT(.config_file_name, BAD_CAST "xpl.xml")
+};

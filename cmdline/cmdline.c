@@ -1,11 +1,9 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <libxml/xmlsave.h>
-#include <libxpl/abstraction/xpr.h>
-#include <libxpl/abstraction/xef.h>
 #include <libxpl/xplcore.h>
-#include <libxpl/xplmessages.h>
 #include <libxpl/xplsave.h>
+#include <libxpl/xplstart.h>
 
 xmlChar* getAppType(void)
 {
@@ -134,81 +132,55 @@ void parseCommandLine(int argc, char **argv)
 
 int main(int argc, char* argv[])
 {
-	xmlChar *real_conf_file, *app_path;
+	xmlChar *app_path = NULL;
 	xplError err_code;
-	xefStartupParams xef_params;
-	xmlChar *xef_error_text;
-
+	xmlChar *error_text = NULL;
 	xplDocumentPtr doc;
-	xplParamsPtr env;
-	xplSessionPtr session;
+	xplParamsPtr env = NULL;
+	xplSessionPtr session = NULL;
+	xplStartParams start_params;
+	int ret_code = 0;
 	LEAK_DETECTION_PREPARE
 
+	xplInitMemory(xplDefaultDebugAllocation, xplDefaultUseTcmalloc);
 	parseCommandLine(argc, argv);
-	/* start low-level layers */
-#ifdef _LEAK_DETECTION
-	xmlMemSetup(xmlMemFree, xmlMemMalloc, xmlMemRealloc, xmlMemoryStrdup);
-#endif
-	LEAK_DETECTION_START
 
-	xprParseCommandLine();
-	xprStartup(XPR_FEATURES_NEEDED);
-	xmlInitParser();
-    LIBXML_TEST_VERSION
-
-	if (!xefStartup(&xef_params))
-	{
-		if (xef_params.error)
-		{
-			xef_error_text = xefGetErrorText(xef_params.error);
-			xplDisplayMessage(xplMsgError, xef_error_text);
-			XPL_FREE(xef_error_text);
-			xefFreeErrorMessage(xef_params.error);
-		} else
-			xplDisplayMessage(xplMsgError, BAD_CAST "external libraries startup failed (unknown error)");
-		xmlCleanupParser();
-		xprShutdown(XPR_FEATURES_NEEDED);
-		exit(-2);
-	}
-
-	/* figure out parameter values */
+	/* locate config */
 	app_path = xprGetProgramPath();
+	memcpy(&start_params, &xplDefaultStartParams, sizeof(xplStartParams));
 	if (conf_file)
-		real_conf_file = XPL_STRDUP(conf_file);
-	else {
-		real_conf_file = XPL_STRDUP(app_path);
-		real_conf_file = XPL_STRDUP(real_conf_file, BAD_CAST XPR_PATH_DELIM_STR"xpl.xml");
-	}
+		start_params.config_file_name = conf_file;
 
 	/* start XPL engine */
-	err_code = xplInitParser(real_conf_file);
-	if (err_code != XPL_ERR_NO_ERROR)
+	if (!xplStartEngine((const xplStartParamsPtr) &xplDefaultStartParams, argc, (const char**) argv, &error_text))
 	{
-		xplDisplayMessage(xplMsgError, BAD_CAST "error starting interpreter: \"%s\"", xplErrorToString(err_code));
-		xefShutdown();
-		xmlCleanupParser();
-		xprShutdown(XPR_FEATURES_NEEDED);
-		exit(-3);
+		printf("Error starting XPL engine: %s\n", error_text);
+		if (error_text)
+			XPL_FREE(error_text);
+		ret_code = 1;
+		goto cleanup;
 	}
+
 	xplSetGetAppTypeFunc(getAppType);
 
-	/* create aux structures */
+	/* create auxiliary structures */
 	session = xplSessionCreateWithAutoId();
 	env = xplParamsCreate();
 
 	/* quick hack: we need to provide working parameters and session somehow.
 	 * parsing arbitrary input would mean duplicating the interpreter code.
-	 * the quickest way is to run a special xpl file over xml input files and reuse filled environment and session. */
+	 * the quickest way is to run a special XPL file over XML input files and reuse filled environment and session. */
 	if (params_file || session_file)
 	{
-		xplParamAddValue(env, BAD_CAST "ParamsFile", XPL_STRDUP(params_file), XPL_PARAM_TYPE_USERDATA);
-		xplParamAddValue(env, BAD_CAST "SessionFile", XPL_STRDUP(session_file), XPL_PARAM_TYPE_USERDATA);
-		xplParamAddValue(env, BAD_CAST "HelperFunction", XPL_STRDUP(BAD_CAST "Load"), XPL_PARAM_TYPE_USERDATA);
+		xplParamAddValue(env, BAD_CAST "ParamsFile", XPL_STRDUP(params_file? (char*) params_file: ""), XPL_PARAM_TYPE_USERDATA);
+		xplParamAddValue(env, BAD_CAST "SessionFile", XPL_STRDUP(session_file? (char*) session_file: ""), XPL_PARAM_TYPE_USERDATA);
+		xplParamAddValue(env, BAD_CAST "HelperFunction", XPL_STRDUP("Load"), XPL_PARAM_TYPE_USERDATA);
 		err_code = xplProcessFile(app_path, HELPER_FILE, env, session, &doc);
 		xplDocumentFree(doc);
 		if (err_code != XPL_ERR_NO_ERROR)
 		{
 			fprintf(stderr, "error: %s returned an error \"%s\" parsing session and/or parameters files\n", HELPER_FILE, xplErrorToString(err_code));
+			ret_code = 2;
 			goto cleanup;
 		}
 	}
@@ -218,8 +190,10 @@ int main(int argc, char* argv[])
 	err_code = xplProcessFile(app_path, in_file, env, session, &doc);
 	if ((err_code >= XPL_ERR_NO_ERROR) && doc)
 		saveXmlDocToFile(doc->document, out_file, encoding, XML_SAVE_FORMAT);
-	else
+	else {
 		fprintf(stderr, "error processing document: %s\n", xplErrorToString(err_code));
+		ret_code = 3;
+	}
 	if (doc)
 		xplDocumentFree(doc);
 	xmlResetLastError(); 
@@ -229,21 +203,30 @@ int main(int argc, char* argv[])
 	 * use the helper file again */
 	if (save_session)
 	{
-		xplParamReplaceValue(env, BAD_CAST "SessionFile", XPL_STRDUP(session_file), XPL_PARAM_TYPE_USERDATA);
-		xplParamReplaceValue(env, BAD_CAST "HelperFunction", XPL_STRDUP(BAD_CAST "Save"), XPL_PARAM_TYPE_USERDATA);
-		err_code = xplProcessFile(app_path, HELPER_FILE, env, session, &doc);
-		xplDocumentFree(doc);
-		if (err_code != XPL_ERR_NO_ERROR)
-			fprintf(stderr, "error: %s returned an error \"%s\" saving session file\n", HELPER_FILE, xplErrorToString(err_code));
+		if (!session_file)
+			fprintf(stderr, "can't save session: no session file name specified!");
+		else {
+			xplParamReplaceValue(env, BAD_CAST "SessionFile", XPL_STRDUP(session_file), XPL_PARAM_TYPE_USERDATA);
+			xplParamReplaceValue(env, BAD_CAST "HelperFunction", XPL_STRDUP(BAD_CAST "Save"), XPL_PARAM_TYPE_USERDATA);
+			err_code = xplProcessFile(app_path, HELPER_FILE, env, session, &doc);
+			xplDocumentFree(doc);
+			if (err_code != XPL_ERR_NO_ERROR)
+				fprintf(stderr, "error: %s returned an error \"%s\" saving session file\n", HELPER_FILE, xplErrorToString(err_code));
+		}
 	}
 
 cleanup:
-	xplDeleteSession(xplSessionGetId(session));
-	xplParamsFree(env);
-	xplDoneParser();
-	xefShutdown();
-	xmlCleanupParser();
-	xprShutdown(XPR_FEATURES_NEEDED);
-	return 0;
+	if (session)
+		xplDeleteSession(xplSessionGetId(session));
+	if (env)
+		xplParamsFree(env);
+	xplShutdownEngine();
+	if (app_path)
+		XPL_FREE(app_path);
+#ifdef _LEAK_DETECTION
+	printf("Starting memory dump...\n");
+	xmlMemDisplay(stdout);
+#endif
+	xplCleanupMemory();
+	return ret_code;
 }
-

@@ -128,7 +128,7 @@ XPLPUBFUN xmlChar* XPLCALL
 	xplLoadedModulesToString(const xmlChar *delimiter);
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplLoadedModulesToNodeList(const xmlChar *tagQName, xmlNodePtr parent);
-XPLPUBFUN int XPLCALL
+XPLPUBFUN void XPLCALL
 	xplLoadableModulesCleanup(void);
 
 XPLPUBFUN xmlNodePtr XPLCALL
