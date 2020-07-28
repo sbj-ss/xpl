@@ -539,7 +539,7 @@ static int rowno = 0;
 				buffer = ctxt->buffer;
 			} else if (would_grow) {
 				ctxt->buffer = (SQLWCHAR*) XPL_REALLOC(ctxt->buffer, ctxt->buffer_size*2);
-				field_size += ctxt->buffer_size;
+				field_size = ctxt->buffer_size - sizeof(SQLWCHAR);
 				buffer = ctxt->buffer + ctxt->buffer_size / sizeof(SQLWCHAR) - 1;
 				ctxt->buffer_size *= 2;
 			} else
@@ -549,7 +549,7 @@ static int rowno = 0;
 				_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): not enough memory for ctxt->buffer", __FUNCTION__));
 				goto error;
 			}
-			r = SQLGetData(ctxt->statement, i + 1, SQL_C_WCHAR, buffer, ctxt->buffer_size / (would_grow? 2: 1), &len_or_ind);
+			r = SQLGetData(ctxt->statement, i + 1, SQL_C_WCHAR, buffer, ctxt->buffer_size - field_size, &len_or_ind);
 			would_grow = true;
 		} while (r == SQL_SUCCESS_WITH_INFO);
 		if (!SQL_SUCCEEDED(r))
@@ -567,8 +567,11 @@ static int rowno = 0;
 			field->is_null = false;
 			if (len_or_ind == SQL_NO_TOTAL)
 				field_size = sqlwcharlen(ctxt->buffer) * sizeof(SQLWCHAR);
-			else
+			else {
 				field_size += len_or_ind;
+				while (!*(ctxt->buffer + field_size/sizeof(SQLWCHAR) - 1))
+					field_size -= sizeof(SQLWCHAR);
+			}
 			iconv_string("utf-8", "utf-16le", (char*) ctxt->buffer, ((char*) ctxt->buffer) + field_size, (char**) &(field->value), &(field->value_size));
 			if (!field->value)
 			{
