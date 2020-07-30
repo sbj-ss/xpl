@@ -1,9 +1,8 @@
+#include "libxpl/abstraction/xpr.h"
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsession.h>
-#include <libxpl/xplutils.h>
 #include "commands/Restart.h"
-#include "abstraction/xpr.h"
 
 void xplCmdRestartPrologue(xplCommandInfoPtr commandInfo)
 {

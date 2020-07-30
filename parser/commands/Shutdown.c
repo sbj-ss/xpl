@@ -2,7 +2,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsession.h>
-#include <libxpl/xplutils.h>
 #include "commands/Shutdown.h"
 
 void xplCmdShutdownPrologue(xplCommandInfoPtr commandInfo)

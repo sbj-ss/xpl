@@ -1,7 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsession.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xpltree.h>
 #include "commands/GetDB.h"
 
 void xplCmdGetDBPrologue(xplCommandInfoPtr commandInfo)

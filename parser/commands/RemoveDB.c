@@ -1,6 +1,5 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplutils.h>
 #include "commands/RemoveDB.h"
 
 void xplCmdRemoveDBPrologue(xplCommandInfoPtr commandInfo)

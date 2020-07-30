@@ -1,7 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsession.h>
-#include <libxpl/xplutils.h>
 #include "commands/SetSaMode.h"
 
 void xplCmdSetSaModePrologue(xplCommandInfoPtr commandInfo)
