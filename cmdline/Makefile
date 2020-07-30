@@ -6,7 +6,10 @@
 INCLUDE = -I../parser/include -I/usr/include/libxml2
 LIBS = -lxml2 -lxpl -lonig -lcrypto -ltidy -lidn -lodbc
 WARNINGS = -Wall -Werror
-CFLAGS = -L../parser -g $(WARNINGS)
+CFLAGS = -L../parser $(WARNINGS)
+ifeq ($(DEBUG), 1)
+CFLAGS += -g -D_DEBUG
+endif
 
 .DEFAULT_GOAL = all
 

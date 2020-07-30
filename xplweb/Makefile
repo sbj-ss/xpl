@@ -6,7 +6,10 @@
 INCLUDE = -I./include -I../parser/include -I ../civetweb/include -I/usr/include/libxml2
 LIBS = -lxml2 -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -ldl -lpthread -lcivetweb
 WARNINGS = -Wall -Werror
-CFLAGS = -L../parser -L../civetweb -g $(WARNINGS)
+CFLAGS = -L../parser -L../civetweb $(WARNINGS)
+ifeq ($(DEBUG), 1)
+CFLAGS += -g -D_DEBUG
+endif
 
 BUILD_DIR = build
 SRC = cw.c glue.c main.c

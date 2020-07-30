@@ -6,7 +6,10 @@
 INCLUDE = -I./include -I./tests/include -I../xts/include -I/usr/include/libxml2
 LIBS = -lxml2 -lxpl -lonig -ltidy -lcrypto -lidn -lodbc
 WARNINGS = -Wall -Werror
-CFLAGS = -fpic -D_IN_DLL -g $(WARNINGS)
+CFLAGS = -fpic -D_IN_DLL $(WARNINGS)
+ifeq ($(DEBUG), 1)
+CFLAGS += -g -D_DEBUG
+endif
 
 SRC = \
 abstraction/xef.c\
@@ -120,7 +123,7 @@ commands/When.c\
 commands/With.c\
 commands/XJsonSerialize.c
 
-ifdef $(DYNACONF_SUPPORT)
+ifeq ($(DYNACONF_SUPPORT), 1)
 CFLAGS += -D_DYNACONF_SUPPORT
 COMMANDS += \
 commands/AddDB.c\
@@ -135,19 +138,19 @@ commands/SetSaMode.c\
 commands/Shutdown.c
 endif
 
-ifdef $(THREADING_SUPPORT)
+ifeq ($(THREADING_SUPPORT), 1)
 CFLAGS += -D_THREADING_SUPPORT
 COMMANDS +=\
 commands/StartThreadAndWait.c\
 commands/WaitForThreads.c
 endif
 
-ifdef $(USE_CRASH_COMMAND)
+ifeq ($(USE_CRASH_COMMAND), 1)
 CFLAGS += -D_USE_CRASH_COMMAND
 COMMANDS += commands/Crash.c
 endif
 
-ifdef $(FILEOP_SUPPORT)
+ifeq ($(FILEOP_SUPPORT), 1)
 CFLAGS += -D_FILEOP_SUPPORT
 COMMANDS += commands/FileOp.c
 endif
