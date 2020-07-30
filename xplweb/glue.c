@@ -352,6 +352,7 @@ done:
 		xplDocumentFree(doc);
 	if (params)
 		xplParamsFree(params);
+	xmlResetLastError();
 	LEAK_DETECTION_STOP
 
 	return http_code;
