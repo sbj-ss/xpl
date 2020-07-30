@@ -5,7 +5,8 @@
 
 INCLUDE = -I../parser/include -I/usr/include/libxml2
 LIBS = -lxml2 -lxpl -lonig -lcrypto -ltidy -lidn -lodbc
-CFLAGS = -L../parser -g
+WARNINGS = -Wall -Werror
+CFLAGS = -L../parser -g $(WARNINGS)
 
 .DEFAULT_GOAL = all
 
@@ -16,6 +17,6 @@ cmdline: cmdline.o
 	gcc $(CFLAGS) -o $@ $< $(LIBS)
 	
 clean:
-	rm *.o
+	rm *.o cmdline || /bin/true
 	
 all: cmdline

@@ -20,8 +20,8 @@ xmlChar* getAppType(void)
 	--save-session
 */
 
-char *in_file = "test.xml";
-char *out_file = "test_out.xml";
+xmlChar *in_file = BAD_CAST "test.xml";
+xmlChar *out_file = BAD_CAST "test_out.xml";
 xmlChar *conf_file = NULL;
 xmlChar *params_file = NULL;
 xmlChar *session_file = NULL;
@@ -80,6 +80,7 @@ static struct option option_list[] =
 	}
 };
 
+// TODO windows and file names (wchar_t command line is needed)
 void parseCommandLine(int argc, char **argv)
 {
 	int option_index;
@@ -94,19 +95,19 @@ void parseCommandLine(int argc, char **argv)
 		case 0:
 			break; /* flag */
 		case 'i':
-			in_file = optarg;
+			in_file = BAD_CAST optarg;
 			break;
 		case 'o':
-			out_file = optarg;
+			out_file = BAD_CAST optarg;
 			break;
 		case 'c':
-			conf_file = optarg;
+			conf_file = BAD_CAST optarg;
 			break;
 		case 'p':
-			params_file = optarg;
+			params_file = BAD_CAST optarg;
 			break;
 		case 's':
-			session_file = optarg;
+			session_file = BAD_CAST optarg;
 			break;
 		case 'e':
 			encoding = optarg;
@@ -172,9 +173,9 @@ int main(int argc, char* argv[])
 	 * the quickest way is to run a special XPL file over XML input files and reuse filled environment and session. */
 	if (params_file || session_file)
 	{
-		xplParamAddValue(env, BAD_CAST "ParamsFile", XPL_STRDUP(params_file? (char*) params_file: ""), XPL_PARAM_TYPE_USERDATA);
-		xplParamAddValue(env, BAD_CAST "SessionFile", XPL_STRDUP(session_file? (char*) session_file: ""), XPL_PARAM_TYPE_USERDATA);
-		xplParamAddValue(env, BAD_CAST "HelperFunction", XPL_STRDUP("Load"), XPL_PARAM_TYPE_USERDATA);
+		xplParamAddValue(env, BAD_CAST "ParamsFile", BAD_CAST XPL_STRDUP(params_file? (char*) params_file: ""), XPL_PARAM_TYPE_USERDATA);
+		xplParamAddValue(env, BAD_CAST "SessionFile", BAD_CAST XPL_STRDUP(session_file? (char*) session_file: ""), XPL_PARAM_TYPE_USERDATA);
+		xplParamAddValue(env, BAD_CAST "HelperFunction", BAD_CAST XPL_STRDUP("Load"), XPL_PARAM_TYPE_USERDATA);
 		err_code = xplProcessFile(app_path, HELPER_FILE, env, session, &doc);
 		xplDocumentFree(doc);
 		if (err_code != XPL_ERR_NO_ERROR)
@@ -206,8 +207,8 @@ int main(int argc, char* argv[])
 		if (!session_file)
 			fprintf(stderr, "can't save session: no session file name specified!");
 		else {
-			xplParamReplaceValue(env, BAD_CAST "SessionFile", XPL_STRDUP(session_file), XPL_PARAM_TYPE_USERDATA);
-			xplParamReplaceValue(env, BAD_CAST "HelperFunction", XPL_STRDUP(BAD_CAST "Save"), XPL_PARAM_TYPE_USERDATA);
+			xplParamReplaceValue(env, BAD_CAST "SessionFile", BAD_CAST XPL_STRDUP((char*) session_file), XPL_PARAM_TYPE_USERDATA);
+			xplParamReplaceValue(env, BAD_CAST "HelperFunction", BAD_CAST XPL_STRDUP("Save"), XPL_PARAM_TYPE_USERDATA);
 			err_code = xplProcessFile(app_path, HELPER_FILE, env, session, &doc);
 			xplDocumentFree(doc);
 			if (err_code != XPL_ERR_NO_ERROR)
