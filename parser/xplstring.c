@@ -512,7 +512,7 @@ void composeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **nor
 		strncat((char*) *normalizedPath, (char*) relativePath, *normalizedFilename - relativePath);
 	} else {
 		*normalizedFilename = relativePath;
-		*normalizedPath = BAD_CAST XPL_STRDUP(basePath);
+		*normalizedPath = BAD_CAST XPL_STRDUP((char*) basePath);
 	}
 	if (*normalizedPath)
 		xprConvertSlashes(*normalizedPath);

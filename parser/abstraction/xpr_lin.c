@@ -37,7 +37,7 @@ static xmlChar *convertToFSPath(const xmlChar *path)
 {
 	xmlChar *internal_path;
 
-	internal_path = BAD_CAST XPL_STRDUP(path);
+	internal_path = BAD_CAST XPL_STRDUP((char*) path);
 	if (!internal_path)
 		return NULL;
 	xprConvertSlashes(internal_path);

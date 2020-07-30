@@ -126,7 +126,7 @@ static bool startXpl(const xplStartParamsPtr params, int argc, const char **argv
 	xplError err_code;
 
 	if (xmlStrchr(params->config_file_name, XPR_PATH_DELIM))
-		conf_path = BAD_CAST XPL_STRDUP(params->config_file_name);
+		conf_path = BAD_CAST XPL_STRDUP((char*) params->config_file_name);
 	else {
 		/* argv[0] can be just "xplweb" on windows :\ */
 		fn_pos = strrchr(argv[0], XPR_PATH_DELIM);
@@ -137,7 +137,7 @@ static bool startXpl(const xplStartParamsPtr params, int argc, const char **argv
 			conf_path[fn_pos - argv[0] + 1] = 0;
 			strcat((char*) conf_path, (char*) params->config_file_name);
 		} else
-			conf_path = BAD_CAST XPL_STRDUP(params->config_file_name);
+			conf_path = BAD_CAST XPL_STRDUP((char*) params->config_file_name);
 	}
 
 	err_code = xplInitParser(conf_path);

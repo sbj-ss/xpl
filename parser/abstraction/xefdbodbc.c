@@ -246,7 +246,7 @@ bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **m
 
 	if (msg)
 	{
-		stars = BAD_CAST XPL_STRDUP(connString);
+		stars = BAD_CAST XPL_STRDUP((char*) connString);
 		pw = BAD_CAST xmlStrcasestr(stars, BAD_CAST "PWD=");
 		/* TODO: there may be quotes. we need some parsing here */
 		if (pw)

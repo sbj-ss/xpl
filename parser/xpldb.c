@@ -38,7 +38,7 @@ xplDBListPtr xplDBListCreate(const xmlChar *connString)
 		XPL_FREE(ret);
 		return NULL;
 	}
-	ret->conn_string = BAD_CAST XPL_STRDUP(connString);
+	ret->conn_string = BAD_CAST XPL_STRDUP((char*) connString);
 	return ret;
 }
 

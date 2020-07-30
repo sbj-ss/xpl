@@ -6,7 +6,7 @@
 static XEF_GET_ERROR_TEXT_PROTO(Common)
 {
 	xefCommonErrorMessagePtr real_msg = (xefCommonErrorMessagePtr) msg;
-	return BAD_CAST XPL_STRDUP(real_msg->error_text);
+	return BAD_CAST XPL_STRDUP((char*) real_msg->error_text);
 }
 
 static XEF_FREE_ERROR_MESSAGE_PROTO(Common)

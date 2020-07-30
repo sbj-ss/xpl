@@ -112,7 +112,7 @@ void xplCmdGetVersionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	part_attr = xmlGetNoNsProp(commandInfo->element, PART_ATTR);
 	if (!part_attr || !xmlStrcasecmp(part_attr, BAD_CAST "full"))
 	{
-		ver = BAD_CAST XPL_STRDUP(XPL_VERSION_FULL);
+		ver = BAD_CAST XPL_STRDUP((char*) XPL_VERSION_FULL);
 	} else if (!xmlStrcasecmp(part_attr, BAD_CAST "major")) {
 		ver = (xmlChar*) XPL_MALLOC(12);
 		sprintf((char*) ver, "%d", XPL_VERSION_MAJOR);

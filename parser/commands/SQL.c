@@ -266,7 +266,7 @@ static bool _TdsFragmentRowScanner(xefDbRowPtr row, void *payload)
 			{
 				col->children = col->last = xmlNewDocText(ctxt->parent->doc, NULL);
 				col->children->parent = col;
-				col->children->content = row->fields[i].needs_copy? BAD_CAST XPL_STRDUP(row->fields[i].value): row->fields[i].value;
+				col->children->content = row->fields[i].needs_copy? BAD_CAST XPL_STRDUP((char*) row->fields[i].value): row->fields[i].value;
 			} else if (!row->fields[i].needs_copy)
 				XPL_FREE(row->fields[i].value);
 		}

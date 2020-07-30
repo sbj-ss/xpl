@@ -57,9 +57,9 @@ void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 #endif
 	ret = xmlNewDocText(commandInfo->element->doc, NULL);
 	if (match)
-		ret->content = BAD_CAST XPL_STRDUP(BAD_CAST "true");
+		ret->content = BAD_CAST XPL_STRDUP((char*) BAD_CAST "true");
 	else
-		ret->content = BAD_CAST XPL_STRDUP(BAD_CAST "false");
+		ret->content = BAD_CAST XPL_STRDUP((char*) BAD_CAST "false");
 	ASSIGN_RESULT(ret, false, true);
 done:
 	if (regex_attr)

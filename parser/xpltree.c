@@ -53,7 +53,7 @@ xmlChar* getPropValue(xmlAttrPtr prop)
 	if (!prop->children)
 		return BAD_CAST XPL_STRDUP("");
 	if (!prop->children->next && ((prop->children->type == XML_TEXT_NODE) || (prop->children->type == XML_CDATA_SECTION_NODE)))
-		return BAD_CAST XPL_STRDUP(prop->children->content);
+		return BAD_CAST XPL_STRDUP((char*) prop->children->content);
 	return xmlNodeListGetString(prop->doc, prop->children, 1);
 }
 
@@ -617,7 +617,7 @@ xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xml
         if ((doc != NULL) && (doc->dict != NULL))
 		    ret->name = xmlDictLookup(doc->dict, node->name, -1);
 		else
-			ret->name = BAD_CAST XPL_STRDUP(node->name);
+			ret->name = BAD_CAST XPL_STRDUP((char*) node->name);
     }
     if ((node->type != XML_ELEMENT_NODE) &&
 		(node->content != NULL) &&
@@ -625,7 +625,7 @@ xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xml
 		(node->type != XML_XINCLUDE_END) &&
 		(node->type != XML_XINCLUDE_START)) 
 	{
-		ret->content = BAD_CAST XPL_STRDUP(node->content);
+		ret->content = BAD_CAST XPL_STRDUP((char*) node->content);
     } else {
       if (node->type == XML_ELEMENT_NODE)
         ret->line = node->line;

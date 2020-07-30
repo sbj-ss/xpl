@@ -109,7 +109,7 @@ static void getSourceStep(IncludeContextPtr ctxt)
 	} else if (uri_attr) {
 		if (xmlStrstr(uri_attr, BAD_CAST "file:///") == uri_attr)
 		{
-			ctxt->uri = BAD_CAST XPL_STRDUP(file_attr + 8);
+			ctxt->uri = BAD_CAST XPL_STRDUP((char*) file_attr + 8);
 			ctxt->input_source = INPUT_SOURCE_FILE;
 			XPL_FREE(uri_attr);
 		} else if ((xmlStrstr(uri_attr, BAD_CAST "ftp://") == uri_attr) || (xmlStrstr(uri_attr, BAD_CAST "http://") == uri_attr)) {

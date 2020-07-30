@@ -102,7 +102,7 @@ static xplSessionPtr xplSessionCreateInner(const xmlChar *id)
 	(void) xmlNewProp(root, BAD_CAST "id", id);
 	ret->doc->children = root;
 	time(&ret->init_ts);
-	ret->id = BAD_CAST XPL_STRDUP(id);
+	ret->id = BAD_CAST XPL_STRDUP((char*) id);
 	ret->valid = true;
 	ret->just_created = true;
 	xmlHashAddEntry(session_mgr, id, (void*) ret);

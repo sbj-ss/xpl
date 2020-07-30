@@ -86,7 +86,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlSetListDoc(root, child->document);
 	if (commandInfo->document->filename)
 	{
-		child->filename = BAD_CAST XPL_STRDUP(commandInfo->document->filename);
+		child->filename = BAD_CAST XPL_STRDUP((char*) commandInfo->document->filename);
 		child->document->URL = (xmlChar*) XPL_MALLOC((size_t) xmlStrlen(commandInfo->document->filename) + 8);
 		sprintf((char*) child->document->URL, "[FORK] %s", commandInfo->document->filename);
 	} else

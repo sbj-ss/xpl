@@ -289,7 +289,7 @@ static void xplReadOption(xplConfigEntryPtr opt, xmlChar *value)
 	switch (opt->cfg_type)
 	{
 		case CFG_TYPE_STRING:
-			*((xmlChar**) opt->value_ptr) = BAD_CAST XPL_STRDUP(value);
+			*((xmlChar**) opt->value_ptr) = BAD_CAST XPL_STRDUP((char*) value);
 			break;
 		case CFG_TYPE_INT:
 			if (sscanf((char*) value, "%d", (int*) opt->value_ptr) != 1)
@@ -420,7 +420,7 @@ void xplCleanupOptions(void)
 
 static xmlChar *xplGetOptionValueInner(xplConfigEntryPtr p, bool showPasswords)
 {
-	xmlChar int_buf[12];
+	char int_buf[12];
 
 	switch (p->cfg_type)
 	{
@@ -430,13 +430,13 @@ static xmlChar *xplGetOptionValueInner(xplConfigEntryPtr p, bool showPasswords)
 			else
 				return BAD_CAST XPL_STRDUP("false");
 		case CFG_TYPE_INT:
-			snprintf((char*) int_buf, 12, "%d", *((int*) p->value_ptr));
+			snprintf(int_buf, 12, "%d", *((int*) p->value_ptr));
 			return BAD_CAST XPL_STRDUP_NO_CHECK(int_buf);
 		case CFG_TYPE_STRING:
 			if ((p->options & CFG_OPTION_IS_PASSWORD) && !showPasswords)
 				return NULL;
 			else
-				return BAD_CAST XPL_STRDUP(*((xmlChar**) p->value_ptr));
+				return BAD_CAST XPL_STRDUP(*((char**) p->value_ptr));
 		case CFG_TYPE_DEFERRED: /* ToDo */
 			break;
 		default:
@@ -529,7 +529,7 @@ xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool b
 				value = bufferToHex(digest, RIPEMD160_DIGEST_LENGTH, false);
 				*((xmlChar**) p->value_ptr) = value;
 			} else
-				*((xmlChar**) p->value_ptr) = BAD_CAST XPL_STRDUP(value);
+				*((xmlChar**) p->value_ptr) = BAD_CAST XPL_STRDUP((char*) value);
 			return XPL_SET_OPTION_OK;
 		case CFG_TYPE_INT:
 			if (!sscanf((char*) value, "%d", &int_value))
