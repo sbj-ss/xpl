@@ -159,37 +159,47 @@ xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 	GetCommandsFunc get_commands_func;
 	xplExternalCommandsPtr cmds;
 	int i;
-	xmlChar i_buffer[12];
 	xplModuleCmdResult ret;
 	xmlChar *cmd_error;
 	void *prev;
 
 	if (!loaded_modules)
+	{
+		ASSIGN_ERR_DATA(BAD_CAST XPL_STRDUP("XPL interpreter not initialized"));
 		return XPL_MODULE_CMD_NO_PARSER;
+	}
 	if (!xprMutexAcquire(&module_locker))
 	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		ASSIGN_ERR_DATA(BAD_CAST XPL_STRDUP("locking error"));
 		return XPL_MODULE_CMD_LOCK_ERROR;
 	}
 	prev = xmlHashLookup(loaded_modules, name);
 	if (!xprMutexRelease(&module_locker))
 	{
+		// don't fail here
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return XPL_MODULE_CMD_LOCK_ERROR;
 	}
 	if (prev)
+	{
+		ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "module %s is already loaded", name));
 		return XPL_MODULE_CMD_MODULE_ALREADY_LOADED;
+	}
 	ASSIGN_ERR_DATA(NULL);
 	path_with_ext = (xmlChar*) XPL_MALLOC(xmlStrlen(name) + xmlStrlen(XPR_SHARED_OBJECT_EXT) + 1);
 	if (!path_with_ext)
+	{
+		ASSIGN_ERR_DATA(BAD_CAST XPL_STRDUP("insufficient memory for module path"));
 		return XPL_MODULE_CMD_INSUFFICIENT_MEMORY;
+	}
 	*path_with_ext = 0;
 	strcpy((char*) path_with_ext, (char*) name);
 	strcat((char*) path_with_ext, (char*) XPR_SHARED_OBJECT_EXT);
 	hmodule = xprLoadSharedObject(path_with_ext);
 	if (!hmodule)
 	{
-		ASSIGN_ERR_DATA(path_with_ext);
+		ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "module %s not found", path_with_ext));
+		XPL_FREE(path_with_ext);
 		return XPL_MODULE_CMD_MODULE_NOT_FOUND;
 	}
 	XPL_FREE(path_with_ext);
@@ -197,32 +207,33 @@ xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 	if (!get_commands_func)
 	{
 		xprUnloadSharedObject(hmodule);
+		ASSIGN_ERR_DATA(BAD_CAST XPL_STRDUP("function GetCommands not found in module"));
 		return XPL_MODULE_CMD_INVALID_MODULE_FORMAT;
 	}
 	cmds = get_commands_func();
 	if (!cmds || cmds->magic != PLUGGABLE_MODULE_MAGIC)
 	{
 		xprUnloadSharedObject(hmodule);
+		ASSIGN_ERR_DATA(BAD_CAST XPL_STRDUP("wrong module signature"));
 		return XPL_MODULE_CMD_INVALID_MODULE_FORMAT;
 	}
 	if (cmds->version > PLUGGABLE_MODULE_VERSION)
 	{
-		snprintf((char*) i_buffer, 12, "%d", cmds->version);
 		xprUnloadSharedObject(hmodule);
-		ASSIGN_ERR_DATA(XPL_STRDUP(i_buffer));
+		ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "module version (%d) is newer than the interpreter (%d)", cmds->version, PLUGGABLE_MODULE_VERSION));
 		return XPL_MODULE_CMD_UNSUPPORTED_VERSION;
 	}
-	if (cmds->version < 2)
+	if (cmds->version < PLUGGABLE_MODULE_VERSION)
 	{
-		snprintf((char*) i_buffer, 12, "%d", cmds->version);
 		xprUnloadSharedObject(hmodule);
-		ASSIGN_ERR_DATA(XPL_STRDUP(i_buffer));
+		ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "module version (%d) is too old", cmds->version));
 		return XPL_MODULE_CMD_VERSION_TOO_OLD;
 	}
 	cmds->handle = (void*) hmodule;
 	if (!xprMutexAcquire(&module_locker))
 	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		ASSIGN_ERR_DATA(BAD_CAST XPL_STRDUP("locking error"));
 		xprUnloadSharedObject(hmodule);
 		return XPL_MODULE_CMD_LOCK_ERROR;
 	}
@@ -230,8 +241,7 @@ xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 	{
 		if (cmds->commands[i].magic != PLUGGABLE_MODULE_MAGIC)
 		{
-			snprintf((char*) i_buffer, 12, "%d", i);
-			ASSIGN_ERR_DATA(XPL_STRDUP(i_buffer));
+			ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "command #%d: wrong signature", i));
 			xplUnloadModule(name);
 			if (!xprMutexRelease(&module_locker))
 				DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -239,10 +249,9 @@ xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 		}
 		if ((ret = xplRegisterCommand((const xmlChar*) cmds->commands[i].name, cmds->commands[i].cmd, &cmd_error)) != XPL_MODULE_CMD_OK)
 		{
-			ASSIGN_ERR_DATA(XPL_STRDUP(cmds->commands[i].name));
-			/* ToDo: pass error to caller */
-			xplDisplayMessage(xplMsgError, BAD_CAST "loading module \"%s\": command \"%s\" failed to initialize, error\"%s\"", name, cmds->commands[i].name, cmd_error);
-			if (cmd_error) XPL_FREE(cmd_error);
+			ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "command #%d (%s) failed to initialize: %s", i, cmds->commands[i].name, cmd_error));
+			if (cmd_error)
+				XPL_FREE(cmd_error);
 			xplUnloadModule(name);
 			if (!xprMutexRelease(&module_locker))
 				DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -252,10 +261,10 @@ xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 	xmlHashAddEntry(loaded_modules, name, cmds);
 	if (!xprMutexRelease(&module_locker))
 	{
+		// don't fail here
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		xprUnloadSharedObject(hmodule);
-		return XPL_MODULE_CMD_LOCK_ERROR;
 	}
+	ASSIGN_ERR_DATA(BAD_CAST XPL_STRDUP("no error"));
 	return XPL_MODULE_CMD_OK;
 #undef ASSIGN_ERR_DATA
 }
@@ -276,57 +285,6 @@ void xplUnloadModule(xmlChar *name)
 	xmlHashRemoveEntry(loaded_modules, name, NULL);
 	if (!xprMutexRelease(&module_locker))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-}
-
-xmlChar* xplModuleCmdResultToString(xplModuleCmdResult result, xmlChar *error_data)
-{
-	xmlChar *ret;
-	int ret_len;
-#define VAR_RET(s)\
-	do {\
-		ret_len = _scprintf(s, error_data); \
-		ret = (xmlChar*) XPL_MALLOC(ret_len + 1); \
-		if (!ret) \
-			return NULL; \
-		sprintf((char*) ret, s, error_data); \
-		return ret;\
-	} while(0)
-
-	switch(result)
-	{
-		case XPL_MODULE_CMD_OK:
-			return XPL_STRDUP("no error");
-		case XPL_MODULE_CMD_MODULE_NOT_FOUND:
-			return XPL_STRDUP("module not found");
-		case XPL_MODULE_CMD_INVALID_MODULE_FORMAT:
-			return XPL_STRDUP("invalid module format");
-		case XPL_MODULE_CMD_INVALID_COMMAND_FORMAT:
-			VAR_RET ("invalid command #%s format");
-			break;
-		case XPL_MODULE_CMD_COMMAND_NAME_CLASH:
-			VAR_RET("command \"%s\" already exists");
-			break;
-		case XPL_MODULE_CMD_VERSION_TOO_OLD:
-			VAR_RET("module version \"%s\" is no longer supported");
-			break;
-		case XPL_MODULE_CMD_UNSUPPORTED_VERSION:
-			VAR_RET("module version \"%s\" is newer than the interpreter");
-			break;
-		case XPL_MODULE_CMD_INSUFFICIENT_MEMORY:
-			return XPL_STRDUP("insufficient memory");
-		case XPL_MODULE_CMD_COMMAND_INIT_FAILED:
-			VAR_RET("command %s failed to initialize");
-			break;
-		case XPL_MODULE_CMD_NO_PARSER:
-			return XPL_STRDUP("XPL interpreter not initialized");
-		case XPL_MODULE_CMD_MODULE_ALREADY_LOADED:
-			return XPL_STRDUP("module is already loaded");
-		case XPL_MODULE_CMD_LOCK_ERROR:
-			return XPL_STRDUP("locking error");
-		default:
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-			return XPL_STRDUP("unknown error");
-	}
 }
 
 bool xplIsModuleLoaded(const xmlChar *name)
@@ -391,7 +349,7 @@ xmlChar* xplLoadedModulesToString(const xmlChar *delimiter)
 	if (!xprMutexAcquire(&module_locker))
 	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return XPL_STRDUP("lock error");
+		return BAD_CAST XPL_STRDUP("lock error");
 	}
 	xmlHashScan(loaded_modules, loadedModulesCountScanner, &count_ctxt);
 	if (!count_ctxt.len)

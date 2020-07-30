@@ -120,8 +120,6 @@ XPLPUBFUN xplModuleCmdResult XPLCALL
 	xplLoadModule(xmlChar *name, xmlChar **error_data);
 XPLPUBFUN void XPLCALL
 	xplUnloadModule(xmlChar *name);
-XPLPUBFUN xmlChar* XPLCALL
-	xplModuleCmdResultToString(xplModuleCmdResult result, xmlChar *error_data);
 XPLPUBFUN bool XPLCALL
 	xplIsModuleLoaded(const xmlChar *name);
 XPLPUBFUN xmlChar* XPLCALL
