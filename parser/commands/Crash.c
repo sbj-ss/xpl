@@ -1,4 +1,3 @@
-#include <libxpl/xplutils.h>
 #include "commands/Crash.h"
 
 void xplCmdCrashPrologue(xplCommandInfoPtr commandInfo)
