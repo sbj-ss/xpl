@@ -9,7 +9,6 @@ void xplCmdProfileCheckpointPrologue(xplCommandInfoPtr commandInfo)
 void xplCmdGetElapsedTimeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xmlChar buf[32];
-	struct tm tm;
 	time_t current, old;
 	xmlNodePtr ret;
 

@@ -162,7 +162,7 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	{
 		if (ctxt->container_type != XJC_OBJECT)
 		{
-			ret = xplCreateErrorNode(ctxt->command_element, "cannot use named items outside of object");
+			ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot use named items outside of object");
 			goto done;
 		}
 		if (rbAddDataToBuf(ctxt->buf, name, xmlStrlen(name)) != RB_RESULT_OK)
@@ -176,7 +176,7 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 			goto done;
 		}
 	} else if (ctxt->container_type == XJC_OBJECT) {
-		ret = xplCreateErrorNode(ctxt->command_element, "items inside an object must be named");
+		ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "items inside an object must be named");
 		goto done;
 	}
 
@@ -193,7 +193,7 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	else if (!xmlStrcmp(cur->name, BAD_CAST "null")) 
 		ret = _xjsonSerializeAtom(cur, ctxt, XJA_NULL);
 	else if (ctxt->strict_tag_names)
-		ret = xplCreateErrorNode(ctxt->command_element, "unknown tag name: \"%s\"", cur->name);
+		ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "unknown tag name: \"%s\"", cur->name);
 done:
 	if (name) XPL_FREE(name);
 	return ret;

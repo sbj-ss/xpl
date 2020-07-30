@@ -40,7 +40,7 @@ void xplCmdModuleLoadedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 		else if (tagname_attr)
 			name = tagname_attr;
 		else 
-			name = "module";
+			name = BAD_CAST "module";
 		ret = xplLoadedModulesToNodeList(name, commandInfo->element);
 		ASSIGN_RESULT(ret, repeat, true);
 	}

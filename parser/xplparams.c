@@ -153,8 +153,8 @@ xplParamFileInfoPtr xplParamFileInfoCopy(const xplParamFileInfoPtr src)
 	if (!src)
 		return NULL;
 	return xplParamFileInfoCreate(
-		XPL_STRDUP(src->real_path),
-		XPL_STRDUP(src->filename),
+		BAD_CAST XPL_STRDUP(src->real_path),
+		BAD_CAST XPL_STRDUP(src->filename),
 		src->size
 	);
 }

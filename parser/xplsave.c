@@ -187,7 +187,7 @@ static int xml_save_close_cb(void *context)
 
 bool saveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int options)
 {
-	int fh, ret;
+	int fh;
 	xmlSaveCtxtPtr save_ctxt;
 
 	if (!doc || !filename)

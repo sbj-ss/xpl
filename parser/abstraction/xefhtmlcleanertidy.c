@@ -59,7 +59,7 @@ bool xefCleanHtml(xefCleanHtmlParamsPtr params)
 	
 	if (!(tdoc = tidyCreate()))
 	{
-		params->error = xefCreateCommonErrorMessage("cannot create HtmlTidy document");
+		params->error = xefCreateCommonErrorMessage(BAD_CAST "cannot create HtmlTidy document");
 		return false;
 	}
 	tidyOptSetBool(tdoc, TidyXhtmlOut, yes); /* don't set to "XML" */
@@ -71,14 +71,14 @@ bool xefCleanHtml(xefCleanHtmlParamsPtr params)
 	{
 		tidyBufFree(&output);
 		tidyBufFree(&errbuf);
-		params->error = xefCreateCommonErrorMessage("HtmlTidy refused to parse input document");
+		params->error = xefCreateCommonErrorMessage(BAD_CAST "HtmlTidy refused to parse input document");
 		return false;
 	}
 	if (tidyCleanAndRepair(tdoc) < 0)
 	{
 		tidyBufFree(&output);
 		tidyBufFree(&errbuf);
-		params->error = xefCreateCommonErrorMessage("HtmlTidy refused to clean input document");
+		params->error = xefCreateCommonErrorMessage(BAD_CAST "HtmlTidy refused to clean input document");
 		return false;
 	}
 	if (cfgPrintTidyInfo)
@@ -87,7 +87,7 @@ bool xefCleanHtml(xefCleanHtmlParamsPtr params)
 	{
 		tidyBufFree(&output);
 		tidyBufFree(&errbuf);
-		params->error = xefCreateCommonErrorMessage("cannot save document cleaned by HtmlTidy to buffer");
+		params->error = xefCreateCommonErrorMessage(BAD_CAST "cannot save document cleaned by HtmlTidy to buffer");
 		return false;
 	}
 	tidyBufPutByte(&output, 0); /* ensure NULL-termination */

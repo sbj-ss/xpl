@@ -79,7 +79,7 @@ xmlChar* getLastLibxmlError()
 
 	err = xmlGetLastError();
 	if (!err)
-		return XPL_STRDUP("unknown error");
+		return BAD_CAST XPL_STRDUP("unknown error");
 	max_err_len = (err->message?strlen(err->message):0) + (err->file?strlen(err->file):0) + 127;
 	if (err->str1) max_err_len += strlen(err->str1);
 	if (err->str2) max_err_len += strlen(err->str2);
@@ -456,7 +456,7 @@ size_t base64decode (const char *data_buf, size_t dataLength, char *result, size
 
 	while (data_buf < end)
 	{
-		unsigned char c = base64_table[*data_buf++];
+		unsigned char c = base64_table[(unsigned char) *data_buf++];
 
 		switch (c)
 		{
@@ -512,7 +512,7 @@ void composeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **nor
 		strncat((char*) *normalizedPath, (char*) relativePath, *normalizedFilename - relativePath);
 	} else {
 		*normalizedFilename = relativePath;
-		*normalizedPath = XPL_STRDUP(basePath);
+		*normalizedPath = BAD_CAST XPL_STRDUP(basePath);
 	}
 	if (*normalizedPath)
 		xprConvertSlashes(*normalizedPath);

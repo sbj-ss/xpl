@@ -86,7 +86,7 @@ static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, 
 	xmlChar *conv, *ret = NULL;
 
 	if (RetCode == SQL_INVALID_HANDLE)
-		return XPL_STRDUP("invalid handle");
+		return BAD_CAST XPL_STRDUP("invalid handle");
 
 	while (1)
 	{
@@ -165,7 +165,7 @@ static SQLHDBC _xefDbEstablishConnection(const xmlChar* connString, xmlChar **er
 			*error = xplFormatMessage(BAD_CAST "%s(): connString empty or NULL", __FUNCTION__);
 		return SQL_NULL_HANDLE;
 	}
-	if (iconv_string("utf-16le", "utf-8", connString, connString + xmlStrlen(connString), (char**) &w_conn_string, &w_conn_string_len) == -1)
+	if (iconv_string("utf-16le", "utf-8", (char*) connString, (char*) connString + xmlStrlen(connString), (char**) &w_conn_string, &w_conn_string_len) == -1)
 	{
 		if (error)
 			*error = xplFormatMessage(BAD_CAST "%s(): cannot convert connection string to UTF-16LE", __FUNCTION__);
@@ -177,7 +177,7 @@ static SQLHDBC _xefDbEstablishConnection(const xmlChar* connString, xmlChar **er
 		if (error)
 		{
 			odbc_error = _xefDbDecodeOdbcError(hEnv, SQL_HANDLE_ENV, r);
-			*error = xplFormatMessage("%s(): SQLAllocHandle(): %s", __FUNCTION__, odbc_error);
+			*error = xplFormatMessage(BAD_CAST "%s(): SQLAllocHandle(): %s", __FUNCTION__, odbc_error);
 			XPL_FREE(odbc_error);
 		}
 		XPL_FREE(w_conn_string);
@@ -190,7 +190,7 @@ static SQLHDBC _xefDbEstablishConnection(const xmlChar* connString, xmlChar **er
 		if (error)
 		{
 			odbc_error = _xefDbDecodeOdbcError(db_handle, SQL_HANDLE_DBC, r);
-			*error = xplFormatMessage("%s(): SQLDriverConnectW(): %s", __FUNCTION__, odbc_error);
+			*error = xplFormatMessage(BAD_CAST "%s(): SQLDriverConnectW(): %s", __FUNCTION__, odbc_error);
 			XPL_FREE(odbc_error);
 		}
 		SQLFreeHandle(SQL_HANDLE_DBC, db_handle);
@@ -246,7 +246,7 @@ bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **m
 
 	if (msg)
 	{
-		stars = XPL_STRDUP(connString);
+		stars = BAD_CAST XPL_STRDUP(connString);
 		pw = BAD_CAST xmlStrcasestr(stars, BAD_CAST "PWD=");
 		/* TODO: there may be quotes. we need some parsing here */
 		if (pw)
@@ -296,7 +296,7 @@ static bool _xefDbExecSQL(xefDbContextPtr ctxt, xmlChar *sql)
 		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "%s(): sql is empty or NULL", __FUNCTION__));
 		return false;
 	}
-	iconv_string("utf-16le", "utf-8", sql, sql + xmlStrlen(sql), (char**) &w_sql, NULL);
+	iconv_string("utf-16le", "utf-8", (char*) sql, (char*) sql + xmlStrlen(sql), (char**) &w_sql, NULL);
 	r = SQLExecDirectW(ctxt->statement, w_sql, SQL_NTS);
 	XPL_FREE(w_sql);
 	if (r == SQL_NO_DATA)
@@ -409,9 +409,6 @@ static void _xefDbClearRow(xefDbRowPtr row, bool clear_names)
 
 static void _xefDbFreeRow(xefDbRowPtr row)
 {
-	int i;
-	xefDbFieldPtr field;
-
 	if (!row)
 		return;
 	_xefDbClearRow(row, true);
@@ -422,8 +419,7 @@ static void _xefDbFreeRow(xefDbRowPtr row)
 static void _xefDbCreateRow(xefDbContextPtr ctxt)
 {
 	xefDbRowPtr row;
-	SQLSMALLINT col_count, i, len;
-	SQLLEN attr_len;
+	SQLSMALLINT i, len;
 	SQLWCHAR *w_name;
 	xmlChar *col_name;
 	SQLRETURN r;
@@ -509,7 +505,6 @@ done:
 
 static void _xefDbFillRow(xefDbContextPtr ctxt)
 {
-static int rowno = 0;
 	xefDbFieldPtr field;
 	int i;
 	bool would_grow;
@@ -751,12 +746,12 @@ bool xefDbNextRowset(xefDbContextPtr ctxt)
 		return false;
 	if (ctxt->stream_type != XEF_DB_STREAM_TDS)
 	{
-		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage("xefDbNextRowset(): ctxt->stream_type (%d) != XEF_DB_STREAM_TDS", ctxt->stream_type));
+		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "xefDbNextRowset(): ctxt->stream_type (%d) != XEF_DB_STREAM_TDS", ctxt->stream_type));
 		return false;
 	}
 	if (!ctxt->statement)
 	{
-		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage("xefDbNextRowset(): ctxt->statement is NULL"));
+		_xefDbSetContextError(ctxt, xefCreateCommonErrorMessage(BAD_CAST "xefDbNextRowset(): ctxt->statement is NULL"));
 		return false;
 	}
 	if (!_xefDbLocateNextNonemptyRecordset(ctxt, true))

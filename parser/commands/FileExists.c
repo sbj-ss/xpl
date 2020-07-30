@@ -30,7 +30,7 @@ void xplCmdFileExistsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		goto done;
 	}
 	if (abs_path)
-		filename = XPL_STRDUP(file_attr);
+		filename = BAD_CAST XPL_STRDUP(file_attr);
 	else
 		filename = xplFullFilename(file_attr, commandInfo->document->app_path);
 

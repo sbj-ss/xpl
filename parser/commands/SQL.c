@@ -11,8 +11,8 @@
 #define DEFAULT_RESPONSE_TAG_NAME (BAD_CAST "Row")
 #define DEFAULT_COLUMN_NAME (BAD_CAST "Col")
 #define NULL_ATTRIBUTE_NAME (BAD_CAST "isnull")
-#define DOC_START "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Root>"
-#define DOC_END "</Root>"
+#define DOC_START (BAD_CAST "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Root>")
+#define DOC_END (BAD_CAST "</Root>")
 
 void xplCmdSqlPrologue(xplCommandInfoPtr commandInfo)
 {
@@ -134,7 +134,7 @@ static xplSqlRowTagNamesPtr _createRowTagNames(xmlChar *list)
 			if (value_start)
 				ret->names[ret->pos] = xmlStrndup(value_start, (int) (list - value_start));
 			else
-				ret->names[ret->pos] = XPL_STRDUP("");
+				ret->names[ret->pos] = BAD_CAST XPL_STRDUP("");
 			ret->pos++;
 			value_start = NULL;
 			break;
@@ -337,7 +337,7 @@ static xmlNodePtr _buildDocFromMemory(xmlChar *src, size_t size, xmlNodePtr pare
 	xmlChar *error_text;
 	xmlNodePtr ret;
 
-	doc = xmlReadMemory(src, (int) size, NULL, NULL, XML_PARSE_NODICT);
+	doc = xmlReadMemory((char*) src, (int) size, NULL, NULL, XML_PARSE_NODICT);
 	if (!doc)
 	{
 		error_text = getLastLibxmlError();
@@ -567,7 +567,6 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	xmlNodePtr dbs;
 	xplDBListPtr db_list;
-	xplDBPtr db = NULL;
 
 	xefDbQueryParams params;
 	xefDbContextPtr db_ctxt = NULL;

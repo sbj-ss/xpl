@@ -52,7 +52,7 @@ void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				goto done;
 			}
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "invalid at XPath expression \"%s\"", at_attr), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid at XPath expression \"%s\"", at_attr), true, true);
 			goto done;
 		}
 	} else

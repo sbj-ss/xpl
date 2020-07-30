@@ -74,7 +74,7 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	}
 	select_attr = xmlGetNoNsProp(commandInfo->element, BAD_CAST "select");
 	if (!select_attr)
-		select_attr = XPL_STRDUP(BAD_CAST ".");
+		select_attr = BAD_CAST XPL_STRDUP(BAD_CAST ".");
 	if ((error = xplDecodeCmdBoolParam(commandInfo->element, KEEPDELIMITER_ATTR, &keepdelimiter, false)))
 	{
 		ASSIGN_RESULT(error, true, true);

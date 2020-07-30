@@ -269,7 +269,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	}
 
 	if (!select_attr)
-		select_attr = XPL_STRDUP(".");
+		select_attr = BAD_CAST XPL_STRDUP(".");
 	EXTRACT_NS_AND_TAGNAME(tag_name_attr, ctxt.ns, ctxt.tag_name, commandInfo->element)
 	EXTRACT_NS_AND_TAGNAME(delimiter_tag_name_attr, ctxt.delimiter_ns, ctxt.delimiter_tag_name, commandInfo->element);
 	if (!ctxt.delimiter_tag_name)

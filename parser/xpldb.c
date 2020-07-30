@@ -38,7 +38,7 @@ xplDBListPtr xplDBListCreate(const xmlChar *connString)
 		XPL_FREE(ret);
 		return NULL;
 	}
-	ret->conn_string = XPL_STRDUP(connString);
+	ret->conn_string = BAD_CAST XPL_STRDUP(connString);
 	return ret;
 }
 
@@ -139,8 +139,6 @@ static void dbDeallocator(void *payload, xmlChar *name)
 
 xplDBConfigResult xplRemoveDB(xmlChar *name)
 {
-	xplDBListPtr db;
-
 	if (!databases)
 		return XPL_DBCR_NO_PARSER;
 	if (xmlHashRemoveEntry(databases, name, dbDeallocator))
@@ -244,7 +242,7 @@ bool xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors)
 	xmlChar *dbname;
 	bool ok = true;
 	const xplMsgType msg_type = warningsAsErrors? xplMsgError: xplMsgWarning;
-	const xmlChar *tail = BAD_CAST warningsAsErrors? "stopping": "ignored";
+	const xmlChar *tail = BAD_CAST (warningsAsErrors? "stopping": "ignored");
 
 	xplCleanupDatabases();
 	databases = xmlHashCreate(16);

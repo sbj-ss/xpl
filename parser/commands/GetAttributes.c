@@ -107,7 +107,7 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 				strcat((char*) name, ":");
 				strcat((char*) name, (char*) prop->name);
 			} else
-				name = XPL_STRDUP(prop->name);
+				name = BAD_CAST XPL_STRDUP(prop->name);
 			temp_prop = xmlNewProp(cur, BAD_CAST "name", NULL);
 			temp_prop->children = xmlNewDocText(commandInfo->element->doc, NULL);
 			temp_prop->children->content = name;

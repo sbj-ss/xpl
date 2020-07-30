@@ -61,7 +61,7 @@ void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			{
 				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, message_attr), true, true);
 			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "assertion \"%s\" failed", txt), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "assertion \"%s\" failed", txt), true, true);
 			}
 		} else {
 			ASSIGN_RESULT(NULL, false, true);

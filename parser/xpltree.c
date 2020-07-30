@@ -46,16 +46,14 @@ xmlNsPtr getResultingNs(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
 /* from libxml2 internals (tree.c) */
 xmlChar* getPropValue(xmlAttrPtr prop)
 {
-	xmlChar *ret;
-
 	if (!prop)
 		return NULL;
 	if (prop->type != XML_ATTRIBUTE_NODE)
 		return NULL;
 	if (!prop->children)
-		return XPL_STRDUP("");
+		return BAD_CAST XPL_STRDUP("");
 	if (!prop->children->next && ((prop->children->type == XML_TEXT_NODE) || (prop->children->type == XML_CDATA_SECTION_NODE)))
-		return XPL_STRDUP(prop->children->content);
+		return BAD_CAST XPL_STRDUP(prop->children->content);
 	return xmlNodeListGetString(prop->doc, prop->children, 1);
 }
 
@@ -619,7 +617,7 @@ xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xml
         if ((doc != NULL) && (doc->dict != NULL))
 		    ret->name = xmlDictLookup(doc->dict, node->name, -1);
 		else
-			ret->name = XPL_STRDUP(node->name);
+			ret->name = BAD_CAST XPL_STRDUP(node->name);
     }
     if ((node->type != XML_ELEMENT_NODE) &&
 		(node->content != NULL) &&
@@ -627,7 +625,7 @@ xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xml
 		(node->type != XML_XINCLUDE_END) &&
 		(node->type != XML_XINCLUDE_START)) 
 	{
-		ret->content = XPL_STRDUP(node->content);
+		ret->content = BAD_CAST XPL_STRDUP(node->content);
     } else {
       if (node->type == XML_ELEMENT_NODE)
         ret->line = node->line;

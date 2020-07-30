@@ -59,13 +59,13 @@ static bool startXpr(const xplStartParamsPtr params, int argc, const char **argv
 	if (!xprParseCommandLine())
 	{
 		if (error)
-			*error = XPL_STRDUP("xprParseCommandLine() failed");
+			*error = BAD_CAST XPL_STRDUP("xprParseCommandLine() failed");
 		return false;
 	}
 	if (!xprStartup(params->xpr_start_flags))
 	{
 		if (error)
-			*error = XPL_STRDUP("xplStartup() failed");
+			*error = BAD_CAST XPL_STRDUP("xplStartup() failed");
 		return false;
 	}
 	return true;
@@ -95,7 +95,6 @@ static void stopXml(void)
 static bool startXef(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error)
 {
 	xefStartupParams xef_params;
-	xmlChar *xef_error_text;
 
 	UNUSED_PARAM(params);
 	UNUSED_PARAM(argc);
@@ -109,7 +108,7 @@ static bool startXef(const xplStartParamsPtr params, int argc, const char **argv
 				*error = xefGetErrorText(xef_params.error);
 			xefFreeErrorMessage(xef_params.error);
 		} else if (error)
-			*error = XPL_STRDUP("external libraries startup failed (unknown error)");
+			*error = BAD_CAST XPL_STRDUP("external libraries startup failed (unknown error)");
 		return false;
 	}
 	return true;
@@ -127,7 +126,7 @@ static bool startXpl(const xplStartParamsPtr params, int argc, const char **argv
 	xplError err_code;
 
 	if (xmlStrchr(params->config_file_name, XPR_PATH_DELIM))
-		conf_path = XPL_STRDUP(params->config_file_name);
+		conf_path = BAD_CAST XPL_STRDUP(params->config_file_name);
 	else {
 		/* argv[0] can be just "xplweb" on windows :\ */
 		fn_pos = strrchr(argv[0], XPR_PATH_DELIM);
@@ -136,9 +135,9 @@ static bool startXpl(const xplStartParamsPtr params, int argc, const char **argv
 			conf_path = (xmlChar*) XPL_MALLOC(strlen(argv[0]) + xmlStrlen(params->config_file_name) + 1);
 			strncpy((char*) conf_path, argv[0], fn_pos - argv[0] + 1);
 			conf_path[fn_pos - argv[0] + 1] = 0;
-			strcat((char*) conf_path, params->config_file_name);
+			strcat((char*) conf_path, (char*) params->config_file_name);
 		} else
-			conf_path = XPL_STRDUP(params->config_file_name);
+			conf_path = BAD_CAST XPL_STRDUP(params->config_file_name);
 	}
 
 	err_code = xplInitParser(conf_path);

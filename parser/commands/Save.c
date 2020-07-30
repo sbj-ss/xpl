@@ -57,7 +57,6 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	bool abs_path;
 	bool create_destination;
 	bool omit_root;
-	int ret = -1;
 	xmlDocPtr doc = NULL;
 	xmlXPathObjectPtr sel = NULL;
 	xmlNodePtr root, error;
@@ -73,7 +72,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
 	encoding_attr = xmlGetNoNsProp(commandInfo->element, ENCODING_ATTR);
 	if (!encoding_attr || !*encoding_attr)
-		encoding_attr = XPL_STRDUP(cfgDefaultEncoding);
+		encoding_attr = BAD_CAST XPL_STRDUP(cfgDefaultEncoding);
 	if ((error = xplDecodeCmdBoolParam(commandInfo->element, FORMAT_ATTR, &format, true)))
 	{
 		ASSIGN_RESULT(error, true, true);
@@ -104,7 +103,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	root_attr = xmlGetNoNsProp(commandInfo->element, ROOT_ATTR);
 
 	if (abs_path)
-		filename = XPL_STRDUP(file_attr);
+		filename = BAD_CAST XPL_STRDUP(file_attr);
 	else
 		filename = xplFullFilename(file_attr, commandInfo->document->app_path);
 	if (format)

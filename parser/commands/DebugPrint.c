@@ -35,7 +35,7 @@ void xplCmdDebugPrintEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	if (commandInfo->element->children)
 		content = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
 	if (!content)
-		content = XPL_STRDUP(BAD_CAST "<no text provided>");
+		content = BAD_CAST XPL_STRDUP("<no text provided>");
 	xplDisplayMessage(severity, BAD_CAST "%s", content);
 	ASSIGN_RESULT(NULL, true, true);
 done:

@@ -80,7 +80,7 @@ XPLPUBFUN XPR_SHARED_OBJECT_HANDLE XPLCALL
 XPLPUBFUN void XPLCALL
 	xprUnloadSharedObject(XPR_SHARED_OBJECT_HANDLE handle);
 XPLPUBFUN void* XPLCALL
-	xprGetProcAddress(XPR_SHARED_OBJECT_HANDLE handle, xmlChar *name);
+	xprGetProcAddress(XPR_SHARED_OBJECT_HANDLE handle, char *name);
 
 XPLPUBFUN void XPLCALL 
 	xprSleep(int ms);

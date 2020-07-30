@@ -76,6 +76,8 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					expect_attr, commandInfo->element->doc->URL, commandInfo->element->line);
 				expect = XPL_EXPECT_NUMBER;
 				break;
+			default:
+				break;
 		}
 	} else if (expect == XPL_EXPECT_UNKNOWN) /* can't clean values here */
 		expect = XPL_EXPECT_ANY;

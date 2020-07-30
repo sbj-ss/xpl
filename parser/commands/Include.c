@@ -109,7 +109,7 @@ static void getSourceStep(IncludeContextPtr ctxt)
 	} else if (uri_attr) {
 		if (xmlStrstr(uri_attr, BAD_CAST "file:///") == uri_attr)
 		{
-			ctxt->uri = XPL_STRDUP(file_attr + 8);
+			ctxt->uri = BAD_CAST XPL_STRDUP(file_attr + 8);
 			ctxt->input_source = INPUT_SOURCE_FILE;
 			XPL_FREE(uri_attr);
 		} else if ((xmlStrstr(uri_attr, BAD_CAST "ftp://") == uri_attr) || (xmlStrstr(uri_attr, BAD_CAST "http://") == uri_attr)) {
@@ -189,7 +189,8 @@ static void fetchFileContent(IncludeContextPtr ctxt)
 	}
 	fstat(fd, &stat); /* TODO where's stat64? */
 	file_size = stat.st_size;
-	ctxt->content = file_content = (char*) XPL_MALLOC(file_size + 2);
+	file_content = (char*) XPL_MALLOC(file_size + 2);
+	ctxt->content = BAD_CAST file_content;
 	if (!file_content)
 	{
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "insufficient memory");
@@ -314,28 +315,28 @@ static void updateCtxtEncoding(IncludeContextPtr ctxt)
 	}
 	XPL_FREE(encoding_attr); // was "auto"
 	/* run detection */
-	ctxt->encoding = fastDetectEncoding(ctxt->content, ctxt->content_size);
-	switch (ctxt->encoding)
+	ctxt->encoding = fastDetectEncoding((char*) ctxt->content, ctxt->content_size);
+	switch (ctxt->encoding) // TODO array
 	{
 	case DETECTED_ENC_1251:
-		ctxt->encoding_str = XPL_STRDUP("CP1251");
+		ctxt->encoding_str = BAD_CAST XPL_STRDUP("CP1251");
 		break;
 	case DETECTED_ENC_UTF8: 
 	case DETECTED_ENC_UNKNOWN:
-		ctxt->encoding_str = XPL_STRDUP("utf-8");
+		ctxt->encoding_str = BAD_CAST XPL_STRDUP("utf-8");
 		ctxt->encoding = DETECTED_ENC_UTF8;
 		break;
 	case DETECTED_ENC_UTF16LE: 
-		ctxt->encoding_str = XPL_STRDUP("utf-16le");
+		ctxt->encoding_str = BAD_CAST XPL_STRDUP("utf-16le");
 		break;
 	case DETECTED_ENC_UTF16BE: 
-		ctxt->encoding_str = XPL_STRDUP("utf-16be");
+		ctxt->encoding_str = BAD_CAST XPL_STRDUP("utf-16be");
 		break;
 	case DETECTED_ENC_866: 
-		ctxt->encoding_str = XPL_STRDUP("cp866");
+		ctxt->encoding_str = BAD_CAST XPL_STRDUP("cp866");
 		break;
 	case DETECTED_ENC_KOI8: 
-		ctxt->encoding_str = XPL_STRDUP("KOI8-R");
+		ctxt->encoding_str = BAD_CAST XPL_STRDUP("KOI8-R");
 		break;
 	default: 
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -353,7 +354,14 @@ static void recodeStep(IncludeContextPtr ctxt)
 	updateCtxtEncoding(ctxt);
 	if (!ctxt->needs_recoding)
 		return;
-	if (iconv_string("utf-8", (const char*) ctxt->encoding_str, ctxt->content, ctxt->content + ctxt->content_size, (char**) &recoded_content, &recoded_size) == -1)
+	if (iconv_string(
+		"utf-8",
+		(const char*) ctxt->encoding_str,
+		(const char*) ctxt->content,
+		(const char*) ctxt->content + ctxt->content_size,
+		(char**) &recoded_content,
+		&recoded_size
+	) == -1)
 	{
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "error converting data from encoding \"%s\"", ctxt->encoding_str);
 		return;
@@ -418,7 +426,7 @@ static void cleanStep(IncludeContextPtr ctxt)
 		ctxt->content_size = params.clean_document_size;
 	} else if (params.error) {
 		error_txt = xefGetErrorText(params.error);
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, "Error cleaning HTML document: \"%s\"", error_txt);
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "Error cleaning HTML document: \"%s\"", error_txt);
 		XPL_FREE(error_txt);
 		xefFreeErrorMessage(params.error);
 	} else
@@ -444,7 +452,7 @@ static void buildDocumentStep(IncludeContextPtr ctxt)
 				ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "input document is bigger than 2 Gb");
 				return;
 			}
-			ctxt->src_node = (xmlNodePtr) xmlReadMemory(ctxt->content, (int) ctxt->content_size, NULL, NULL, XML_PARSE_NODICT);
+			ctxt->src_node = (xmlNodePtr) xmlReadMemory((char*) ctxt->content, (int) ctxt->content_size, NULL, NULL, XML_PARSE_NODICT);
 			if (!ctxt->src_node)
 			{
 				error_txt = getLastLibxmlError();

@@ -37,7 +37,7 @@ static xmlChar *convertToFSPath(const xmlChar *path)
 {
 	xmlChar *internal_path;
 
-	internal_path = XPL_STRDUP(path);
+	internal_path = BAD_CAST XPL_STRDUP(path);
 	if (!internal_path)
 		return NULL;
 	xprConvertSlashes(internal_path);
@@ -53,7 +53,7 @@ FILE *xprFOpen(const xmlChar *path, const char *mode)
 		return NULL;
 	if (!(internal_path = convertToFSPath(path)))
 		return NULL;
-	ret = fopen(internal_path, mode);
+	ret = fopen((char*) internal_path, mode);
 	XPL_FREE(internal_path);
 	return ret;
 }
@@ -67,7 +67,7 @@ int xprSOpen(const xmlChar *path, int mode, int sharing, int perms)
 		return -1;
 	if (!(internal_path = convertToFSPath(path)))
 		return -1;
-	ret = open(internal_path, mode | sharing, perms);
+	ret = open((char*) internal_path, mode | sharing, perms);
 	XPL_FREE(internal_path);
 	return ret;
 }
@@ -82,7 +82,7 @@ bool xprCheckFilePresence(const xmlChar *path)
 		return false;
 	if (!(internal_path = convertToFSPath(path)))
 		return false;
-	stat_ret = stat(path, &st);
+	stat_ret = stat((char*) path, &st);
 	XPL_FREE(internal_path);
 	/* in EACCES etc error cases file isn't available anyway */
 	return stat_ret == 0? true: false;
@@ -104,7 +104,7 @@ bool xprEnsurePathExistence(const xmlChar *path)
 		*slash_pos = 0;
 		if (create)
 		{
-			if (mkdir(internal_path, 0755) != 0)
+			if (mkdir((char*) internal_path, 0755) != 0)
 			{
 				XPL_FREE(internal_path);
 				return false;
@@ -197,7 +197,7 @@ XPR_THREAD_ID xprGetCurrentThreadId()
 
 XPR_SHARED_OBJECT_HANDLE xprLoadSharedObject(xmlChar *path)
 {
-	return dlopen(path, RTLD_NOW);
+	return dlopen((char*) path, RTLD_NOW);
 }
 
 void xprUnloadSharedObject(XPR_SHARED_OBJECT_HANDLE handle)
@@ -205,7 +205,7 @@ void xprUnloadSharedObject(XPR_SHARED_OBJECT_HANDLE handle)
 	dlclose(handle);
 }
 
-void* xprGetProcAddress(XPR_SHARED_OBJECT_HANDLE handle, xmlChar *name)
+void* xprGetProcAddress(XPR_SHARED_OBJECT_HANDLE handle, char *name)
 {
 	return dlsym(handle, name);
 }
@@ -235,9 +235,9 @@ void xprSetConsoleColor(int color)
 	// TODO check terminal type
 	color = color & 0x0F;
 	if (color > 7)
-		xmlGenericError(xmlGenericErrorContext, BAD_CAST "\e[3%d;1m", color & 0x07);
+		xmlGenericError(xmlGenericErrorContext, "\e[3%d;1m", color & 0x07);
 	else
-		xmlGenericError(xmlGenericErrorContext, BAD_CAST "\e[3%dm", color);
+		xmlGenericError(xmlGenericErrorContext, "\e[3%dm", color);
 }
 
 void xprDebugBreak(void)

@@ -910,7 +910,7 @@ xmlNodePtr xplAddMacro(
 
 	if (fromNonCommand)
 	{
-		tagname = name_attr = XPL_STRDUP(macro->name);
+		tagname = name_attr = BAD_CAST XPL_STRDUP(macro->name);
 		ns = macro->ns;
 	} else {
 		name_attr = xmlGetNoNsProp(macro, BAD_CAST "name");
@@ -976,7 +976,7 @@ xmlNodePtr xplAddMacro(
 	/* node name is the 1st param */
 	if (xmlHashAddEntry2(macros, tagname, ns? ns->href: NULL, mb) == -1) /* уже есть */
 		xmlHashUpdateEntry2(macros, tagname, ns? ns->href: NULL, mb, xplMacroDeallocator);
-	mb->name = XPL_STRDUP(tagname);
+	mb->name = BAD_CAST XPL_STRDUP(tagname);
 	mb->ns = ns;
 	ns = macro->nsDef;
 	while (ns)
@@ -1180,7 +1180,7 @@ xplError xplInitParser(xmlChar *cfgFile)
 		return XPL_ERR_NO_ERROR;
 	if (!cfgFile)
 		return XPL_ERR_NO_CONFIG_FILE;
-	config_file_path = XPL_STRDUP(cfgFile);
+	config_file_path = BAD_CAST XPL_STRDUP(cfgFile);
 	for (i = 0; i < START_STOP_STEP_COUNT; i++)
 	{
 		if (!start_stop_steps[i].start_fn)
@@ -1237,7 +1237,7 @@ void xplSetDocRoot(xmlChar *new_root)
 	if (cfgDocRoot)
 		XPL_FREE(cfgDocRoot);
 	/* don't remove strdup() here unless you want to spent the rest of your evening debugging code */
-	cfgDocRoot = XPL_STRDUP(new_root);
+	cfgDocRoot = BAD_CAST XPL_STRDUP(new_root);
 }
 
 xmlChar* xplFullFilename(const xmlChar* file, const xmlChar* appPath)

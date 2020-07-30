@@ -27,7 +27,7 @@ xplMacroPtr xplMacroCreate(xmlChar *aId, xmlNodePtr aContent, xplMacroExpansionS
 	if (!macro)
 		return NULL;
 	memset(macro, 0, sizeof(xplMacro));
-	macro->id = XPL_STRDUP(aId);
+	macro->id = BAD_CAST XPL_STRDUP(aId);
 	macro->disabled_spin = 0;
 	macro->content = aContent;
 	macro->expansion_state = expansionState;
@@ -58,7 +58,7 @@ xplMacroPtr xplMacroCopy(xplMacroPtr macro, xmlNodePtr parent)
 	ret = xplMacroCreate(macro->id, cloneNodeList(macro->content, parent, parent->doc), macro->expansion_state);
 	if (!ret)
 		return NULL;
-	ret->name = XPL_STRDUP(macro->name);
+	ret->name = BAD_CAST XPL_STRDUP(macro->name);
 	ret->ns_is_duplicated = true;
 	ret->ns = xmlCopyNamespace(macro->ns);
 	ret->line = -1;
@@ -220,7 +220,7 @@ static xmlNodePtr xplMacroToNodeInner(xplMacroPtr macro, xmlNsPtr ns, xmlChar *t
 	xmlNewProp(ret, BAD_CAST "line", BAD_CAST num_buf);
 	if (macro->parent->ns && macro->parent->ns->href)
 	{
-		parent_name = XPL_STRDUP(macro->parent->ns->prefix);
+		parent_name = BAD_CAST XPL_STRDUP(macro->parent->ns->prefix);
 		parent_name = xmlStrcat(parent_name, BAD_CAST ":");
 	}
 	parent_name = xmlStrcat(parent_name, macro->parent->name);

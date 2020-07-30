@@ -5,7 +5,8 @@
 
 INCLUDE = -I./include -I./tests/include -I../xts/include -I/usr/include/libxml2
 LIBS = -lxml2 -lxpl -lonig -ltidy -lcrypto -lidn -lodbc
-CFLAGS = -fpic -D_IN_DLL -g
+WARNINGS = -Wall -Werror
+CFLAGS = -fpic -D_IN_DLL -g $(WARNINGS)
 
 SRC = \
 abstraction/xef.c\
