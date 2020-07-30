@@ -353,7 +353,7 @@ void init_system_info(void)
 
 void init_server_name(void)
 {
-	assert((strlen(mg_version()) + 12 + strlen(XPL_VERSION_FULL)) < sizeof(g_server_base_name));
+	assert((strlen(mg_version()) + 12 + xmlStrlen(XPL_VERSION_FULL)) < sizeof(g_server_base_name));
 	snprintf(g_server_base_name, sizeof(g_server_base_name), "%s - CivetWeb V%s", XPL_VERSION_FULL, mg_version());
 	//g_server_name = g_server_base_name;
 }
@@ -464,8 +464,6 @@ static void signal_handler(int sig_num)
 
 static int log_message(const struct mg_connection *conn, const char *message)
 {
-	const struct mg_context *ctx = mg_get_context(conn);
-
 	fprintf(stderr, "%s\n", message);
 	return 0;
 }

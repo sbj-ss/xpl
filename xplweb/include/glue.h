@@ -35,7 +35,7 @@ extern "C" {
 #define REMOTE_ADDRESS_PARAM (BAD_CAST "RemoteIP") // TODO modify code and change to "RemoteAddress"
 #define RESOURCE_PARAM (BAD_CAST "Resource")
 
-#define SESSION_ID_COOKIE (BAD_CAST "session_id")
+#define SESSION_ID_COOKIE "session_id"
 
 typedef enum _OutputMethod
 {
