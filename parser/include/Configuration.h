@@ -101,7 +101,7 @@
 	#define LEAK_DETECTION_STOP   printf("Leak detection end: %d (%d)\n", xmlMemBlocks(), __ld_start - xmlMemBlocks());
 	#define XPL_MALLOC(size) xmlMallocLoc((size), __FILE__, __LINE__)
 	#define XPL_REALLOC(ptr, size) xmlReallocLoc((ptr), (size), __FILE__, __LINE__)
-	#define XPL_STRDUP(str) ((str)? xmlMemStrdupLoc((const char*) (str), __FILE__, __LINE__): NULL)
+	#define XPL_STRDUP_NO_CHECK(str) xmlMemStrdupLoc((const char*) (str), __FILE__, __LINE__)
 	#define XPL_FREE(ptr) xmlFree((ptr))
 #else
 	#define LEAK_DETECTION_PREPARE
@@ -109,9 +109,10 @@
 	#define LEAK_DETECTION_STOP
 	#define XPL_MALLOC(size) malloc((size))
 	#define XPL_REALLOC(ptr, size) realloc((ptr), (size))
-	#define XPL_STRDUP(str) strdup((str))
+	#define XPL_STRDUP_NO_CHECK(str) strdup((str))
 	#define XPL_FREE(ptr) free((ptr))
 #endif
+#define XPL_STRDUP(str) ((str)? XPL_STRDUP_NO_CHECK((str)): NULL)
 
 /* XEF implementation choice */
 /* HTML cleaner */
