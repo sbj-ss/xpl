@@ -28,9 +28,9 @@ void xplCmdTextEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 }
 
 xplCommand xplTextCommand = {
-	SFINIT(.prologue, xplCmdTextPrologue), 
-	SFINIT(.epilogue, xplCmdTextEpilogue),
-	SFINIT(.initializer, NULL),
-	SFINIT(.finalizer, NULL),
-	SFINIT(.flags, XPL_CMD_FLAG_CONTENT_SAFE)
+	.prologue = xplCmdTextPrologue, 
+	.epilogue = xplCmdTextEpilogue,
+	.initializer = NULL,
+	.finalizer = NULL,
+	.flags = XPL_CMD_FLAG_CONTENT_SAFE
 };

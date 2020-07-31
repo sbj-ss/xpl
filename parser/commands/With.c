@@ -174,9 +174,9 @@ void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 xplCommand xplWithCommand = 
 { 
-	SFINIT(.prologue, xplCmdWithPrologue),
-	SFINIT(.epilogue, xplCmdWithEpilogue),
-	SFINIT(.initializer, NULL),
-	SFINIT(.finalizer, NULL),
-	SFINIT(.flags, 0)
+	.prologue = xplCmdWithPrologue,
+	.epilogue = xplCmdWithEpilogue,
+	.initializer = NULL,
+	.finalizer = NULL,
+	.flags = 0
 };

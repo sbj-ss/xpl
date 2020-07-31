@@ -31,9 +31,9 @@ void xplCmdStackLocalizeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 }
 
 xplCommand xplStackLocalizeCommand = {
-	SFINIT(.prologue, xplCmdStackLocalizePrologue), 
-	SFINIT(.epilogue, xplCmdStackLocalizeEpilogue),
-	SFINIT(.initializer, NULL),
-	SFINIT(.finalizer, NULL),
-	SFINIT(.flags, XPL_CMD_FLAG_CONTENT_SAFE)
+	.prologue = xplCmdStackLocalizePrologue, 
+	.epilogue = xplCmdStackLocalizeEpilogue,
+	.initializer = NULL,
+	.finalizer = NULL,
+	.flags = XPL_CMD_FLAG_CONTENT_SAFE
 };

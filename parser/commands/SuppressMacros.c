@@ -136,9 +136,9 @@ void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 }
 
 xplCommand xplSuppressMacrosCommand = { 
-	SFINIT(.prologue, xplCmdSuppressMacrosPrologue), 
-	SFINIT(.epilogue, xplCmdSuppressMacrosEpilogue),
-	SFINIT(.initializer, NULL),
-	SFINIT(.finalizer, NULL),
-	SFINIT(.flags, XPL_CMD_FLAG_CONTENT_SAFE)
+	.prologue = xplCmdSuppressMacrosPrologue, 
+	.epilogue = xplCmdSuppressMacrosEpilogue,
+	.initializer = NULL,
+	.finalizer = NULL,
+	.flags = XPL_CMD_FLAG_CONTENT_SAFE
 };

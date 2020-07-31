@@ -37,10 +37,10 @@ void xplCmdReplaceIfUndefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPt
 }
 
 xplCommand xplReplaceIfUndefinedCommand = { 
-	SFINIT(.prologue, xplCmdReplaceIfUndefinedPrologue), 
-	SFINIT(.epilogue, xplCmdReplaceIfUndefinedEpilogue),
-	SFINIT(.initializer, NULL),
-	SFINIT(.finalizer, NULL),
-	SFINIT(.flags, 0)
+	.prologue = xplCmdReplaceIfUndefinedPrologue, 
+	.epilogue = xplCmdReplaceIfUndefinedEpilogue,
+	.initializer = NULL,
+	.finalizer = NULL,
+	.flags = 0
 };
 

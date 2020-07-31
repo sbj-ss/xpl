@@ -37,8 +37,8 @@ done:
 
 xplCommand xplLoadModuleCommand = 
 { 
-	SFINIT(.prologue, xplCmdLoadModulePrologue),
-	SFINIT(.epilogue, xplCmdLoadModuleEpilogue),
-	SFINIT(.initializer, NULL), 
-	SFINIT(.finalizer, NULL)
+	.prologue = xplCmdLoadModulePrologue,
+	.epilogue = xplCmdLoadModuleEpilogue,
+	.initializer = NULL, 
+	.finalizer = NULL
 };

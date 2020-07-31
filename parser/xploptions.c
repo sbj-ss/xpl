@@ -74,189 +74,189 @@ xplConfigEntry configEntries[] =
 {
 /* cfg_type, value_ptr, name, default_value */
 	{
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgCheckDbOnStartup),
-		SFINIT(.name, BAD_CAST "CheckDbOnStartup"),
-		SFINIT(.default_value, (void*) DEFAULT_CHECK_DB_ON_STARTUP)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgCheckDbOnStartup,
+		.name = BAD_CAST "CheckDbOnStartup",
+		.default_value = (void*) DEFAULT_CHECK_DB_ON_STARTUP
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgCheckSAMode),
-		SFINIT(.name, BAD_CAST "CheckSAMode"),
-		SFINIT(.default_value, (void*) DEFAULT_CHECK_SA_MODE)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgCheckSAMode,
+		.name = BAD_CAST "CheckSAMode",
+		.default_value = (void*) DEFAULT_CHECK_SA_MODE
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_STRING),
-		SFINIT(.value_ptr, &cfgDebugSaveFile),
-		SFINIT(.name, BAD_CAST "DebugSaveFile"),
-		SFINIT(.default_value, NULL)
+		.cfg_type = CFG_TYPE_STRING,
+		.value_ptr = &cfgDebugSaveFile,
+		.name = BAD_CAST "DebugSaveFile",
+		.default_value = NULL
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_STRING),
-		SFINIT(.value_ptr, &cfgDefaultEncoding),
-		SFINIT(.name, BAD_CAST "DefaultEncoding"),
-		SFINIT(.default_value, DEFAULT_DEFAULT_ENCODING)
+		.cfg_type = CFG_TYPE_STRING,
+		.value_ptr = &cfgDefaultEncoding,
+		.name = BAD_CAST "DefaultEncoding",
+		.default_value = DEFAULT_DEFAULT_ENCODING
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_STRING),
-		SFINIT(.value_ptr, &cfgDocRoot),
-		SFINIT(.name, BAD_CAST "DocRoot"),
-		SFINIT(.default_value, NULL)
+		.cfg_type = CFG_TYPE_STRING,
+		.value_ptr = &cfgDocRoot,
+		.name = BAD_CAST "DocRoot",
+		.default_value = NULL
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgEnableAssertions),
-		SFINIT(.name, BAD_CAST "EnableAssertions"),
-		SFINIT(.default_value, (void*) DEFAULT_ENABLE_ASSERTIONS)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgEnableAssertions,
+		.name = BAD_CAST "EnableAssertions",
+		.default_value = (void*) DEFAULT_ENABLE_ASSERTIONS
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_STRING),
-		SFINIT(.value_ptr, NULL),
-		SFINIT(.name, BAD_CAST "ErrorSourceName"),
-		SFINIT(.default_value, NULL),
-		SFINIT(.options, CFG_OPTION_DEPRECATED)
+		.cfg_type = CFG_TYPE_STRING,
+		.value_ptr = NULL,
+		.name = BAD_CAST "ErrorSourceName",
+		.default_value = NULL,
+		.options = CFG_OPTION_DEPRECATED
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgErrorsToConsole),
-		SFINIT(.name, BAD_CAST "ErrorsToConsole"),
-		SFINIT(.default_value, (void*) DEFAULT_ERRORS_TO_CONSOLE)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgErrorsToConsole,
+		.name = BAD_CAST "ErrorsToConsole",
+		.default_value = (void*) DEFAULT_ERRORS_TO_CONSOLE
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgFoolproofDestructiveCommands),
-		SFINIT(.name, BAD_CAST "FoolproofDestructiveCommands"),
-		SFINIT(.default_value, (void*) DEFAULT_FOOLPROOF_DESTRUCTIVE_COMMANDS)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgFoolproofDestructiveCommands,
+		.name = BAD_CAST "FoolproofDestructiveCommands",
+		.default_value = (void*) DEFAULT_FOOLPROOF_DESTRUCTIVE_COMMANDS
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_INT),
-		SFINIT(.value_ptr, &cfgInitialMacroTableSize),
-		SFINIT(.name, BAD_CAST "InitialMacroTableSize"),
-		SFINIT(.default_value, (void*) DEFAULT_INITIAL_MACRO_TABLE_SIZE)
+		.cfg_type = CFG_TYPE_INT,
+		.value_ptr = &cfgInitialMacroTableSize,
+		.name = BAD_CAST "InitialMacroTableSize",
+		.default_value = (void*) DEFAULT_INITIAL_MACRO_TABLE_SIZE
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_STRING),
-		SFINIT(.value_ptr, &cfgLogFileName),
-		SFINIT(.name, BAD_CAST "LogFile"),
-		SFINIT(.default_value, NULL)
+		.cfg_type = CFG_TYPE_STRING,
+		.value_ptr = &cfgLogFileName,
+		.name = BAD_CAST "LogFile",
+		.default_value = NULL
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgLuciferCompat),
-		SFINIT(.name, BAD_CAST "LuciferCompatibility"),
-		SFINIT(.default_value, (void*) DEFAULT_LUCIFER_COMPAT)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgLuciferCompat,
+		.name = BAD_CAST "LuciferCompatibility",
+		.default_value = (void*) DEFAULT_LUCIFER_COMPAT
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_INT),
-		SFINIT(.value_ptr, &cfgMacroContentCachingThreshold),
-		SFINIT(.name, BAD_CAST "MacroContentCachingThreshold"),
-		SFINIT(.default_value, (void*) DEFAULT_MACRO_CONTENT_CACHING_THRESHOLD)
+		.cfg_type = CFG_TYPE_INT,
+		.value_ptr = &cfgMacroContentCachingThreshold,
+		.name = BAD_CAST "MacroContentCachingThreshold",
+		.default_value = (void*) DEFAULT_MACRO_CONTENT_CACHING_THRESHOLD
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_INT),
-		SFINIT(.value_ptr, &cfgMaxRecursionDepth),
-		SFINIT(.name, BAD_CAST "MaxRecursionDepth"),
-		SFINIT(.default_value, (void*) DEFAULT_MAX_RECURSION_DEPTH)
+		.cfg_type = CFG_TYPE_INT,
+		.value_ptr = &cfgMaxRecursionDepth,
+		.name = BAD_CAST "MaxRecursionDepth",
+		.default_value = (void*) DEFAULT_MAX_RECURSION_DEPTH
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_INT),
-		SFINIT(.value_ptr, &cfgMinDebugPrintLevel),
-		SFINIT(.name, BAD_CAST "MinDebugPrintLevel"),
-		SFINIT(.default_value, (void*) DEFAULT_MIN_DEBUG_PRINT_LEVEL)
+		.cfg_type = CFG_TYPE_INT,
+		.value_ptr = &cfgMinDebugPrintLevel,
+		.name = BAD_CAST "MinDebugPrintLevel",
+		.default_value = (void*) DEFAULT_MIN_DEBUG_PRINT_LEVEL
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL), /* TODO this should be somehow moved to XEF */
-		SFINIT(.value_ptr, &cfgPrintTidyInfo),
-		SFINIT(.name, BAD_CAST "PrintTidyInfo"),
-		SFINIT(.default_value, (void*) DEFAULT_PRINT_TIDY_INFO)
+		.cfg_type = CFG_TYPE_BOOL, /* TODO this should be somehow moved to XEF */
+		.value_ptr = &cfgPrintTidyInfo,
+		.name = BAD_CAST "PrintTidyInfo",
+		.default_value = (void*) DEFAULT_PRINT_TIDY_INFO
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_STRING), /* TODO this too - together with all other proxy settings */
-		SFINIT(.value_ptr, &cfgProxyPassword),
-		SFINIT(.name, BAD_CAST "ProxyPassword"),
-		SFINIT(.default_value, NULL),
-		SFINIT(.options, CFG_OPTION_IS_PASSWORD)
+		.cfg_type = CFG_TYPE_STRING, /* TODO this too - together with all other proxy settings */
+		.value_ptr = &cfgProxyPassword,
+		.name = BAD_CAST "ProxyPassword",
+		.default_value = NULL,
+		.options = CFG_OPTION_IS_PASSWORD
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_INT),
-		SFINIT(.value_ptr, &cfgProxyPort),
-		SFINIT(.name, BAD_CAST "ProxyPort"),
-		SFINIT(.default_value, (void*) DEFAULT_PROXY_PORT)
+		.cfg_type = CFG_TYPE_INT,
+		.value_ptr = &cfgProxyPort,
+		.name = BAD_CAST "ProxyPort",
+		.default_value = (void*) DEFAULT_PROXY_PORT
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_STRING),
-		SFINIT(.value_ptr, &cfgProxyServer),
-		SFINIT(.name, BAD_CAST "ProxyServer"),
-		SFINIT(.default_value, NULL)
+		.cfg_type = CFG_TYPE_STRING,
+		.value_ptr = &cfgProxyServer,
+		.name = BAD_CAST "ProxyServer",
+		.default_value = NULL
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_STRING),
-		SFINIT(.value_ptr, &cfgProxyUser),
-		SFINIT(.name, BAD_CAST "ProxyUser"),
-		SFINIT(.default_value, NULL)
+		.cfg_type = CFG_TYPE_STRING,
+		.value_ptr = &cfgProxyUser,
+		.name = BAD_CAST "ProxyUser",
+		.default_value = NULL
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_STRING),
-		SFINIT(.value_ptr, &cfgSaPassword),
-		SFINIT(.name, BAD_CAST "SAPassword"),
-		SFINIT(.default_value, (void*) "0BD4BC9866BA6963A3CA0563FD00578D90338EB5"), /* 1111111 */
-		SFINIT(.options, CFG_OPTION_IS_PASSWORD | CFG_OPTION_STORED_AS_HASH)
+		.cfg_type = CFG_TYPE_STRING,
+		.value_ptr = &cfgSaPassword,
+		.name = BAD_CAST "SAPassword",
+		.default_value = (void*) "0BD4BC9866BA6963A3CA0563FD00578D90338EB5", /* 1111111 */
+		.options = CFG_OPTION_IS_PASSWORD | CFG_OPTION_STORED_AS_HASH
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_INT),
-		SFINIT(.value_ptr, &cfgSessionLifetime),
-		SFINIT(.name, BAD_CAST "SessionLifetime"),
-		SFINIT(.default_value, (void*) DEFAULT_SESSION_LIFETIME)
+		.cfg_type = CFG_TYPE_INT,
+		.value_ptr = &cfgSessionLifetime,
+		.name = BAD_CAST "SessionLifetime",
+		.default_value = (void*) DEFAULT_SESSION_LIFETIME
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgStackTrace),
-		SFINIT(.name, BAD_CAST "StackTrace"),
-		SFINIT(.default_value, (void*) DEFAULT_STACK_TRACE)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgStackTrace,
+		.name = BAD_CAST "StackTrace",
+		.default_value = (void*) DEFAULT_STACK_TRACE
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgUseConsoleColors),
-		SFINIT(.name, BAD_CAST "UseConsoleColors"),
-		SFINIT(.default_value, (void*) DEFAULT_USE_CONSOLE_COLORS)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgUseConsoleColors,
+		.name = BAD_CAST "UseConsoleColors",
+		.default_value = (void*) DEFAULT_USE_CONSOLE_COLORS
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgUseWrappers),
-		SFINIT(.name, BAD_CAST "UseWrappers"),
-		SFINIT(.default_value, (void*) DEFAULT_USE_WRAPPERS)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgUseWrappers,
+		.name = BAD_CAST "UseWrappers",
+		.default_value = (void*) DEFAULT_USE_WRAPPERS
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL), /* TODO should be registered by xpl:with (or xpl:edge?) */
-		SFINIT(.value_ptr, &cfgWarnOnAncestorModificationAttempt),
-		SFINIT(.name, BAD_CAST "WarnOnAncestorModificationAttempt"),
-		SFINIT(.default_value, (void*) DEFAULT_WARN_ON_ANCESTOR_MODIFICATION_ATTEMPT)
+		.cfg_type = CFG_TYPE_BOOL, /* TODO should be registered by xpl:with (or xpl:edge? */
+		.value_ptr = &cfgWarnOnAncestorModificationAttempt,
+		.name = BAD_CAST "WarnOnAncestorModificationAttempt",
+		.default_value = (void*) DEFAULT_WARN_ON_ANCESTOR_MODIFICATION_ATTEMPT
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgWarnOnDeletedNodeReference),
-		SFINIT(.name, BAD_CAST "WarnOnDeletedNodeReference"),
-		SFINIT(.default_value, (void*) DEFAULT_WARN_ON_DELETED_NODE_REFERENCE)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnDeletedNodeReference,
+		.name = BAD_CAST "WarnOnDeletedNodeReference",
+		.default_value = (void*) DEFAULT_WARN_ON_DELETED_NODE_REFERENCE
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgWarnOnExpandedMacroContent),
-		SFINIT(.name, BAD_CAST "WarnOnExpandedMacroContent"),
-		SFINIT(.default_value, (void*) DEFAULT_WARN_ON_EXPANDED_MACRO_CONTENT)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnExpandedMacroContent,
+		.name = BAD_CAST "WarnOnExpandedMacroContent",
+		.default_value = (void*) DEFAULT_WARN_ON_EXPANDED_MACRO_CONTENT
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgWarnOnInvalidXplNsUri),
-		SFINIT(.name, BAD_CAST "WarnOnInvalidXplNsUri"),
-		SFINIT(.default_value, (void*) DEFAULT_WARN_ON_INVALID_XPL_NS_URI)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnInvalidXplNsUri,
+		.name = BAD_CAST "WarnOnInvalidXplNsUri",
+		.default_value = (void*) DEFAULT_WARN_ON_INVALID_XPL_NS_URI
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgWarnOnMacroRedefinition),
-		SFINIT(.name, BAD_CAST "WarnOnMacroRedefinition"),
-		SFINIT(.default_value, (void*) DEFAULT_WARN_ON_MACRO_REDEFINITION)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnMacroRedefinition,
+		.name = BAD_CAST "WarnOnMacroRedefinition",
+		.default_value = (void*) DEFAULT_WARN_ON_MACRO_REDEFINITION
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL), /* TODO should be registered by xpl:inherit */
-		SFINIT(.value_ptr, &cfgWarnOnMissingInheritBase),
-		SFINIT(.name, BAD_CAST "WarnOnMissingInheritBase"),
-		SFINIT(.default_value, (void*) DEFAULT_WARN_ON_MISSING_INHERIT_BASE)
+		.cfg_type = CFG_TYPE_BOOL, /* TODO should be registered by xpl:inherit */
+		.value_ptr = &cfgWarnOnMissingInheritBase,
+		.name = BAD_CAST "WarnOnMissingInheritBase",
+		.default_value = (void*) DEFAULT_WARN_ON_MISSING_INHERIT_BASE
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgWarnOnMissingMacroContent),
-		SFINIT(.name, BAD_CAST "WarnOnMissingMacroContent"),
-		SFINIT(.default_value, (void*) DEFAULT_WARN_ON_MISSING_MACRO_CONTENT)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnMissingMacroContent,
+		.name = BAD_CAST "WarnOnMissingMacroContent",
+		.default_value = (void*) DEFAULT_WARN_ON_MISSING_MACRO_CONTENT
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL), /* TODO should be registered by xpl:get-param */
-		SFINIT(.value_ptr, &cfgWarnOnNoExpectParam),
-		SFINIT(.name, BAD_CAST "WarnOnNoExpectParam"),
-		SFINIT(.default_value, (void*) DEFAULT_WARN_ON_NO_EXPECT_PARAM)
+		.cfg_type = CFG_TYPE_BOOL, /* TODO should be registered by xpl:get-param */
+		.value_ptr = &cfgWarnOnNoExpectParam,
+		.name = BAD_CAST "WarnOnNoExpectParam",
+		.default_value = (void*) DEFAULT_WARN_ON_NO_EXPECT_PARAM
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_BOOL),
-		SFINIT(.value_ptr, &cfgWarnOnUnknownCommand),
-		SFINIT(.name, BAD_CAST "WarnOnUnknownCommand"),
-		SFINIT(.default_value, (void*) DEFAULT_WARN_ON_UNKNOWN_COMMAND)
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnUnknownCommand,
+		.name = BAD_CAST "WarnOnUnknownCommand",
+		.default_value = (void*) DEFAULT_WARN_ON_UNKNOWN_COMMAND
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_STRING),
-		SFINIT(.value_ptr, NULL),
-		SFINIT(.name, BAD_CAST "XplNs"),
-		SFINIT(.default_value, NULL),
-		SFINIT(.options, CFG_OPTION_DEPRECATED)
+		.cfg_type = CFG_TYPE_STRING,
+		.value_ptr = NULL,
+		.name = BAD_CAST "XplNs",
+		.default_value = NULL,
+		.options = CFG_OPTION_DEPRECATED
 	}, {
-		SFINIT(.cfg_type, CFG_TYPE_STRING),
-		SFINIT(.value_ptr, &cfgXplNsUri),
-		SFINIT(.name, BAD_CAST "XplNsUri"),
-		SFINIT(.default_value, DEFAULT_XPL_NS_URI)
+		.cfg_type = CFG_TYPE_STRING,
+		.value_ptr = &cfgXplNsUri,
+		.name = BAD_CAST "XplNsUri",
+		.default_value = DEFAULT_XPL_NS_URI
 	}
 };
 

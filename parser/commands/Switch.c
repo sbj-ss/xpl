@@ -46,9 +46,9 @@ void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 }
 
 xplCommand xplSwitchCommand = { 
-	SFINIT(.prologue, xplCmdSwitchPrologue), 
-	SFINIT(.epilogue, xplCmdSwitchEpilogue),
-	SFINIT(.initializer, NULL),
-	SFINIT(.finalizer, NULL),
-	SFINIT(.flags, XPL_CMD_FLAG_CONTENT_SAFE)
+	.prologue = xplCmdSwitchPrologue, 
+	.epilogue = xplCmdSwitchEpilogue,
+	.initializer = NULL,
+	.finalizer = NULL,
+	.flags = XPL_CMD_FLAG_CONTENT_SAFE
 };

@@ -207,6 +207,6 @@ void xplShutdownEngine()
 
 const xplStartParams xplDefaultStartParams =
 {
-	SFINIT(.xpr_start_flags, XPR_STARTSTOP_EVERYTHING),
-	SFINIT(.config_file_name, BAD_CAST "xpl.xml")
+	.xpr_start_flags = XPR_STARTSTOP_EVERYTHING,
+	.config_file_name = BAD_CAST "xpl.xml"
 };

@@ -86,9 +86,9 @@ void xplCmdForEachEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 }
 
 xplCommand xplForEachCommand = { 
-	SFINIT(.prologue, xplCmdForEachPrologue), 
-	SFINIT(.epilogue, xplCmdForEachEpilogue),
-	SFINIT(.initializer, NULL),
-	SFINIT(.finalizer, NULL),
-	SFINIT(.flags, 0) /* we don't need "content safe flag here */
+	.prologue = xplCmdForEachPrologue, 
+	.epilogue = xplCmdForEachEpilogue,
+	.initializer = NULL,
+	.finalizer = NULL,
+	.flags = 0 /* we don't need "content safe flag here */
 };

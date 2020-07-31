@@ -38,9 +38,9 @@ void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 }
 
 xplCommand xplSetLocalCommand = { 
-	SFINIT(.prologue, xplCmdSetLocalPrologue), 
-	SFINIT(.epilogue, xplCmdSetLocalEpilogue),
-	SFINIT(.initializer, NULL),
-	SFINIT(.finalizer, NULL),
-	SFINIT(.flags, XPL_CMD_FLAG_CONTENT_SAFE)
+	.prologue = xplCmdSetLocalPrologue, 
+	.epilogue = xplCmdSetLocalEpilogue,
+	.initializer = NULL,
+	.finalizer = NULL,
+	.flags = XPL_CMD_FLAG_CONTENT_SAFE
 };
