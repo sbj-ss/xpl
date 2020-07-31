@@ -304,16 +304,16 @@ static bool xtsTestReszBuf_Flush(xtsContextPtr ctxt)
 	if (rbGetBufFlushCallback(buf) != flush_to_strcat)
 		FAIL("getting flush callback failed (2)");
 	ADD_DATA("This");
-	if (!xmlStrcmp(flush_buf, "This"))
+	if (!xmlStrcmp(flush_buf, BAD_CAST "This"))
 		FAIL("adding data failed (1)");
 	ADD_DATA(" is");
-	if (!xmlStrcmp(flush_buf, "This is"))
+	if (!xmlStrcmp(flush_buf, BAD_CAST "This is"))
 		FAIL("adding data failed (2)");
 	ADD_DATA(" a");
-	if (!xmlStrcmp(flush_buf, "This is a"))
+	if (!xmlStrcmp(flush_buf, BAD_CAST "This is a"))
 		FAIL("adding data failed (3)");
 	ADD_DATA(" test");
-	if (!xmlStrcmp(flush_buf, "This is a test"))
+	if (!xmlStrcmp(flush_buf, BAD_CAST "This is a test"))
 		FAIL("adding data failed (4)");
 	ok = true;
 cleanup:

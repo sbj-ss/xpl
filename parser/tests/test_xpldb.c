@@ -17,7 +17,6 @@ static void dummy_dealloc(void* conn)
 
 static bool xtsTestDB_DBCreateFree(xtsContextPtr ctxt)
 {
-	bool ok = false;
 	xplDBPtr db;
 
 	dealloc_invocations = 0;

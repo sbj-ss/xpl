@@ -28,7 +28,7 @@ static xmlDocPtr create_test_doc()
 		"</Root>";
 	xmlDocPtr doc;
 
-	doc = xmlReadMemory(doc_src, xmlStrlen(doc_src), NULL, "utf-8", 0);
+	doc = xmlReadMemory(doc_src, strlen(doc_src), NULL, "utf-8", 0);
 	return(doc);
 }
 
@@ -42,16 +42,16 @@ static xmlNodePtr build_node_a()
 	xmlNsPtr ns_foo, ns_bar;
 	xmlAttrPtr prop;
 
-	node = xmlNewNode(NULL, "a");
+	node = xmlNewNode(NULL, BAD_CAST "a");
 	assert(node);
-	ns_foo = xmlNewNs(node, "http://foo.com/foo", "foo");
+	ns_foo = xmlNewNs(node, BAD_CAST "http://foo.com/foo", BAD_CAST "foo");
 	assert(ns_foo);
 	xmlSetNs(node, ns_foo);
-	ns_bar = xmlNewNs(node, "http://foo.com/bar", "bar");
+	ns_bar = xmlNewNs(node, BAD_CAST "http://foo.com/bar", BAD_CAST "bar");
 	assert(ns_bar);
-	prop = xmlNewProp(node, "attr-a", "value a");
+	prop = xmlNewProp(node, BAD_CAST "attr-a", BAD_CAST "value a");
 	assert(prop);
-	prop = xmlNewNsProp(node, ns_bar, "attr-b", "value\" b");
+	prop = xmlNewNsProp(node, ns_bar, BAD_CAST "attr-b", BAD_CAST "value\" b");
 	assert(prop);
 	return node;
 }
@@ -62,9 +62,9 @@ static xmlNodePtr build_node_b()
 {
 	xmlNodePtr node, content;
 
-	node = xmlNewNode(NULL, "b");
+	node = xmlNewNode(NULL, BAD_CAST "b");
 	assert(node);
-	content = xmlNewText("test");
+	content = xmlNewText(BAD_CAST "test");
 	assert(content);
 	xmlAddChild(node, content);
 	return node;
@@ -149,10 +149,10 @@ static bool save_fixture_setup(xtsContextPtr ctxt)
 
 	if (!mkdtemp(temp_tmpl))
 		return false;
-	xmlHashAddEntry(ctxt->env, "dir", temp_tmpl);
+	xmlHashAddEntry(ctxt->env, BAD_CAST "dir", temp_tmpl);
 	if (!(doc = create_test_doc()))
 		return false;
-	xmlHashAddEntry(ctxt->env, "doc", doc);
+	xmlHashAddEntry(ctxt->env, BAD_CAST "doc", doc);
 	return true;
 }
 
@@ -161,9 +161,9 @@ static void save_fixture_teardown(xtsContextPtr ctxt)
 	xmlDocPtr doc;
 	char *dir;
 
-	if ((doc = (xmlDocPtr) xmlHashLookup(ctxt->env, "doc")))
+	if ((doc = (xmlDocPtr) xmlHashLookup(ctxt->env, BAD_CAST "doc")))
 		xmlFreeDoc(doc);
-	if ((dir = (char*) xmlHashLookup(ctxt->env, "dir")))
+	if ((dir = (char*) xmlHashLookup(ctxt->env, BAD_CAST "dir")))
 		rmdir(dir);
 }
 
