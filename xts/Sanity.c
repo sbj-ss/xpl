@@ -1,5 +1,6 @@
 #include "xts.h"
 #include <assert.h>
+#include <Configuration.h>
 
 static bool passing_function(xtsContextPtr ctxt)
 {
@@ -56,8 +57,8 @@ static bool xtsTestSanity_InitContext(xtsContextPtr ctxt)
 //---------------------------
 static xtsTest passing_test =
 {
-	SFINIT(.id, "passing_test"),
-	SFINIT(.displayName, "single successful test"),
+	SFINIT(.id, BAD_CAST "passing_test"),
+	SFINIT(.displayName, BAD_CAST "single successful test"),
 	SFINIT(.testFunction, passing_function)
 };
 
@@ -74,8 +75,8 @@ static bool failing_function(xtsContextPtr ctxt)
 
 static xtsTest failing_test =
 {
-	SFINIT(.id, "failing_test"),
-	SFINIT(.displayName, "single failing test"),
+	SFINIT(.id, BAD_CAST "failing_test"),
+	SFINIT(.displayName, BAD_CAST "single failing test"),
 	SFINIT(.testFunction, failing_function)
 };
 
@@ -87,8 +88,8 @@ static bool xtsTestSanity_TestFail(xtsContextPtr ctxt)
 //---------------------------
 static xtsTest skipped_test =
 {
-	SFINIT(.id, "skipped_test"),
-	SFINIT(.displayName, "single skipped test"),
+	SFINIT(.id, BAD_CAST "skipped_test"),
+	SFINIT(.displayName, BAD_CAST "single skipped test"),
 	SFINIT(.testFunction, failing_function),
 	SFINIT(.flags, XTS_FLAG_SKIP)
 };
@@ -104,8 +105,8 @@ static bool xtsTestSanity_TestSkip(xtsContextPtr ctxt)
 }
 //-----------------------------------
 static xtsFixture passing_fixture = {
-	SFINIT(.id, "passing_fixture"),
-	SFINIT(.displayName, "passing fixture"),
+	SFINIT(.id, BAD_CAST "passing_fixture"),
+	SFINIT(.displayName, BAD_CAST "passing fixture"),
 	SFINIT(.setup, NULL),
 	SFINIT(.teardown, NULL),
 	SFINIT(.test_count, 1),
@@ -144,16 +145,16 @@ static bool xtsTestSanity_FixtureSinglePass(xtsContextPtr ctxt)
 static xtsTest mixed_tests[] =
 {
 	{
-		SFINIT(.id, "failing_test"),
-		SFINIT(.displayName, "single failing test"),
+		SFINIT(.id, BAD_CAST "failing_test"),
+		SFINIT(.displayName, BAD_CAST "single failing test"),
 		SFINIT(.testFunction, failing_function)
 	}, {
-		SFINIT(.id, "passing_test"),
-		SFINIT(.displayName, "single successful test"),
+		SFINIT(.id, BAD_CAST "passing_test"),
+		SFINIT(.displayName, BAD_CAST "single successful test"),
 		SFINIT(.testFunction, passing_function)
 	}, {
-		SFINIT(.id, "skipped_test"),
-		SFINIT(.displayName, "single skipped test"),
+		SFINIT(.id, BAD_CAST "skipped_test"),
+		SFINIT(.displayName, BAD_CAST "single skipped test"),
 		SFINIT(.testFunction, failing_function),
 		SFINIT(.flags, XTS_FLAG_SKIP)
 	}
@@ -161,8 +162,8 @@ static xtsTest mixed_tests[] =
 
 static xtsFixture mixed_fixture =
 {
-	SFINIT(.id, "mixed_fixture"),
-	SFINIT(.displayName, "mixed fixture"),
+	SFINIT(.id, BAD_CAST "mixed_fixture"),
+	SFINIT(.displayName, BAD_CAST "mixed fixture"),
 	SFINIT(.setup, NULL),
 	SFINIT(.teardown, NULL),
 	SFINIT(.test_count, 3),
@@ -233,8 +234,8 @@ static bool setup_fixture_fail(xtsContextPtr ctxt)
 }
 
 static xtsFixture setup_fail_fixture = {
-	SFINIT(.id, "sf_fixture"),
-	SFINIT(.displayName, "fixture with failing .setup()"),
+	SFINIT(.id, BAD_CAST "sf_fixture"),
+	SFINIT(.displayName, BAD_CAST "fixture with failing .setup()"),
 	SFINIT(.setup, setup_fixture_fail),
 	SFINIT(.teardown, NULL),
 	SFINIT(.test_count, 1),
@@ -266,7 +267,7 @@ static bool setup_fixture_mock(xtsContextPtr ctxt)
 	if (ctxt->env)
 	{
 		fixture_env_present = true;
-		xmlHashAddEntry(ctxt->env, "test", (void*) 5);
+		xmlHashAddEntry(ctxt->env, BAD_CAST "test", (void*) 5);
 	}
 	return true;
 }
@@ -275,12 +276,12 @@ static void teardown_fixture_mock(xtsContextPtr ctxt)
 {
 	teardown_fixture_called = true;
 	if (ctxt->env)
-		fixture_env_param_passed = (xmlHashLookup(ctxt->env, "test") == (void*) 5);
+		fixture_env_param_passed = (xmlHashLookup(ctxt->env, BAD_CAST "test") == (void*) 5);
 }
 
 static xtsFixture setup_teardown_fixture = {
-	SFINIT(.id, "sd_fixture"),
-	SFINIT(.displayName, "setup and teardown fixture"),
+	SFINIT(.id, BAD_CAST "st_fixture"),
+	SFINIT(.displayName, BAD_CAST "setup and teardown fixture"),
 	SFINIT(.setup, setup_fixture_mock),
 	SFINIT(.teardown, teardown_fixture_mock),
 	SFINIT(.test_count, 1),
@@ -295,22 +296,22 @@ static bool xtsTestSanity_FixtureSetupTeardown(xtsContextPtr ctxt)
 	xtsRunFixture(&setup_teardown_fixture, &test_context);
 	if (!setup_fixture_called)
 	{
-		ctxt->error = "fixture.setup() not called";
+		ctxt->error = BAD_CAST "fixture.setup() not called";
 		return false;
 	}
 	if (!teardown_fixture_called)
 	{
-		ctxt->error = "fixture.teardown() not called";
+		ctxt->error = BAD_CAST "fixture.teardown() not called";
 		return false;
 	}
 	if (!fixture_env_present)
 	{
-		ctxt->error = "fixture.env = NULL";
+		ctxt->error = BAD_CAST "fixture.env = NULL";
 		return false;
 	}
 	if (!fixture_env_param_passed)
 	{
-		ctxt->error = "fixture env param lost";
+		ctxt->error = BAD_CAST "fixture env param lost";
 		return false;
 	}
 	return true;
@@ -338,7 +339,7 @@ static void leak_deallocator(void *payload, xmlChar *name)
 
 static void teardown_leaky_fixture(xtsContextPtr ctxt)
 {
-	xmlHashRemoveEntry(ctxt->env, "leak", leak_deallocator);
+	xmlHashRemoveEntry(ctxt->env, BAD_CAST "leak", leak_deallocator);
 }
 
 static xtsFixture unexpected_leak_fixture =
@@ -485,20 +486,20 @@ static bool xplTestSanity_SuiteFailingLate(xtsContextPtr ctxt)
 static xtsTest fixture_to_skip_a_tests[] =
 {
 	{
-		SFINIT(.id, "test_a"),
-		SFINIT(.displayName, ""),
+		SFINIT(.id, BAD_CAST "test_a"),
+		SFINIT(.displayName, BAD_CAST ""),
 		SFINIT(.testFunction, passing_function)
 	}, {
-		SFINIT(.id, "test_b"),
-		SFINIT(.displayName, ""),
+		SFINIT(.id, BAD_CAST "test_b"),
+		SFINIT(.displayName, BAD_CAST ""),
 		SFINIT(.testFunction, passing_function)
 	}
 };
 
 static xtsFixture fixture_to_skip_a =
 {
-	SFINIT(.id, "fixture_a"),
-	SFINIT(.displayName, ""),
+	SFINIT(.id, BAD_CAST "fixture_a"),
+	SFINIT(.displayName, BAD_CAST ""),
 	SFINIT(.setup, NULL),
 	SFINIT(.teardown, NULL),
 	SFINIT(.test_count, 2),
@@ -508,20 +509,20 @@ static xtsFixture fixture_to_skip_a =
 static xtsTest fixture_to_skip_b_tests[] =
 {
 	{
-		SFINIT(.id, "test_c"),
-		SFINIT(.displayName, ""),
+		SFINIT(.id, BAD_CAST "test_c"),
+		SFINIT(.displayName, BAD_CAST ""),
 		SFINIT(.testFunction, passing_function)
 	}, {
-		SFINIT(.id, "test_d"),
-		SFINIT(.displayName, ""),
+		SFINIT(.id, BAD_CAST "test_d"),
+		SFINIT(.displayName,BAD_CAST  ""),
 		SFINIT(.testFunction, passing_function)
 	}
 };
 
 static xtsFixture fixture_to_skip_b =
 {
-	SFINIT(.id, "fixture_b"),
-	SFINIT(.displayName, ""),
+	SFINIT(.id, BAD_CAST "fixture_b"),
+	SFINIT(.displayName, BAD_CAST ""),
 	SFINIT(.setup, NULL),
 	SFINIT(.teardown, NULL),
 	SFINIT(.test_count, 2),
@@ -545,7 +546,7 @@ static bool xplTestSanity_LocateFixture(xtsContextPtr ctxt)
 		ctxt->error = BAD_CAST "fixture_b not found";
 		return false;
 	}
-	if (xmlStrcasecmp(fixture_b->id, "fixture_b"))
+	if (xmlStrcasecmp(fixture_b->id, BAD_CAST "fixture_b"))
 	{
 		ctxt->error = BAD_CAST "wrong fixture found instead of fixture_b";
 		return false;
@@ -571,7 +572,7 @@ static bool xplTestSanity_LocateTest(xtsContextPtr ctxt)
 		ctxt->error = BAD_CAST "test_b not found";
 		return false;
 	}
-	if (xmlStrcasecmp(test_b->id, "test_b"))
+	if (xmlStrcasecmp(test_b->id, BAD_CAST "test_b"))
 	{
 		ctxt->error = BAD_CAST "wrong test found instead of test_b";
 		return false;
@@ -590,13 +591,13 @@ static bool xplTestSanity_SkipSingleTest(xtsContextPtr ctxt)
 	xtsFixturePtr fixture_b;
 	xtsTestPtr test_d;
 
-	fixture_b = xtsLocateFixture(suite_to_skip, "fixture_b");
+	fixture_b = xtsLocateFixture(suite_to_skip, BAD_CAST "fixture_b");
 	if (!fixture_b)
 	{
 		ctxt->error = BAD_CAST "fixture_b not found";
 		return false;
 	}
-	test_d = xtsLocateTest(fixture_b, "test_d");
+	test_d = xtsLocateTest(fixture_b, BAD_CAST "test_d");
 	if (!test_d)
 	{
 		ctxt->error = BAD_CAST "test_d not found";
@@ -622,19 +623,19 @@ static bool xplTestSanity_SkipTest(xtsContextPtr ctxt)
 	xtsFixturePtr fixture_b;
 	xtsTestPtr test_d;
 
-	fixture_b = xtsLocateFixture(suite_to_skip, "fixture_b");
+	fixture_b = xtsLocateFixture(suite_to_skip, BAD_CAST "fixture_b");
 	if (!fixture_b)
 	{
 		ctxt->error = BAD_CAST "fixture_b not found";
 		return false;
 	}
-	test_d = xtsLocateTest(fixture_b, "test_d");
+	test_d = xtsLocateTest(fixture_b, BAD_CAST "test_d");
 	if (!test_d)
 	{
 		ctxt->error = BAD_CAST "test_d not found";
 		return false;
 	}
-	if (!xtsSkipTest(suite_to_skip, "fixture_b", "test_d", true))
+	if (!xtsSkipTest(suite_to_skip, BAD_CAST "fixture_b", BAD_CAST "test_d", true))
 	{
 		ctxt->error = BAD_CAST "skipping test_d failed";
 		return false;
@@ -644,7 +645,7 @@ static bool xplTestSanity_SkipTest(xtsContextPtr ctxt)
 		ctxt->error = BAD_CAST "XTS_FLAG_SKIP not set";
 		return false;
 	}
-	if (!xtsSkipTest(suite_to_skip, "fixture_b", "test_d", false))
+	if (!xtsSkipTest(suite_to_skip, BAD_CAST "fixture_b", BAD_CAST "test_d", false))
 	{
 		ctxt->error = BAD_CAST "un-skipping test_d failed";
 		return false;
@@ -662,9 +663,9 @@ static bool xplTestSanity_SkipAllTestsInFixture(xtsContextPtr ctxt)
 	xtsFixturePtr fixture_b;
 	xtsTestPtr test_c, test_d;
 
-	fixture_b = xtsLocateFixture(suite_to_skip, "fixture_b");
-	test_c = xtsLocateTest(fixture_b, "test_c");
-	test_d = xtsLocateTest(fixture_b, "test_d");
+	fixture_b = xtsLocateFixture(suite_to_skip, BAD_CAST "fixture_b");
+	test_c = xtsLocateTest(fixture_b, BAD_CAST "test_c");
+	test_d = xtsLocateTest(fixture_b, BAD_CAST "test_d");
 	xtsSkipAllTestsInFixture(fixture_b, true);
 	if (!(test_c->flags & XTS_FLAG_SKIP) || !(test_d->flags & XTS_FLAG_SKIP))
 	{
@@ -685,10 +686,10 @@ static bool xplTestSanity_SkipAllTestsInSuite(xtsContextPtr ctxt)
 	xtsFixturePtr fixture_a, fixture_b;
 	xtsTestPtr test_a, test_d;
 
-	fixture_a = xtsLocateFixture(suite_to_skip, "fixture_a");
-	fixture_b = xtsLocateFixture(suite_to_skip, "fixture_b");
-	test_a = xtsLocateTest(fixture_a, "test_a");
-	test_d = xtsLocateTest(fixture_b, "test_d");
+	fixture_a = xtsLocateFixture(suite_to_skip, BAD_CAST "fixture_a");
+	fixture_b = xtsLocateFixture(suite_to_skip, BAD_CAST "fixture_b");
+	test_a = xtsLocateTest(fixture_a, BAD_CAST "test_a");
+	test_d = xtsLocateTest(fixture_b, BAD_CAST "test_d");
 	xtsSkipAllTestsInSuite(suite_to_skip, true);
 	if (!(test_a->flags & XTS_FLAG_SKIP) || !(test_d->flags & XTS_FLAG_SKIP))
 	{
@@ -800,7 +801,7 @@ static bool xplTestSanity_ApplySkipListInvalidInput(xtsContextPtr ctxt)
 //------------------------------------------------
 static bool testMallocingError(xtsContextPtr ctxt)
 {
-	ctxt->error = XPL_STRDUP(BAD_CAST "error");
+	ctxt->error = BAD_CAST XPL_STRDUP("error");
 	ctxt->error_malloced = true;
 	return false;
 }

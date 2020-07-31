@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <libxml/chvalid.h>
+#include <Configuration.h>
 
 #define SINGLE_TEST_PREAMBLE "  "
 #define FIXTURE_PREAMBLE "------------------------------------------\n"
@@ -267,7 +268,7 @@ static xmlChar* xtsExtractEntityId(xtsSkipListParserCtxtPtr ctxt)
 		ent_end++;
 	ent_id_len = ent_end - ctxt->cur;
 	ent_id = (xmlChar*) XPL_MALLOC(ent_id_len + 1);
-	strncpy(ent_id, ctxt->cur, ent_id_len);
+	strncpy((char*) ent_id, (char*) ctxt->cur, ent_id_len);
 	*(ent_id + ent_id_len) = 0;
 	ctxt->new_cur = ent_end;
 	return ent_id;
@@ -334,7 +335,7 @@ static bool xtsParseSkipListFixture(xtsSkipListParserCtxtPtr ctxt)
 	XPL_FREE(fixture_id);
 	if (!ctxt->fixture)
 	{
-		ctxt->error = "can't locate fixture";
+		ctxt->error = BAD_CAST "can't locate fixture";
 		return false;
 	}
 	ctxt->cur = ctxt->new_cur;
@@ -374,7 +375,7 @@ static bool xtsParseSkipListStatement(xtsSkipListParserCtxtPtr ctxt)
 		return false;
 	if (*(ctxt->cur) != (xmlChar) ';')
 	{
-		ctxt->error = "statements must end with a semicolon";
+		ctxt->error = BAD_CAST "statements must end with a semicolon";
 		return false;
 	}
 	ctxt->cur++;
@@ -388,7 +389,7 @@ bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error)
 {
 	xtsSkipListParserCtxt ctxt;
 	bool ok;
-	static const xmlChar *fmt = BAD_CAST "%s at ...%s...";
+	static const char *fmt = "%s at ...%s...";
 	xmlChar part[20];
 	int error_len;
 
@@ -402,11 +403,11 @@ bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error)
 	ok = xtsParseSkipListStatement(&ctxt);
 	if (!ok)
 	{
-		strncpy(part, ctxt.cur, sizeof(part));
+		strncpy((char*) part, (char*) ctxt.cur, sizeof(part));
 		part[20] = 0;
 		error_len = 128; /* introducing XPR dependency is bad */
 		*error = XPL_MALLOC(error_len + 1);
-		snprintf(*error, error_len, fmt, ctxt.error, part);
+		snprintf((char*) *error, error_len, fmt, ctxt.error, part);
 		(*error)[error_len] = 0;
 	} else
 		*error = NULL;

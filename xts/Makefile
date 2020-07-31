@@ -3,9 +3,13 @@
 #* (c) НИЛ ИТС, Подковырин, 2006-2020     *
 #******************************************
 
-INCLUDE = -I./include -I/usr/include/libxml2
+INCLUDE = -I./include -I/usr/include/libxml2 -I ../parser/include
 LIBS = -lxml2
-CFLAGS = -g
+WARNINGS = -Wall -Werror
+CFLAGS = $(WARNINGS)
+ifeq ($(DEBUG), 1)
+CFLAGS += -D_DEBUG
+endif
 
 SRC = xts.c
 TEST_SRC = $(SRC) Sanity.c Runner.c 
