@@ -51,7 +51,7 @@ void xplCmdGetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 						sibling = sel->nodesetval->nodeTab[i];
 						prnt = sibling->parent;
 						sibling->parent = NULL;
-						copy = xplCloneAttrAsText(sibling, commandInfo->element);
+						copy = xplCloneAsNodeChild(sibling, commandInfo->element);
 						sibling->parent = prnt;
 						if (!tail)
 							tail = copy;

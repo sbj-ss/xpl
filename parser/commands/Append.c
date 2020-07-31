@@ -155,10 +155,10 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 						{
 							/* ��� ����������� ����� �� ������ ������������� ���� ��� ���������� ������� ���������� */
 							for (j = (ptrdiff_t) src->nodesetval->nodeNr - 1; j >= 0; j--)
-								doAppend(xplCloneAttrAsText(src->nodesetval->nodeTab[j], parent), dst->nodesetval->nodeTab[i], position);
+								doAppend(xplCloneAsNodeChild(src->nodesetval->nodeTab[j], parent), dst->nodesetval->nodeTab[i], position);
 						} else {
 							for (j = 0; j < (ptrdiff_t) src->nodesetval->nodeNr; j++)
-								doAppend(xplCloneAttrAsText(src->nodesetval->nodeTab[j], parent), dst->nodesetval->nodeTab[i], position);
+								doAppend(xplCloneAsNodeChild(src->nodesetval->nodeTab[j], parent), dst->nodesetval->nodeTab[i], position);
 						}
 					}
 				}

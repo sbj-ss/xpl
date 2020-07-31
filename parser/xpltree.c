@@ -251,7 +251,7 @@ xmlNodePtr xplReplaceWithList(xmlNodePtr el, xmlNodePtr list)
 	return el;
 }
 
-xmlNodePtr xplCloneAttrAsText(xmlNodePtr cur, xmlNodePtr parent)
+xmlNodePtr xplCloneAsNodeChild(xmlNodePtr cur, xmlNodePtr parent)
 {
 	xmlNodePtr ret;
 

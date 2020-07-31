@@ -637,7 +637,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 							tail = NULL;
 							for (j = 0; j < sel->nodesetval->nodeNr; j++)
 							{	
-								cloned = xplCloneAttrAsText(sel->nodesetval->nodeTab[j], oldElement);
+								cloned = xplCloneAsNodeChild(sel->nodesetval->nodeTab[j], oldElement);
 								if (tail)
 									tail->next = cloned;
 								cloned->prev = tail;

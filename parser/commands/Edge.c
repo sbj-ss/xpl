@@ -31,7 +31,7 @@ xmlNodePtr cloneNodeSet(xmlNodeSetPtr set, xmlNodePtr parent, xmlNodePtr *tail)
 	xmlNodePtr ret = NULL, cur, tail_int = NULL;
 	for (i = 0; i < (size_t) set->nodeNr; i++)
 	{
-		cur = xplCloneAttrAsText(set->nodeTab[i], parent);
+		cur = xplCloneAsNodeChild(set->nodeTab[i], parent);
 		if (ret)
 		{
 			tail_int->next = cur;

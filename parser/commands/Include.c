@@ -545,7 +545,7 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 					sibling = sel->nodesetval->nodeTab[i];
 					prnt = sibling->parent;
 					sibling->parent = NULL;
-					cur = xplCloneAttrAsText(sibling, ctxt->command_element);
+					cur = xplCloneAsNodeChild(sibling, ctxt->command_element);
 					if (response_tag_name_attr && (cur->type == XML_ELEMENT_NODE))
 						xmlNodeSetName(cur, response_tag_name_attr);
 					sibling->parent = prnt;

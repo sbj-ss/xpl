@@ -76,9 +76,9 @@ XPLPUBFUN xmlNodePtr XPLCALL
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplReplaceWithList(xmlNodePtr el, xmlNodePtr list);
 
-/* Добавить следующий элемент с трансформацией атрибута в текст (после XPath-выборки) *//* TODO rename */
+/* clone a node changing attributes into text nodes */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplCloneAttrAsText(xmlNodePtr cur, xmlNodePtr parent);
+	xplCloneAsNodeChild(xmlNodePtr cur, xmlNodePtr parent);
 
 /* checks for text/CDATA/entity refs only */
 XPLPUBFUN bool XPLCALL
