@@ -514,7 +514,7 @@ static xtsTest fixture_to_skip_b_tests[] =
 		.testFunction = passing_function
 	}, {
 		.id = BAD_CAST "test_d",
-		SFINIT(.displayName,BAD_CAST  ""),
+		.displayName = BAD_CAST  "",
 		.testFunction = passing_function
 	}
 };
