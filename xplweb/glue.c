@@ -79,9 +79,9 @@ xplParamsPtr buildParams(struct mg_connection *conn, const struct mg_request_inf
 	xplParamsPtr params;
 	ParseFormCtxt parse_ctxt;
 	struct mg_form_data_handler fdh = {
-		SFINIT(.field_found, field_found),
-		SFINIT(.field_get, field_get),
-		SFINIT(.field_store, field_store),
+		.field_found = field_found,
+		.field_get = field_get,
+		.field_store = field_store,
 	};
 	int i;
 
