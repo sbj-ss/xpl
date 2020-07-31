@@ -35,16 +35,6 @@
 	#define XPLCALL
 #endif
 
-#ifdef __GNUC__
-	#define HAVE_DESIGNATED_INITIALIZERS
-#endif
-
-#ifdef HAVE_DESIGNATED_INITIALIZERS
-	#define SFINIT(f, ...) f = __VA_ARGS__
-#else
-	#define SFINIT(f, ...) __VA_ARGS__
-#endif
-
 #define UNUSED_PARAM(x) (void) (x)
 
 /* Macros for enabling compiler-specific checks for printf-like arguments. Borrowed from civetweb. */
