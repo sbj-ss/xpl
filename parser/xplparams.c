@@ -490,6 +490,7 @@ int xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xpl
 				{
 					if (fallbackEncoding)
 					{
+						recoded_value = NULL;
 						iconv_string("utf-8", fallbackEncoding, (char*) param_value, (char*) param_value + xmlStrlen(param_value), (char**) &recoded_value, NULL);
 						if (recoded_value && !isValidUtf8Sample(recoded_value, xmlStrlen(recoded_value), true))
 						{

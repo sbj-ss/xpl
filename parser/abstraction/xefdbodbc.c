@@ -554,6 +554,7 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 				while (!*(ctxt->buffer + field_size/sizeof(SQLWCHAR) - 1))
 					field_size -= sizeof(SQLWCHAR);
 			}
+			field->value = NULL;
 			iconv_string("utf-8", "utf-16le", (char*) ctxt->buffer, ((char*) ctxt->buffer) + field_size, (char**) &(field->value), &(field->value_size));
 			if (!field->value)
 			{
