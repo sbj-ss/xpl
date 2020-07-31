@@ -57,9 +57,9 @@ static bool xtsTestSanity_InitContext(xtsContextPtr ctxt)
 //---------------------------
 static xtsTest passing_test =
 {
-	SFINIT(.id, BAD_CAST "passing_test"),
-	SFINIT(.displayName, BAD_CAST "single successful test"),
-	SFINIT(.testFunction, passing_function)
+	.id = BAD_CAST "passing_test",
+	.displayName = BAD_CAST "single successful test",
+	.testFunction = passing_function
 };
 
 static bool xtsTestSanity_TestPass(xtsContextPtr ctxt)
@@ -75,9 +75,9 @@ static bool failing_function(xtsContextPtr ctxt)
 
 static xtsTest failing_test =
 {
-	SFINIT(.id, BAD_CAST "failing_test"),
-	SFINIT(.displayName, BAD_CAST "single failing test"),
-	SFINIT(.testFunction, failing_function)
+	.id = BAD_CAST "failing_test",
+	.displayName = BAD_CAST "single failing test",
+	.testFunction = failing_function
 };
 
 static bool xtsTestSanity_TestFail(xtsContextPtr ctxt)
@@ -88,10 +88,10 @@ static bool xtsTestSanity_TestFail(xtsContextPtr ctxt)
 //---------------------------
 static xtsTest skipped_test =
 {
-	SFINIT(.id, BAD_CAST "skipped_test"),
-	SFINIT(.displayName, BAD_CAST "single skipped test"),
-	SFINIT(.testFunction, failing_function),
-	SFINIT(.flags, XTS_FLAG_SKIP)
+	.id = BAD_CAST "skipped_test",
+	.displayName = BAD_CAST "single skipped test",
+	.testFunction = failing_function,
+	.flags = XTS_FLAG_SKIP
 };
 
 static bool xtsTestSanity_TestSkip(xtsContextPtr ctxt)
@@ -105,12 +105,12 @@ static bool xtsTestSanity_TestSkip(xtsContextPtr ctxt)
 }
 //-----------------------------------
 static xtsFixture passing_fixture = {
-	SFINIT(.id, BAD_CAST "passing_fixture"),
-	SFINIT(.displayName, BAD_CAST "passing fixture"),
-	SFINIT(.setup, NULL),
-	SFINIT(.teardown, NULL),
-	SFINIT(.test_count, 1),
-	SFINIT(.tests, &passing_test)
+	.id = BAD_CAST "passing_fixture",
+	.displayName = BAD_CAST "passing fixture",
+	.setup = NULL,
+	.teardown = NULL,
+	.test_count = 1,
+	.tests = &passing_test
 };
 
 static bool xtsTestSanity_FixtureSinglePass(xtsContextPtr ctxt)
@@ -145,29 +145,29 @@ static bool xtsTestSanity_FixtureSinglePass(xtsContextPtr ctxt)
 static xtsTest mixed_tests[] =
 {
 	{
-		SFINIT(.id, BAD_CAST "failing_test"),
-		SFINIT(.displayName, BAD_CAST "single failing test"),
-		SFINIT(.testFunction, failing_function)
+		.id = BAD_CAST "failing_test",
+		.displayName = BAD_CAST "single failing test",
+		.testFunction = failing_function
 	}, {
-		SFINIT(.id, BAD_CAST "passing_test"),
-		SFINIT(.displayName, BAD_CAST "single successful test"),
-		SFINIT(.testFunction, passing_function)
+		.id = BAD_CAST "passing_test",
+		.displayName = BAD_CAST "single successful test",
+		.testFunction = passing_function
 	}, {
-		SFINIT(.id, BAD_CAST "skipped_test"),
-		SFINIT(.displayName, BAD_CAST "single skipped test"),
-		SFINIT(.testFunction, failing_function),
-		SFINIT(.flags, XTS_FLAG_SKIP)
+		.id = BAD_CAST "skipped_test",
+		.displayName = BAD_CAST "single skipped test",
+		.testFunction = failing_function,
+		.flags = XTS_FLAG_SKIP
 	}
 };
 
 static xtsFixture mixed_fixture =
 {
-	SFINIT(.id, BAD_CAST "mixed_fixture"),
-	SFINIT(.displayName, BAD_CAST "mixed fixture"),
-	SFINIT(.setup, NULL),
-	SFINIT(.teardown, NULL),
-	SFINIT(.test_count, 3),
-	SFINIT(.tests, &mixed_tests[0])
+	.id = BAD_CAST "mixed_fixture",
+	.displayName = BAD_CAST "mixed fixture",
+	.setup = NULL,
+	.teardown = NULL,
+	.test_count = 3,
+	.tests = &mixed_tests[0]
 };
 
 static bool xtsTestSanity_FixtureFailImmediately(xtsContextPtr ctxt)
@@ -234,12 +234,12 @@ static bool setup_fixture_fail(xtsContextPtr ctxt)
 }
 
 static xtsFixture setup_fail_fixture = {
-	SFINIT(.id, BAD_CAST "sf_fixture"),
-	SFINIT(.displayName, BAD_CAST "fixture with failing .setup()"),
-	SFINIT(.setup, setup_fixture_fail),
-	SFINIT(.teardown, NULL),
-	SFINIT(.test_count, 1),
-	SFINIT(.tests, &passing_test)
+	.id = BAD_CAST "sf_fixture",
+	.displayName = BAD_CAST "fixture with failing .setup()",
+	.setup = setup_fixture_fail,
+	.teardown = NULL,
+	.test_count = 1,
+	.tests = &passing_test
 };
 
 static bool xtsTestSanity_FixtureSetupFail(xtsContextPtr ctxt)
@@ -280,12 +280,12 @@ static void teardown_fixture_mock(xtsContextPtr ctxt)
 }
 
 static xtsFixture setup_teardown_fixture = {
-	SFINIT(.id, BAD_CAST "st_fixture"),
-	SFINIT(.displayName, BAD_CAST "setup and teardown fixture"),
-	SFINIT(.setup, setup_fixture_mock),
-	SFINIT(.teardown, teardown_fixture_mock),
-	SFINIT(.test_count, 1),
-	SFINIT(.tests, &passing_test)
+	.id = BAD_CAST "st_fixture",
+	.displayName = BAD_CAST "setup and teardown fixture",
+	.setup = setup_fixture_mock,
+	.teardown = teardown_fixture_mock,
+	.test_count = 1,
+	.tests = &passing_test
 };
 
 static bool xtsTestSanity_FixtureSetupTeardown(xtsContextPtr ctxt)
@@ -325,11 +325,11 @@ static bool leaky_test(xtsContextPtr ctxt)
 
 static xtsTest unexpected_leak_test =
 {
-	SFINIT(.id, BAD_CAST "expected_leak"),
-	SFINIT(.displayName, BAD_CAST "expected leak"),
-	SFINIT(.testFunction, leaky_test),
-	SFINIT(.flags, XTS_FLAG_CHECK_MEMORY),
-	SFINIT(.expectedMemoryDelta, 0)
+	.id = BAD_CAST "expected_leak",
+	.displayName = BAD_CAST "expected leak",
+	.testFunction = leaky_test,
+	.flags = XTS_FLAG_CHECK_MEMORY,
+	.expectedMemoryDelta = 0
 };
 
 static void leak_deallocator(void *payload, xmlChar *name)
@@ -344,12 +344,12 @@ static void teardown_leaky_fixture(xtsContextPtr ctxt)
 
 static xtsFixture unexpected_leak_fixture =
 {
-	SFINIT(.id, BAD_CAST "unexpected_leak_fixture"),
-	SFINIT(.displayName, BAD_CAST "fixture with unexpected leak"),
-	SFINIT(.setup, NULL),
-	SFINIT(.teardown, teardown_leaky_fixture),
-	SFINIT(.test_count, 1),
-	SFINIT(.tests, &unexpected_leak_test)
+	.id = BAD_CAST "unexpected_leak_fixture",
+	.displayName = BAD_CAST "fixture with unexpected leak",
+	.setup = NULL,
+	.teardown = teardown_leaky_fixture,
+	.test_count = 1,
+	.tests = &unexpected_leak_test
 };
 
 static bool xtsTestSanity_UnexpectedLeakFixture(xtsContextPtr ctxt)
@@ -360,21 +360,21 @@ static bool xtsTestSanity_UnexpectedLeakFixture(xtsContextPtr ctxt)
 //---------------------------------
 static xtsTest expected_leak_test =
 {
-	SFINIT(.id, BAD_CAST "expected_leak"),
-	SFINIT(.displayName, BAD_CAST "expected leak"),
-	SFINIT(.testFunction, leaky_test),
-	SFINIT(.flags, XTS_FLAG_CHECK_MEMORY),
-	SFINIT(.expectedMemoryDelta, 2) /* 2 due to hash entry */
+	.id = BAD_CAST "expected_leak",
+	.displayName = BAD_CAST "expected leak",
+	.testFunction = leaky_test,
+	.flags = XTS_FLAG_CHECK_MEMORY,
+	.expectedMemoryDelta = 2 /* 2 due to hash entry */
 };
 
 static xtsFixture expected_leak_fixture =
 {
-	SFINIT(.id, BAD_CAST "expected_leak_fixture"),
-	SFINIT(.displayName, BAD_CAST "fixture with expected leak"),
-	SFINIT(.setup, NULL),
-	SFINIT(.teardown, teardown_leaky_fixture),
-	SFINIT(.test_count, 1),
-	SFINIT(.tests, &expected_leak_test)
+	.id = BAD_CAST "expected_leak_fixture",
+	.displayName = BAD_CAST "fixture with expected leak",
+	.setup = NULL,
+	.teardown = teardown_leaky_fixture,
+	.test_count = 1,
+	.tests = &expected_leak_test
 };
 
 static bool xtsTestSanity_ExpectedLeakFixture(xtsContextPtr ctxt)
@@ -486,47 +486,47 @@ static bool xplTestSanity_SuiteFailingLate(xtsContextPtr ctxt)
 static xtsTest fixture_to_skip_a_tests[] =
 {
 	{
-		SFINIT(.id, BAD_CAST "test_a"),
-		SFINIT(.displayName, BAD_CAST ""),
-		SFINIT(.testFunction, passing_function)
+		.id = BAD_CAST "test_a",
+		.displayName = BAD_CAST "",
+		.testFunction = passing_function
 	}, {
-		SFINIT(.id, BAD_CAST "test_b"),
-		SFINIT(.displayName, BAD_CAST ""),
-		SFINIT(.testFunction, passing_function)
+		.id = BAD_CAST "test_b",
+		.displayName = BAD_CAST "",
+		.testFunction = passing_function
 	}
 };
 
 static xtsFixture fixture_to_skip_a =
 {
-	SFINIT(.id, BAD_CAST "fixture_a"),
-	SFINIT(.displayName, BAD_CAST ""),
-	SFINIT(.setup, NULL),
-	SFINIT(.teardown, NULL),
-	SFINIT(.test_count, 2),
-	SFINIT(.tests, fixture_to_skip_a_tests)
+	.id = BAD_CAST "fixture_a",
+	.displayName = BAD_CAST "",
+	.setup = NULL,
+	.teardown = NULL,
+	.test_count = 2,
+	.tests = fixture_to_skip_a_tests
 };
 
 static xtsTest fixture_to_skip_b_tests[] =
 {
 	{
-		SFINIT(.id, BAD_CAST "test_c"),
-		SFINIT(.displayName, BAD_CAST ""),
-		SFINIT(.testFunction, passing_function)
+		.id = BAD_CAST "test_c",
+		.displayName = BAD_CAST "",
+		.testFunction = passing_function
 	}, {
-		SFINIT(.id, BAD_CAST "test_d"),
+		.id = BAD_CAST "test_d",
 		SFINIT(.displayName,BAD_CAST  ""),
-		SFINIT(.testFunction, passing_function)
+		.testFunction = passing_function
 	}
 };
 
 static xtsFixture fixture_to_skip_b =
 {
-	SFINIT(.id, BAD_CAST "fixture_b"),
-	SFINIT(.displayName, BAD_CAST ""),
-	SFINIT(.setup, NULL),
-	SFINIT(.teardown, NULL),
-	SFINIT(.test_count, 2),
-	SFINIT(.tests, fixture_to_skip_b_tests)
+	.id = BAD_CAST "fixture_b",
+	.displayName = BAD_CAST "",
+	.setup = NULL,
+	.teardown = NULL,
+	.test_count = 2,
+	.tests = fixture_to_skip_b_tests
 };
 
 static xtsFixturePtr suite_to_skip[] =
@@ -808,9 +808,9 @@ static bool testMallocingError(xtsContextPtr ctxt)
 
 static xtsTest test_mallocing_error =
 {
-	SFINIT(.id, BAD_CAST "test_mallocing_error"),
-	SFINIT(.displayName, BAD_CAST ""),
-	SFINIT(.testFunction, testMallocingError)
+	.id = BAD_CAST "test_mallocing_error",
+	.displayName = BAD_CAST "",
+	.testFunction = testMallocingError
 };
 
 bool xplTestSanity_RunTestFreeError(xtsContextPtr ctxt)
@@ -835,116 +835,116 @@ bool xplTestSanity_RunTestFreeError(xtsContextPtr ctxt)
 static xtsTest sanity_tests[] =
 {
 	{
-		SFINIT(.id, BAD_CAST "basic"),
-		SFINIT(.displayName, BAD_CAST "basic functionality"),
-		SFINIT(.testFunction, passing_function)
+		.id = BAD_CAST "basic",
+		.displayName = BAD_CAST "basic functionality",
+		.testFunction = passing_function
 	}, {
-		SFINIT(.id, BAD_CAST "context"),
-		SFINIT(.displayName, BAD_CAST "xtsInitContext()"),
-		SFINIT(.testFunction, xtsTestSanity_InitContext)
+		.id = BAD_CAST "context",
+		.displayName = BAD_CAST "xtsInitContext()",
+		.testFunction = xtsTestSanity_InitContext
 	}, {
-		SFINIT(.id, BAD_CAST "passing_test"),
-		SFINIT(.displayName, BAD_CAST "xtsRunTest(): passing test"),
-		SFINIT(.testFunction, xtsTestSanity_TestPass)
+		.id = BAD_CAST "passing_test",
+		.displayName = BAD_CAST "xtsRunTest(): passing test",
+		.testFunction = xtsTestSanity_TestPass
 	}, {
-		SFINIT(.id, BAD_CAST "failing_test"),
-		SFINIT(.displayName, BAD_CAST "xtsRunTest(): failing test"),
-		SFINIT(.testFunction, xtsTestSanity_TestFail)
+		.id = BAD_CAST "failing_test",
+		.displayName = BAD_CAST "xtsRunTest(): failing test",
+		.testFunction = xtsTestSanity_TestFail
 	}, {
-		SFINIT(.id, BAD_CAST "skipped_test"),
-		SFINIT(.displayName, BAD_CAST "xtsRunTest(): skipped test"),
-		SFINIT(.testFunction, xtsTestSanity_TestSkip)
+		.id = BAD_CAST "skipped_test",
+		.displayName = BAD_CAST "xtsRunTest(): skipped test",
+		.testFunction = xtsTestSanity_TestSkip
 	}, {
-		SFINIT(.id, BAD_CAST "passing_fixture"),
-		SFINIT(.displayName, BAD_CAST "xtsRunFixture(): passing fixture"),
-		SFINIT(.testFunction, xtsTestSanity_FixtureSinglePass)
+		.id = BAD_CAST "passing_fixture",
+		.displayName = BAD_CAST "xtsRunFixture(): passing fixture",
+		.testFunction = xtsTestSanity_FixtureSinglePass
 	}, {
-		SFINIT(.id, BAD_CAST "failing_early_fixture"),
-		SFINIT(.displayName, BAD_CAST "xtsRunFixture(): fixture failing early"),
-		SFINIT(.testFunction, xtsTestSanity_FixtureFailImmediately)
+		.id = BAD_CAST "failing_early_fixture",
+		.displayName = BAD_CAST "xtsRunFixture(): fixture failing early",
+		.testFunction = xtsTestSanity_FixtureFailImmediately
 	}, {
-		SFINIT(.id, BAD_CAST "failing_late_fixture"),
-		SFINIT(.displayName, BAD_CAST "xtsRunFixture(): fixture failing late"),
-		SFINIT(.testFunction, xtsTestSanity_FixtureFailAfter)
+		.id = BAD_CAST "failing_late_fixture",
+		.displayName = BAD_CAST "xtsRunFixture(): fixture failing late",
+		.testFunction = xtsTestSanity_FixtureFailAfter
 	}, {
-		SFINIT(.id, BAD_CAST "failing_setup_fixture"),
-		SFINIT(.displayName, BAD_CAST "xtsRunFixture(): failing .setup()"),
-		SFINIT(.testFunction, xtsTestSanity_FixtureSetupFail)
+		.id = BAD_CAST "failing_setup_fixture",
+		.displayName = BAD_CAST "xtsRunFixture(): failing .setup()",
+		.testFunction = xtsTestSanity_FixtureSetupFail
 	}, {
-		SFINIT(.id, BAD_CAST "setup_teardown_fixture"),
-		SFINIT(.displayName, BAD_CAST "xtsRunFixture(): .setup() and .teardown()"),
-		SFINIT(.testFunction, xtsTestSanity_FixtureSetupTeardown)
+		.id = BAD_CAST "setup_teardown_fixture",
+		.displayName = BAD_CAST "xtsRunFixture(): .setup() and .teardown()",
+		.testFunction = xtsTestSanity_FixtureSetupTeardown
 	}, {
-		SFINIT(.id, BAD_CAST "unexpected_leak"),
-		SFINIT(.displayName, BAD_CAST "xtsRunFixture(): unexpected leak"),
-		SFINIT(.testFunction, xtsTestSanity_UnexpectedLeakFixture)
+		.id = BAD_CAST "unexpected_leak",
+		.displayName = BAD_CAST "xtsRunFixture(): unexpected leak",
+		.testFunction = xtsTestSanity_UnexpectedLeakFixture
 	}, {
-		SFINIT(.id, BAD_CAST "expected_leak"),
-		SFINIT(.displayName, BAD_CAST "xtsRunFixture(): expected leak"),
-		SFINIT(.testFunction, xtsTestSanity_ExpectedLeakFixture)
+		.id = BAD_CAST "expected_leak",
+		.displayName = BAD_CAST "xtsRunFixture(): expected leak",
+		.testFunction = xtsTestSanity_ExpectedLeakFixture
 	}, {
-		SFINIT(.id, BAD_CAST "passing_suite"),
-		SFINIT(.displayName, BAD_CAST "xtsRunSuite(): passing suite"),
-		SFINIT(.testFunction, xplTestSanity_PassingSuite)
+		.id = BAD_CAST "passing_suite",
+		.displayName = BAD_CAST "xtsRunSuite(): passing suite",
+		.testFunction = xplTestSanity_PassingSuite
 	}, {
-		SFINIT(.id, BAD_CAST "failing_early_suite"),
-		SFINIT(.displayName, BAD_CAST "xtsRunSuite(): suite failing early"),
-		SFINIT(.testFunction, xplTestSanity_SuiteFailingEarly)
+		.id = BAD_CAST "failing_early_suite",
+		.displayName = BAD_CAST "xtsRunSuite(): suite failing early",
+		.testFunction = xplTestSanity_SuiteFailingEarly
 	}, {
-		SFINIT(.id, BAD_CAST "failing_late_suite"),
-		SFINIT(.displayName, BAD_CAST "xtsRunSuite(): suite failing late"),
-		SFINIT(.testFunction, xplTestSanity_SuiteFailingLate)
+		.id = BAD_CAST "failing_late_suite",
+		.displayName = BAD_CAST "xtsRunSuite(): suite failing late",
+		.testFunction = xplTestSanity_SuiteFailingLate
 	}, {
-		SFINIT(.id, BAD_CAST "locate_fixture"),
-		SFINIT(.displayName, BAD_CAST "xtsLocateFixture()"),
-		SFINIT(.testFunction, xplTestSanity_LocateFixture),
+		.id = BAD_CAST "locate_fixture",
+		.displayName = BAD_CAST "xtsLocateFixture()",
+		.testFunction = xplTestSanity_LocateFixture,
 	}, {
-		SFINIT(.id, BAD_CAST "locate_test"),
-		SFINIT(.displayName, BAD_CAST "xtsLocateTest()"),
-		SFINIT(.testFunction, xplTestSanity_LocateTest),
+		.id = BAD_CAST "locate_test",
+		.displayName = BAD_CAST "xtsLocateTest()",
+		.testFunction = xplTestSanity_LocateTest,
 	}, {
-		SFINIT(.id, BAD_CAST "skip_single_test"),
-		SFINIT(.displayName, BAD_CAST "xtsSkipSingleTest()"),
-		SFINIT(.testFunction, xplTestSanity_SkipSingleTest),
+		.id = BAD_CAST "skip_single_test",
+		.displayName = BAD_CAST "xtsSkipSingleTest()",
+		.testFunction = xplTestSanity_SkipSingleTest,
 	}, {
-		SFINIT(.id, BAD_CAST "skip_test"),
-		SFINIT(.displayName, BAD_CAST "xtsSkipTest()"),
-		SFINIT(.testFunction, xplTestSanity_SkipTest),
+		.id = BAD_CAST "skip_test",
+		.displayName = BAD_CAST "xtsSkipTest()",
+		.testFunction = xplTestSanity_SkipTest,
 	}, {
-		SFINIT(.id, BAD_CAST "skip_all_tests_in_fixture"),
-		SFINIT(.displayName, BAD_CAST "xtsSkipAllTestsInFixture()"),
-		SFINIT(.testFunction, xplTestSanity_SkipAllTestsInFixture),
+		.id = BAD_CAST "skip_all_tests_in_fixture",
+		.displayName = BAD_CAST "xtsSkipAllTestsInFixture()",
+		.testFunction = xplTestSanity_SkipAllTestsInFixture,
 	}, {
-		SFINIT(.id, BAD_CAST "skip_all_tests_in_suite"),
-		SFINIT(.displayName, BAD_CAST "xtsSkipAllTestsInSuite()"),
-		SFINIT(.testFunction, xplTestSanity_SkipAllTestsInSuite),
+		.id = BAD_CAST "skip_all_tests_in_suite",
+		.displayName = BAD_CAST "xtsSkipAllTestsInSuite()",
+		.testFunction = xplTestSanity_SkipAllTestsInSuite,
 	}, {
-		SFINIT(.id, BAD_CAST "apply_skip_list"),
-		SFINIT(.displayName, BAD_CAST "xtsApplySkipList()"),
-		SFINIT(.testFunction, xplTestSanity_ApplySkipList),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY),
-		SFINIT(.expectedMemoryDelta, 0)
+		.id = BAD_CAST "apply_skip_list",
+		.displayName = BAD_CAST "xtsApplySkipList()",
+		.testFunction = xplTestSanity_ApplySkipList,
+		.flags = XTS_FLAG_CHECK_MEMORY,
+		.expectedMemoryDelta = 0
 	}, {
-		SFINIT(.id, BAD_CAST "apply_skip_list_invalid_input"),
-		SFINIT(.displayName, BAD_CAST "xtsApplySkipList(): invalid input"),
-		SFINIT(.testFunction, xplTestSanity_ApplySkipListInvalidInput),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY),
-		SFINIT(.expectedMemoryDelta, 0)
+		.id = BAD_CAST "apply_skip_list_invalid_input",
+		.displayName = BAD_CAST "xtsApplySkipList(): invalid input",
+		.testFunction = xplTestSanity_ApplySkipListInvalidInput,
+		.flags = XTS_FLAG_CHECK_MEMORY,
+		.expectedMemoryDelta = 0
 	}, {
-		SFINIT(.id, BAD_CAST "run_test_free_error"),
-		SFINIT(.displayName, BAD_CAST "xtsRunTest(): malloc'ed error"),
-		SFINIT(.testFunction, xplTestSanity_RunTestFreeError),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY),
-		SFINIT(.expectedMemoryDelta, 0)
+		.id = BAD_CAST "run_test_free_error",
+		.displayName = BAD_CAST "xtsRunTest(): malloc'ed error",
+		.testFunction = xplTestSanity_RunTestFreeError,
+		.flags = XTS_FLAG_CHECK_MEMORY,
+		.expectedMemoryDelta = 0
 	}
 };
 
 xtsFixture xtsTestSanityFixture =
 {
-	SFINIT(.id, BAD_CAST "sanity"),
-	SFINIT(.displayName, BAD_CAST "test system sanity test group"),
-	SFINIT(.setup, NULL),
-	SFINIT(.teardown, NULL),
-	SFINIT(.test_count, sizeof(sanity_tests) / sizeof(sanity_tests[0])),
-	SFINIT(.tests, &sanity_tests[0])
+	.id = BAD_CAST "sanity",
+	.displayName = BAD_CAST "test system sanity test group",
+	.setup = NULL,
+	.teardown = NULL,
+	.test_count = sizeof(sanity_tests) / sizeof(sanity_tests[0]),
+	.tests = &sanity_tests[0]
 };

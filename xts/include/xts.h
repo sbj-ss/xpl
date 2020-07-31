@@ -14,16 +14,6 @@
 extern "C" {
 #endif
 
-#ifdef __GNUC__
-	#define HAVE_DESIGNATED_INITIALIZERS
-#endif
-
-#ifdef HAVE_DESIGNATED_INITIALIZERS
-	#define SFINIT(f, ...) f = __VA_ARGS__
-#else
-	#define SFINIT(f, ...) __VA_ARGS__
-#endif
-
 typedef enum {
 	XTS_FAIL_FIRST,
 	XTS_FAIL_ALL
