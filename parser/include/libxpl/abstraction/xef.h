@@ -14,33 +14,17 @@
 extern "C" {
 #endif
 
-/* Все сторонние химеры и слонопотамы в том случае, когда можно использовать несколько
- * вариантов (для лавирования между багами, учёта зависимости от платформы и т.д.),
- * собираются здесь в единый зоопарк. Что именно используется, задаётся в Configuration.h.
- * Специфические для внешних фич заголовочники сюда попадать не должны. */
+/* XEF (XPL External Features) is an abstraction layer for certain things like regular expressions,
+ * database connections etc that may have multiple implementations on different platforms.
+ * No implementation-specific headers should be mentioned in this file - it only defines
+ * implementation-agnostic APIs.
+ */
 
-
-/* == Общая часть == */
-
-/* Сообщения об ошибках. Структура непрозрачная, т.к. у каждой сторонней 
- * библиотеки свой серпентарий в головах и форматы этих сообщений. Из полученного сообщения
- * программисту интерпретатора надлежит извлечь текст вызовом xefGetErrorText, а само сообщение
- * прихлопнуть вызовом xefFreeErrorMessage(), не делая никаких предположений о его происхождении и начинке. */
-
-/* Сама структура и указатель на неё */
-typedef struct _xefErrorMessage xefErrorMessage, *xefErrorMessagePtr;
-/* Возвращает текст с желательной контекстной детализацией. Результат необходимо освободить. */
-XPLPUBFUN xmlChar* XPLCALL 
-	xefGetErrorText(xefErrorMessagePtr msg);
-/* Освобождает связанные с сообщением об ошибке ресурса. */
-XPLPUBFUN void XPLCALL
-	xefFreeErrorMessage(xefErrorMessagePtr msg);
-
-/* Запуск и завершение внешней сволочи. Интерпретатор автоматически это не вызывает. Функции НЕ потокобезопасны. */
+/* Start/stop all enabled features. Not thread-safe. */
 typedef struct _xefStartupParams
 {
-	/* Выход */
-	xefErrorMessagePtr error;		/* сообщение об ошибке. если не NULL - нужно освободить. */
+	/* output */
+	xmlChar *error;		/* must be freed if not NULL */
 } xefStartupParams, *xefStartupParamsPtr;
 
 XPLPUBFUN bool XPLCALL
@@ -50,40 +34,31 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN void XPLCALL
 	xefShutdown(void);
 
+/* regular expressions will be added here later */
 
-/* == Регулярные выражения == */
-/* до лучших времён */
-
-/* == xTP == */
+/* High-level transport protocols (mostly HTTP(S)? for now) */
 typedef struct _xefFetchDocumentParams
 {
-	/* Входные параметры - заполняются перед вызовом */
-	xmlChar *uri;				/* URI документа */
-	xmlChar *extra_query;		/* в частности, POST в HTTP */
-	/* Результаты */
-	xmlChar *encoding;			/* кодировка. освобождать надо */
-	xmlChar *document;			/* тело. освобождать надо. нули внутри допустимы */
-	xmlChar *real_uri;			/* может быть пустым. непустой нужно освободить */
-	int status_code;			/* может быть не определён */
-	size_t document_size;		/* длина в байтах. для строки учитывается терминирующий нуль. */
-	xefErrorMessagePtr error;	/* сообщение об ошибке. если не NULL - нужно освободить. */
+	/* input */
+	xmlChar *uri;
+	xmlChar *extra_query;		/* POST data etc */
+	/* output */
+	xmlChar *encoding;			/* must be freed */
+	xmlChar *document;			/* must be freed. May contain zeros inside */
+	size_t document_size;		/* in bytes including terminating zero */
+	xmlChar *real_uri;			/* must be freed */
+	int status_code;			/* may be undefined - TODO ??? */
+	xmlChar *error;				/* must be freed */
 } xefFetchDocumentParams, *xefFetchDocumentParamsPtr;
 
 XPLPUBFUN bool XPLCALL
 	xefFetchDocument(xefFetchDocumentParamsPtr params);
-/* Очищает только выходные параметры */
+/* clears only output parameters */
 XPLPUBFUN void XPLCALL
 	xefFetchParamsClear(xefFetchDocumentParamsPtr params);
 
-
-/* == Базы данных == */
-/* Очевидно, пора - старый код ужасен. 
-   Здесь имеет смысл частично вернуться к "модели" - абстракции, предложенной Ф. 
- */
-
-/* сначала низкоуровневый код - сам движок использует базы данных.
-   рано или поздно это уйдёт в командно-специфическую секцию, но не сейчас. */
-XPLPUBFUN void XPLCALL /* нужно ли это снаружи? */
+/* databases */
+XPLPUBFUN void XPLCALL
 	xefDbDeallocateDb(void *db_handle);
 XPLPUBFUN bool XPLCALL
 	xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **msg);
@@ -127,12 +102,12 @@ typedef struct _xefDbQueryParams
 	xplDBListPtr db_list;
 	void *user_data;
 	/* output */
-	xefErrorMessagePtr error;
+	xmlChar *error;		/* must be freed */
 } xefDbQueryParams, *xefDbQueryParamsPtr;
 
 XPLPUBFUN xefDbRowPtr XPLCALL
 	xefDbGetRow(xefDbContextPtr ctxt);
-XPLPUBFUN xefErrorMessagePtr XPLCALL
+XPLPUBFUN xmlChar* XPLCALL
 	xefDbGetError(xefDbContextPtr ctxt);
 XPLPUBFUN void* XPLCALL
 	xefDbGetUserData(xefDbContextPtr ctxt);
@@ -158,21 +133,21 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN void XPLCALL
 	xefDbFreeParams(xefDbQueryParamsPtr params, bool freeCarrier);
 
-/* == Вычистка HTML == */
+/* HTML -> XHTML */
 typedef struct _xefCleanHtmlParams
 {
-	/* Вход */
-	xmlChar *document;			/* должен быть в utf-8 */
-	/* Выход */
-	xmlChar *clean_document;	/* результат. необходимо освободить */
-	size_t clean_document_size;	/* размер результата */
-	xefErrorMessagePtr error;	/* сообщение об ошибке. если не NULL - нужно освободить. */
+	/* input */
+	xmlChar *document;			/* must be UTF-8 encoded */
+	/* output */
+	xmlChar *clean_document;	/* must be freed */
+	size_t clean_document_size;
+	xmlChar *error;				/* must be freed */
 } xefCleanHtmlParams, *xefCleanHtmlParamsPtr;
 
 XPLPUBFUN bool XPLCALL
 	xefCleanHtml(xefCleanHtmlParamsPtr params);
 
-/* Немного проверок и ругани */
+/* sanity checks */
 #ifdef _XEF_HTML_CLEANER_TIDY
 	#ifdef _XEF_HAS_HTML_CLEANER
 		#error XEF: another html cleaner is used already

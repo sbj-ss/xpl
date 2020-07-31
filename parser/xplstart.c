@@ -102,13 +102,13 @@ static bool startXef(const xplStartParamsPtr params, int argc, const char **argv
 
 	if (!xefStartup(&xef_params))
 	{
-		if (xef_params.error)
+		if (error)
 		{
-			if (error)
-				*error = xefGetErrorText(xef_params.error);
-			xefFreeErrorMessage(xef_params.error);
-		} else if (error)
-			*error = BAD_CAST XPL_STRDUP("external libraries startup failed (unknown error)");
+			if (xef_params.error)
+				*error = xef_params.error;
+			else
+				*error = BAD_CAST XPL_STRDUP("external libraries startup failed (unknown error)");
+		}
 		return false;
 	}
 	return true;

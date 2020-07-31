@@ -291,8 +291,8 @@ static xmlNodePtr _buildFragmentFromTds(
 	bool *repeat
 )
 {
-	xefErrorMessagePtr error;
-	xmlChar *error_text;
+	xmlChar *error = NULL;
+	xmlNodePtr ret;
 
 	while (xefDbHasRecordset(db_ctxt))
 	{
@@ -312,58 +312,65 @@ static xmlNodePtr _buildFragmentFromTds(
 		row_ctxt->xml_desc = NULL;
 		if ((error = xefDbGetError(db_ctxt)))
 		{
-			error_text = xefGetErrorText(error);
 			if (row_ctxt->first)
 				xmlFreeNodeList(row_ctxt->first);
 			*repeat = true;
-			return xplCreateErrorNode(row_ctxt->parent, error_text);
+			ret = xplCreateErrorNode(row_ctxt->parent, error);
+			goto done;
 		}
 		xefDbNextRowset(db_ctxt);
 		if ((error = xefDbGetError(db_ctxt)))
 		{
-			error_text = xefGetErrorText(error);
 			if (row_ctxt->first)
 				xmlFreeNodeList(row_ctxt->first);
 			*repeat = true;
-			return xplCreateErrorNode(row_ctxt->parent, error_text);
+			ret = xplCreateErrorNode(row_ctxt->parent, error);
+			goto done;
 		}
 	}
-	return row_ctxt->first;
+	ret = row_ctxt->first;
+done:
+	if (error)
+		XPL_FREE(error);
+	return ret;
 }
 
 static xmlNodePtr _buildDocFromMemory(xmlChar *src, size_t size, xmlNodePtr parent, bool *repeat)
 {
 	xmlDocPtr doc;
-	xmlChar *error_text;
+	xmlChar *error = NULL;
 	xmlNodePtr ret;
 
 	doc = xmlReadMemory((char*) src, (int) size, NULL, NULL, XML_PARSE_NODICT);
 	if (!doc)
 	{
-		error_text = getLastLibxmlError();
+		error = getLastLibxmlError();
 		*repeat = true;
-		return xplCreateErrorNode(parent, BAD_CAST "error parsing input document: \"%s\"", error_text);
+		ret = xplCreateErrorNode(parent, BAD_CAST "error parsing input document: \"%s\"", error);
+		goto done;
 	}
 	ret = detachContent(doc->children);
 	xmlSetListDoc(ret, parent->doc);
 	xmlFreeDoc(doc);
+done:
+	if (error)
+		XPL_FREE(error);
 	return ret;
 }
 
 static xmlNodePtr _buildDocFromXmlStream(xefDbContextPtr db_ctxt, xmlNodePtr carrier, bool *repeat)
 {
-	xmlChar *xml_doc_cur, *xml_doc_start = NULL, *stream_text;
+	xmlChar *xml_doc_cur, *xml_doc_start = NULL, *stream_text = NULL;
 	size_t stream_size, xml_doc_size;
-	xefErrorMessagePtr error;
-	xmlChar *error_text = NULL;
+	xmlChar *error = NULL;
 	xmlNodePtr ret;
 
 	stream_text = xefDbAccessStreamData(db_ctxt, &stream_size);
 	if ((error = xefDbGetError(db_ctxt)))
 	{
-		error_text = xefGetErrorText(error);
 		*repeat = true;
-		return xplCreateErrorNode(carrier, error_text);
+		ret = xplCreateErrorNode(carrier, error);
+		goto done;
 	}
 	if (!stream_size)
 	{
@@ -386,9 +393,12 @@ static xmlNodePtr _buildDocFromXmlStream(xefDbContextPtr db_ctxt, xmlNodePtr car
 	strcpy((char*) xml_doc_cur, (char*) DOC_END);
     ret = _buildDocFromMemory(xml_doc_start, xml_doc_size, carrier, repeat);
 done:
-	xefDbUnaccessStreamData(db_ctxt, stream_text);
+	if (stream_text)
+		xefDbUnaccessStreamData(db_ctxt, stream_text);
 	if (xml_doc_start)
 		XPL_FREE(xml_doc_start);
+	if (error)
+		XPL_FREE(error);
 	return ret;
 }
 
@@ -446,10 +456,11 @@ static xmlNodePtr _buildDocFromUnknownSizeTds(xefDbContextPtr db_ctxt, xplTdsDoc
 {
 	rbBufPtr buf;
 	xmlNodePtr ret;
-	xefErrorMessagePtr error;
-	xmlChar *error_text = NULL;
+	xmlChar *error = NULL;
 
 	buf = rbCreateBufParams(4096, RB_GROW_DOUBLE, 0);
+	if (!buf)
+		goto oom;
 	if (rbAddDataToBuf(buf, DOC_START, xmlStrlen(DOC_START)) != RB_RESULT_OK)
 		goto oom;
 	row_ctxt->buf = buf;
@@ -458,9 +469,8 @@ static xmlNodePtr _buildDocFromUnknownSizeTds(xefDbContextPtr db_ctxt, xplTdsDoc
 	xefDbEnumRows(db_ctxt, _TdsDocRowScanner, row_ctxt);
 	if ((error = xefDbGetError(db_ctxt)))
 	{
-		error_text = xefGetErrorText(error);
 		*repeat = true;
-		ret = xplCreateErrorNode(row_ctxt->parent, error_text);
+		ret = xplCreateErrorNode(row_ctxt->parent, error);
 		goto done;
 	}
 	if (row_ctxt->out_of_memory)
@@ -473,9 +483,10 @@ oom:
 	ret = xplCreateErrorNode(row_ctxt->parent, BAD_CAST "out of memory");
 	*repeat = true;
 done:
-	if (error_text)
-		XPL_FREE(error_text);
-	rbFreeBuf(buf);
+	if (error)
+		XPL_FREE(error);
+	if (buf)
+		rbFreeBuf(buf);
 	return ret;
 }
 
@@ -483,10 +494,11 @@ static xmlNodePtr _buildDocFromKnownSizeTds(xefDbContextPtr db_ctxt, xplTdsDocRo
 {
 	rbBufPtr buf;
 	xmlNodePtr ret;
-	xefErrorMessagePtr error;
-	xmlChar *error_text = NULL;
+	xmlChar *error = NULL;
 
 	buf = rbCreateBufParams(4096, RB_GROW_EXACT, 0);
+	if (!buf)
+		goto oom;
 	if (rbAddDataToBuf(buf, DOC_START, xmlStrlen(DOC_START)) != RB_RESULT_OK)
 		goto oom;
 	row_ctxt->buf = buf;
@@ -495,9 +507,8 @@ static xmlNodePtr _buildDocFromKnownSizeTds(xefDbContextPtr db_ctxt, xplTdsDocRo
 	xefDbEnumRows(db_ctxt, _TdsDocRowScanner, row_ctxt);
 	if ((error = xefDbGetError(db_ctxt)))
 	{
-		error_text = xefGetErrorText(error);
 		*repeat = true;
-		ret = xplCreateErrorNode(row_ctxt->parent, error_text);
+		ret = xplCreateErrorNode(row_ctxt->parent, error);
 		goto done;
 	}
 	if (row_ctxt->out_of_memory)
@@ -510,17 +521,18 @@ oom:
 	ret = xplCreateErrorNode(row_ctxt->parent, BAD_CAST "out of memory");
 	*repeat = true;
 done:
-	if (error_text)
-		XPL_FREE(error_text);
-	rbFreeBuf(buf);
+	if (error)
+		XPL_FREE(error);
+	if (buf)
+		rbFreeBuf(buf);
 	return ret;
 }
 
 static xmlNodePtr _buildDoc(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_ctxt, bool *repeat)
 {
 	xefDbStreamType real_stream_type;
-	xefErrorMessagePtr error;
-	xmlChar *error_text = NULL;
+	xmlChar *error = NULL;
+	xmlNodePtr ret;
 
 	real_stream_type = xefDbGetStreamType(db_ctxt);
 	if (real_stream_type == XEF_DB_STREAM_XML)
@@ -529,16 +541,16 @@ static xmlNodePtr _buildDoc(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_
 	row_ctxt->row_count = xefDbGetRowCount(db_ctxt);
 	if ((error = xefDbGetError(db_ctxt)))
 	{
-		error_text = xefGetErrorText(error);
 		*repeat = true;
-		return xplCreateErrorNode(row_ctxt->parent, error_text);
-	}
-	if (row_ctxt->row_count == -1) /* driver doesn't know */
-		return _buildDocFromUnknownSizeTds(db_ctxt, row_ctxt, repeat);
+		ret = xplCreateErrorNode(row_ctxt->parent, error);
+		XPL_FREE(error);
+	} else if (row_ctxt->row_count == -1) /* driver doesn't know */
+		ret = _buildDocFromUnknownSizeTds(db_ctxt, row_ctxt, repeat);
 	else if (!row_ctxt->row_count)
-		return NULL;
+		ret = NULL;
 	else
-		return _buildDocFromKnownSizeTds(db_ctxt, row_ctxt, repeat);
+		ret = _buildDocFromKnownSizeTds(db_ctxt, row_ctxt, repeat);
+	return ret;
 }
 
 void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
@@ -572,7 +584,8 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xefDbContextPtr db_ctxt = NULL;
 	xplTdsFragmentRowContext frag_ctxt;
 	xplTdsDocRowContext doc_ctxt;
-	xmlChar *error_text = NULL;
+
+	memset(&params, 0, sizeof(params));
 
 	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
 	{
@@ -653,9 +666,7 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	db_ctxt = xefDbQuery(&params);
 	if (!db_ctxt || params.error)
 	{
-		error_text = xefGetErrorText(params.error);
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, error_text), true, true);
-		xefFreeErrorMessage(params.error);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, params.error? params.error: BAD_CAST "unknown error"), true, true);
 		goto done;
 	}
 	if (params.desired_stream_type == XEF_DB_STREAM_XML)
@@ -675,8 +686,8 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(_buildFragmentFromTds(db_ctxt, &frag_ctxt, row_tag_names, &repeat), repeat, true);
 	}
 done:
-	if (error_text)
-		XPL_FREE(error_text);
+	if (params.error)
+		XPL_FREE(params.error);
 	if (db_ctxt)
 		xefDbFreeContext(db_ctxt);
 	if (dbname_attr)

@@ -397,7 +397,6 @@ static void cleanStep(IncludeContextPtr ctxt)
 {
 #ifdef _XEF_HAS_HTML_CLEANER
 	xefCleanHtmlParams params;
-	xmlChar *error_txt;
 #endif
 	if ((ctxt->input_format == INPUT_FORMAT_RAW) && (ctxt->output_format == OUTPUT_FORMAT_TEXT))
 	{
@@ -425,10 +424,8 @@ static void cleanStep(IncludeContextPtr ctxt)
 		ctxt->content = params.clean_document;
 		ctxt->content_size = params.clean_document_size;
 	} else if (params.error) {
-		error_txt = xefGetErrorText(params.error);
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "Error cleaning HTML document: \"%s\"", error_txt);
-		XPL_FREE(error_txt);
-		xefFreeErrorMessage(params.error);
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "Error cleaning HTML document: \"%s\"", params.error);
+		XPL_FREE(params.error);
 	} else
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot clean HTML document: unknown error");
 #else

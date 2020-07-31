@@ -12,7 +12,7 @@ CFLAGS += -g -D_DEBUG
 endif
 
 SRC = \
-abstraction/xef.c\
+abstraction/xefstart.c\
 abstraction/xpr.c\
 abstraction/xpr_lin.c\
 abstraction/xefhtmlcleanertidy.c\

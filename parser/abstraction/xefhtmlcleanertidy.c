@@ -1,5 +1,4 @@
 #include <libxpl/abstraction/xef.h>
-#include <libxpl/abstraction/xefinternal.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <tidy/tidy.h>
@@ -19,7 +18,7 @@ void TIDY_CALL xml_tidyFree(void* buf)
 	XPL_FREE(buf);
 }
 
-XEF_STARTUP_PROTO(HtmlCleaner)
+bool xefStartupHtmlCleaner(xefStartupParamsPtr params)
 {
 #ifdef _LEAK_DETECTION
 	tidySetMallocCall(xml_tidyMalloc);
@@ -29,21 +28,8 @@ XEF_STARTUP_PROTO(HtmlCleaner)
 	return true;
 }
 
-XEF_SHUTDOWN_PROTO(HtmlCleaner)
+void xefShutdownHtmlCleaner()
 {
-}
-
-/* unused */
-XEF_GET_ERROR_TEXT_PROTO(HtmlCleaner)
-{
-	DISPLAY_INTERNAL_ERROR_MESSAGE();
-	return NULL;
-}
-
-/* unused */
-XEF_FREE_ERROR_MESSAGE_PROTO(HtmlCleaner)
-{
-	DISPLAY_INTERNAL_ERROR_MESSAGE();
 }
 
 bool xefCleanHtml(xefCleanHtmlParamsPtr params)
@@ -59,7 +45,7 @@ bool xefCleanHtml(xefCleanHtmlParamsPtr params)
 	
 	if (!(tdoc = tidyCreate()))
 	{
-		params->error = xefCreateCommonErrorMessage(BAD_CAST "cannot create HtmlTidy document");
+		params->error = BAD_CAST XPL_STRDUP("cannot create HtmlTidy document");
 		return false;
 	}
 	tidyOptSetBool(tdoc, TidyXhtmlOut, yes); /* don't set to "XML" */
@@ -71,14 +57,14 @@ bool xefCleanHtml(xefCleanHtmlParamsPtr params)
 	{
 		tidyBufFree(&output);
 		tidyBufFree(&errbuf);
-		params->error = xefCreateCommonErrorMessage(BAD_CAST "HtmlTidy refused to parse input document");
+		params->error = BAD_CAST XPL_STRDUP("HtmlTidy refused to parse input document"); // TODO diagnostics?
 		return false;
 	}
 	if (tidyCleanAndRepair(tdoc) < 0)
 	{
 		tidyBufFree(&output);
 		tidyBufFree(&errbuf);
-		params->error = xefCreateCommonErrorMessage(BAD_CAST "HtmlTidy refused to clean input document");
+		params->error = BAD_CAST XPL_STRDUP("HtmlTidy refused to clean input document"); // TODO diagnostics?
 		return false;
 	}
 	if (cfgPrintTidyInfo)
@@ -87,13 +73,11 @@ bool xefCleanHtml(xefCleanHtmlParamsPtr params)
 	{
 		tidyBufFree(&output);
 		tidyBufFree(&errbuf);
-		params->error = xefCreateCommonErrorMessage(BAD_CAST "cannot save document cleaned by HtmlTidy to buffer");
+		params->error = BAD_CAST XPL_STRDUP("cannot save document cleaned by HtmlTidy to buffer");
 		return false;
 	}
 	tidyBufPutByte(&output, 0); /* ensure NULL-termination */
-#if 0
-	tidySaveFile(tdoc, "d:\\ss\\debug.xml");
-#endif
+
 	tidy_content = BAD_CAST output.bp;
 	tidy_size = (size_t) output.size - 1;
 	tidyBufDetach(&output);
