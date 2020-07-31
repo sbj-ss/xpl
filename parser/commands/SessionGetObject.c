@@ -48,7 +48,7 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 		goto done;
 	}
 	if (threadlocal)
-		name_attr = appendThreadIdToString(name_attr, xprGetCurrentThreadId());
+		name_attr = xstrAppendThreadIdToString(name_attr, xprGetCurrentThreadId());
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
 	obj = xplSessionGetObject(commandInfo->document->main->session, name_attr);
 	if (obj)

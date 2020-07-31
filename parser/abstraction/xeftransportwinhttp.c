@@ -42,7 +42,7 @@ XEF_GET_ERROR_TEXT_PROTO(Transport)
 	FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, real_msg->last_error, 0, (LPWSTR) &buffer, 0, NULL);
 	if (buffer)
 	{
-		iconv_string("utf-8", "utf-16le", (char*) buffer, (char*) buffer + wcslen(buffer)*sizeof(wchar_t), (char**) &sys_error, NULL);
+		xstrIconvString("utf-8", "utf-16le", (char*) buffer, (char*) buffer + wcslen(buffer)*sizeof(wchar_t), (char**) &sys_error, NULL);
 		LocalFree(buffer);
 		ret = xplFormatMessage("%s: %s", real_msg->message_text, sys_error);
 		XPL_FREE(sys_error);
@@ -115,7 +115,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	urlComp.lpszUrlPath = (wchar_t*) XPL_MALLOC((size_t) urlComp.dwUrlPathLength);
 	urlComp.dwExtraInfoLength = 1024*32;
 	urlComp.lpszExtraInfo = (wchar_t*) XPL_MALLOC((size_t) urlComp.dwExtraInfoLength); /* ������� ������ - � POST */
-	iconv_string("utf-16le", "utf-8", params->uri, params->uri + strlen(params->uri), (char**) &wszRequestUrl, NULL);
+	xstrIconvString("utf-16le", "utf-8", params->uri, params->uri + strlen(params->uri), (char**) &wszRequestUrl, NULL);
 	if (!WinHttpCrackUrl(wszRequestUrl, 0, 0, &urlComp))
 	{
 		params->error = xefCreateCommonErrorMessage(BAD_CAST "the specified URI \"%s\" is incorrect", params->uri);
@@ -160,7 +160,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	{
 		proxyInfo.dwAccessType = WINHTTP_ACCESS_TYPE_NAMED_PROXY;
 		szProxy = xplFormatMessage("%s:%d", cfgProxyServer, cfgProxyPort?cfgProxyPort:80);
-		iconv_string("utf-16le", "utf-8", (char*) szProxy, (char*) (szProxy + strlen(szProxy)), (char**) &proxyInfo.lpszProxy, NULL);
+		xstrIconvString("utf-16le", "utf-8", (char*) szProxy, (char*) (szProxy + strlen(szProxy)), (char**) &proxyInfo.lpszProxy, NULL);
 		if (!WinHttpSetOption(hRequest, WINHTTP_OPTION_PROXY, &proxyInfo, sizeof(proxyInfo)))
 		{
 			params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot set up proxy");
@@ -168,7 +168,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 		}
 		if (cfgProxyUser)
 		{
-			iconv_string("utf-16le", "utf-8", (char*) cfgProxyUser, (char*) (cfgProxyUser + xmlStrlen(cfgProxyUser)), (char**) &wszProxyUser, &iconv_len);
+			xstrIconvString("utf-16le", "utf-8", (char*) cfgProxyUser, (char*) (cfgProxyUser + xmlStrlen(cfgProxyUser)), (char**) &wszProxyUser, &iconv_len);
 			if (!WinHttpSetOption(hRequest, WINHTTP_OPTION_PROXY_USERNAME, (LPVOID) wszProxyUser, (DWORD) iconv_len))
 			{
 				params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot set up proxy user");
@@ -176,7 +176,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 			}
 			if (cfgProxyPassword)
 			{
-				iconv_string("utf-16le", "utf-8", (char*) cfgProxyPassword, (char*)(cfgProxyPassword + xmlStrlen(cfgProxyPassword)), (char**) &wszProxyPassword, &iconv_len);
+				xstrIconvString("utf-16le", "utf-8", (char*) cfgProxyPassword, (char*)(cfgProxyPassword + xmlStrlen(cfgProxyPassword)), (char**) &wszProxyPassword, &iconv_len);
 				if (!WinHttpSetOption(hRequest, WINHTTP_OPTION_PROXY_PASSWORD, (LPVOID) wszProxyPassword, (DWORD) iconv_len))
 				{
 					params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot set up proxy password");

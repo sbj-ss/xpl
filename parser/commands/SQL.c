@@ -344,7 +344,7 @@ static xmlNodePtr _buildDocFromMemory(xmlChar *src, size_t size, xmlNodePtr pare
 	doc = xmlReadMemory((char*) src, (int) size, NULL, NULL, XML_PARSE_NODICT);
 	if (!doc)
 	{
-		error = getLastLibxmlError();
+		error = xstrGetLastLibxmlError();
 		*repeat = true;
 		ret = xplCreateErrorNode(parent, BAD_CAST "error parsing input document: \"%s\"", error);
 		goto done;

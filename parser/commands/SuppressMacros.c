@@ -44,7 +44,7 @@ void fillMacroHashFromList(xmlNodePtr source, xmlHashTablePtr target, xmlChar *l
 				xmlHashAddEntry(target, prev, macro);
 			prev = ++cur;
 		} else
-			cur += getOffsetToNextUTF8Char(cur);
+			cur += xstrGetOffsetToNextUTF8Char(cur);
 	}
 	if (*prev)
 	{

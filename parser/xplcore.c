@@ -355,7 +355,7 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aAppPath, xmlChar *aFilename, 
 	{
 		ret->error = NULL;
 	} else {
-		ret->error = getLastLibxmlError();
+		ret->error = xstrGetLastLibxmlError();
 		xmlResetLastError();
 	}
 
@@ -372,7 +372,7 @@ xplDocumentPtr xplDocumentCreateFromMemory(xmlChar* aAppPath, xmlChar *aOrigin, 
 	{
 		ret->error = NULL;
 	} else {
-		ret->error = getLastLibxmlError();
+		ret->error = xstrGetLastLibxmlError();
 		xmlResetLastError();
 	}
 
@@ -748,7 +748,7 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, bool expand, xplR
 			} /* otherwise do nothing */
 		} else if (c->type == XML_TEXT_NODE) {
 			tail = c->next;
-			if (!strNonblank(c->content) && !doc->indent_spinlock) /* remove formatting unless instructed otherwise */
+			if (!xstrStrNonblank(c->content) && !doc->indent_spinlock) /* remove formatting unless instructed otherwise */
 			{
 				xmlUnlinkNode(c);
 				xmlFreeNode(c);
@@ -1307,7 +1307,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 
 	if (!cfgUseWrappers) 
 	{ 
-		composeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename);
+		xstrComposeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename);
 		main_status = xplProcessFile(norm_path, norm_filename, environment, session, docOut);
 		if (norm_path) XPL_FREE(norm_path);
 		return main_status;
@@ -1328,7 +1328,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 
 	if (prologue_file)
 	{
-		composeAndSplitPath(basePath, prologue_file, &norm_path, &norm_filename);
+		xstrComposeAndSplitPath(basePath, prologue_file, &norm_path, &norm_filename);
 		doc_prologue = xplDocumentCreateFromFile(norm_path, norm_filename, environment, session);
 		if (doc_prologue) 
 		{
@@ -1340,7 +1340,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 		if (norm_path) XPL_FREE(norm_path);
 	}
 
-	composeAndSplitPath(basePath, main_file, &norm_path, &norm_filename);
+	xstrComposeAndSplitPath(basePath, main_file, &norm_path, &norm_filename);
 	doc_main = xplDocumentCreateFromFile(norm_path, norm_filename, environment, session);
 	if (doc_main)
 	{
@@ -1356,7 +1356,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 
 	if (epilogue_file)
 	{
-		composeAndSplitPath(basePath, epilogue_file, &norm_path, &norm_filename);
+		xstrComposeAndSplitPath(basePath, epilogue_file, &norm_path, &norm_filename);
 		doc_epilogue = xplDocumentCreateFromFile(norm_path, norm_filename, environment, session);
 		if (doc_epilogue) 
 		{

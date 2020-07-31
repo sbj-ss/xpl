@@ -20,7 +20,7 @@ void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 #ifdef _USE_LIBIDN
 	if ((content = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1)))
 	{
-		uri = encodeUriIdn(content);
+		uri = xstrEncodeUriIdn(content);
 		if (uri)
 		{
 			ret = xmlNewDocText(commandInfo->element->doc, NULL);

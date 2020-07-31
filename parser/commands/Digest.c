@@ -68,7 +68,7 @@ void xplCmdDigestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		goto done;
 	}
 	ret = xmlNewDocText(commandInfo->document->document, NULL);
-	ret->content = bufferToHex(digest, digest_size, false);
+	ret->content = xstrBufferToHex(digest, digest_size, false);
 	ASSIGN_RESULT(ret, false, true);
 done:
 	if (method_attr)

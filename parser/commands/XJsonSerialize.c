@@ -99,7 +99,7 @@ static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	case XJA_STRING:
 		break;
 	case XJA_NUMBER:
-		if (ctxt->value_type_check && !isNumber(content))
+		if (ctxt->value_type_check && !xstrIsNumber(content))
 		{
 			ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s\" content \"%s\" is non-numeric", cur->name, content);
 			goto done;

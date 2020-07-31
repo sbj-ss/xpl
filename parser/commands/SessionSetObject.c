@@ -31,7 +31,7 @@ void xplCmdSessionSetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 		goto done;
 	}
 	if (threadlocal)
-		name_attr = appendThreadIdToString(name_attr, xprGetCurrentThreadId());
+		name_attr = xstrAppendThreadIdToString(name_attr, xprGetCurrentThreadId());
 	xplSessionSetObject(commandInfo->document->main->session, commandInfo->element, name_attr);
 done:
 	if (name_attr)

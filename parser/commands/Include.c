@@ -284,20 +284,20 @@ static int fastDetectEncoding(char* content, size_t size)
 	if (size >= 2)
 	{
 		if ((*content == (char) 0xFE) && (*(content+1) == (char) 0xFF))
-			return DETECTED_ENC_UTF16LE;
+			return XSTR_ENC_UTF16LE;
 		if (!*content)
-			return DETECTED_ENC_UTF16LE;
+			return XSTR_ENC_UTF16LE;
 		if ((*content == (char) 0xFF) && (*(content+1) == (char) 0xFE))
-			return DETECTED_ENC_UTF16BE;
+			return XSTR_ENC_UTF16BE;
 		if (!*(content+1))
-			return DETECTED_ENC_UTF16BE;
+			return XSTR_ENC_UTF16BE;
 	}
 	if (size >= 3)
 	{
 		if ((*content == (char) 0xEF) && (*(content+1) == (char) 0xBB) && (*(content+2) == (char) 0xBF))
-			return DETECTED_ENC_UTF8;
+			return XSTR_ENC_UTF8;
 	}
-	return detectEncoding(content, detectionSampleLen(content, size));
+	return xstrDetectEncoding(content, detectionSampleLen(content, size));
 }
 
 static void updateCtxtEncoding(IncludeContextPtr ctxt)
@@ -318,30 +318,30 @@ static void updateCtxtEncoding(IncludeContextPtr ctxt)
 	ctxt->encoding = fastDetectEncoding((char*) ctxt->content, ctxt->content_size);
 	switch (ctxt->encoding) // TODO array
 	{
-	case DETECTED_ENC_1251:
+	case XSTR_ENC_1251:
 		ctxt->encoding_str = BAD_CAST XPL_STRDUP("CP1251");
 		break;
-	case DETECTED_ENC_UTF8: 
-	case DETECTED_ENC_UNKNOWN:
+	case XSTR_ENC_UTF8: 
+	case XSTR_ENC_UNKNOWN:
 		ctxt->encoding_str = BAD_CAST XPL_STRDUP("utf-8");
-		ctxt->encoding = DETECTED_ENC_UTF8;
+		ctxt->encoding = XSTR_ENC_UTF8;
 		break;
-	case DETECTED_ENC_UTF16LE: 
+	case XSTR_ENC_UTF16LE: 
 		ctxt->encoding_str = BAD_CAST XPL_STRDUP("utf-16le");
 		break;
-	case DETECTED_ENC_UTF16BE: 
+	case XSTR_ENC_UTF16BE: 
 		ctxt->encoding_str = BAD_CAST XPL_STRDUP("utf-16be");
 		break;
-	case DETECTED_ENC_866: 
+	case XSTR_ENC_866: 
 		ctxt->encoding_str = BAD_CAST XPL_STRDUP("cp866");
 		break;
-	case DETECTED_ENC_KOI8: 
+	case XSTR_ENC_KOI8: 
 		ctxt->encoding_str = BAD_CAST XPL_STRDUP("KOI8-R");
 		break;
 	default: 
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	}
-	ctxt->needs_recoding = (ctxt->encoding != DETECTED_ENC_UTF8);
+	ctxt->needs_recoding = (ctxt->encoding != XSTR_ENC_UTF8);
 }
 
 static void recodeStep(IncludeContextPtr ctxt)
@@ -354,7 +354,7 @@ static void recodeStep(IncludeContextPtr ctxt)
 	updateCtxtEncoding(ctxt);
 	if (!ctxt->needs_recoding)
 		return;
-	if (iconv_string(
+	if (xstrIconvString(
 		"utf-8",
 		(const char*) ctxt->encoding_str,
 		(const char*) ctxt->content,
@@ -405,7 +405,7 @@ static void cleanStep(IncludeContextPtr ctxt)
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "input document contains characters that cannot be output as text (try hex or base64 output format)");
 			return;
 		}
-		if (!isValidUtf8Sample(ctxt->content, ctxt->content_size, true))
+		if (!xstrIsValidUtf8Sample(ctxt->content, ctxt->content_size, true))
 		{
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "input document contains characters that cannot be displayed as utf-8 (try recoding or hex/base64 output format)");
 			return;
@@ -452,7 +452,7 @@ static void buildDocumentStep(IncludeContextPtr ctxt)
 			ctxt->src_node = (xmlNodePtr) xmlReadMemory((char*) ctxt->content, (int) ctxt->content_size, NULL, NULL, XML_PARSE_NODICT);
 			if (!ctxt->src_node)
 			{
-				error_txt = getLastLibxmlError();
+				error_txt = xstrGetLastLibxmlError();
 				ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "error parsing input document: \"%s\"", error_txt);
 				XPL_FREE(error_txt);
 				return;
@@ -610,13 +610,13 @@ static void computeRetStep(IncludeContextPtr ctxt)
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "insufficient memory");
 			return;
 		}
-		base64encode(ctxt->content, ctxt->content_size, (char*) encoded_content, encoded_size);
+		xstrBase64Encode(ctxt->content, ctxt->content_size, (char*) encoded_content, encoded_size);
 		XPL_FREE(ctxt->content);
 		ctxt->content = encoded_content;
 		ctxt->content_size = encoded_size;
 		break;
 	case OUTPUT_FORMAT_HEX:
-		if (!(encoded_content = bufferToHex(ctxt->content, ctxt->content_size, false)))
+		if (!(encoded_content = xstrBufferToHex(ctxt->content, ctxt->content_size, false)))
 		{
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "insufficient memory");
 			return;

@@ -364,7 +364,7 @@ bool xplSessionSetSaMode(xplSessionPtr session, bool enable, xmlChar *password)
 	if (session->sa_mode)
 		return true; /* already set */
 	digest = RIPEMD160((const unsigned char*) password, xmlStrlen(password), NULL);
-	digest_str = bufferToHex(digest, RIPEMD160_DIGEST_LENGTH, false);
+	digest_str = xstrBufferToHex(digest, RIPEMD160_DIGEST_LENGTH, false);
 	if (!strcmp((const char*) cfgSaPassword, (const char*) digest_str))
 	{
 		session->sa_mode = true;

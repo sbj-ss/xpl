@@ -526,7 +526,7 @@ xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool b
 			if (p->options & CFG_OPTION_STORED_AS_HASH)
 			{
 				digest = RIPEMD160((unsigned char*) value, xmlStrlen(value), NULL);
-				value = bufferToHex(digest, RIPEMD160_DIGEST_LENGTH, false);
+				value = xstrBufferToHex(digest, RIPEMD160_DIGEST_LENGTH, false);
 				*((xmlChar**) p->value_ptr) = value;
 			} else
 				*((xmlChar**) p->value_ptr) = BAD_CAST XPL_STRDUP((char*) value);

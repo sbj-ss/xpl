@@ -45,7 +45,7 @@ static xmlChar* _xefDbDecodeComError()
 	{		
 		if SUCCEEDED(IErrorInfo_GetDescription(err, &bstr_error))
 		{
-			iconv_string("utf-8", "utf-16le", (char*) bstr_error, (char*) bstr_error + wcslen(bstr_error)*sizeof(OLECHAR), &error_text, NULL);
+			xstrIconvString("utf-8", "utf-16le", (char*) bstr_error, (char*) bstr_error + wcslen(bstr_error)*sizeof(OLECHAR), &error_text, NULL);
 			SysFreeString(bstr_error);
 			return error_text;
 		} else {
@@ -78,7 +78,7 @@ static ADOConnection* _xefDbEstablishConnection(const xmlChar* connString)
 	res = CoCreateInstance(&CLSID_CADOConnection, NULL, CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER, &IID_IADOConnection, (LPVOID*) &conn);
 	if FAILED(res)
 		return NULL;
-	iconv_string("utf-16le", "utf-8", (char*) connString, (char*) connString + xmlStrlen(connString), 
+	xstrIconvString("utf-16le", "utf-8", (char*) connString, (char*) connString + xmlStrlen(connString), 
 		(char**) &w_connstring, NULL);
 	if (w_connstring)
 		bstr_connstring = SysAllocString(w_connstring);
@@ -175,7 +175,7 @@ xmlChar* _xefDbCleanTextStream(xmlChar *src, size_t size, size_t *out_size)
 	{
 		while (*p && (*p < 32) && (*p != '\t') && (*p != '\r') && (*p != '\n'))
 			p++;
-		ofs = getOffsetToNextUTF8Char(p);
+		ofs = xstrGetOffsetToNextUTF8Char(p);
 		while (ofs--)
 			*cur++ = *p++;
 	}
@@ -262,7 +262,7 @@ xmlChar* _xefDbConvertValueToString(VARIANT value, size_t size, BOOL cleanStream
 	case VT_BSTR: /* VT_LPSTR/VT_LPWSTR теоретически сюда попасть не могут */
 		if (!value.bstrVal)
 			return NULL;
-		if (iconv_string("utf-8", "utf-16le", (char*) value.bstrVal, (char*) value.bstrVal + wcslen(value.bstrVal)*sizeof(OLECHAR), (char**) &str, NULL) == -1)
+		if (xstrIconvString("utf-8", "utf-16le", (char*) value.bstrVal, (char*) value.bstrVal + wcslen(value.bstrVal)*sizeof(OLECHAR), (char**) &str, NULL) == -1)
 			return XPL_STRDUP(BAD_CAST "<incorrect string encoding>");
 		if (cleanStream)
 		{
@@ -274,7 +274,7 @@ xmlChar* _xefDbConvertValueToString(VARIANT value, size_t size, BOOL cleanStream
 		return str;
 	case VT_ARRAY | VT_UI1: /* binary/varbinary */
 		SafeArrayAccessData(value.parray, &data);
-		str = bufferToHex(data, size, TRUE);
+		str = xstrBufferToHex(data, size, TRUE);
 		SafeArrayUnaccessData(value.parray);
 		return str;
 	case VT_DATE:
@@ -408,7 +408,7 @@ static void _xefDbCreateRowDesc(xefDbContextPtr ctxt)
 		if (bstr_field_name)
 		{
 			field_name = NULL;
-			iconv_string("utf-8", "utf-16le", (char*) bstr_field_name, (char*) bstr_field_name + wcslen(bstr_field_name)*sizeof(OLECHAR), &field_name, NULL);
+			xstrIconvString("utf-8", "utf-16le", (char*) bstr_field_name, (char*) bstr_field_name + wcslen(bstr_field_name)*sizeof(OLECHAR), &field_name, NULL);
 			desc->names[i] = field_name;
 			SysFreeString(bstr_field_name);
 		}
@@ -653,7 +653,7 @@ static ADOCommand* _xefDbCreateCommand(xefDbQueryParamsPtr params, ADOConnection
 		_xefDbSetParamsError(params, xefCreateCommonErrorMessage("_xefDbCreateCommand(): put_ActiveConnection() failed (%s)", error_text));
 		goto error;
 	}
-	iconv_string("utf-16le", "utf-8", params->query, params->query + xmlStrlen(params->query), (char**) &wsz_query, NULL);
+	xstrIconvString("utf-16le", "utf-8", params->query, params->query + xmlStrlen(params->query), (char**) &wsz_query, NULL);
 	bstr_query = SysAllocString(wsz_query);
 	if FAILED(_Command_put_CommandText(cmd, bstr_query))
 	{

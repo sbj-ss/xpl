@@ -185,7 +185,7 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 					APPEND()
 				}
 				if ((region->beg[0] == region->end[0]) && *start) /* zero-length match */
-					start = end + getOffsetToNextUTF8Char(end);
+					start = end + xstrGetOffsetToNextUTF8Char(end);
 				else
 					start = end;
 				prev_boundary = end;

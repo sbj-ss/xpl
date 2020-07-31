@@ -29,7 +29,7 @@ void xplCmdSessionRemoveObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 		goto done;
 	}
 	if (threadlocal)
-		name_attr = appendThreadIdToString(name_attr, xprGetCurrentThreadId());
+		name_attr = xstrAppendThreadIdToString(name_attr, xprGetCurrentThreadId());
 	xplSessionRemoveObject(commandInfo->document->main->session, name_attr);
 	ASSIGN_RESULT(NULL, false, true);
 done:

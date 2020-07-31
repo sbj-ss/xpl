@@ -66,7 +66,7 @@ static XPR_FS_CHAR* makeFSPath(const xmlChar *source, const xmlChar *appPath, bo
 	} else
 		full_path = xplFullFilename(source, appPath);
 	xprConvertSlashes(full_path);
-	if (iconv_string(XPR_FS_ENCODING, "utf-8", (char*) full_path, (char*) full_path + xmlStrlen(full_path), (char**) &fs_path, NULL) == -1)
+	if (xstrIconvString(XPR_FS_ENCODING, "utf-8", (char*) full_path, (char*) full_path + xmlStrlen(full_path), (char**) &fs_path, NULL) == -1)
 	{
 		XPL_FREE(full_path);
 		return NULL;
@@ -260,7 +260,7 @@ static void deleteFilesScanner(FileScanContextPtr ctxt)
 
 	if XPR_FILE_UNLINK_FAILED(XPR_FILE_UNLINK(ctxt->full_name))
 	{
-		iconv_string("utf-8", XPR_FS_ENCODING, (const char*) ctxt->full_name, 
+		xstrIconvString("utf-8", XPR_FS_ENCODING, (const char*) ctxt->full_name, 
 		(const char*) ctxt->full_name + XPR_FS_STRLEN(ctxt->full_name)*sizeof(XPR_FS_CHAR), (char**) &utf8name, NULL);
 		error = xplCreateErrorNode(ctxt->command_info->element, BAD_CAST "cannot erase file \"%s\"", utf8name);
 		XPL_FREE(utf8name);
@@ -311,7 +311,7 @@ static void listFilesScanner(FileScanContextPtr ctxt)
 
 	if (!ctxt->tag_name)
 		return;
-	iconv_string("utf-8", XPR_FS_ENCODING, (const char*) ctxt->full_name, (const char*) ctxt->full_name + XPR_FS_STRLEN(ctxt->full_name)*2, (char**) &utf8name, NULL);
+	xstrIconvString("utf-8", XPR_FS_ENCODING, (const char*) ctxt->full_name, (const char*) ctxt->full_name + XPR_FS_STRLEN(ctxt->full_name)*2, (char**) &utf8name, NULL);
 	ret = xmlNewDocNode(ctxt->doc, ctxt->ns, ctxt->tag_name, NULL);
 	xmlNewProp(ret, BAD_CAST "name", utf8name);
 	XPL_FREE(utf8name);
@@ -363,9 +363,9 @@ static void copyFilesScanner(FileScanContextPtr ctxt)
 					return; /* succeeded finally */
 		}
 		utf8error_msg = xprFormatSysError(XPR_GET_OS_ERROR());
-		iconv_string("utf-8", XPR_FS_ENCODING, (const char*) ctxt->full_name, 
+		xstrIconvString("utf-8", XPR_FS_ENCODING, (const char*) ctxt->full_name, 
 			(const char*) ctxt->full_name + XPR_FS_STRLEN(ctxt->full_name)*sizeof(XPR_FS_CHAR), (char**) &utf8name, NULL);
-		iconv_string("utf-8", XPR_FS_ENCODING, (const char*) ctxt->destination, 
+		xstrIconvString("utf-8", XPR_FS_ENCODING, (const char*) ctxt->destination, 
 				(const char*) ctxt->destination + XPR_FS_STRLEN(ctxt->destination)*sizeof(XPR_FS_CHAR), (char**) &utf8dst, NULL);
 		error = xplCreateErrorNode(ctxt->command_info->element, BAD_CAST "cannot copy file \"%s\" to \"%s\", OS error \"%s\"", utf8name, utf8dst, utf8error_msg);
 		if (utf8dst) XPL_FREE(utf8dst);
@@ -405,9 +405,9 @@ static void moveFilesScanner(FileScanContextPtr ctxt)
 					return; /* succeeded finally */
 		}
 		utf8error_msg = xprFormatSysError(XPR_GET_OS_ERROR());
-		iconv_string("utf-8", XPR_FS_ENCODING, (const char*) ctxt->full_name, 
+		xstrIconvString("utf-8", XPR_FS_ENCODING, (const char*) ctxt->full_name, 
 			(const char*) ctxt->full_name + XPR_FS_STRLEN(ctxt->full_name)*sizeof(XPR_FS_CHAR), (char**) &utf8name, NULL);
-		iconv_string("utf-8", XPR_FS_ENCODING, (const char*) ctxt->destination, 
+		xstrIconvString("utf-8", XPR_FS_ENCODING, (const char*) ctxt->destination, 
 			(const char*) ctxt->destination + XPR_FS_STRLEN(ctxt->destination)*sizeof(XPR_FS_CHAR), (char**) &utf8dst, NULL);
 		error = xplCreateErrorNode(ctxt->command_info->element, BAD_CAST "cannot move file \"%s\" to \"%s\", OS error \"%s\"", utf8name, utf8dst, utf8error_msg);
 		if (utf8dst) XPL_FREE(utf8dst);
@@ -545,7 +545,7 @@ void xplCmdFileOpEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (source_attr)
 		fs_source = makeFSPath(source_attr, commandInfo->document->app_path, srcabspath);
 	if (filemask_attr)
-		iconv_string(XPR_FS_ENCODING, "utf-8", filemask_attr, filemask_attr + xmlStrlen(filemask_attr), (char**) &fs_filemask, NULL);
+		xstrIconvString(XPR_FS_ENCODING, "utf-8", filemask_attr, filemask_attr + xmlStrlen(filemask_attr), (char**) &fs_filemask, NULL);
 	if (destination_attr)
 		fs_destination = makeFSPath(destination_attr, commandInfo->document->app_path, dstabspath);
 

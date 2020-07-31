@@ -193,7 +193,7 @@ void serializeDoc(struct mg_connection *conn, xmlDocPtr doc, xmlChar *encoding, 
 				txt = NULL;
 			if (txt)
 			{
-				if (iconv_string((char*) encoding, "utf-8", (char*) txt, (char*) txt + xmlStrlen(txt), &out_txt, &iconv_size) == -1)
+				if (xstrIconvString((char*) encoding, "utf-8", (char*) txt, (char*) txt + xmlStrlen(txt), &out_txt, &iconv_size) == -1)
 				{
 					mg_printf(conn, "Content-Length: %ld\r\n\r\n", strlen(ENCODING_ERROR_STR) - 2 + xmlStrlen(encoding));
 					mg_printf(conn, ENCODING_ERROR_STR, encoding);

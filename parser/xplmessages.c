@@ -89,7 +89,7 @@ void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
 	}
 
 	encoded_msg = NULL;
-	if (iconv_string(XPR_CONSOLE_ENCODING, "utf-8", (const char*) msg, (const char*) msg + xmlStrlen(msg), &encoded_msg, NULL) == -1)
+	if (xstrIconvString(XPR_CONSOLE_ENCODING, "utf-8", (const char*) msg, (const char*) msg + xmlStrlen(msg), &encoded_msg, NULL) == -1)
 		encoded_msg = encoding_msg;
 	/* xplDisplayMessage() should be working even after the interpreter shutdown */
 	(void) xprMutexAcquire(&console_interlock);

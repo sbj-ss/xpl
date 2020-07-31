@@ -28,7 +28,7 @@ void xplCmdSessionIsPresentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 			goto done;
 		}
 		if (threadlocal)
-			name_attr = appendThreadIdToString(name_attr, xprGetCurrentThreadId());
+			name_attr = xstrAppendThreadIdToString(name_attr, xprGetCurrentThreadId());
 		ret_value = (commandInfo->document->main->session 
 			&& xplSessionIsValid(commandInfo->document->main->session) 
 			&& xplSessionGetObject(commandInfo->document->main->session, name_attr));

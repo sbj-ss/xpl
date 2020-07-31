@@ -45,7 +45,7 @@ xmlChar *getNextMulti(xmlChar *str, xmlChar *delim, size_t *delimLen)
 
 	while (*delim)
 	{
-		offset = getOffsetToNextUTF8Char(delim);
+		offset = xstrGetOffsetToNextUTF8Char(delim);
 		tmp = delim[offset];
 		delim[offset] = 0;
 		cur = xmlStrstr(str, delim);
@@ -135,7 +135,7 @@ xmlNodePtr splitBySingle(UnstringerContextPtr ctxt)
 				start = getEnd(start);
 			}
 		} else {
-			cur_end = start + getOffsetToNextUTF8Char(start);
+			cur_end = start + xstrGetOffsetToNextUTF8Char(start);
 			tmp = *cur_end;
 			*cur_end = 0;
 			if (!ctxt->unique || (xmlHashAddEntry(ctxt->unique_hash, start, &marker) != -1)) 

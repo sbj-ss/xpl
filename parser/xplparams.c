@@ -486,13 +486,13 @@ int xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xpl
 			{
 				*eq_pos = 0;
 				param_value = decodeUrl(eq_pos + 1, NULL);
-				if (!isValidUtf8Sample(param_value, xmlStrlen(param_value), true))
+				if (!xstrIsValidUtf8Sample(param_value, xmlStrlen(param_value), true))
 				{
 					if (fallbackEncoding)
 					{
 						recoded_value = NULL;
-						iconv_string("utf-8", fallbackEncoding, (char*) param_value, (char*) param_value + xmlStrlen(param_value), (char**) &recoded_value, NULL);
-						if (recoded_value && !isValidUtf8Sample(recoded_value, xmlStrlen(recoded_value), true))
+						xstrIconvString("utf-8", fallbackEncoding, (char*) param_value, (char*) param_value + xmlStrlen(param_value), (char**) &recoded_value, NULL);
+						if (recoded_value && !xstrIsValidUtf8Sample(recoded_value, xmlStrlen(recoded_value), true))
 						{
 							XPL_FREE(recoded_value);
 							recoded_value = NULL;

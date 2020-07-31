@@ -10,7 +10,7 @@
 #include <idn-free.h>
 #endif
 
-xmlChar* strTrim(xmlChar* str)
+xmlChar* xstrStrTrim(xmlChar* str)
 {
 	size_t out_size;
 	xmlChar *start, *end, *out;
@@ -37,7 +37,7 @@ xmlChar* strTrim(xmlChar* str)
 	return out;
 }
 
-bool strNonblank(xmlChar* str)
+bool xstrStrNonblank(xmlChar* str)
 {
 	if (!str)
 		return false;
@@ -50,7 +50,7 @@ bool strNonblank(xmlChar* str)
 	return false;
 }
 
-bool isNumber(xmlChar *str)
+bool xstrIsNumber(xmlChar *str)
 {
 	xmlChar *p;
 	bool dot = false;
@@ -71,7 +71,7 @@ bool isNumber(xmlChar *str)
 	return true;
 }
 
-xmlChar* getLastLibxmlError()
+xmlChar* xstrGetLastLibxmlError()
 {
 	xmlChar *error, *encError;
 	xmlErrorPtr err;
@@ -134,7 +134,7 @@ static utf8CheckState U8TransitionList[] =
 	{ 0xC0, 0x80, U8CS_DECISION }	/* U8CS_4_3 */
 };
 
-bool isValidUtf8Sample(xmlChar *s, size_t len, bool isCompleteString)
+bool xstrIsValidUtf8Sample(xmlChar *s, size_t len, bool isCompleteString)
 {
 	xmlChar *end = s + len, *p = s;
 	utf8CheckStep step = U8CS_DECISION;
@@ -165,7 +165,7 @@ bool isValidUtf8Sample(xmlChar *s, size_t len, bool isCompleteString)
 	return true;
 }
 
-size_t getOffsetToNextUTF8Char(xmlChar *cur)
+size_t xstrGetOffsetToNextUTF8Char(xmlChar *cur)
 {
 	if (!cur || !*cur)
 		return 0;
@@ -179,10 +179,10 @@ size_t getOffsetToNextUTF8Char(xmlChar *cur)
 		return 4;
 	/* we're in the middle of a char, let's advance to the beginning of a valid one */
 	/* TODO suspicious code */
-	return getOffsetToNextUTF8Char(cur + 1) + 1;
+	return xstrGetOffsetToNextUTF8Char(cur + 1) + 1;
 }
 
-xmlChar* encodeUriIdn(xmlChar *uri)
+xmlChar* xstrEncodeUriIdn(xmlChar *uri)
 {
 #ifdef _USE_LIBIDN
 	xmlChar *ret = NULL, *slash_pos;
@@ -211,7 +211,7 @@ xmlChar* encodeUriIdn(xmlChar *uri)
 #endif
 }
 
-int detectEncoding(char* str, size_t sampleLen)
+int xstrDetectEncoding(char* str, size_t sampleLen)
 {
 	size_t small_count, caps_count;
 	size_t a0af_count, f0ff_count;
@@ -225,14 +225,14 @@ int detectEncoding(char* str, size_t sampleLen)
 		if (!str[i])
 		{
 			if (i % 2)
-				return DETECTED_ENC_UTF16LE;
+				return XSTR_ENC_UTF16LE;
 			else
-				return DETECTED_ENC_UTF16BE;
+				return XSTR_ENC_UTF16BE;
 		}
 	}
 	/* check for utf-8 */
-	if (isValidUtf8Sample(BAD_CAST str, sampleLen, false))
-		return DETECTED_ENC_UTF8;
+	if (xstrIsValidUtf8Sample(BAD_CAST str, sampleLen, false))
+		return XSTR_ENC_UTF8;
 	/* if there's too much capital letters - this is probably KOI-8 */
 	small_count = caps_count = 0;
 	for (i = 0; i < sampleLen; i++)
@@ -244,7 +244,7 @@ int detectEncoding(char* str, size_t sampleLen)
 			caps_count++;
 	}
 	if ((caps_count > small_count) && small_count) /* entire text could be in caps */
-		return DETECTED_ENC_KOI8;
+		return XSTR_ENC_KOI8;
 	/* symbol frequency tests, courtesy of E. Kochergov */
 	a0af_count = f0ff_count = real_sample_len = 0;
     for (i = 0; i < sampleLen; i++)
@@ -255,13 +255,13 @@ int detectEncoding(char* str, size_t sampleLen)
 		if (c & 0x80) real_sample_len++;
     }
     if ((((float) a0af_count) / real_sample_len < 0.33985) && (((float) f0ff_count) / real_sample_len > 0.15105))
-		return DETECTED_ENC_1251;
+		return XSTR_ENC_1251;
 	else if (a0af_count || f0ff_count)
-		return DETECTED_ENC_866;
-	return DETECTED_ENC_UTF8; /* last resort */
+		return XSTR_ENC_866;
+	return XSTR_ENC_UTF8; /* last resort */
 }
 
-int iconv_string (const char* tocode, const char* fromcode,
+int xstrIconvString (const char* tocode, const char* fromcode,
 				  const char* start, const char* end,
 				  char** resultp, size_t* lengthp)
 {
@@ -317,7 +317,7 @@ int iconv_string (const char* tocode, const char* fromcode,
 
 static xmlChar hex_digits[] = "0123456789ABCDEF";
 
-xmlChar* bufferToHex(void* buf, size_t len, bool prefix)
+xmlChar* xstrBufferToHex(void* buf, size_t len, bool prefix)
 {
 	xmlChar *ret, *ret_start;
 	size_t i;
@@ -341,7 +341,7 @@ xmlChar* bufferToHex(void* buf, size_t len, bool prefix)
 
 /* BASE64 */
 /* Borrowed from http://en.wikibooks.org/wiki/Algorithm_Implementation/Miscellaneous/Base64 */
-int base64encode(const void* data_buf, size_t dataLength, char* result, size_t resultSize)
+int xstrBase64Encode(const void* data_buf, size_t dataLength, char* result, size_t resultSize)
 {
 	const char base64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	const uint8_t *data = (const uint8_t*) data_buf;
@@ -449,7 +449,7 @@ static const unsigned char base64_table[] =
 	66, 66,	66, 66, 66, 66, 66, 66  /* 0xF8 - 0xFF */
 };
 
-size_t base64decode (const char *data_buf, size_t dataLength, char *result, size_t resultSize)
+size_t xstrBase64Decode (const char *data_buf, size_t dataLength, char *result, size_t resultSize)
 {
 	const char *end = data_buf + dataLength;
 	size_t buf = 1, len = 0;
@@ -494,7 +494,7 @@ size_t base64decode (const char *data_buf, size_t dataLength, char *result, size
 	return len;
 }
 
-void composeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **normalizedPath, xmlChar **normalizedFilename)
+void xstrComposeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **normalizedPath, xmlChar **normalizedFilename)
 {
 	size_t base_path_len = xmlStrlen(basePath);
 
@@ -518,7 +518,7 @@ void composeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **nor
 		xprConvertSlashes(*normalizedPath);
 }
 
-xmlChar* appendThreadIdToString(xmlChar *str, XPR_THREAD_ID id)
+xmlChar* xstrAppendThreadIdToString(xmlChar *str, XPR_THREAD_ID id)
 {
 	size_t len;
 	char buf[17];

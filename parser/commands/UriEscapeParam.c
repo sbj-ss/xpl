@@ -27,7 +27,7 @@ void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 		{
 			if (xmlStrcasecmp(encoding_attr, BAD_CAST "utf-8"))
 			{
-				if (iconv_string((char*) encoding_attr, "utf-8", (char*) content, (char*) content + xmlStrlen(content), (char**) &param, NULL) == -1)
+				if (xstrIconvString((char*) encoding_attr, "utf-8", (char*) content, (char*) content + xmlStrlen(content), (char**) &param, NULL) == -1)
 				{
 					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot convert parameter value \"%s\" to encoding \"%s\"", content, encoding_attr), true, true);
 					XPL_FREE(content);

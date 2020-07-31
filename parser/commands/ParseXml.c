@@ -36,7 +36,7 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	XPL_FREE(txt);
 	if (!doc)
 	{
-		parse_error = getLastLibxmlError();
+		parse_error = xstrGetLastLibxmlError();
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "document parsing error: %s", parse_error), true, true);
 		XPL_FREE(parse_error);
 	} else {

@@ -100,7 +100,7 @@ static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, 
 		}
 		rec_no++;
 		conv = NULL;
-		iconv_string("utf-8", "utf-16le", (const char*) msg, (const char*) (msg + msg_len), (char**) &conv, NULL);
+		xstrIconvString("utf-8", "utf-16le", (const char*) msg, (const char*) (msg + msg_len), (char**) &conv, NULL);
 		XPL_FREE(msg);
 		ret = ret? xmlStrcat(xmlStrcat(ret, BAD_CAST ", "), conv): conv;
 		if (ret != conv)
@@ -152,7 +152,7 @@ static SQLHDBC _xefDbEstablishConnection(const xmlChar* connString, xmlChar **er
 			*error = xplFormatMessage(BAD_CAST "%s(): connString empty or NULL", __FUNCTION__);
 		return SQL_NULL_HANDLE;
 	}
-	if (iconv_string("utf-16le", "utf-8", (char*) connString, (char*) connString + xmlStrlen(connString), (char**) &w_conn_string, &w_conn_string_len) == -1)
+	if (xstrIconvString("utf-16le", "utf-8", (char*) connString, (char*) connString + xmlStrlen(connString), (char**) &w_conn_string, &w_conn_string_len) == -1)
 	{
 		if (error)
 			*error = xplFormatMessage(BAD_CAST "%s(): cannot convert connection string to UTF-16LE", __FUNCTION__);
@@ -283,7 +283,7 @@ static bool _xefDbExecSQL(xefDbContextPtr ctxt, xmlChar *sql)
 		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): sql is empty or NULL", __FUNCTION__));
 		return false;
 	}
-	iconv_string("utf-16le", "utf-8", (char*) sql, (char*) sql + xmlStrlen(sql), (char**) &w_sql, NULL);
+	xstrIconvString("utf-16le", "utf-8", (char*) sql, (char*) sql + xmlStrlen(sql), (char**) &w_sql, NULL);
 	r = SQLExecDirectW(ctxt->statement, w_sql, SQL_NTS);
 	XPL_FREE(w_sql);
 	if (r == SQL_NO_DATA)
@@ -463,7 +463,7 @@ static void _xefDbCreateRow(xefDbContextPtr ctxt)
 			}
 			w_name[len/sizeof(SQLWCHAR) + 1] = 0;
 			col_name = NULL;
-			if (iconv_string("utf-8", "utf-16le", (const char*) w_name, ((const char*) w_name) + len + 2, (char**) &col_name, NULL) == -1)
+			if (xstrIconvString("utf-8", "utf-16le", (const char*) w_name, ((const char*) w_name) + len + 2, (char**) &col_name, NULL) == -1)
 			{
 				_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): cannot represent column name in UTF-8 encoding", __FUNCTION__));
 				XPL_FREE(w_name);
@@ -555,7 +555,7 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 					field_size -= sizeof(SQLWCHAR);
 			}
 			field->value = NULL;
-			iconv_string("utf-8", "utf-16le", (char*) ctxt->buffer, ((char*) ctxt->buffer) + field_size, (char**) &(field->value), &(field->value_size));
+			xstrIconvString("utf-8", "utf-16le", (char*) ctxt->buffer, ((char*) ctxt->buffer) + field_size, (char**) &(field->value), &(field->value_size));
 			if (!field->value)
 			{
 				_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): no memory for value recoding", __FUNCTION__));
