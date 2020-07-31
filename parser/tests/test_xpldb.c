@@ -67,24 +67,24 @@ cleanup:
 static xtsTest db_tests[] =
 {
 	{
-		SFINIT(.id, BAD_CAST "db_create_free"),
-		SFINIT(.displayName, BAD_CAST "Creation and freeing of a single container"),
-		SFINIT(.testFunction, xtsTestDB_DBCreateFree),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "db_create_free",
+		.displayName = BAD_CAST "Creation and freeing of a single container",
+		.testFunction = xtsTestDB_DBCreateFree,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "dblist_create_free"),
-		SFINIT(.displayName, BAD_CAST "Creation and freeing of a container list"),
-		SFINIT(.testFunction, xtsTestDB_DBListCreateFree),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "dblist_create_free",
+		.displayName = BAD_CAST "Creation and freeing of a container list",
+		.testFunction = xtsTestDB_DBListCreateFree,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}
 };
 
 xtsFixture xtsTestDBFixture =
 {
-	SFINIT(.id, BAD_CAST "db"),
-	SFINIT(.displayName, BAD_CAST "database connection container test group"),
-	SFINIT(.setup, NULL),
-	SFINIT(.teardown, NULL),
-	SFINIT(.test_count, sizeof(db_tests) / sizeof(db_tests[0])),
-	SFINIT(.tests, db_tests)
+	.id = BAD_CAST "db",
+	.displayName = BAD_CAST "database connection container test group",
+	.setup = NULL,
+	.teardown = NULL,
+	.test_count = sizeof(db_tests) / sizeof(db_tests[0]),
+	.tests = db_tests
 };

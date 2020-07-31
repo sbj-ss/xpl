@@ -170,29 +170,29 @@ static void save_fixture_teardown(xtsContextPtr ctxt)
 static xtsTest save_tests[] =
 {
 	{
-		SFINIT(.id, BAD_CAST "serialize_node_list"),
-		SFINIT(.displayName, BAD_CAST "Node list serialization"),
-		SFINIT(.testFunction, xtsTestSave_SerializeNodeList),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "serialize_node_list",
+		.displayName = BAD_CAST "Node list serialization",
+		.testFunction = xtsTestSave_SerializeNodeList,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, 	{
-		SFINIT(.id, BAD_CAST "serialize_node_set"),
-		SFINIT(.displayName, BAD_CAST "Node set serialization"),
-		SFINIT(.testFunction, xtsTestSave_SerializeNodeSet),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "serialize_node_set",
+		.displayName = BAD_CAST "Node set serialization",
+		.testFunction = xtsTestSave_SerializeNodeSet,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, 	{
-		SFINIT(.id, BAD_CAST "serialize_null_input"),
-		SFINIT(.displayName, BAD_CAST "Node list/set serialization with NULL input"),
-		SFINIT(.testFunction, xtsTestSave_SerializeNodeXX_NullInput),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "serialize_null_input",
+		.displayName = BAD_CAST "Node list/set serialization with NULL input",
+		.testFunction = xtsTestSave_SerializeNodeXX_NullInput,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}
 };
 
 xtsFixture xtsTestSaveFixture =
 {
-	SFINIT(.id, BAD_CAST "save"),
-	SFINIT(.displayName, BAD_CAST "saving/serialization test group"),
-	SFINIT(.setup, save_fixture_setup),
-	SFINIT(.teardown, save_fixture_teardown),
-	SFINIT(.test_count, sizeof(save_tests) / sizeof(save_tests[0])),
-	SFINIT(.tests, save_tests)
+	.id = BAD_CAST "save",
+	.displayName = BAD_CAST "saving/serialization test group",
+	.setup = save_fixture_setup,
+	.teardown = save_fixture_teardown,
+	.test_count = sizeof(save_tests) / sizeof(save_tests[0]),
+	.tests = save_tests
 };

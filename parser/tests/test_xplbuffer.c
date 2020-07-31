@@ -633,109 +633,109 @@ cleanup:
 static xtsTest resz_buf_tests[] =
 {
 	{
-		SFINIT(.id, BAD_CAST "create_default_params"),
-		SFINIT(.displayName, BAD_CAST "Creation with default parameters"),
-		SFINIT(.testFunction, xtsTestReszBuf_CreateDefaultParams),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "create_default_params",
+		.displayName = BAD_CAST "Creation with default parameters",
+		.testFunction = xtsTestReszBuf_CreateDefaultParams,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "create_with_size"),
-		SFINIT(.displayName, BAD_CAST "Creation with explicit size"),
-		SFINIT(.testFunction, xtsTestReszBuf_CreateWithSize),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "create_with_size",
+		.displayName = BAD_CAST "Creation with explicit size",
+		.testFunction = xtsTestReszBuf_CreateWithSize,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "create_explicit"),
-		SFINIT(.displayName, BAD_CAST "Creation with explicit parameters"),
-		SFINIT(.testFunction, xtsTestReszBuf_CreateExplicit),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "create_explicit",
+		.displayName = BAD_CAST "Creation with explicit parameters",
+		.testFunction = xtsTestReszBuf_CreateExplicit,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "create_flushable"),
-		SFINIT(.displayName, BAD_CAST "Flushable buffer creation"),
-		SFINIT(.testFunction, xtsTestReszBuf_CreateFlushable),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "create_flushable",
+		.displayName = BAD_CAST "Flushable buffer creation",
+		.testFunction = xtsTestReszBuf_CreateFlushable,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "grow_exact"),
-		SFINIT(.displayName, BAD_CAST "Adding data with exact grow strategy"),
-		SFINIT(.testFunction, xtsTestReszBuf_GrowExact),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "grow_exact",
+		.displayName = BAD_CAST "Adding data with exact grow strategy",
+		.testFunction = xtsTestReszBuf_GrowExact,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "grow_increment"),
-		SFINIT(.displayName, BAD_CAST "Adding data with incremental grow strategy"),
-		SFINIT(.testFunction, xtsTestReszBuf_GrowIncrement),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "grow_increment",
+		.displayName = BAD_CAST "Adding data with incremental grow strategy",
+		.testFunction = xtsTestReszBuf_GrowIncrement,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "grow_double"),
-		SFINIT(.displayName, BAD_CAST "Adding data with doubling grow strategy"),
-		SFINIT(.testFunction, xtsTestReszBuf_GrowDouble),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "grow_double",
+		.displayName = BAD_CAST "Adding data with doubling grow strategy",
+		.testFunction = xtsTestReszBuf_GrowDouble,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "grow_fixed"),
-		SFINIT(.displayName, BAD_CAST "Adding data with fixed grow strategy"),
-		SFINIT(.testFunction, xtsTestReszBuf_GrowFixed),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "grow_fixed",
+		.displayName = BAD_CAST "Adding data with fixed grow strategy",
+		.testFunction = xtsTestReszBuf_GrowFixed,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "grow_flush"),
-		SFINIT(.displayName, BAD_CAST "Adding data with flush grow strategy"),
-		SFINIT(.testFunction, xtsTestReszBuf_GrowFlush),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "grow_flush",
+		.displayName = BAD_CAST "Adding data with flush grow strategy",
+		.testFunction = xtsTestReszBuf_GrowFlush,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "flush"),
-		SFINIT(.displayName, BAD_CAST "Various flush functions"),
-		SFINIT(.testFunction, xtsTestReszBuf_Flush),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "flush",
+		.displayName = BAD_CAST "Various flush functions",
+		.testFunction = xtsTestReszBuf_Flush,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "invalid_params"),
-		SFINIT(.displayName, BAD_CAST "Invalid function parameters"),
-		SFINIT(.testFunction, xtsTestReszBuf_InvalidParams),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "invalid_params",
+		.displayName = BAD_CAST "Invalid function parameters",
+		.testFunction = xtsTestReszBuf_InvalidParams,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "invalid_buf"),
-		SFINIT(.displayName, BAD_CAST "Invalid (NULL) buffer"),
-		SFINIT(.testFunction, xtsTestReszBuf_InvalidBuf),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "invalid_buf",
+		.displayName = BAD_CAST "Invalid (NULL) buffer",
+		.testFunction = xtsTestReszBuf_InvalidBuf,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "grow_dynamic"),
-		SFINIT(.displayName, BAD_CAST "Dynamically changing grow strategy"),
-		SFINIT(.testFunction, xtsTestReszBuf_GrowDynamic),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "grow_dynamic",
+		.displayName = BAD_CAST "Dynamically changing grow strategy",
+		.testFunction = xtsTestReszBuf_GrowDynamic,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "detach_fixed"),
-		SFINIT(.displayName, BAD_CAST "Detaching content and reusing buffer (fixed GS)"),
-		SFINIT(.testFunction, xtsTestReszBuf_DetachContent_Fixed),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "detach_fixed",
+		.displayName = BAD_CAST "Detaching content and reusing buffer (fixed GS)",
+		.testFunction = xtsTestReszBuf_DetachContent_Fixed,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "detach_exact"),
-		SFINIT(.displayName, BAD_CAST "Detaching content and reusing buffer (exact GS)"),
-		SFINIT(.testFunction, xtsTestReszBuf_DetachContent_Exact),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "detach_exact",
+		.displayName = BAD_CAST "Detaching content and reusing buffer (exact GS)",
+		.testFunction = xtsTestReszBuf_DetachContent_Exact,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "detach_increment"),
-		SFINIT(.displayName, BAD_CAST "Detaching content and reusing buffer (incremental GS)"),
-		SFINIT(.testFunction, xtsTestReszBuf_DetachContent_Increment),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "detach_increment",
+		.displayName = BAD_CAST "Detaching content and reusing buffer (incremental GS)",
+		.testFunction = xtsTestReszBuf_DetachContent_Increment,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "detach_double"),
-		SFINIT(.displayName, BAD_CAST "Detaching content and reusing buffer (doubling GS)"),
-		SFINIT(.testFunction, xtsTestReszBuf_DetachContent_Double),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "detach_double",
+		.displayName = BAD_CAST "Detaching content and reusing buffer (doubling GS)",
+		.testFunction = xtsTestReszBuf_DetachContent_Double,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "detach_flush"),
-		SFINIT(.displayName, BAD_CAST "Detaching content and reusing buffer (flush GS)"),
-		SFINIT(.testFunction, xtsTestReszBuf_DetachContent_Flush),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "detach_flush",
+		.displayName = BAD_CAST "Detaching content and reusing buffer (flush GS)",
+		.testFunction = xtsTestReszBuf_DetachContent_Flush,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
-		SFINIT(.id, BAD_CAST "position"),
-		SFINIT(.displayName, BAD_CAST "Rewinding and advancing position"),
-		SFINIT(.testFunction, xtsTestReszBuf_Position),
-		SFINIT(.flags, XTS_FLAG_CHECK_MEMORY)
+		.id = BAD_CAST "position",
+		.displayName = BAD_CAST "Rewinding and advancing position",
+		.testFunction = xtsTestReszBuf_Position,
+		.flags = XTS_FLAG_CHECK_MEMORY
 	}
 };
 
 xtsFixture xtsTestReszBufFixture =
 {
-	SFINIT(.id, BAD_CAST "resz_buf"),
-	SFINIT(.displayName, BAD_CAST "resizable buffer test group"),
-	SFINIT(.setup, NULL),
-	SFINIT(.teardown, NULL),
-	SFINIT(.test_count, sizeof(resz_buf_tests) / sizeof(resz_buf_tests[0])),
-	SFINIT(.tests, &resz_buf_tests[0])
+	.id = BAD_CAST "resz_buf",
+	.displayName = BAD_CAST "resizable buffer test group",
+	.setup = NULL,
+	.teardown = NULL,
+	.test_count = sizeof(resz_buf_tests) / sizeof(resz_buf_tests[0]),
+	.tests = &resz_buf_tests[0]
 };
