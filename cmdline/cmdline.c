@@ -31,52 +31,52 @@ int save_session = 0;
 static struct option option_list[] = 
 {
 	{
-		SFINIT(.name, "in-file"),
-		SFINIT(.has_arg, required_argument),
-		SFINIT(.flag, NULL),
-		SFINIT(.val, 'i')
+		.name = "in-file",
+		.has_arg = required_argument,
+		.flag = NULL,
+		.val ='i'
 	},
 	{
-		SFINIT(.name, "out-file"),
-		SFINIT(.has_arg, required_argument),
-		SFINIT(.flag, NULL),
-		SFINIT(.val, 'o')
+		.name = "out-file",
+		.has_arg = required_argument,
+		.flag = NULL,
+		.val = 'o'
 	},
 	{
-		SFINIT(.name, "config-file"),
-		SFINIT(.has_arg, required_argument),
-		SFINIT(.flag, NULL),
-		SFINIT(.val, 'c')
+		.name = "config-file",
+		.has_arg = required_argument,
+		.flag = NULL,
+		.val = 'c'
 	},
 	{
-		SFINIT(.name, "params-file"),
-		SFINIT(.has_arg, required_argument),
-		SFINIT(.flag, NULL),
-		SFINIT(.val, 'p')
+		.name = "params-file",
+		.has_arg = required_argument,
+		.flag = NULL,
+		.val = 'p'
 	},
 	{
-		SFINIT(.name, "session-file"),
-		SFINIT(.has_arg, required_argument),
-		SFINIT(.flag, NULL),
-		SFINIT(.val, 's')
+		.name = "session-file",
+		.has_arg = required_argument,
+		.flag = NULL,
+		.val = 's'
 	},
 	{
-		SFINIT(.name, "encoding"),
-		SFINIT(.has_arg, required_argument),
-		SFINIT(.flag, NULL),
-		SFINIT(.val, 'e')
+		.name = "encoding",
+		.has_arg = required_argument,
+		.flag = NULL,
+		.val = 'e'
 	},
 	{
-		SFINIT(.name, "save-session"),
-		SFINIT(.has_arg, no_argument),
-		SFINIT(.flag, &save_session),
-		SFINIT(.val, 1)
+		.name = "save-session",
+		.has_arg = no_argument,
+		.flag = &save_session,
+		.val = 1
 	},
 	{
-		SFINIT(.name, NULL),
-		SFINIT(.has_arg, no_argument),
-		SFINIT(.flag, NULL),
-		SFINIT(.val, 0)
+		.name = NULL,
+		.has_arg = no_argument,
+		.flag = NULL,
+		.val = 0
 	}
 };
 
