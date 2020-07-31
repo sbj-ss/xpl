@@ -13,7 +13,7 @@ xmlNodePtr replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
 		return NULL;
 	for (i = 0; i < count; i++)
 	{
-		cur = cloneNodeList(src, parent, src->doc);
+		cur = xplCloneNodeList(src, parent, src->doc);
 #ifdef _DEBUG
 		if (!cur)
 		{
@@ -29,7 +29,7 @@ xmlNodePtr replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
 			tail->next = cur;
 			cur->prev = tail;
 		}
-		tail = findTail(tail);
+		tail = xplFindTail(tail);
 	}
 	return ret;
 }
@@ -48,17 +48,17 @@ void xplCmdReplicatePrologue(xplCommandInfoPtr commandInfo)
 		if (sscanf((const char*) before_count_attr, "%d", &before_count) != 1)
 		{
 			commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "beforecount (%s) is not a number", before_count_attr);
-			xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
+			xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
 			goto done;
 		}
 	}
 	if (before_count != 1)
 	{
-		old_children = detachContent(commandInfo->element);
+		old_children = xplDetachContent(commandInfo->element);
 		if (before_count > 1)
 			new_children = replicateNodes(old_children, before_count, commandInfo->element);
 		xplDocDeferNodeListDeletion(commandInfo->document, old_children);
-		setChildren(commandInfo->element, new_children);
+		xplSetChildren(commandInfo->element, new_children);
 	}
 done:
 	if (before_count_attr) XPL_FREE(before_count_attr);
@@ -97,8 +97,8 @@ void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (after_count > 1)
 		ret = replicateNodes(commandInfo->element->children, after_count, commandInfo->element->parent);
 	else if (after_count == 1) {
-		ret = detachContent(commandInfo->element);
-		downshiftNodeListNsDef(ret, commandInfo->element->nsDef);
+		ret = xplDetachContent(commandInfo->element);
+		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	} else
 		ret = NULL;
 	ASSIGN_RESULT(ret, repeat, true);	

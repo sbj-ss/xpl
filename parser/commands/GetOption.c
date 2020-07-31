@@ -56,7 +56,7 @@ void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	} else {
 		ret = xplOptionsToList(commandInfo->element->doc, commandInfo->element, 
 			responsetagname_attr?responsetagname_attr:BAD_CAST "Option", show_tags, show_passwords);
-		downshiftNodeListNsDef(ret, commandInfo->element->nsDef);
+		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	}
 	ASSIGN_RESULT(ret, repeat, true);
 done:

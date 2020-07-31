@@ -21,7 +21,7 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	if (!checkNodeListForText(commandInfo->element->children))
+	if (!xplCheckNodeListForText(commandInfo->element->children))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 		return;
@@ -41,7 +41,7 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		XPL_FREE(parse_error);
 	} else {
 		/* ToDo: replaceRedundantNamespaces */
-		ret = detachContent((xmlNodePtr) doc);
+		ret = xplDetachContent((xmlNodePtr) doc);
 		xmlSetTreeDoc(ret, commandInfo->element->doc);
 		xmlFreeDoc(doc);
 		ASSIGN_RESULT(ret, repeat, true);

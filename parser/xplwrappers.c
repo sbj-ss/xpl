@@ -133,7 +133,7 @@ static void xplAssignWrapperMapEntry(xplWrapperMapEntryPtr *head, xplWrapperMapE
 		xplDisplayMessage(xplMsgWarning, BAD_CAST "Missing regex attribute at prologue/epilogue in config file (line %d), ignored", cur->line);
 		return;
 	}
-	if (!checkNodeListForText(cur->children))
+	if (!xplCheckNodeListForText(cur->children))
 	{
 		xplDisplayMessage(xplMsgWarning, BAD_CAST "Non-text content in prologue/epilogue in config file (line %d), ignored.", cur->line);
 		XPL_FREE(regex_string);

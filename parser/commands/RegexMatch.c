@@ -28,7 +28,7 @@ void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "regex attribute is missing"), true, true);
 		return;
 	}
-	if (!checkNodeListForText(commandInfo->element->children))
+	if (!xplCheckNodeListForText(commandInfo->element->children))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 		goto done;

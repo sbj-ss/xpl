@@ -79,10 +79,10 @@ void xplPushToDocStack(xplDocumentPtr doc, xmlNodePtr node)
 	if (!doc)
 		return;
 	new_parent = xmlNewDocNode(doc->document, NULL, BAD_CAST "carrier", NULL);
-	setChildren(new_parent, node->children);
-	setChildren(node, new_parent);
-	makeNsIndepTree(new_parent);
-	setChildren(node, NULL);
+	xplSetChildren(new_parent, node->children);
+	xplSetChildren(node, new_parent);
+	xplMakeNsSelfContainedTree(new_parent);
+	xplSetChildren(node, NULL);
 	new_parent->prev = doc->stack;
 	doc->stack = new_parent;
 }
@@ -94,7 +94,7 @@ xmlNodePtr xplPopFromDocStack(xplDocumentPtr doc, xmlNodePtr parent)
 	if (!doc || !doc->stack)
 		return NULL;
 	/* we have to clone due to possible namespace problems */
-	ret = cloneNodeList(doc->stack->children, parent, parent->doc);
+	ret = xplCloneNodeList(doc->stack->children, parent, parent->doc);
 	tmp = doc->stack;
 	doc->stack = tmp->prev;
 	xmlUnlinkNode(tmp);
@@ -157,9 +157,9 @@ void xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur)
 {
 	if (!buf | !cur)
 		return;
-	if ((int) cur->type & XML_NODE_DELETION_DEFERRED_FLAG)
+	if ((int) cur->type & XPL_NODE_DELETION_DEFERRED_FLAG)
 		return;
-	markDOSAxisForDeletion(cur, XML_NODE_DELETION_DEFERRED_FLAG, true);
+	xplMarkDOSAxisForDeletion(cur, XPL_NODE_DELETION_DEFERRED_FLAG, true);
 	rbAddDataToBuf(buf, &cur, sizeof(xmlNodePtr));
 }
 
@@ -202,7 +202,7 @@ void xplDeleteDeferredNodes(rbBufPtr buf)
 	xmlNodePtr *p = rbGetBufContent(buf);
 	for (i = 0; i < rbGetBufContentSize(buf) / sizeof(xmlNodePtr); i++, p++)
 	{
-		markDOSAxisForDeletion(*p, XML_NODE_DELETION_MASK, false);
+		xplMarkDOSAxisForDeletion(*p, XPL_NODE_DELETION_MASK, false);
 		xmlUnlinkNode(*p);
 		xmlFreeNode(*p);
 	}
@@ -460,11 +460,11 @@ XPR_THREAD_ROUTINE_RESULT XPR_THREAD_ROUTINE_CALL xplDocThreadWrapper(XPR_THREAD
 			content = xplCreateErrorNode(doc->landing_point, BAD_CAST "error processing child document: \"%s\"", xplErrorToString(err));
 		else 
 			/* root element is a stub */
-			content = detachContent((xmlNodePtr) doc->document->children);
+			content = xplDetachContent((xmlNodePtr) doc->document->children);
 		if (!xprMutexAcquire(&doc->parent->thread_landing_lock))
 			DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
 		xmlSetListDoc(content, doc->parent->document);
-		xplDocDeferNodeDeletion(doc, replaceWithList(doc->landing_point, content));
+		xplDocDeferNodeDeletion(doc, xplReplaceWithList(doc->landing_point, content));
 		if (!xprMutexRelease(&doc->parent->thread_landing_lock))
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 	} else {
@@ -590,7 +590,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 	xmlHashTablePtr content_cache = NULL;
 	void *empty_content_marker = &empty_content_marker;
 
-	ret = cloneNodeList(macroContent, oldElement->parent, oldElement->doc);
+	ret = xplCloneNodeList(macroContent, oldElement->parent, oldElement->doc);
 	if (!ret)
 		return NULL;
 	content_cmds = getContentList(doc, ret, id);
@@ -622,7 +622,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 			{
 				new_content = (xmlNodePtr) xmlHashLookup(content_cache, select_attr);
 				if (new_content && (new_content != empty_content_marker))
-					new_content = cloneNodeList(new_content, oldElement, oldElement->doc);
+					new_content = xplCloneNodeList(new_content, oldElement, oldElement->doc);
 			} else
 				new_content = NULL;
 			if (!new_content) /* get new content by selector */
@@ -637,7 +637,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 							tail = NULL;
 							for (j = 0; j < sel->nodesetval->nodeNr; j++)
 							{	
-								cloned = cloneAttrAsText(sel->nodesetval->nodeTab[j], oldElement);
+								cloned = xplCloneAttrAsText(sel->nodesetval->nodeTab[j], oldElement);
 								if (tail)
 									tail->next = cloned;
 								cloned->prev = tail;
@@ -662,7 +662,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 				xplDisplayMessage(xplMsgWarning, BAD_CAST "missing macro content \"%s\" (file \"%s\", line %d)", select_attr, oldElement->doc->URL, oldElement->line);
 			XPL_FREE(select_attr);
 		} else { /* if (select_attr) */
-			new_content = cloneNodeList(oldElement->children, cur->parent, oldElement->doc);
+			new_content = xplCloneNodeList(oldElement->children, cur->parent, oldElement->doc);
 			if (required && !new_content)
 				xplDisplayMessage(xplMsgWarning, BAD_CAST "missing macro content (file \"%s\", line %d)", oldElement->doc->URL, oldElement->line);
 		}
@@ -674,7 +674,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 	for (i = 0; i < content_cmds->nodeNr; i++) /* actual replace */
 	{
 		cur = content_cmds->nodeTab[i];
-		replaceWithList(cur, (xmlNodePtr) cur->_private);
+		xplReplaceWithList(cur, (xmlNodePtr) cur->_private);
 		xmlFreeNode(cur);
 	}
 	if (content_cache)
@@ -720,20 +720,20 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, bool expand, xplR
 		if (c->type == XML_ELEMENT_NODE)
 		{
 			xplNodeApply(doc, c, expand, result);
-			if (!c->parent || (c->parent->type & XML_NODE_DELETION_MASK))
+			if (!c->parent || (c->parent->type & XPL_NODE_DELETION_MASK))
 			{
 				/* parent removed from inside, immediate stop */
-				c->type = (xmlElementType) ((int) c->type & ~XML_NODE_DELETION_MASK);
+				c->type = (xmlElementType) ((int) c->type & ~XPL_NODE_DELETION_MASK);
 				if (result->has_list)
 					xmlFreeNodeList(result->list); /* won't be used anyway */
 				break;
 			}
 			tail = c->next;
-			if (c->type & XML_NODE_DELETION_MASK)
+			if (c->type & XPL_NODE_DELETION_MASK)
 			{
-				if (!(c->type & XML_NODE_DELETION_DEFERRED_FLAG))
+				if (!(c->type & XPL_NODE_DELETION_DEFERRED_FLAG))
 				{
-					c->type = (xmlElementType) ((int) c->type & ~XML_NODE_DELETION_REQUEST_FLAG);
+					c->type = (xmlElementType) ((int) c->type & ~XPL_NODE_DELETION_REQUEST_FLAG);
 					xmlUnlinkNode(c);
 					xmlFreeNode(c); /* with children */
 				} else
@@ -741,9 +741,9 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, bool expand, xplR
 			} else if (result->has_list) {
 				if (result->list && result->repeat)
 						tail = result->list;
-				replaceWithList(c, result->list);
+				xplReplaceWithList(c, result->list);
 				/* e.g. :delete removing itself */
-				c->type = (xmlElementType) ((int) c->type & ~XML_NODE_DELETION_MASK);
+				c->type = (xmlElementType) ((int) c->type & ~XPL_NODE_DELETION_MASK);
 				xmlFreeNode(c);
 			} /* otherwise do nothing */
 		} else if (c->type == XML_TEXT_NODE) {
@@ -801,15 +801,15 @@ void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr mac
 		/* :inherit may be called, let's keep contents. not clearing parent intentionally */
 		macro->node_original_content = element->children; 
 		out = xplReplaceContentEntries(doc, macro->id, element, macro->content);
-		setChildren(element, out);
+		xplSetChildren(element, out);
 		xplNodeListApply(doc, element->children, true, result);
-		downshiftNodeListNsDef(out, element->nsDef);
-		out = detachContent(element);
+		xplDownshiftNodeListNsDef(out, element->nsDef);
+		out = xplDetachContent(element);
 		if (!out) /* contents could be removed by :return */
 			out = macro->return_value;
 		break;
 	case XPL_MACRO_EXPANDED:
-		out = cloneNodeList(macro->content, element->parent, element->doc);
+		out = xplCloneNodeList(macro->content, element->parent, element->doc);
 		break;
 	default:
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -818,7 +818,7 @@ void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr mac
 	if (macro->expansion_state == XPL_MACRO_EXPAND_ONCE)
 	{
 		xmlFreeNodeList(macro->content);
-		macro->content = cloneNodeList(out, element->parent, element->doc);
+		macro->content = xplCloneNodeList(out, element->parent, element->doc);
 		macro->expansion_state = XPL_MACRO_EXPANDED;
 	}
 	ASSIGN_RESULT(out, false, true);
@@ -845,16 +845,16 @@ void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xpl
 		ASSIGN_RESULT(content, content? true: false, true);
 	} else if (!xmlStrcmp(element->name, BAD_CAST "no-expand")) {
 		xplNodeListApply(doc, element->children, false, result);
-		content = detachContent(element);
+		content = xplDetachContent(element);
 		ASSIGN_RESULT(content, false, true);
 	} else if (!xmlStrcmp(element->name, BAD_CAST "expand")) {
 		xplNodeListApply(doc, element->children, true, result);
-		content = detachContent(element);
+		content = xplDetachContent(element);
 		ASSIGN_RESULT(content, false, true);
 	} else if (!xmlStrcmp(element->name, BAD_CAST "expand-after")) {
 		xplNodeListApply(doc, element->children, false, result);
 		xplNodeListApply(doc, element->children, true, result);
-		content = detachContent(element);
+		content = xplDetachContent(element);
 		ASSIGN_RESULT(content, false, true);
 	} else {
 		if (expand)
@@ -867,10 +867,10 @@ void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xpl
 				cmdInfo._private = NULL;
 				cmd->prologue(&cmdInfo); 
 				/* element could be removed (:with) */
-				if (!(element->type & XML_NODE_DELETION_MASK))
+				if (!(element->type & XPL_NODE_DELETION_MASK))
 					xplNodeListApply(doc, cmdInfo.element->children, expand, result);
 				/* element could be removed by its children */
-				if ((!(element->type & XML_NODE_DELETION_MASK)) || (cmd->flags & XPL_CMD_FLAG_CONTENT_SAFE))
+				if ((!(element->type & XPL_NODE_DELETION_MASK)) || (cmd->flags & XPL_CMD_FLAG_CONTENT_SAFE))
 					cmd->epilogue(&cmdInfo, result);
 			} else {
 				if (cfgWarnOnUnknownCommand)
@@ -960,13 +960,13 @@ xmlNodePtr xplAddMacro(
 		xplNodeListApply(doc, macro->children, true, &tmp_result);
 		doc->current_macro = prev_macro;
 	}
-	mb->content = detachContent(macro);
+	mb->content = xplDetachContent(macro);
 	if (!mb->content)
 	{
 		mb->content = mb->return_value;
 		mb->return_value = NULL;
 	}
-	downshiftNodeListNsDef(mb->content, macro->nsDef);
+	xplDownshiftNodeListNsDef(mb->content, macro->nsDef);
 	macros = (xmlHashTablePtr) destination->_private;
 	if (!macros)
 	{
@@ -1167,7 +1167,7 @@ static ParserStartStopStep start_stop_steps[] =
 	{ xplInitMessages, xplCleanupMessages },
 	{ xplInitCommands, xplCleanupCommands },
 	{ xplRegisterBuiltinCommands, NULL },
-	{ initNamePointers, NULL },
+	{ xplInitNamePointers, NULL },
 	{ _ssSessionManagerInit, xplSessionManagerCleanup }
 };
 #define START_STOP_STEP_COUNT (sizeof(start_stop_steps) / sizeof(start_stop_steps[0]))

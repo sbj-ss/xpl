@@ -27,7 +27,7 @@ void xplCmdDebugPrintEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		ASSIGN_RESULT(NULL, false, true);
 		goto done;
 	}
-	if (!checkNodeListForText(commandInfo->element->children))
+	if (!xplCheckNodeListForText(commandInfo->element->children))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "content is non-text"), true, true);
 			goto done;

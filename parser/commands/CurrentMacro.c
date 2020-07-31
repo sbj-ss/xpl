@@ -39,7 +39,7 @@ void xplCmdCurrentMacroEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	if (detailed)
 	{
 		ASSIGN_RESULT(xplMacroToNode(commandInfo->document->current_macro, tagname, commandInfo->element), repeat, true);
-		downshiftNodeNsDef(result->list, commandInfo->element->nsDef);
+		xplDownshiftNodeNsDef(result->list, commandInfo->element->nsDef);
 	} else {
 		ASSIGN_RESULT(xmlNewDocText(commandInfo->element->doc, commandInfo->document->current_macro->name), false, true);
 	}

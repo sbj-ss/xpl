@@ -86,7 +86,7 @@ static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	xmlNodePtr ret = NULL;
 	xmlChar *content = NULL;
 
-	if (!checkNodeListForText(cur->children))
+	if (!xplCheckNodeListForText(cur->children))
 		return xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s\" has non-text nodes inside", cur->name);
 	if ((type == XJA_STRING) || (ctxt->force_quotes && (type != XJA_NULL)))
 	{

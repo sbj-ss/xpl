@@ -17,7 +17,7 @@ void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo)
 	} else 
 		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing key attribute");
 	if (commandInfo->_private)
-		xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
+		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
 	else
 		commandInfo->element->content = (xmlChar*) nodes;
 }
@@ -29,7 +29,7 @@ void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlXPathObjectPtr nodes = (xmlXPathObjectPtr) commandInfo->element->content;
 	xmlNodePtr error;
 
-	if (commandInfo->element->type & XML_NODE_DELETION_MASK)
+	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
 	{
 		if (nodes->nodesetval)
 			nodes->nodesetval->nodeNr = 0;
@@ -40,7 +40,7 @@ void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
 			ASSIGN_RESULT(error, true, true);
 		else
-			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+			ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 	} else
 		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, true, true);
 }

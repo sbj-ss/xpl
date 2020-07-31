@@ -490,9 +490,9 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 	if (!select_attr) /* return the input document/command content */
 	{
 		if (ctxt->input_source == INPUT_SOURCE_LOCAL)
-			ctxt->ret = detachContent(ctxt->command_element);
+			ctxt->ret = xplDetachContent(ctxt->command_element);
 		else {
-			cur = ctxt->ret = detachContent(ctxt->src_node);
+			cur = ctxt->ret = xplDetachContent(ctxt->src_node);
 			while (cur) /* doc may start with a comment */
 			{
 				if (cur->type == XML_ELEMENT_NODE)
@@ -545,7 +545,7 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 					sibling = sel->nodesetval->nodeTab[i];
 					prnt = sibling->parent;
 					sibling->parent = NULL;
-					cur = cloneAttrAsText(sibling, ctxt->command_element);
+					cur = xplCloneAttrAsText(sibling, ctxt->command_element);
 					if (response_tag_name_attr && (cur->type == XML_ELEMENT_NODE))
 						xmlNodeSetName(cur, response_tag_name_attr);
 					sibling->parent = prnt;

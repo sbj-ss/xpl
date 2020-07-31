@@ -55,7 +55,7 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	} else {
 		ret = xplDatabasesToNodeList(commandInfo->element,
 			responsetagname_attr?responsetagname_attr:BAD_CAST "Database", show_tags);
-		downshiftNodeListNsDef(ret, commandInfo->element->nsDef);
+		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	}
 	ASSIGN_RESULT(ret, repeat, true);
 done:

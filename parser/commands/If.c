@@ -22,7 +22,7 @@ void xplCmdIfPrologue(xplCommandInfoPtr commandInfo)
 			goto done; /* this shouldn't ever happen */
 		}
 		test_el = xmlNewDocNode(commandInfo->element->doc, xplns, BAD_CAST "test", test_attr);
-		prependList(commandInfo->element->children, test_el);
+		xplPrependList(commandInfo->element->children, test_el);
 	}
 done:
 	if (test_attr) XPL_FREE(test_attr);
@@ -39,7 +39,7 @@ void xplCmdIfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+	ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 }
 
 xplCommand xplIfCommand = { xplCmdIfPrologue, xplCmdIfEpilogue };

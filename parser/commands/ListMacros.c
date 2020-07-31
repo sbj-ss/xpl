@@ -44,7 +44,7 @@ void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		ret->content = xplMacroTableToString(commandInfo->element, delimiter_attr, unique);
 	} else {
 		ret = xplMacroTableToNodeList(commandInfo->element, tagname, unique, commandInfo->element);
-		downshiftNodeListNsDef(ret, commandInfo->element->nsDef);
+		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	}
 	ASSIGN_RESULT(ret, repeat, true);
 done:

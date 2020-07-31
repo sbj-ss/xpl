@@ -183,7 +183,7 @@ void xplStackTrace(const xmlNodePtr startPoint)
 		attr = cur->properties;
 		while (attr)
 		{
-			attr_value = getPropValue(attr);
+			attr_value = xplGetPropValue(attr);
 			if (attr->ns)
 				xmlGenericError(xmlGenericErrorContext, " %s:%s=\"%s\"", attr->ns->prefix, attr->name, attr_value);
 			else

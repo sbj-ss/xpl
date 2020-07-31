@@ -10,7 +10,7 @@ void xplCmdCommentNodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resul
 {
 	xmlChar *txt = NULL;
 	xmlNodePtr ret;
-	if (!checkNodeListForText(commandInfo->element->children))
+	if (!xplCheckNodeListForText(commandInfo->element->children))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 		return;

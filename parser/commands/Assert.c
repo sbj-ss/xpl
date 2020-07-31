@@ -21,7 +21,7 @@ void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
-	if (!checkNodeListForText(commandInfo->element->children))
+	if (!xplCheckNodeListForText(commandInfo->element->children))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is non-text"), true, true);
 		return;

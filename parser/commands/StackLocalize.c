@@ -17,7 +17,7 @@ void xplCmdStackLocalizeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 
 	xplClearDocStack(commandInfo->document);
 	commandInfo->document->stack = old_stack;
-	if (commandInfo->element->type & XML_NODE_DELETION_MASK)
+	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
 	{
 		ASSIGN_RESULT(NULL, false, false);
 	} else {
@@ -26,7 +26,7 @@ void xplCmdStackLocalizeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 			ASSIGN_RESULT(error, true, true);
 			return;
 		} else
-			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+			ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 	}
 }
 

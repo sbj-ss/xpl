@@ -27,13 +27,13 @@ void xplCmdElementEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		goto done;
 	}
 
-	el = createElement(commandInfo->element->parent, commandInfo->element, name_attr);
+	el = xplCreateElement(commandInfo->element->parent, commandInfo->element, name_attr);
 	if (!el)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "can't create element (possibly the name \"%s\" is invalid)", name_attr), true, true);
 		goto done;
 	}
-	setChildren(el, detachContent(commandInfo->element));
+	xplSetChildren(el, xplDetachContent(commandInfo->element));
 	ASSIGN_RESULT(el, repeat, true);
 done:
 	if (name_attr) XPL_FREE(name_attr);

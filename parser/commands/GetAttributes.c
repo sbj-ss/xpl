@@ -113,7 +113,7 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 			temp_prop->children->content = name;
 		}
 		cur->children = xmlNewDocText(commandInfo->element->doc, NULL);
-		cur->children->content = getPropValue(prop);
+		cur->children->content = xplGetPropValue(prop);
 		if (!ret)
 			ret = tail = cur;
 		else {

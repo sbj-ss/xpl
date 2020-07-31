@@ -53,7 +53,7 @@ void xplCmdSetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "multiple root nodes found"), true, true);
 		goto done;
 	}
-	content = cloneNode(content, NULL, NULL);
+	content = xplCloneNode(content, NULL, NULL);
 	xpl_doc = commandInfo->document->main;
 	if (!xpl_doc)
 	{
@@ -69,7 +69,7 @@ void xplCmdSetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 	xpl_doc->source = XPL_DOC_SOURCE_OVERRIDDEN;
 	xpl_doc->status = XPL_ERR_NO_ERROR;
 	xpl_doc->document = xml_doc = xmlNewDoc(BAD_CAST "1.0");
-	setChildren((xmlNodePtr) xml_doc, content);
+	xplSetChildren((xmlNodePtr) xml_doc, content);
 	ASSIGN_RESULT(NULL, false, true);
 done:
 	;

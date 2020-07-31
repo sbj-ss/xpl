@@ -18,7 +18,7 @@ void xplCmdWhenPrologue(xplCommandInfoPtr commandInfo)
 		test_el = xmlNewDocNode(commandInfo->element->doc, xpl_ns, BAD_CAST "test", NULL);
 		test_el->children = xmlNewDocText(commandInfo->element->doc, NULL);
 		test_el->children->content = test_attr;
-		prependList(commandInfo->element->children, test_el);
+		xplPrependList(commandInfo->element->children, test_el);
 	}
 }
 
@@ -34,7 +34,7 @@ void xplCmdWhenEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
 		ASSIGN_RESULT(error, true, true);
 	else
-		ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+		ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 }
 
 xplCommand xplWhenCommand = { xplCmdWhenPrologue, xplCmdWhenEpilogue };

@@ -21,7 +21,7 @@ void xplCmdStartThreadsAndWaitEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 		xplStartDelayedThreads(commandInfo->document);
 		xplWaitForChildThreads(commandInfo->document);
 	}
-	ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+	ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 }
 
 xplCommand xplStartThreadsAndWaitCommand = { xplCmdStartThreadsAndWaitPrologue, xplCmdStartThreadsAndWaitEpilogue };

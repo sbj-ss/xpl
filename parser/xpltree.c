@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <libxpl/abstraction/xpr.h>
 
-xmlNodePtr findTail(xmlNodePtr cur)
+xmlNodePtr xplFindTail(xmlNodePtr cur)
 {
 	if (!cur)
 		return NULL;
@@ -15,7 +15,7 @@ xmlNodePtr findTail(xmlNodePtr cur)
 	return cur;
 }
 
-bool isAncestor(xmlNodePtr maybeChild, xmlNodePtr maybeAncestor)
+bool xplIsAncestor(xmlNodePtr maybeChild, xmlNodePtr maybeAncestor)
 {
 	if (maybeChild == maybeAncestor)
 		return 0;
@@ -32,7 +32,7 @@ bool isAncestor(xmlNodePtr maybeChild, xmlNodePtr maybeAncestor)
 	return false;
 }
 
-xmlNsPtr getResultingNs(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
+xmlNsPtr xplGetResultingNs(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
 {
 	xmlNsPtr ret;
 	/* TODO this is terribly wrong. Hrefs must be used */
@@ -44,7 +44,7 @@ xmlNsPtr getResultingNs(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
 }
 
 /* from libxml2 internals (tree.c) */
-xmlChar* getPropValue(xmlAttrPtr prop)
+xmlChar* xplGetPropValue(xmlAttrPtr prop)
 {
 	if (!prop)
 		return NULL;
@@ -57,7 +57,7 @@ xmlChar* getPropValue(xmlAttrPtr prop)
 	return xmlNodeListGetString(prop->doc, prop->children, 1);
 }
 
-void unlinkProp(xmlAttrPtr cur)
+void xplUnlinkProp(xmlAttrPtr cur)
 {
 	xmlAttrPtr tmp = cur->parent->properties;
 	if (tmp == cur) {
@@ -78,7 +78,7 @@ void unlinkProp(xmlAttrPtr cur)
 }
 
 /* TODO change signature. this may fail (if ns is not found or tag name is invalid */
-void assignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *value, bool allowReplace)
+void xplAssignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *value, bool allowReplace)
 {
 	xmlNsPtr ns = NULL;
 	xmlChar *colon_pos, *tagname;
@@ -88,7 +88,7 @@ void assignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *val
 	if (colon_pos)
 	{
 		*colon_pos = 0;
-		ns = getResultingNs(dst, src, name);
+		ns = xplGetResultingNs(dst, src, name);
 		*colon_pos = ':';
 		tagname = colon_pos + 1;
 		if (ns)
@@ -104,7 +104,7 @@ void assignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *val
 		if (!allowReplace)
 			return;
 		xmlFreeNodeList(prev->children);
-		setChildren((xmlNodePtr) prev, xmlNewDocText(dst->doc, value));
+		xplSetChildren((xmlNodePtr) prev, xmlNewDocText(dst->doc, value));
 	} else {
 		if (ns)
 			xmlNewNsProp(dst, ns, tagname, value);
@@ -114,7 +114,7 @@ void assignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *val
 }
 
 /* TODO distinguish out of memory condition from invalid name */
-xmlNodePtr createElement(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
+xmlNodePtr xplCreateElement(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
 {
 	xmlChar *tagname;
 	xmlNsPtr ns;
@@ -122,7 +122,7 @@ xmlNodePtr createElement(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
 	if ((tagname = BAD_CAST xmlStrchr(name, ':')))
 	{
 		*tagname = 0;
-		ns = getResultingNs(parent, invoker, name);
+		ns = xplGetResultingNs(parent, invoker, name);
 		*tagname++ = ':';
 	} else {
 		tagname = name;
@@ -133,7 +133,7 @@ xmlNodePtr createElement(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
 	return xmlNewDocNode(parent->doc, ns, tagname, NULL);
 }
 
-xmlNodePtr detachContent(xmlNodePtr el)
+xmlNodePtr xplDetachContent(xmlNodePtr el)
 {
 	xmlNodePtr item;
 
@@ -161,7 +161,7 @@ static xmlNodePtr setListParent(xmlNodePtr el, xmlNodePtr list)
 	return list;
 }
 
-xmlNodePtr setChildren(xmlNodePtr el, xmlNodePtr list)
+xmlNodePtr xplSetChildren(xmlNodePtr el, xmlNodePtr list)
 {
 	if (!el)
 		return NULL;
@@ -175,26 +175,26 @@ xmlNodePtr setChildren(xmlNodePtr el, xmlNodePtr list)
 }
 
 /* TODO all tree modifications must flatten adjacent text nodes */
-xmlNodePtr appendChildren(xmlNodePtr el, xmlNodePtr list)
+xmlNodePtr xplAppendChildren(xmlNodePtr el, xmlNodePtr list)
 {
 	if (!list)
 		return NULL;
 	if (!el)
-		return findTail(list);
+		return xplFindTail(list);
 	if (el->children)
-		return appendList(el->last? el->last: findTail(el->children), list);
+		return xplAppendList(el->last? el->last: xplFindTail(el->children), list);
 	el->children = list;
 	return el->last = setListParent(el, list);
 }
 
-xmlNodePtr appendList(xmlNodePtr el, xmlNodePtr list)
+xmlNodePtr xplAppendList(xmlNodePtr el, xmlNodePtr list)
 {
 	xmlNodePtr tail;
 
 	if (!list)
 		return NULL;
 	if (!el)
-		return findTail(list);
+		return xplFindTail(list);
 	tail = setListParent(el->parent, list);
 	tail->next = el->next;
 	if (el->next)
@@ -206,14 +206,14 @@ xmlNodePtr appendList(xmlNodePtr el, xmlNodePtr list)
 	return tail;
 }
 
-xmlNodePtr prependList(xmlNodePtr el, xmlNodePtr list)
+xmlNodePtr xplPrependList(xmlNodePtr el, xmlNodePtr list)
 {
 	xmlNodePtr tail;
 
 	if (!list)
 		return NULL;
 	if (!el)
-		return findTail(list);
+		return xplFindTail(list);
 	list->prev = el->prev;
 	if (el->prev)
 		el->prev->next = list;
@@ -225,7 +225,7 @@ xmlNodePtr prependList(xmlNodePtr el, xmlNodePtr list)
 	return tail;
 }
 
-xmlNodePtr replaceWithList(xmlNodePtr el, xmlNodePtr list)
+xmlNodePtr xplReplaceWithList(xmlNodePtr el, xmlNodePtr list)
 {
 	xmlNodePtr tail;
 
@@ -251,7 +251,7 @@ xmlNodePtr replaceWithList(xmlNodePtr el, xmlNodePtr list)
 	return el;
 }
 
-xmlNodePtr cloneAttrAsText(xmlNodePtr cur, xmlNodePtr parent)
+xmlNodePtr xplCloneAttrAsText(xmlNodePtr cur, xmlNodePtr parent)
 {
 	xmlNodePtr ret;
 
@@ -270,12 +270,12 @@ xmlNodePtr cloneAttrAsText(xmlNodePtr cur, xmlNodePtr parent)
 		} else 
 			ret = xmlNewDocText(parent->doc, BAD_CAST "");
 	} else {
-		ret = cloneNode(cur, parent, parent->doc);
+		ret = xplCloneNode(cur, parent, parent->doc);
 	}
 	return ret;
 }
 
-bool checkNodeListForText(xmlNodePtr start)
+bool xplCheckNodeListForText(xmlNodePtr start)
 {
 	while (start)
 	{
@@ -289,7 +289,7 @@ bool checkNodeListForText(xmlNodePtr start)
 	return true;
 }
 
-bool checkNodeSetForText(xmlNodeSetPtr s)
+bool xplCheckNodeSetForText(xmlNodeSetPtr s)
 {
 	size_t i;
 
@@ -304,20 +304,20 @@ bool checkNodeSetForText(xmlNodeSetPtr s)
 	return true;
 }
 
-void markAncestorAxisForDeletion(xmlNodePtr bottom, xmlNodePtr top)
+void xplMarkAncestorAxisForDeletion(xmlNodePtr bottom, xmlNodePtr top)
 {
 	if (!bottom || !top)
 		return;
 	while (1) 
 	{
-		bottom->type = (xmlElementType) ((int) bottom->type | XML_NODE_DELETION_REQUEST_FLAG);
+		bottom->type = (xmlElementType) ((int) bottom->type | XPL_NODE_DELETION_REQUEST_FLAG);
 		if (bottom == top)
 			break;
 		bottom = bottom->parent;
 	} 
 }
 
-void markDOSAxisForDeletion(xmlNodePtr cur, int bitwiseAttribute, bool doMark)
+void xplMarkDOSAxisForDeletion(xmlNodePtr cur, int bitwiseAttribute, bool doMark)
 {
 	xmlAttrPtr prop;
 
@@ -335,12 +335,12 @@ void markDOSAxisForDeletion(xmlNodePtr cur, int bitwiseAttribute, bool doMark)
 	cur = cur->children;
 	while (cur)
 	{
-		markDOSAxisForDeletion(cur, bitwiseAttribute, doMark);
+		xplMarkDOSAxisForDeletion(cur, bitwiseAttribute, doMark);
 		cur = cur->next;
 	}
 }
 
-void deleteNeighbours(xmlNodePtr cur, xmlNodePtr boundary, bool markAncestorAxis)
+void xplDeleteNeighbours(xmlNodePtr cur, xmlNodePtr boundary, bool markAncestorAxis)
 {
 	if  (!cur || !boundary) 
 		return;
@@ -360,7 +360,7 @@ void deleteNeighbours(xmlNodePtr cur, xmlNodePtr boundary, bool markAncestorAxis
 		}
 		cur->parent->children = cur->parent->last = cur;
 		if (markAncestorAxis)
-			cur->type = (xmlElementType) ((int) cur->type | XML_NODE_DELETION_REQUEST_FLAG);
+			cur->type = (xmlElementType) ((int) cur->type | XPL_NODE_DELETION_REQUEST_FLAG);
 		cur = cur->parent;
 	}
 }
@@ -389,7 +389,7 @@ if ((n))								\
 static xmlChar* xmlStringText;
 static xmlChar* xmlStringComment;
 
-bool initNamePointers()
+bool xplInitNamePointers()
 {
 	xmlNodePtr cur = xmlNewText(NULL);
 	if (!cur)
@@ -505,7 +505,7 @@ xmlAttrPtr clonePropInternal(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, x
         ret->ns = NULL;
 
     if (cur->children) 
-		setChildren((xmlNodePtr) ret, cloneNodeList(cur->children, (xmlNodePtr) ret, ret->doc));
+		xplSetChildren((xmlNodePtr) ret, xplCloneNodeList(cur->children, (xmlNodePtr) ret, ret->doc));
     /*
      * Try to handle IDs
      */
@@ -757,12 +757,12 @@ xmlNodePtr cloneNodeListInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc,
     return(ret);
 }
 
-xmlNodePtr cloneNode(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc)
+xmlNodePtr xplCloneNode(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc)
 {
 	return cloneNodeInner(node, parent, doc, NULL);
 }
 
-xmlNodePtr cloneNodeList(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc)
+xmlNodePtr xplCloneNodeList(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc)
 {
 	return cloneNodeListInner(node, parent, doc, NULL);
 }
@@ -779,7 +779,7 @@ void addNsDef(xmlNodePtr cur, xmlNsPtr def)
 	}
 }
 
-void downshiftNodeNsDef(xmlNodePtr cur, xmlNsPtr ns_list)
+void xplDownshiftNodeNsDef(xmlNodePtr cur, xmlNsPtr ns_list)
 {
 	xmlNsPtr ns_cur, ns_to_shift;
 	xmlAttrPtr prop;
@@ -833,16 +833,16 @@ void downshiftNodeNsDef(xmlNodePtr cur, xmlNsPtr ns_list)
 		prop = prop->next;
 	}
 	if (cur->children)
-		downshiftNodeListNsDef(cur->children, ns_list);
+		xplDownshiftNodeListNsDef(cur->children, ns_list);
 }
 
-void downshiftNodeListNsDef(xmlNodePtr cur, xmlNsPtr ns_list)
+void xplDownshiftNodeListNsDef(xmlNodePtr cur, xmlNsPtr ns_list)
 {
 	if (!ns_list)
 		return;
 	while (cur)
 	{
-		downshiftNodeNsDef(cur, ns_list);
+		xplDownshiftNodeNsDef(cur, ns_list);
 		cur = cur->next;
 	}
 }
@@ -919,7 +919,7 @@ static void makeNsIndepTreeInner(NsReplacementContextPtr ctxt, xmlNodePtr top, x
 	}
 }
 
-void makeNsIndepTree(xmlNodePtr top)
+void xplMakeNsSelfContainedTree(xmlNodePtr top)
 {
 	NsReplacementContext ctxt;
 
@@ -1064,7 +1064,7 @@ void xplRegisterXPathExtensions(xmlXPathContextPtr ctxt)
 #endif
 }
 
-bool checkNodeEquality(xmlNodePtr a, xmlNodePtr b)
+bool xplCheckNodeEquality(xmlNodePtr a, xmlNodePtr b)
 {
 	if (!a && !b)
 		return true;
@@ -1087,11 +1087,11 @@ bool checkNodeEquality(xmlNodePtr a, xmlNodePtr b)
 			return false;
 		if (a->type == XML_ELEMENT_NODE)
 		{
-			if (!checkNodeListEquality(a->children, b->children))
+			if (!xplCheckNodeListEquality(a->children, b->children))
 				return false;
-			return checkPropListEquality(a->properties, b->properties);
+			return xplCheckPropListEquality(a->properties, b->properties);
 		} else
-			return checkNodeListEquality(a->children, b->children);
+			return xplCheckNodeListEquality(a->children, b->children);
 	case XML_CDATA_SECTION_NODE:
 	case XML_TEXT_NODE:
 	case XML_COMMENT_NODE:
@@ -1103,7 +1103,7 @@ bool checkNodeEquality(xmlNodePtr a, xmlNodePtr b)
 		b = (xmlNodePtr) xmlGetDocEntity(b->doc, b->name);
 		if (!a || !b)
 			return false;
-		return checkNodeListEquality(a->children, b->children);
+		return xplCheckNodeListEquality(a->children, b->children);
 	case XML_PI_NODE:
 		return !xmlStrcmp(a->name, b->name) && !xmlStrcmp(a->content, b->content);
 	case XML_NAMESPACE_DECL:
@@ -1113,17 +1113,17 @@ bool checkNodeEquality(xmlNodePtr a, xmlNodePtr b)
 	}
 }
 
-bool checkNodeListEquality(xmlNodePtr a, xmlNodePtr b)
+bool xplCheckNodeListEquality(xmlNodePtr a, xmlNodePtr b)
 {
 	if (!a && !b)
 		return true;
 	if (!a || !b)
 		return false;
 	if ((a->type == b->type) && (b->type == XML_ATTRIBUTE_NODE))
-		return checkPropListEquality((xmlAttrPtr) a, (xmlAttrPtr) b);
+		return xplCheckPropListEquality((xmlAttrPtr) a, (xmlAttrPtr) b);
 	while (a && b)
 	{
-		if (!checkNodeEquality(a, b))
+		if (!xplCheckNodeEquality(a, b))
 			return false;
 		a = a->next;
 		b = b->next;
@@ -1133,7 +1133,7 @@ bool checkNodeListEquality(xmlNodePtr a, xmlNodePtr b)
 	return true;
 }
 
-bool checkPropListEquality(xmlAttrPtr a, xmlAttrPtr b)
+bool xplCheckPropListEquality(xmlAttrPtr a, xmlAttrPtr b)
 {
 	/* the same attributes can be written in different order - so we imply sorting but don't require it */
 	xmlAttrPtr prop_a, prop_b, cur_b;
@@ -1154,7 +1154,7 @@ bool checkPropListEquality(xmlAttrPtr a, xmlAttrPtr b)
 		cur_b = prop_b, match = 0;
 		do 
 		{
-			if (checkNodeEquality((xmlNodePtr) prop_a, (xmlNodePtr) cur_b))
+			if (xplCheckNodeEquality((xmlNodePtr) prop_a, (xmlNodePtr) cur_b))
 			{
 				match = 1;
 				break;
@@ -1171,7 +1171,7 @@ bool checkPropListEquality(xmlAttrPtr a, xmlAttrPtr b)
 	return true;
 }
 
-bool checkNodeSetIdentity(xmlNodeSetPtr a, xmlNodeSetPtr b)
+bool xplCheckNodeSetIdentity(xmlNodeSetPtr a, xmlNodeSetPtr b)
 {
 	size_t i, j, max;
 	bool match;
@@ -1199,7 +1199,7 @@ bool checkNodeSetIdentity(xmlNodeSetPtr a, xmlNodeSetPtr b)
 	return true;
 }
 
-bool checkNodeSetEquality(xmlNodeSetPtr a, xmlNodeSetPtr b)
+bool xplCheckNodeSetEquality(xmlNodeSetPtr a, xmlNodeSetPtr b)
 {
 	size_t i, j, max;
 	bool match;
@@ -1215,7 +1215,7 @@ bool checkNodeSetEquality(xmlNodeSetPtr a, xmlNodeSetPtr b)
 	{
 		match = false, j = i;
 		do {
-			if (checkNodeEquality(a->nodeTab[i], b->nodeTab[j]))
+			if (xplCheckNodeEquality(a->nodeTab[i], b->nodeTab[j]))
 			{
 				match = true;
 				break;
@@ -1229,7 +1229,7 @@ bool checkNodeSetEquality(xmlNodeSetPtr a, xmlNodeSetPtr b)
 	return true;
 }
 
-bool compareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool checkEquality)
+bool xplCompareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool checkEquality)
 {
 	if (!a && !b)
 		return checkEquality;
@@ -1247,9 +1247,9 @@ bool compareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool check
 		return (!xmlStrcmp(a->stringval, b->stringval));
 	case XPATH_NODESET:
 		if (checkEquality)
-			return checkNodeSetEquality(a->nodesetval, b->nodesetval);
+			return xplCheckNodeSetEquality(a->nodesetval, b->nodesetval);
 		else
-			return checkNodeSetIdentity(a->nodesetval, b->nodesetval);
+			return xplCheckNodeSetIdentity(a->nodesetval, b->nodesetval);
 	default:
 		return false;
 	/* TODO XPATH_POINT, XPATH_RANGE, XPATH_LOCATIONSET, XPATH_USER - do we ever encounter them? */

@@ -659,7 +659,7 @@ static void xplParamsToListScanner(void *payload, void *data, xmlChar *name)
 	cur = xmlNewDocNode(ctxt->parent->doc, ctxt->ns, ctxt->node_name? ctxt->node_name: name, NULL);
 	if (ctxt->node_name)
 		xmlNewProp(cur, BAD_CAST "name", name);
-	setChildren(cur, vals);
+	xplSetChildren(cur, vals);
 	if (!ctxt->ret)
 		ctxt->ret = ctxt->tail = cur;
 	else {

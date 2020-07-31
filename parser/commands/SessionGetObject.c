@@ -38,7 +38,7 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 	if (!name_attr)
 	{
 		cur = xplSessionGetAllObjects(commandInfo->document->main->session);
-		cur = cloneNodeList(cur, commandInfo->element->parent, commandInfo->element->doc);
+		cur = xplCloneNodeList(cur, commandInfo->element->parent, commandInfo->element->doc);
 		ASSIGN_RESULT(cur, repeat, true);
 		return;
 	}
@@ -65,12 +65,12 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 					{
 						if (head)
 						{
-							cur = cloneNode(sel->nodesetval->nodeTab[i], commandInfo->element->parent, commandInfo->element->doc);
+							cur = xplCloneNode(sel->nodesetval->nodeTab[i], commandInfo->element->parent, commandInfo->element->doc);
 							tail->next = cur;
 							cur->prev = tail;
 							tail = cur;
 						} else {
-							head = tail = cloneNode(sel->nodesetval->nodeTab[i], commandInfo->element->parent, commandInfo->element->doc);
+							head = tail = xplCloneNode(sel->nodesetval->nodeTab[i], commandInfo->element->parent, commandInfo->element->doc);
 						}
 					}
 				} else if (sel->type != XPATH_UNDEFINED) {
@@ -86,7 +86,7 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 				repeat = true;
 			}
 		} else 
-			head = cloneNodeList(obj->children, commandInfo->element->parent, commandInfo->element->doc);
+			head = xplCloneNodeList(obj->children, commandInfo->element->parent, commandInfo->element->doc);
 	}
 	ASSIGN_RESULT(head, repeat, true);
 done:

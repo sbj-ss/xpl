@@ -51,7 +51,7 @@ void xplCmdGetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 						sibling = sel->nodesetval->nodeTab[i];
 						prnt = sibling->parent;
 						sibling->parent = NULL;
-						copy = cloneAttrAsText(sibling, commandInfo->element);
+						copy = xplCloneAttrAsText(sibling, commandInfo->element);
 						sibling->parent = prnt;
 						if (!tail)
 							tail = copy;
@@ -73,8 +73,8 @@ void xplCmdGetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 			goto done;
 		}
 	} else {
-		ret = cloneNode(doc->children, commandInfo->element, commandInfo->document->document);
-		downshiftNodeListNsDef(ret, commandInfo->element->nsDef);
+		ret = xplCloneNode(doc->children, commandInfo->element, commandInfo->document->document);
+		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	}
 	ASSIGN_RESULT(ret, repeat, true);
 done:

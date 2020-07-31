@@ -138,7 +138,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 						xmlAddChild((xmlNodePtr) doc, root);
 					} else
 						for (i = 0; i < (size_t) sel->nodesetval->nodeNr; i++)
-							xmlAddChild(root, cloneNode(sel->nodesetval->nodeTab[i], root, doc));
+							xmlAddChild(root, xplCloneNode(sel->nodesetval->nodeTab[i], root, doc));
 				} else if (omit_root) {
 					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath selection (%s) returned an empty result but omitroot is requested", select_attr), true, true);
 					goto done;
@@ -169,11 +169,11 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "command content is non-element but omitroot is requested"), true, true);
 				goto done;
 			}
-			root = cloneNode(commandInfo->element->children, (xmlNodePtr) doc, doc);
+			root = xplCloneNode(commandInfo->element->children, (xmlNodePtr) doc, doc);
 			xmlAddChild((xmlNodePtr) doc, root);
 		} else 
 			/* we have to duplicate content or we risk to lose namespaces */
-			xmlAddChildList(root, cloneNodeList(commandInfo->element->children, root, doc));
+			xmlAddChildList(root, xplCloneNodeList(commandInfo->element->children, root, doc));
 	}
 
 	if (create_destination)

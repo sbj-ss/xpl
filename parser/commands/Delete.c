@@ -101,7 +101,7 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					{
 						for (i = 0; i < (size_t) dest_list->nodesetval->nodeNr; i++)
 							for (j = i + 1; j < (size_t) dest_list->nodesetval->nodeNr; j++)
-								if (isAncestor(dest_list->nodesetval->nodeTab[j], dest_list->nodesetval->nodeTab[i]))
+								if (xplIsAncestor(dest_list->nodesetval->nodeTab[j], dest_list->nodesetval->nodeTab[i]))
 									dest_list->nodesetval->nodeTab[j] = 0;
 					}
 				} else
@@ -111,7 +111,7 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					xmlNodePtr cur = dest_list->nodesetval->nodeTab[i];
 					if (!cur)
 						continue; /* already removed with its parent */
-					if ((int) cur->type & XML_NODE_DELETION_MASK)
+					if ((int) cur->type & XPL_NODE_DELETION_MASK)
 					{
 						if (cfgWarnOnDeletedNodeReference)
 							xplDisplayMessage(xplMsgWarning, 
@@ -125,11 +125,11 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					switch (cur->type)
 					{
 						case XML_ELEMENT_NODE:
-							if (isAncestor(commandInfo->element, cur) || (commandInfo->element == cur)) /* self/parent deletion request */
+							if (xplIsAncestor(commandInfo->element, cur) || (commandInfo->element == cur)) /* self/parent deletion request */
 							{
 								if (commandInfo->document->iterator_spinlock) /* mark for deletion at the end of processing */
 									xplDocDeferNodeDeletion(commandInfo->document, cur);								
-								markAncestorAxisForDeletion(commandInfo->element, cur);								
+								xplMarkAncestorAxisForDeletion(commandInfo->element, cur);								
 							} else {
 								if (double_pass_mode)
 									xplDeferNodeDeletion(deleted_buf, cur);
@@ -148,7 +148,7 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 							break;
 						case XML_ATTRIBUTE_NODE:
 							/* attribures can't have child nodes */
-							unlinkProp((xmlAttrPtr) cur);
+							xplUnlinkProp((xmlAttrPtr) cur);
 							xplDocDeferNodeDeletion(commandInfo->document, cur);
 							break;
 						default:

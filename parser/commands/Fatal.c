@@ -10,7 +10,7 @@ void xplCmdFatalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xmlNodePtr ct, cur, root_element;
 
-	cur = ct = detachContent(commandInfo->element);
+	cur = ct = xplDetachContent(commandInfo->element);
 	/* remove all non-elements */
 	while (ct && ct->type != XML_ELEMENT_NODE)
 	{
@@ -40,7 +40,7 @@ void xplCmdFatalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			break;
 		root_element = root_element->next;
 	}
-	markAncestorAxisForDeletion(commandInfo->element->parent, root_element);
+	xplMarkAncestorAxisForDeletion(commandInfo->element->parent, root_element);
 	ASSIGN_RESULT(NULL, false, true);
 }
 

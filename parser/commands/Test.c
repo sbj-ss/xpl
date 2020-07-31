@@ -38,7 +38,7 @@ void xplCmdTestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	bool repeat = true;
 
 	ASSIGN_RESULT(NULL, false, true);
-	if (!checkNodeListForText(commandInfo->element->children))
+	if (!xplCheckNodeListForText(commandInfo->element->children))
 	{
 		ASSIGN_RESULT(createBreak(commandInfo, xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is non-text"), NULL), true, true);
 		return;

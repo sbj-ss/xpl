@@ -27,10 +27,10 @@ void xplCmdContainerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	if (return_content)
 	{
-		ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+		ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 	} else {
 		if (commandInfo->element->children)
-			xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element->children));
+			xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element->children));
 		ASSIGN_RESULT(NULL, false, true);
 	}
 }

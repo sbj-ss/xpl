@@ -35,7 +35,7 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 	}
 	parent_sel = (xmlXPathObjectPtr) parent->content;
 	/* ToDo: param for equality/identity */
-	if (compareXPathSelections(sel, parent_sel, 0))
+	if (xplCompareXPathSelections(sel, parent_sel, 0))
 	{
 		if ((error = xplDecodeCmdBoolParam(commandInfo->element, BREAK_ATTR, &do_break, true)))
 		{
@@ -49,12 +49,12 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 			parent->last = commandInfo->element;
 		}
 	} else
-		xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
+		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
 	if (sel->nodesetval)
 		sel->nodesetval->nodeNr = 0;
 done:
 	if (commandInfo->_private)
-		xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
+		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
 	if (key_attr) XPL_FREE(key_attr);
 	if (sel)
 		xmlXPathFreeObject(sel);
@@ -76,7 +76,7 @@ void xplCmdCaseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				repeat = true;
 			XPL_FREE(repeat_attr);
 		}
-		ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+		ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 	}
 }
 

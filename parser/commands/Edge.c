@@ -31,7 +31,7 @@ xmlNodePtr cloneNodeSet(xmlNodeSetPtr set, xmlNodePtr parent, xmlNodePtr *tail)
 	xmlNodePtr ret = NULL, cur, tail_int = NULL;
 	for (i = 0; i < (size_t) set->nodeNr; i++)
 	{
-		cur = cloneAttrAsText(set->nodeTab[i], parent);
+		cur = xplCloneAttrAsText(set->nodeTab[i], parent);
 		if (ret)
 		{
 			tail_int->next = cur;
@@ -39,7 +39,7 @@ xmlNodePtr cloneNodeSet(xmlNodeSetPtr set, xmlNodePtr parent, xmlNodePtr *tail)
 			tail_int = cur;
 		} else
 			ret = tail_int = cur;
-		tail_int = findTail(tail_int);
+		tail_int = xplFindTail(tail_int);
 	}
 	if (tail)
 		*tail = tail_int;
@@ -162,7 +162,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					ASSIGN_RESULT(NULL, false, true);
 					goto done;
 				}
-				if (!checkNodeSetForText(src->nodesetval))
+				if (!xplCheckNodeSetForText(src->nodesetval))
 				{
 					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 					goto done;
@@ -183,7 +183,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	} else {
 		if (type == EDGE_ATTRIBUTE)
 		{
-			if (!checkNodeListForText(commandInfo->element->children))
+			if (!xplCheckNodeListForText(commandInfo->element->children))
 			{
 				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 					goto done;
@@ -222,11 +222,11 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 		case EDGE_COPY:
 			if (cur->type == XML_ELEMENT_NODE)
-				appendChildren(cur, cloneNodeList(source_list, cur, cur->doc));
+				xplAppendChildren(cur, xplCloneNodeList(source_list, cur, cur->doc));
 			break;
 		case EDGE_REPLACE:
-			if (!isAncestor(commandInfo->element, cur))
-				xplDocDeferNodeDeletion(commandInfo->document, replaceWithList(cur, cloneNodeList(source_list, cur, cur->doc)));
+			if (!xplIsAncestor(commandInfo->element, cur))
+				xplDocDeferNodeDeletion(commandInfo->document, xplReplaceWithList(cur, xplCloneNodeList(source_list, cur, cur->doc)));
 			else if (cfgWarnOnAncestorModificationAttempt)
 			{
 				if (cur->ns)
@@ -240,16 +240,16 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		case EDGE_ELEMENT:
 			if (cur->type == XML_ELEMENT_NODE)
 			{
-				cur_ns = ns? getResultingNs(cur, commandInfo->element, BAD_CAST ns->prefix): NULL;
+				cur_ns = ns? xplGetResultingNs(cur, commandInfo->element, BAD_CAST ns->prefix): NULL;
 				el = xmlNewDocNode(cur->doc, cur_ns, tagname, NULL);
-				appendChildren(cur, el);
-				setChildren(el, cloneNodeList(source_list, el, el->doc));
+				xplAppendChildren(cur, el);
+				xplSetChildren(el, xplCloneNodeList(source_list, el, el->doc));
 			}
 			break;
 		case EDGE_ATTRIBUTE:
 			if (cur->type == XML_ELEMENT_NODE)
 			{
-				cur_ns = ns? getResultingNs(cur, commandInfo->element, BAD_CAST ns->prefix): NULL;
+				cur_ns = ns? xplGetResultingNs(cur, commandInfo->element, BAD_CAST ns->prefix): NULL;
 				if (cur_ns)
 					xmlNewNsProp(cur, cur_ns, tagname, source_text);
 				else

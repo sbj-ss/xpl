@@ -16,7 +16,7 @@ void xplCmdChooseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+	ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 }
 
 xplCommand xplChooseCommand = { xplCmdChoosePrologue, xplCmdChooseEpilogue };

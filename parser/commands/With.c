@@ -35,7 +35,7 @@ bool checkNAOS(xmlNodePtr cmd, xmlNodePtr test)
 	{
 		if (cmd == test)
 			return NAOS_CHECK_RESULT_IS_ANCESTOR;
-		if ((int) cmd->type & XML_NODE_DELETION_MASK)
+		if ((int) cmd->type & XPL_NODE_DELETION_MASK)
 			return NAOS_CHECK_RESULT_ANCESTOR_DELETED;
 		cmd = cmd->parent;
 	}
@@ -85,7 +85,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 					if (commandInfo->document->fatal_content)
 						break;
 					cur = sel->nodesetval->nodeTab[i];
-					if (((int) cur->type) & XML_NODE_DELETION_MASK)
+					if (((int) cur->type) & XPL_NODE_DELETION_MASK)
 					{
 						if (cfgWarnOnDeletedNodeReference)
 						{
@@ -127,18 +127,18 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 					repl = xplReplaceContentEntries(commandInfo->document, id_attr, cur, commandInfo->element->children); 
 					if (mode == WITH_MODE_REPLACE)
 					{
-						xplDocDeferNodeListDeletion(commandInfo->document, detachContent(cur));
-						setChildren(cur, repl);
+						xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(cur));
+						xplSetChildren(cur, repl);
 						xplNodeApply(commandInfo->document, cur, true, &temp_result);
-						if ((int) cur->type & XML_NODE_DELETION_MASK)
+						if ((int) cur->type & XPL_NODE_DELETION_MASK)
 							xmlUnlinkNode(cur);
 						else {
-							replaceWithList(cur, cur->children);
+							xplReplaceWithList(cur, cur->children);
 							cur->children = cur->last = NULL;
 						}
 						xplDocDeferNodeDeletion(commandInfo->document, cur);
 					} else if (mode == WITH_MODE_APPEND) {
-						appendChildren(cur, repl);
+						xplAppendChildren(cur, repl);
 						xplNodeListApply(commandInfo->document, repl, true, &temp_result);
 					} else
 						DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -163,8 +163,8 @@ done:
 			sel->nodesetval->nodeNr = 0;
 		xmlXPathFreeObject(sel);
 	}
-	if (!((int) commandInfo->element->type & XML_NODE_DELETION_MASK))
-		xmlFreeNodeList(detachContent(commandInfo->element));
+	if (!((int) commandInfo->element->type & XPL_NODE_DELETION_MASK))
+		xmlFreeNodeList(xplDetachContent(commandInfo->element));
 }
 
 void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)

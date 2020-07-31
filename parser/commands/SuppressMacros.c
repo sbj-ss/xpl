@@ -81,14 +81,14 @@ void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo)
 			sel = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
 			if (!sel)
 			{
-				xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
-				setChildren(commandInfo->element, xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr));
+				xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
+				xplSetChildren(commandInfo->element, xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr));
 				goto done;
 			}
 			if (sel->type != XPATH_NODESET)
 			{
-				xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
-				setChildren(commandInfo->element, xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression \"%s\" evaluated to non-nodeset value", select_attr));
+				xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
+				xplSetChildren(commandInfo->element, xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression \"%s\" evaluated to non-nodeset value", select_attr));
 				goto done;
 			}
 			if (sel->nodesetval)
@@ -125,13 +125,13 @@ void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 		xmlHashScan(macros, switchMacro, (void*) -1);
 		xmlHashFree(macros, NULL);
 	}
-	if (commandInfo->element->type & XML_NODE_DELETION_MASK)
+	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
 		ASSIGN_RESULT(NULL, false, false);
 	else {
 		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
 			ASSIGN_RESULT(error, true, true);
 		else
-			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+			ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 	}
 }
 

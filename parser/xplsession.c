@@ -233,10 +233,10 @@ int xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlCh
 		return -1;
 	}
 	new_parent = xmlNewDocNode(session->doc, NULL, name, NULL);
-	setChildren(new_parent, cur->children);
-	setChildren(cur, new_parent);
-	makeNsIndepTree(new_parent);
-	setChildren(cur, NULL);
+	xplSetChildren(new_parent, cur->children);
+	xplSetChildren(cur, new_parent);
+	xplMakeNsSelfContainedTree(new_parent);
+	xplSetChildren(cur, NULL);
 	prev = new_parent->children;
 	while (prev)
 	{

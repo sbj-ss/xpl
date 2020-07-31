@@ -67,7 +67,7 @@ void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				temp_children = temp_children->next;
 			caller->last = temp_children;
 		} else
-			ret = cloneNodeList(macro->content, commandInfo->element->parent, commandInfo->element->doc);
+			ret = xplCloneNodeList(macro->content, commandInfo->element->parent, commandInfo->element->doc);
 	} else
 		ret = NULL;
 	ASSIGN_RESULT(ret, true, true);

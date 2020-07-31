@@ -12,7 +12,7 @@ void xplCmdDefaultPrologue(xplCommandInfoPtr commandInfo)
 		xmlStrcmp(parent->name, BAD_CAST "switch"))
 	{
 		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "parent tag must be :switch");
-		xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
+		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
 	}
 }
 
@@ -37,7 +37,7 @@ void xplCmdDefaultEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			ASSIGN_RESULT(error, true, true);
 		} else {
-			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+			ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 		}
 		if (do_break)
 		{

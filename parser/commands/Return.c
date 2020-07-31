@@ -15,8 +15,8 @@ void xplCmdReturnEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "this command can only be called within macro definition"), true, true);
 		return;
 	}
-	commandInfo->document->current_macro->return_value = detachContent(commandInfo->element);
-	deleteNeighbours(commandInfo->element, commandInfo->document->current_macro->caller, true);
+	commandInfo->document->current_macro->return_value = xplDetachContent(commandInfo->element);
+	xplDeleteNeighbours(commandInfo->element, commandInfo->document->current_macro->caller, true);
 	ASSIGN_RESULT(NULL, false, true);
 }
 

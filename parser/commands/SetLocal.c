@@ -27,13 +27,13 @@ void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		xplParamsFree(tmp_params);
 	old_params = (xplParamsPtr) commandInfo->_private;
 	commandInfo->document->environment = old_params;
-	if (commandInfo->element->type & XML_NODE_DELETION_MASK)
+	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
 		ASSIGN_RESULT(NULL, false, false);
 	else {
 		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
 			ASSIGN_RESULT(error, true, true);
 		else
-			ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+			ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 	}
 }
 

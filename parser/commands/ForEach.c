@@ -45,7 +45,7 @@ void xplCmdForEachPrologue(xplCommandInfoPtr commandInfo)
 						tail->next = repl;
 						repl->prev = tail;
 					}
-					tail = findTail(repl);
+					tail = xplFindTail(repl);
 				}
 			}
 		} else {
@@ -59,8 +59,8 @@ void xplCmdForEachPrologue(xplCommandInfoPtr commandInfo)
 		goto done;
 	}
 done:
-	xplDocDeferNodeListDeletion(commandInfo->document, detachContent(commandInfo->element));
-	setChildren(commandInfo->element, ret);	
+	xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
+	xplSetChildren(commandInfo->element, ret);	
 	if (select_attr) XPL_FREE(select_attr);
 	if (id_attr) xmlFree (id_attr);
 	if (sel) xmlXPathFreeObject(sel);
@@ -82,7 +82,7 @@ void xplCmdForEachEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+	ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 }
 
 xplCommand xplForEachCommand = { 

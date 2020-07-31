@@ -55,7 +55,7 @@ xplMacroPtr xplMacroCopy(xplMacroPtr macro, xmlNodePtr parent)
 
 	if (!macro)
 		return NULL;
-	ret = xplMacroCreate(macro->id, cloneNodeList(macro->content, parent, parent->doc), macro->expansion_state);
+	ret = xplMacroCreate(macro->id, xplCloneNodeList(macro->content, parent, parent->doc), macro->expansion_state);
 	if (!ret)
 		return NULL;
 	ret->name = BAD_CAST XPL_STRDUP((char*) macro->name);

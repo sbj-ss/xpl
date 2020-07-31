@@ -55,7 +55,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	content = detachContent(commandInfo->element);
+	content = xplDetachContent(commandInfo->element);
 	if (!content)
 	{
 		if (parallel)
@@ -66,10 +66,10 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (inheritmacros)
 		macros = xplCloneMacroTableUpwards(commandInfo->element, root);
 	root->_private = macros;
-	setChildren(root, content);
-	setChildren(commandInfo->element, root);
-	makeNsIndepTree(root);
-	setChildren(commandInfo->element, NULL);
+	xplSetChildren(root, content);
+	xplSetChildren(commandInfo->element, root);
+	xplMakeNsSelfContainedTree(root);
+	xplSetChildren(commandInfo->element, NULL);
 	env = xplParamsCopy(commandInfo->document->environment);
 	session = sharesession? commandInfo->document->session: NULL;
 	child = xplDocumentInit(commandInfo->document->app_path, env, session);
@@ -82,7 +82,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	child->parent = commandInfo->document;
 	child->document = xmlNewDoc(BAD_CAST "1.0");
 	// child->document->children = child->document->last = root;
-	setChildren((xmlNodePtr) child->document, root);
+	xplSetChildren((xmlNodePtr) child->document, root);
 	xmlSetListDoc(root, child->document);
 	if (commandInfo->document->filename)
 	{
@@ -113,8 +113,8 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		xmlSetListDoc(content, commandInfo->element->doc);
 		irredundant...()
 		*/
-		content = cloneNodeList(child->document->children->children, commandInfo->element, commandInfo->element->doc);
-		downshiftNodeNsDef(content, commandInfo->element->nsDef);
+		content = xplCloneNodeList(child->document->children->children, commandInfo->element, commandInfo->element->doc);
+		xplDownshiftNodeNsDef(content, commandInfo->element->nsDef);
 		//child->document->intSubset = NULL;
 		xplDocumentFree(child);
 		xplParamsFree(env);

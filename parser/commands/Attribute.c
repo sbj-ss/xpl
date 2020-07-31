@@ -31,7 +31,7 @@ void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		return;
 	}
 
-	if (!checkNodeListForText(commandInfo->element->children))
+	if (!xplCheckNodeListForText(commandInfo->element->children))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes in content"), true, true);
 		goto done;
@@ -72,7 +72,7 @@ void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					{
 						cur = dest_list->nodesetval->nodeTab[i];
 						if (cur->type == XML_ELEMENT_NODE)
-							assignAttribute(commandInfo->element, cur, name_attr, attr_value, replace);
+							xplAssignAttribute(commandInfo->element, cur, name_attr, attr_value, replace);
 					}
 				}
 			} else {
@@ -85,7 +85,7 @@ void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			goto done;
 		}
 	} else if (commandInfo->element->parent) 
-		assignAttribute(commandInfo->element, commandInfo->element->parent, name_attr, attr_value, replace);
+		xplAssignAttribute(commandInfo->element, commandInfo->element->parent, name_attr, attr_value, replace);
 	ASSIGN_RESULT(NULL, false, true);
 done:
 	if (txt) XPL_FREE(txt);

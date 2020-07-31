@@ -29,17 +29,17 @@ void doAppend(xmlNodePtr src, xmlNodePtr dst, AppendMode mode)
 	switch (mode)
 	{
 		case POS_BEFORE: 
-			prependList(dst, src);
+			xplPrependList(dst, src);
 			break;
 		case POS_AFTER:
-			appendList(dst, src);
+			xplAppendList(dst, src);
 			break;
 		case POS_FIRST:
 			if (dst->children)
-				prependList(dst->children, src);
+				xplPrependList(dst->children, src);
 			else {
 				dst->children = src;
-				dst->last = findTail(src);
+				dst->last = xplFindTail(src);
 				while (src)
 				{
 					src->parent = dst;
@@ -49,10 +49,10 @@ void doAppend(xmlNodePtr src, xmlNodePtr dst, AppendMode mode)
 			break;
 		case POS_LAST:
 			if (dst->children)
-				appendList(dst->last?dst->last:findTail(dst->children), src);
+				xplAppendList(dst->last?dst->last:xplFindTail(dst->children), src);
 			else {
 				dst->children = src;
-				dst->last = findTail(src);
+				dst->last = xplFindTail(src);
 				while (src)
 				{
 					src->parent = dst;
@@ -147,7 +147,7 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					parent = PARENT(dst->nodesetval->nodeTab[i]);
 					if (!src) /* ���������� ���������� ������� */
 					{
-						clone = cloneNodeList(commandInfo->element->children, parent, commandInfo->element->doc);
+						clone = xplCloneNodeList(commandInfo->element->children, parent, commandInfo->element->doc);
 						doAppend(clone, dst->nodesetval->nodeTab[i], position);
 					} else if (src->nodesetval) {
 						/* ���������� �������-�������� */
@@ -155,10 +155,10 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 						{
 							/* ��� ����������� ����� �� ������ ������������� ���� ��� ���������� ������� ���������� */
 							for (j = (ptrdiff_t) src->nodesetval->nodeNr - 1; j >= 0; j--)
-								doAppend(cloneAttrAsText(src->nodesetval->nodeTab[j], parent), dst->nodesetval->nodeTab[i], position);
+								doAppend(xplCloneAttrAsText(src->nodesetval->nodeTab[j], parent), dst->nodesetval->nodeTab[i], position);
 						} else {
 							for (j = 0; j < (ptrdiff_t) src->nodesetval->nodeNr; j++)
-								doAppend(cloneAttrAsText(src->nodesetval->nodeTab[j], parent), dst->nodesetval->nodeTab[i], position);
+								doAppend(xplCloneAttrAsText(src->nodesetval->nodeTab[j], parent), dst->nodesetval->nodeTab[i], position);
 						}
 					}
 				}

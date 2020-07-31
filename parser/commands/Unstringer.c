@@ -300,8 +300,8 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 					if (!ret)
 						ret = out;
 					else
-						appendList(tail, out);
-					tail = findTail(out);
+						xplAppendList(tail, out);
+					tail = xplFindTail(out);
 					XPL_FREE(ctxt.input_str);
 				}
 			}
@@ -319,7 +319,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr), true, true);
 		goto done;
 	}
-	downshiftNodeListNsDef(ret, commandInfo->element->nsDef);
+	xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	ASSIGN_RESULT(ret, repeat, true);
 done:
 	if (select_attr)

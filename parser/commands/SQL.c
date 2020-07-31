@@ -349,7 +349,7 @@ static xmlNodePtr _buildDocFromMemory(xmlChar *src, size_t size, xmlNodePtr pare
 		ret = xplCreateErrorNode(parent, BAD_CAST "error parsing input document: \"%s\"", error);
 		goto done;
 	}
-	ret = detachContent(doc->children);
+	ret = xplDetachContent(doc->children);
 	xmlSetListDoc(ret, parent->doc);
 	xmlFreeDoc(doc);
 done:
@@ -646,7 +646,7 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			dbname_attr, dbs->ns? dbs->ns->prefix: BAD_CAST ""), true, true);
 		goto done;
 	}
-	if (!checkNodeListForText(commandInfo->element->children))
+	if (!xplCheckNodeListForText(commandInfo->element->children))
 	{
 		ASSIGN_RESULT(_getNonTextQueryError(commandInfo->element), true, true);
 		goto done;

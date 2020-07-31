@@ -19,12 +19,12 @@ void xplCmdOtherwiseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(error, true, true);
 		return;
 	}
-	ASSIGN_RESULT(detachContent(commandInfo->element), repeat, true);
+	ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 	brk_ns = commandInfo->document->root_xpl_ns;
 	if (!brk_ns)
 		brk_ns = xmlSearchNsByHref(commandInfo->element->doc, commandInfo->element, cfgXplNsUri);
 	brk = xmlNewDocNode(commandInfo->element->doc, brk_ns, BAD_CAST "break", NULL);
-	appendList(commandInfo->element, brk);
+	xplAppendList(commandInfo->element, brk);
 }
 
 xplCommand xplOtherwiseCommand = { xplCmdOtherwisePrologue, xplCmdOtherwiseEpilogue };
