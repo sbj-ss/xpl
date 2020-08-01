@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <libxml/tree.h>
 #include <libxml/xmlstring.h>
+#include <libxml/xpath.h>
 #include <libxpl/abstraction/xpr.h>
 
 #ifdef __cplusplus
@@ -38,6 +39,7 @@ typedef struct _xplCommandInfo
     xmlNodePtr element;
     xplDocumentPtr document;
 	void *_private;
+	xmlXPathContextPtr xpath_ctxt;
 } xplCommandInfo, *xplCommandInfoPtr;
 
 /* XPL command handler */
@@ -155,6 +157,9 @@ XPLPUBFUN xmlNodePtr XPLCALL
 	xplGetCommandParams(xplCommandPtr command, xmlNodePtr carrier, void *values);
 XPLPUBFUN void XPLCALL
 	xplClearCommandParams(xplCommandPtr command, void *values);
+
+XPLPUBFUN xmlXPathObjectPtr XPLCALL
+	xplSelectNodes(xplCommandInfoPtr commandInfo, xmlNodePtr src, xmlChar *expr);
 
 XPLPUBFUN xplModuleCmdResult XPLCALL
 	xplLoadableModulesInit(void);

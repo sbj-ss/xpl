@@ -33,7 +33,7 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		goto done;
 	}
 	/* TODO check name */
-	sel = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
+	sel = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
 	if (!sel)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath: \"%s\"", select_attr), true, true);

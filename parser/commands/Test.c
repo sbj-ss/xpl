@@ -49,7 +49,7 @@ void xplCmdTestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(createBreak(commandInfo, xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is empty"), NULL), true, true);
 		return;
 	}
-	ct = xplSelectNodes(commandInfo->document, commandInfo->element, txt);
+	ct = xplSelectNodes(commandInfo, commandInfo->element, txt);
 	if (ct)
 	{
 		switch(ct->type)

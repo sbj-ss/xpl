@@ -531,7 +531,7 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 		while (cur && (cur->type != XML_ELEMENT_NODE)) /* skip comments */
 			cur = cur->next;
 	}
-	sel = xplSelectNodes(ctxt->doc, cur, select_attr);
+	sel = xplSelectNodesWithCtxt(ctxt->doc->xpath_ctxt, cur, select_attr);
 	if (sel)
 	{
 		if (sel->type == XPATH_NODESET)

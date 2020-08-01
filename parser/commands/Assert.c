@@ -33,7 +33,7 @@ void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		return;
 	}
 	message_attr = xmlGetNoNsProp(commandInfo->element, MESSAGE_ATTR);
-	ct = xplSelectNodes(commandInfo->document, commandInfo->element, txt);
+	ct = xplSelectNodes(commandInfo, commandInfo->element, txt);
 	if (ct)
 	{
 		switch(ct->type)

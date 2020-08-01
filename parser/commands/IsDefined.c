@@ -31,7 +31,7 @@ void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	at_attr = xmlGetNoNsProp(commandInfo->element, AT_ATTR);
 	if (at_attr)
 	{
-		sel = xplSelectNodes(commandInfo->document, commandInfo->element, at_attr);
+		sel = xplSelectNodes(commandInfo, commandInfo->element, at_attr);
 		if (sel)
 		{
 			if (sel->type == XPATH_NODESET)

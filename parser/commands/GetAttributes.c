@@ -49,7 +49,7 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 
 	if (select_attr)
 	{
-		sel = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
+		sel = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
 		if (sel)
 		{
 			if (sel->type == XPATH_NODESET)

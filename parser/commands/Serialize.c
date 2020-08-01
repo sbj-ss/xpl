@@ -19,7 +19,7 @@ void xplCmdSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
 	if (select_attr)
 	{
-		obj = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
+		obj = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
 		if (!obj)
 		{
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), true, true);

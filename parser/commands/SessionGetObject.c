@@ -55,7 +55,7 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 	{
 		if (select_attr)
 		{
-			sel = xplSelectNodes(commandInfo->document, obj, select_attr);
+			sel = xplSelectNodes(commandInfo, obj, select_attr);
 			if (sel)
 			{
 				head = tail = NULL;

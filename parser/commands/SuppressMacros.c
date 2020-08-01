@@ -78,7 +78,7 @@ void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo)
 	{
 		if (select_attr)
 		{
-			sel = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
+			sel = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
 			if (!sel)
 			{
 				xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));

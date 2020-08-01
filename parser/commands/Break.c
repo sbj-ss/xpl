@@ -44,7 +44,7 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	point_attr = xmlGetNoNsProp(commandInfo->element, POINT_ATTR);
 	if (point_attr) /* ������� ����� */
 	{
-		point = xplSelectNodes(commandInfo->document, commandInfo->element, point_attr);
+		point = xplSelectNodes(commandInfo, commandInfo->element, point_attr);
 		if (!point)
 		{
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid point XPath expression \"%s\"", point_attr), true, true);

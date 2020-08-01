@@ -121,7 +121,7 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	EXTRACT_NS_AND_TAGNAME(tagname_attr, ns, tagname, commandInfo->element);
 	EXTRACT_NS_AND_TAGNAME(delimitertagname_attr, delim_ns, delimitertagname, commandInfo->element);
 
-	sel = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
+	sel = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
 	if (!sel)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr), true, true);

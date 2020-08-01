@@ -10,7 +10,7 @@ void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo)
 	xmlXPathObjectPtr nodes = NULL;
 	if ((key_attr = xmlGetNoNsProp(commandInfo->element, KEY_ATTR)))
 	{
-		nodes = xplSelectNodes(commandInfo->document, commandInfo->element, key_attr);
+		nodes = xplSelectNodes(commandInfo, commandInfo->element, key_attr);
 		if (!nodes)
 			commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid key XPath expression \"%s\"", key_attr);
 		XPL_FREE(key_attr);

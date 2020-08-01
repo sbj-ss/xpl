@@ -146,7 +146,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	/* obtain source data taking into account they can be text only */
 	if (source_attr)
 	{
-		src = xplSelectNodes(commandInfo->document, commandInfo->element, source_attr);
+		src = xplSelectNodes(commandInfo, commandInfo->element, source_attr);
 		if (!src)
 		{
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath source expression \"%s\"", source_attr), true, true);
@@ -200,7 +200,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	/* determine destination(s) */
 	if (destination_attr)
 	{
-		dst = xplSelectNodes(commandInfo->document, commandInfo->element, destination_attr);
+		dst = xplSelectNodes(commandInfo, commandInfo->element, destination_attr);
 		if (!dst)
 		{
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath destination expression \"%s\"", destination_attr), true, true);

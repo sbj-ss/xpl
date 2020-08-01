@@ -1255,3 +1255,24 @@ bool xplCompareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool ch
 	/* TODO XPATH_POINT, XPATH_RANGE, XPATH_LOCATIONSET, XPATH_USER - do we ever encounter them? */
 	}
 }
+
+xmlXPathObjectPtr xplSelectNodesWithCtxt(xmlXPathContextPtr ctxt, xmlNodePtr src, xmlChar *expr)
+{
+    xmlXPathObjectPtr ret;
+
+	if (!ctxt)
+		return NULL;
+    ctxt->namespaces = xmlGetNsList(src->doc, src);
+    ctxt->nsNr = 0;
+    if (ctxt->namespaces)
+	{
+		while (ctxt->namespaces[ctxt->nsNr])
+            ctxt->nsNr++;
+    }
+	ctxt->node = src;
+	ctxt->doc = src->doc;
+	ret = xmlXPathEvalExpression(expr, ctxt);
+    if (ctxt->namespaces)
+		XPL_FREE(ctxt->namespaces);
+    return ret;
+}

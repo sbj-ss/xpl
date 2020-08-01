@@ -39,7 +39,7 @@ void xplCmdNamespaceEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	if (destination_attr)
 	{
-		sel = xplSelectNodes(commandInfo->document, commandInfo->element, destination_attr);
+		sel = xplSelectNodes(commandInfo, commandInfo->element, destination_attr);
 		if (sel)
 		{
 			if (sel->type == XPATH_NODESET)

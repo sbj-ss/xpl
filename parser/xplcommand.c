@@ -291,6 +291,13 @@ void xplClearCommandParams(xplCommandPtr command, void *values)
 	xmlHashScan(command->param_hash, _paramCleanValueScanner, values);
 }
 
+xmlXPathObjectPtr xplSelectNodes(xplCommandInfoPtr commandInfo, xmlNodePtr src, xmlChar *expr)
+{
+	if (!src | !commandInfo)
+		return NULL;
+	return xplSelectNodesWithCtxt(commandInfo->xpath_ctxt, src, expr);
+}
+
 static void FreeModulesCallback(void *payload, xmlChar *name)
 {
 	xplUnloadModule(name);

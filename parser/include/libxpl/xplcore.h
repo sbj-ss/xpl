@@ -130,8 +130,6 @@ XPLPUBFUN xmlNodePtr XPLCALL
 		bool defaultReplace
 	);
 
-XPLPUBFUN xmlXPathObjectPtr XPLCALL
-	xplSelectNodes(xplDocumentPtr doc, xmlNodePtr src, xmlChar *expr);
 XPLPUBFUN void XPLCALL
 	xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur);
 XPLPUBFUN void XPLCALL

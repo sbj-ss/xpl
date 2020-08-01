@@ -27,7 +27,7 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing key attribute");
 		goto done;
 	}
-	sel = xplSelectNodes(commandInfo->document, commandInfo->element, key_attr);
+	sel = xplSelectNodes(commandInfo, commandInfo->element, key_attr);
 	if (!sel)
 	{
 		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid key XPath expression \"%s\"", key_attr);

@@ -61,7 +61,7 @@ void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	dst_attr = xmlGetNoNsProp(commandInfo->element, DST_ATTR);
 	if (dst_attr)
 	{
-		dest_list = xplSelectNodes(commandInfo->document, commandInfo->element, dst_attr);
+		dest_list = xplSelectNodes(commandInfo, commandInfo->element, dst_attr);
 		if (dest_list)
 		{
 			if (dest_list->type == XPATH_NODESET)

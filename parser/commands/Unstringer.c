@@ -278,7 +278,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	ctxt.doc = commandInfo->element->doc;
 	if (ctxt.unique)
 		ctxt.unique_hash = xmlHashCreate(16);
-	sel = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
+	sel = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
 	if (sel)
 	{
 		if (sel->type == XPATH_NODESET)

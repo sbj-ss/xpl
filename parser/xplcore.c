@@ -121,38 +121,7 @@ bool xplDocStackIsEmpty(xplDocumentPtr doc)
 	return false;
 }
 
-/* Command routines */
-static xmlXPathObjectPtr xplSelectNodesInner(xmlXPathContextPtr ctxt, xmlNodePtr src, xmlChar *expr)
-{
-    xmlXPathObjectPtr ret;
-    
-	if (!ctxt)
-		return NULL;
-    ctxt->namespaces = xmlGetNsList(src->doc, src);
-    ctxt->nsNr = 0;
-    if (ctxt->namespaces) 
-	{
-		while (ctxt->namespaces[ctxt->nsNr])
-            ctxt->nsNr++;
-    }
-	ctxt->node = src;
-	ctxt->doc = src->doc;
-	ret = xmlXPathEvalExpression(expr, ctxt);
-    if (ctxt->namespaces)
-		XPL_FREE(ctxt->namespaces);
-    return ret;
-}
-
-xmlXPathObjectPtr xplSelectNodes(xplDocumentPtr doc, xmlNodePtr src, xmlChar *expr)
-{
-	xmlXPathContextPtr ctxt;
-
-	if (!src | !doc)
-		return NULL;
-	ctxt = doc->xpath_ctxt;
-	return xplSelectNodesInner(ctxt, src, expr);
-}
-
+/* Node deferred deletion */
 void xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur)
 {
 	if (!buf | !cur)
@@ -627,7 +596,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 				new_content = NULL;
 			if (!new_content) /* get new content by selector */
 			{
-				sel = xplSelectNodesInner(doc->xpath_ctxt, oldElement, select_attr);
+				sel = xplSelectNodesWithCtxt(doc->xpath_ctxt, oldElement, select_attr);
 				if (sel)
 				{
 					if (sel->type == XPATH_NODESET)
@@ -865,6 +834,7 @@ void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xpl
 				cmdInfo.element = element;
 				cmdInfo.document = doc;
 				cmdInfo._private = NULL;
+				cmdInfo.xpath_ctxt = doc->xpath_ctxt;
 				cmd->prologue(&cmdInfo); 
 				/* element could be removed (:with) */
 				if (!(element->type & XPL_NODE_DELETION_MASK))

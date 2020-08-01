@@ -137,6 +137,9 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN bool XPLCALL
 	xplCompareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool checkEquality);
 
+XPLPUBFUN xmlXPathObjectPtr XPLCALL
+	xplSelectNodesWithCtxt(xmlXPathContextPtr ctxt, xmlNodePtr src, xmlChar *expr);
+
 #ifdef __cplusplus
 }
 #endif

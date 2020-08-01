@@ -20,7 +20,7 @@ void xplCmdValueOfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing select attribute"), true, true);
 		return;
 	}
-	 sel = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
+	 sel = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
 	if (sel)
 	{
 		if ((sel->type == XPATH_BOOLEAN) || (sel->type == XPATH_NUMBER) || (sel->type == XPATH_STRING))

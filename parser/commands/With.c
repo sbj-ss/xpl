@@ -73,7 +73,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	}
 
 	commandInfo->document->iterator_spinlock++;
-	sel = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
+	sel = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
 	if (sel)
 	{
 		if (sel->type == XPATH_NODESET)

@@ -110,7 +110,7 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	source_attr = xmlGetNoNsProp(commandInfo->element, SOURCE_ATTR);
 	if (source_attr) /* �� ���� ����� ������... */
 	{
-		src = xplSelectNodes(commandInfo->document, commandInfo->element, source_attr);
+		src = xplSelectNodes(commandInfo, commandInfo->element, source_attr);
 		if (src)
 		{
 			if (src->type != XPATH_NODESET)
@@ -129,7 +129,7 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		goto done;
 	}
 
-	dst = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
+	dst = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
 	if (dst)
 	{
 		if (dst->type == XPATH_NODESET)

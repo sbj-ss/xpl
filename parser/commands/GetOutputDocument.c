@@ -38,7 +38,7 @@ void xplCmdGetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 
 	if (select_attr)
 	{
-		sel = xplSelectNodes(commandInfo->document, (xmlNodePtr) doc, select_attr);
+		sel = xplSelectNodes(commandInfo, (xmlNodePtr) doc, select_attr);
 		if (sel)
 		{
 			if (sel->type == XPATH_NODESET)

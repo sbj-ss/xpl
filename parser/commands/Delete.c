@@ -85,7 +85,7 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select attribute is missing or empty"), true, true);
 		goto done;
 	}
-	dest_list = xplSelectNodes(commandInfo->document, commandInfo->element, select_attr);
+	dest_list = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
 	if (dest_list)
 	{
 		if (dest_list->type == XPATH_NODESET)
