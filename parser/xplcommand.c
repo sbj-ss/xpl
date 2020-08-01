@@ -181,9 +181,9 @@ void xplCleanupCommands()
 	}
 }
 
-xmlNodePtr xplGetCommandParams(xplCommandPtr command, xmlNodePtr carrier, void *values)
+xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandInfo, void *values)
 {
-	xmlAttrPtr attr = carrier->properties;
+	xmlAttrPtr attr = commandInfo->element->properties;
 	xplCmdParamPtr param;
 	xmlChar *value_text = NULL;
 	char *end_ptr;
@@ -191,14 +191,15 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xmlNodePtr carrier, void *
 	xplCmdParamDictValuePtr dict_value;
 	unsigned char *required_params = NULL;
 	xmlNodePtr ret = NULL;
+	xmlXPathObjectPtr xpath_obj;
 
 	if (!command->param_hash)
-		return xplCreateErrorNode(carrier, BAD_CAST "command->param_hash is NULL");
+		return xplCreateErrorNode(commandInfo->element, BAD_CAST "command->param_hash is NULL");
 	memcpy(values, command->params_stencil, command->stencil_size); /* set defaults */
 
 	required_params = (unsigned char*) XPL_MALLOC(command->param_count);
 	if (!required_params)
-		return xplCreateErrorNode(carrier, BAD_CAST "insufficient memory");
+		return xplCreateErrorNode(commandInfo->element, BAD_CAST "insufficient memory");
 	memcpy(required_params, command->required_params, command->param_count);
 
 	while (attr)
@@ -215,7 +216,7 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xmlNodePtr carrier, void *
 					*((int*) ((uintptr_t) values + param->value_offset)) = strtol((char*) value_text, &end_ptr, 0);
 					if (*end_ptr)
 					{
-						ret = xplCreateErrorNode(carrier, BAD_CAST "parameter %s, value '%s': not a valid integer", attr->name, value_text);
+						ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s', value '%s': not a valid integer", attr->name, value_text);
 						goto done;
 					}
 					break;
@@ -223,7 +224,7 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xmlNodePtr carrier, void *
 					int_value = xplGetBooleanValue(value_text);
 					if (int_value < 0)
 					{
-						ret = xplCreateErrorNode(carrier, BAD_CAST "parameter %s, value '%s': not a valid boolean", attr->name, value_text);
+						ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s', value '%s': not a valid boolean", attr->name, value_text);
 						goto done;
 					}
 					*((bool*) ((uintptr_t) values + param->value_offset)) = (bool) int_value;
@@ -241,10 +242,32 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xmlNodePtr carrier, void *
 					}
 					if (!dict_value->name) /* nothing matched */
 					{
-						ret = xplCreateErrorNode(carrier, BAD_CAST "parameter %s, value '%s': not in the allowed list", attr->name, value_text);
+						ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s', value '%s': not in the allowed list", attr->name, value_text);
 						goto done;
 					}
 					*((int*) ((uintptr_t) values + param->value_offset)) = int_value;
+					break;
+				case XPL_CMD_PARAM_TYPE_XPATH:
+					xpath_obj = xplSelectNodes(commandInfo, commandInfo->element, value_text);
+					if (!xpath_obj)
+					{
+						ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s': invalid XPath expression '%s'", attr->name, value_text);
+						goto done;
+					}
+					*((xmlXPathObjectPtr*) ((uintptr_t) values + param->value_offset)) = xpath_obj;
+					if (param->xpath_type == XPL_CMD_PARAM_XPATH_TYPE_NODESET)
+					{
+						if (xpath_obj->type != XPATH_NODESET)
+						{
+							ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath query '%s' evaluated to non-nodeset type", value_text);
+							goto done;
+						}
+					} else if (param->xpath_type == XPL_CMD_PARAM_XPATH_TYPE_SCALAR)
+						if (xpath_obj->type != XPATH_BOOLEAN && xpath_obj->type != XPATH_NUMBER && xpath_obj->type != XPATH_STRING)
+						{
+							ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath query '%s' evaluated to a nodeset but a scalar value is needed", value_text);
+							goto done;
+						}
 					break;
 				default:
 					DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -259,7 +282,7 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xmlNodePtr carrier, void *
 	for (i = 0; i < command->param_count; i++)
 		if (required_params[i])
 		{
-			ret = xplCreateErrorNode(carrier, BAD_CAST "parameter %s must be set", command->parameters[i].name);
+			ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter %s must be set", command->parameters[i].name);
 			goto done;
 		}
 done:
@@ -274,13 +297,24 @@ static void _paramCleanValueScanner(void *payload, void *data, xmlChar *name)
 {
 	xplCmdParamPtr param = (xplCmdParamPtr) payload;
 	char **value, **default_value;
+	xmlXPathObjectPtr *xpath_obj;
 
 	if (param->type == XPL_CMD_PARAM_TYPE_STRING)
 	{
 		value = (char**) ((uintptr_t) data + param->value_offset);
 		default_value = (char**) ((uintptr_t) data + param->value_offset);
 		if (*value && *value != *default_value)
+		{
 			XPL_FREE(*value);
+			*value = NULL;
+		}
+	} else if (param->type == XPL_CMD_PARAM_TYPE_XPATH) {
+		xpath_obj = (xmlXPathObjectPtr*) ((uintptr_t) data + param->value_offset);
+		if (*xpath_obj)
+		{
+			xmlXPathFreeObject(*xpath_obj);
+			*xpath_obj = NULL;
+		}
 	}
 }
 

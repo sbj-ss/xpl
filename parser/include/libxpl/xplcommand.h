@@ -57,8 +57,16 @@ typedef enum _xplCmdParamType
 	XPL_CMD_PARAM_TYPE_STRING,
 	XPL_CMD_PARAM_TYPE_INTEGER,
 	XPL_CMD_PARAM_TYPE_BOOL,
-	XPL_CMD_PARAM_TYPE_DICT
+	XPL_CMD_PARAM_TYPE_DICT,
+	XPL_CMD_PARAM_TYPE_XPATH
 } xplCmdParamType;
+
+typedef enum _xplCmdParamXPathType
+{
+	XPL_CMD_PARAM_XPATH_TYPE_ANY,
+	XPL_CMD_PARAM_XPATH_TYPE_NODESET,
+	XPL_CMD_PARAM_XPATH_TYPE_SCALAR
+} xplCmdParamXPathType;
 
 typedef struct _xplCmdParamDictValue
 {
@@ -72,10 +80,11 @@ typedef struct _xplCmdParam
 	xplCmdParamType type;
 	bool required;
 	const void *value_stencil;
-	int index;							/* managed by xplRegisterCommand */
-	ptrdiff_t value_offset;				/* managed by xplRegisterCommand */
 	xplCmdParamDictValuePtr dict_values;/* (.name=NULL)-terminated */
 	xmlChar **aliases;					/* NULL-terminated */
+	xplCmdParamXPathType xpath_type;
+	int index;							/* managed by xplRegisterCommand */
+	ptrdiff_t value_offset;				/* managed by xplRegisterCommand */
 } xplCmdParam, *xplCmdParamPtr;
 
 typedef struct _xplCommand
@@ -154,7 +163,7 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, bool *value, bool defaultValue);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplGetCommandParams(xplCommandPtr command, xmlNodePtr carrier, void *values);
+	xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandInfo, void *values);
 XPLPUBFUN void XPLCALL
 	xplClearCommandParams(xplCommandPtr command, void *values);
 
