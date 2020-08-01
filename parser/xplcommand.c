@@ -15,8 +15,52 @@ bool xplInitCommands()
 	return commands? true: false;
 }
 
+static xplModuleCmdResult _registerCommandParams(xplCommandPtr cmd, xmlChar **error)
+{
+	int i;
+	xplCmdParamPtr param;
+	xmlChar **alias;
+
+	// TODO error details in **error
+	if (!(cmd->param_hash = xmlHashCreate(16)))
+		return XPL_MODULE_CMD_INSUFFICIENT_MEMORY;
+	for (i = 0; cmd->parameters[i].name; i++)
+		NOOP();
+	cmd->param_count = i;
+	cmd->required_params = (unsigned char*) XPL_MALLOC(cmd->param_count);
+	if (!cmd->required_params)
+	{
+		xmlHashFree(cmd->param_hash, NULL);
+		cmd->param_hash = NULL;
+		return XPL_MODULE_CMD_INSUFFICIENT_MEMORY;
+	}
+	for (i = 0; i < cmd->param_count; i++)
+	{
+		param = &(cmd->parameters[i]);
+		if (xmlHashAddEntry(cmd->param_hash, param->name, param))
+		{
+			xmlHashFree(cmd->param_hash, NULL);
+			cmd->param_hash = NULL;
+			return XPL_MODULE_CMD_PARAM_NAME_CLASH;
+		}
+		for (alias = param->aliases; *alias; alias++)
+			if (xmlHashAddEntry(cmd->param_hash, *alias, param))
+			{
+				xmlHashFree(cmd->param_hash, NULL);
+				cmd->param_hash = NULL;
+				return XPL_MODULE_CMD_PARAM_NAME_CLASH;
+			}
+		param->value_offset = (uintptr_t) param->value_stencil - (uintptr_t) cmd->params_stencil;
+		cmd->required_params[i] = param->required;
+		param->index = i;
+	}
+	return XPL_MODULE_CMD_OK;
+}
+
 xplModuleCmdResult xplRegisterCommand(const xmlChar *name, xplCommandPtr cmd, xmlChar **error)
 {
+	xplModuleCmdResult ret;
+
 	if (!commands)
 		return XPL_MODULE_CMD_NO_PARSER;
 	/* Don't allow overrides */
@@ -28,6 +72,9 @@ xplModuleCmdResult xplRegisterCommand(const xmlChar *name, xplCommandPtr cmd, xm
 			xmlHashRemoveEntry(commands, name, NULL);
 			return XPL_MODULE_CMD_COMMAND_INIT_FAILED;
 		}
+	if (cmd->parameters && cmd->params_stencil)
+		if ((ret = _registerCommandParams(cmd, error)) != XPL_MODULE_CMD_OK)
+			return ret;
 	return XPL_MODULE_CMD_OK;
 }
 
@@ -42,6 +89,13 @@ void xplUnregisterCommand(const xmlChar *name)
 	{
 		if (cmd->finalizer)
 			cmd->finalizer(NULL);
+		if (cmd->param_hash)
+		{
+			xmlHashFree(cmd->param_hash, NULL);
+			cmd->param_hash = NULL;
+		}
+		if (cmd->required_params)
+			XPL_FREE(cmd->required_params);
 		xmlHashRemoveEntry(commands, name, NULL);
 	}
 }
@@ -125,6 +179,116 @@ void xplCleanupCommands()
 		xmlHashFree(commands, commandDeallocator);
 		commands = NULL;
 	}
+}
+
+xmlNodePtr xplGetCommandParams(xplCommandPtr command, xmlNodePtr carrier, void *values)
+{
+	xmlAttrPtr attr = carrier->properties;
+	xplCmdParamPtr param;
+	xmlChar *value_text = NULL;
+	char *end_ptr;
+	int int_value, i;
+	xplCmdParamDictValuePtr dict_value;
+	unsigned char *required_params = NULL;
+	xmlNodePtr ret = NULL;
+
+	if (!command->param_hash)
+		return xplCreateErrorNode(carrier, BAD_CAST "command->param_hash is NULL");
+	memcpy(values, command->params_stencil, command->stencil_size); /* set defaults */
+
+	required_params = (unsigned char*) XPL_MALLOC(command->param_count);
+	if (!required_params)
+		return xplCreateErrorNode(carrier, BAD_CAST "insufficient memory");
+	memcpy(required_params, command->required_params, command->param_count);
+
+	while (attr)
+	{
+		if ((param = (xplCmdParamPtr) xmlHashLookup(command->param_hash, attr->name)))
+		{
+			value_text = xplGetPropValue(attr);
+			switch (param->type)
+			{
+				case XPL_CMD_PARAM_TYPE_STRING:
+					*((xmlChar**) ((uintptr_t) values + param->value_offset)) = value_text;
+					break;
+				case XPL_CMD_PARAM_TYPE_INTEGER:
+					*((int*) ((uintptr_t) values + param->value_offset)) = strtol((char*) value_text, &end_ptr, 0);
+					if (*end_ptr)
+					{
+						ret = xplCreateErrorNode(carrier, BAD_CAST "parameter %s, value '%s': not a valid integer", attr->name, value_text);
+						goto done;
+					}
+					break;
+				case XPL_CMD_PARAM_TYPE_BOOL:
+					int_value = xplGetBooleanValue(value_text);
+					if (int_value < 0)
+					{
+						ret = xplCreateErrorNode(carrier, BAD_CAST "parameter %s, value '%s': not a valid boolean", attr->name, value_text);
+						goto done;
+					}
+					*((bool*) ((uintptr_t) values + param->value_offset)) = (bool) int_value;
+					break;
+				case XPL_CMD_PARAM_TYPE_DICT:
+					dict_value = param->dict_values;
+					while (dict_value->name)
+					{
+						if (!xmlStrcasecmp(dict_value->name, value_text))
+						{
+							int_value = dict_value->value;
+							break;
+						}
+						dict_value++;
+					}
+					if (!dict_value->name) /* nothing matched */
+					{
+						ret = xplCreateErrorNode(carrier, BAD_CAST "parameter %s, value '%s': not in the allowed list", attr->name, value_text);
+						goto done;
+					}
+					*((int*) ((uintptr_t) values + param->value_offset)) = int_value;
+					break;
+				default:
+					DISPLAY_INTERNAL_ERROR_MESSAGE();
+					XPL_FREE(value_text);
+			}
+			required_params[param->index] = 0;
+			XPL_FREE(value_text);
+			value_text = NULL;
+		}
+		attr = attr->next;
+	}
+	for (i = 0; i < command->param_count; i++)
+		if (required_params[i])
+		{
+			ret = xplCreateErrorNode(carrier, BAD_CAST "parameter %s must be set", command->parameters[i].name);
+			goto done;
+		}
+done:
+	if (value_text)
+		XPL_FREE(value_text);
+	if (required_params)
+		XPL_FREE(required_params);
+	return ret;
+}
+
+static void _paramCleanValueScanner(void *payload, void *data, xmlChar *name)
+{
+	xplCmdParamPtr param = (xplCmdParamPtr) payload;
+	char **value, **default_value;
+
+	if (param->type == XPL_CMD_PARAM_TYPE_STRING)
+	{
+		value = (char**) ((uintptr_t) data + param->value_offset);
+		default_value = (char**) ((uintptr_t) data + param->value_offset);
+		if (*value && *value != *default_value)
+			XPL_FREE(*value);
+	}
+}
+
+void xplClearCommandParams(xplCommandPtr command, void *values)
+{
+	if (!command->param_hash || !values)
+		return;
+	xmlHashScan(command->param_hash, _paramCleanValueScanner, values);
 }
 
 static void FreeModulesCallback(void *payload, xmlChar *name)

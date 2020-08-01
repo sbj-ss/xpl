@@ -50,6 +50,32 @@ typedef void (*xplCommandFinalizer) (void*);
 #define XPL_CMD_FLAG_CONTENT_SAFE 0x0001UL
 #define XPL_CMD_FLAG_INITIALIZED 0x0100UL
 
+typedef enum _xplCmdParamType
+{
+	XPL_CMD_PARAM_TYPE_STRING,
+	XPL_CMD_PARAM_TYPE_INTEGER,
+	XPL_CMD_PARAM_TYPE_BOOL,
+	XPL_CMD_PARAM_TYPE_DICT
+} xplCmdParamType;
+
+typedef struct _xplCmdParamDictValue
+{
+	xmlChar *name;
+	int value;
+} xplCmdParamDictValue, *xplCmdParamDictValuePtr;
+
+typedef struct _xplCmdParam
+{
+	xmlChar *name;
+	xplCmdParamType type;
+	bool required;
+	const void *value_stencil;
+	int index;							/* managed by xplRegisterCommand */
+	ptrdiff_t value_offset;				/* managed by xplRegisterCommand */
+	xplCmdParamDictValuePtr dict_values;/* (.name=NULL)-terminated */
+	xmlChar **aliases;					/* NULL-terminated */
+} xplCmdParam, *xplCmdParamPtr;
+
 typedef struct _xplCommand
 {
 	xplCommandPrologue prologue;
@@ -57,6 +83,12 @@ typedef struct _xplCommand
 	xplCommandInitializer initializer;
 	xplCommandFinalizer finalizer;
 	unsigned int flags;
+	const void *params_stencil;
+	size_t stencil_size;
+	xmlHashTablePtr param_hash;			/* managed by xplRegisterCommand */
+	int param_count;					/* managed by xplRegisterCommand */
+	unsigned char *required_params;		/* managed by xplRegisterCommand */
+	xplCmdParam parameters[];			/* (.name=NULL)-terminated */
 } xplCommand, *xplCommandPtr;
 
 /* pluggable command modules support */
@@ -96,7 +128,10 @@ typedef enum _xplModuleCmdResult
 	XPL_MODULE_CMD_COMMAND_INIT_FAILED = -8,
 	XPL_MODULE_CMD_NO_PARSER = -9,
 	XPL_MODULE_CMD_MODULE_ALREADY_LOADED = -10,
-	XPL_MODULE_CMD_LOCK_ERROR = -11
+	XPL_MODULE_CMD_LOCK_ERROR = -11,
+	XPL_MODULE_CMD_WRONG_PARAMS = -12,
+	XPL_MODULE_CMD_PARAM_NAME_CLASH = -13,
+	XPL_MODULE_CMD_PARAM_DICT_NAME_CLASH = -14
 } xplModuleCmdResult;
 
 XPLPUBFUN bool XPLCALL
@@ -114,6 +149,13 @@ XPLPUBFUN xmlNodePtr XPLCALL
 XPLPUBFUN void XPLCALL
 	xplCleanupCommands();
 
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, bool *value, bool defaultValue);
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplGetCommandParams(xplCommandPtr command, xmlNodePtr carrier, void *values);
+XPLPUBFUN void XPLCALL
+	xplClearCommandParams(xplCommandPtr command, void *values);
+
 XPLPUBFUN xplModuleCmdResult XPLCALL
 	xplLoadableModulesInit(void);
 XPLPUBFUN xplModuleCmdResult XPLCALL
@@ -128,9 +170,6 @@ XPLPUBFUN xmlNodePtr XPLCALL
 	xplLoadedModulesToNodeList(const xmlChar *tagQName, xmlNodePtr parent);
 XPLPUBFUN void XPLCALL
 	xplLoadableModulesCleanup(void);
-
-XPLPUBFUN xmlNodePtr XPLCALL
-	xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, bool *value, bool defaultValue);
 #ifdef __cplusplus
 }
 #endif
