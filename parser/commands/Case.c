@@ -4,6 +4,8 @@
 #include <libxpl/xpltree.h>
 #include "commands/Case.h"
 
+xplCommand xplCaseCommand = { xplCmdCasePrologue, xplCmdCaseEpilogue };
+
 void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 {
 #define KEY_ATTR (BAD_CAST "key")
@@ -18,19 +20,19 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 		((parent->ns != commandInfo->document->root_xpl_ns) && xmlStrcmp(parent->ns->href, cfgXplNsUri)) ||
 		xmlStrcmp(parent->name, BAD_CAST "switch"))
 	{
-		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "parent element must be a switch command");
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "parent element must be a switch command");
 		goto done;
 	}
 	key_attr = xmlGetNoNsProp(commandInfo->element, KEY_ATTR);
 	if (!key_attr)
 	{
-		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing key attribute");
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing key attribute");
 		goto done;
 	}
 	sel = xplSelectNodes(commandInfo, commandInfo->element, key_attr);
 	if (!sel)
 	{
-		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid key XPath expression \"%s\"", key_attr);
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid key XPath expression \"%s\"", key_attr);
 		goto done;
 	}
 	parent_sel = (xmlXPathObjectPtr) parent->content;
@@ -39,7 +41,7 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 	{
 		if ((error = xplDecodeCmdBoolParam(commandInfo->element, BREAK_ATTR, &do_break, true)))
 		{
-			commandInfo->_private = error;
+			commandInfo->prologue_error = error;
 			goto done;
 		}
 		if (do_break)
@@ -53,7 +55,7 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 	if (sel->nodesetval)
 		sel->nodesetval->nodeNr = 0;
 done:
-	if (commandInfo->_private)
+	if (commandInfo->prologue_error)
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
 	if (key_attr) XPL_FREE(key_attr);
 	if (sel)
@@ -66,9 +68,9 @@ void xplCmdCaseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlChar *repeat_attr = NULL;
 	bool repeat = false;
 
-	if (commandInfo->_private)
+	if (commandInfo->prologue_error)
 	{
-		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, true, true);
+		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
 	} else {
 		if ((repeat_attr = xmlGetNoNsProp(commandInfo->element, REPEAT_ATTR)))
 		{
@@ -79,5 +81,3 @@ void xplCmdCaseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 	}
 }
-
-xplCommand xplCaseCommand = { xplCmdCasePrologue, xplCmdCaseEpilogue };

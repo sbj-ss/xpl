@@ -21,7 +21,7 @@ void xplCmdForEachPrologue(xplCommandInfoPtr commandInfo)
 	if (!select_attr)
 	{
 		ret = NULL;
-		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing select attribute");
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing select attribute");
 		goto done;
 	}
 	id_attr = xmlGetNoNsProp(commandInfo->element, ID_ATTR);
@@ -50,12 +50,12 @@ void xplCmdForEachPrologue(xplCommandInfoPtr commandInfo)
 			}
 		} else {
 			ret = NULL;
-			commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) evaluated to non-nodeset value", select_attr);
+			commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) evaluated to non-nodeset value", select_attr);
 			goto done;
 		}
 	} else {
 		ret = NULL;
-		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr);
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr);
 		goto done;
 	}
 done:
@@ -72,9 +72,9 @@ void xplCmdForEachEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	bool repeat;
 	xmlNodePtr error;
 
-	if (commandInfo->_private) /* error found in prologue */
+	if (commandInfo->prologue_error)
 	{
-		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, true, true);
+		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
 		return;
 	}
 	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))

@@ -181,7 +181,7 @@ void xplCleanupCommands()
 	}
 }
 
-xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandInfo, void *values)
+xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandInfo)
 {
 	xmlAttrPtr attr = commandInfo->element->properties;
 	xplCmdParamPtr param;
@@ -195,7 +195,11 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 
 	if (!command->param_hash)
 		return xplCreateErrorNode(commandInfo->element, BAD_CAST "command->param_hash is NULL");
-	memcpy(values, command->params_stencil, command->stencil_size); /* set defaults */
+	if (!commandInfo->params)
+		commandInfo->params = XPL_MALLOC(command->stencil_size);
+	if (!commandInfo->params)
+		return xplCreateErrorNode(commandInfo->element, BAD_CAST "out of memory");
+	memcpy(commandInfo->params, command->params_stencil, command->stencil_size); /* set defaults */
 
 	required_params = (unsigned char*) XPL_MALLOC(command->param_count);
 	if (!required_params)
@@ -210,10 +214,10 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 			switch (param->type)
 			{
 				case XPL_CMD_PARAM_TYPE_STRING:
-					*((xmlChar**) ((uintptr_t) values + param->value_offset)) = value_text;
+					*((xmlChar**) ((uintptr_t) commandInfo->params + param->value_offset)) = value_text;
 					break;
 				case XPL_CMD_PARAM_TYPE_INTEGER:
-					*((int*) ((uintptr_t) values + param->value_offset)) = strtol((char*) value_text, &end_ptr, 0);
+					*((int*) ((uintptr_t) commandInfo->params + param->value_offset)) = strtol((char*) value_text, &end_ptr, 0);
 					if (*end_ptr)
 					{
 						ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s', value '%s': not a valid integer", attr->name, value_text);
@@ -227,7 +231,7 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 						ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s', value '%s': not a valid boolean", attr->name, value_text);
 						goto done;
 					}
-					*((bool*) ((uintptr_t) values + param->value_offset)) = (bool) int_value;
+					*((bool*) ((uintptr_t) commandInfo->params + param->value_offset)) = (bool) int_value;
 					break;
 				case XPL_CMD_PARAM_TYPE_DICT:
 					dict_value = param->dict_values;
@@ -245,7 +249,7 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 						ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s', value '%s': not in the allowed list", attr->name, value_text);
 						goto done;
 					}
-					*((int*) ((uintptr_t) values + param->value_offset)) = int_value;
+					*((int*) ((uintptr_t) commandInfo->params + param->value_offset)) = int_value;
 					break;
 				case XPL_CMD_PARAM_TYPE_XPATH:
 					if (value_text)
@@ -256,7 +260,7 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 							ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s': invalid XPath expression '%s'", attr->name, value_text);
 							goto done;
 						}
-						*((xmlXPathObjectPtr*) ((uintptr_t) values + param->value_offset)) = xpath_obj;
+						*((xmlXPathObjectPtr*) ((uintptr_t) commandInfo->params + param->value_offset)) = xpath_obj;
 						if (param->xpath_type == XPL_CMD_PARAM_XPATH_TYPE_NODESET)
 						{
 							if (xpath_obj->type != XPATH_NODESET)
@@ -299,6 +303,34 @@ done:
 	return ret;
 }
 
+xmlNodePtr xplFillCommandInfo(xplCommandPtr command, xplCommandInfoPtr info, bool inPrologue)
+{
+	xmlNodePtr error;
+
+	if (((command->flags & XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE) && inPrologue)
+		||
+		((command->flags & XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE) && !inPrologue)
+	) {
+		if (info->params)
+			xplClearCommandParams(command, info->params);
+		if ((error = xplGetCommandParams(command, info)))
+			return error;
+	}
+	if ((command->flags & XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE) && !inPrologue)
+	{
+		if (info->element->children)
+		{
+			if (!xplCheckNodeListForText(info->element->children))
+				return xplCreateErrorNode(info->element, BAD_CAST "command content is non-text");
+			info->content = xmlNodeListGetString(info->element->doc, info->element->children, 1);
+			if (!info->content && (command->flags & XPL_CMD_FLAG_REQUIRE_CONTENT))
+				return xplCreateErrorNode(info->element, BAD_CAST "command content is empty");
+		} else
+			info->content = NULL;
+	}
+	return NULL;
+}
+
 static void _paramCleanValueScanner(void *payload, void *data, xmlChar *name)
 {
 	xplCmdParamPtr param = (xplCmdParamPtr) payload;
@@ -331,6 +363,19 @@ void xplClearCommandParams(xplCommandPtr command, void *values)
 	if (!command->param_hash || !values)
 		return;
 	xmlHashScan(command->param_hash, _paramCleanValueScanner, values);
+}
+
+void xplClearCommandInfo(xplCommandPtr command, xplCommandInfoPtr info)
+{
+	if (info->content)
+		XPL_FREE(info->content);
+	if (info->params)
+	{
+		xplClearCommandParams(command, info->params);
+		XPL_FREE(info->params);
+	}
+	if (info->required_params)
+		XPL_FREE(info->required_params);
 }
 
 xmlXPathObjectPtr xplSelectNodes(xplCommandInfoPtr commandInfo, xmlNodePtr src, xmlChar *expr)

@@ -60,7 +60,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
 	if (!select_attr)
 	{
-		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing select attribute");
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing select attribute");
 		goto done;
 	}
 	id_attr = xmlGetNoNsProp(commandInfo->element, ID_ATTR);
@@ -68,7 +68,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	mode = withModeFromString(mode_attr);
 	if (mode == WITH_MODE_UNKNOWN)
 	{
-		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid mode attribute \"%s\"", mode_attr);
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid mode attribute \"%s\"", mode_attr);
 		goto done;
 	}
 
@@ -145,11 +145,11 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 				} /* for */
 			} /* if (sel->nodesetval) */
 		} else {
-			commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) evaluated to non-nodeset value", select_attr);
+			commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) evaluated to non-nodeset value", select_attr);
 			goto done;
 		}
 	} else {
-		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr);
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr);
 		goto done;
 	}
 done:
@@ -169,7 +169,7 @@ done:
 
 void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, (commandInfo->_private)? true: false, true);
+	ASSIGN_RESULT(commandInfo->prologue_error, (commandInfo->prologue_error)? true: false, true);
 }
 
 xplCommand xplWithCommand = 

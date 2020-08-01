@@ -804,44 +804,51 @@ void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr mac
 
 void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xplResultPtr result)
 {
-	xmlNodePtr content; 
-	xplCommandPtr cmd = NULL;
+	xmlNodePtr error;
+	xplCommandPtr cmd;
 	xplCommandInfo cmdInfo;
 
 	if (expand && !xmlStrcmp(element->name, BAD_CAST "define"))
 	{ 
-		content = xplAddMacro(doc, element, element->parent, false, XPL_MACRO_EXPAND_NO_DEFAULT, true); /* content is used as error buffer */
-		ASSIGN_RESULT(content, content? true: false, true);
+		error = xplAddMacro(doc, element, element->parent, false, XPL_MACRO_EXPAND_NO_DEFAULT, true);
+		ASSIGN_RESULT(error, error? true: false, true);
 	} else if (!xmlStrcmp(element->name, BAD_CAST "no-expand")) {
 		xplNodeListApply(doc, element->children, false, result);
-		content = xplDetachContent(element);
-		ASSIGN_RESULT(content, false, true);
+		ASSIGN_RESULT(xplDetachContent(element), false, true);
 	} else if (!xmlStrcmp(element->name, BAD_CAST "expand")) {
 		xplNodeListApply(doc, element->children, true, result);
-		content = xplDetachContent(element);
-		ASSIGN_RESULT(content, false, true);
+		ASSIGN_RESULT(xplDetachContent(element), false, true);
 	} else if (!xmlStrcmp(element->name, BAD_CAST "expand-after")) {
 		xplNodeListApply(doc, element->children, false, result);
 		xplNodeListApply(doc, element->children, true, result);
-		content = xplDetachContent(element);
-		ASSIGN_RESULT(content, false, true);
+		ASSIGN_RESULT(xplDetachContent(element), false, true);
 	} else {
 		if (expand)
 		{
 			cmd = xplGetCommand(element);
 			if (cmd)
 			{
+				memset(&cmdInfo, 0, sizeof(cmdInfo));
 				cmdInfo.element = element;
 				cmdInfo.document = doc;
-				cmdInfo._private = NULL;
 				cmdInfo.xpath_ctxt = doc->xpath_ctxt;
-				cmd->prologue(&cmdInfo); 
-				/* element could be removed (:with) */
-				if (!(element->type & XPL_NODE_DELETION_MASK))
-					xplNodeListApply(doc, cmdInfo.element->children, expand, result);
-				/* element could be removed by its children */
-				if ((!(element->type & XPL_NODE_DELETION_MASK)) || (cmd->flags & XPL_CMD_FLAG_CONTENT_SAFE))
-					cmd->epilogue(&cmdInfo, result);
+				if (!(error = xplFillCommandInfo(cmd, &cmdInfo, true)))
+				{
+					cmd->prologue(&cmdInfo);
+					/* element could be removed (:with) */
+					if (!(element->type & XPL_NODE_DELETION_MASK))
+						xplNodeListApply(doc, cmdInfo.element->children, expand, result);
+					/* element could be removed by its children */
+					if ((!(element->type & XPL_NODE_DELETION_MASK)) || (cmd->flags & XPL_CMD_FLAG_CONTENT_SAFE))
+					{
+						if (!(error = xplFillCommandInfo(cmd, &cmdInfo, false)))
+							cmd->epilogue(&cmdInfo, result);
+						else
+							ASSIGN_RESULT(error, true, true);
+					}
+				} else
+					ASSIGN_RESULT(error, true, true);
+				xplClearCommandInfo(cmd, &cmdInfo);
 			} else {
 				if (cfgWarnOnUnknownCommand)
 					xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown command \"%s\" (file \"%s\", line %d)", element->name, element->doc->URL, element->line);

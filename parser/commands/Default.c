@@ -11,7 +11,7 @@ void xplCmdDefaultPrologue(xplCommandInfoPtr commandInfo)
 		((parent->ns != commandInfo->document->root_xpl_ns) && xmlStrcmp(parent->ns->href, cfgXplNsUri)) ||
 		xmlStrcmp(parent->name, BAD_CAST "switch"))
 	{
-		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "parent tag must be :switch");
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "parent tag must be :switch");
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
 	}
 }
@@ -24,9 +24,9 @@ void xplCmdDefaultEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	bool do_break;
 	xmlNodePtr error;
 
-	if (commandInfo->_private)
+	if (commandInfo->prologue_error)
 	{
-		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, true, true);
+		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
 	} else {
 		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
 		{

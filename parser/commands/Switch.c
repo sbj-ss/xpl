@@ -12,11 +12,11 @@ void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo)
 	{
 		nodes = xplSelectNodes(commandInfo, commandInfo->element, key_attr);
 		if (!nodes)
-			commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid key XPath expression \"%s\"", key_attr);
+			commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid key XPath expression \"%s\"", key_attr);
 		XPL_FREE(key_attr);
 	} else 
-		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing key attribute");
-	if (commandInfo->_private)
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing key attribute");
+	if (commandInfo->prologue_error)
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
 	else
 		commandInfo->element->content = (xmlChar*) nodes;
@@ -42,7 +42,7 @@ void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		else
 			ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 	} else
-		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, true, true);
+		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
 }
 
 xplCommand xplSwitchCommand = { 

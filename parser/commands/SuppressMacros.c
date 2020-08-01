@@ -105,7 +105,7 @@ void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo)
 		}
 		xmlHashScan(macros, switchMacro, (void*) 1);
 	}
-	commandInfo->_private = macros;
+	commandInfo->prologue_state = macros;
 done:
 	if (sel) xmlXPathFreeObject(sel);
 	if (select_attr) XPL_FREE(select_attr);
@@ -119,7 +119,7 @@ void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	bool repeat;
 	xmlNodePtr error;
 
-	macros = (xmlHashTablePtr) commandInfo->_private;
+	macros = (xmlHashTablePtr) commandInfo->prologue_state;
 	if (macros)
 	{
 		xmlHashScan(macros, switchMacro, (void*) -1);

@@ -15,7 +15,7 @@ void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo)
 	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
 	if (!name_attr)
 	{
-		commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name attribute");
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name attribute");
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
 		return;
 	}
@@ -23,15 +23,15 @@ void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo)
 	if (xplMacroLookup(commandInfo->element->parent, ns? ns->href: NULL, tagname))
 	{
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
-		commandInfo->_private = xmlNewDocNode(commandInfo->element->doc, ns, tagname, NULL);
+		commandInfo->prologue_error = xmlNewDocNode(commandInfo->element->doc, ns, tagname, NULL);
 	}
 	XPL_FREE(name_attr);
 }
 
 void xplCmdReplaceIfUndefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	if (commandInfo->_private)
-		ASSIGN_RESULT((xmlNodePtr) commandInfo->_private, true, true);
+	if (commandInfo->prologue_error)
+		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
 	else
 		ASSIGN_RESULT(xplDetachContent(commandInfo->element), false, true);
 }

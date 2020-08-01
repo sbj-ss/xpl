@@ -12,7 +12,7 @@ void xplCmdSetLocalPrologue(xplCommandInfoPtr commandInfo)
 		tmp_params = xplParamsCopy(old_params);
 		commandInfo->document->environment = tmp_params;
 	}
-	commandInfo->_private = old_params;
+	commandInfo->prologue_state = old_params;
 }
 
 void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
@@ -25,7 +25,7 @@ void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	tmp_params = commandInfo->document->environment;
 	if (tmp_params)
 		xplParamsFree(tmp_params);
-	old_params = (xplParamsPtr) commandInfo->_private;
+	old_params = (xplParamsPtr) commandInfo->prologue_state;
 	commandInfo->document->environment = old_params;
 	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
 		ASSIGN_RESULT(NULL, false, false);

@@ -47,7 +47,7 @@ void xplCmdReplicatePrologue(xplCommandInfoPtr commandInfo)
 	{
 		if (sscanf((const char*) before_count_attr, "%d", &before_count) != 1)
 		{
-			commandInfo->_private = xplCreateErrorNode(commandInfo->element, BAD_CAST "beforecount (%s) is not a number", before_count_attr);
+			commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "beforecount (%s) is not a number", before_count_attr);
 			xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
 			goto done;
 		}
@@ -74,9 +74,9 @@ void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	bool repeat;
 	xmlNodePtr ret = NULL, error;
 
-	if (commandInfo->_private)
+	if (commandInfo->prologue_error)
 	{
-		ASSIGN_RESULT(commandInfo->_private, true, true);
+		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
 		goto done;
 	}
 

@@ -4,7 +4,7 @@
 
 void xplCmdStackLocalizePrologue(xplCommandInfoPtr commandInfo)
 {
-	commandInfo->_private = commandInfo->document->stack;
+	commandInfo->prologue_state = commandInfo->document->stack;
 	commandInfo->document->stack = NULL;
 }
 
@@ -12,7 +12,7 @@ void xplCmdStackLocalizeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 {
 #define REPEAT_ATTR (BAD_CAST "repeat")
 	bool repeat;
-	xmlNodePtr old_stack = (xmlNodePtr) commandInfo->_private;
+	xmlNodePtr old_stack = (xmlNodePtr) commandInfo->prologue_state;
 	xmlNodePtr error;
 
 	xplClearDocStack(commandInfo->document);

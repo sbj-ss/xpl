@@ -38,8 +38,12 @@ typedef struct _xplCommandInfo
 {
     xmlNodePtr element;
     xplDocumentPtr document;
-	void *_private;
+	void *params;
+	xmlChar *content;
+	xmlNodePtr prologue_error;		/* used for transferring values between prologue and epilogue */
+	void *prologue_state;			/* -//- */
 	xmlXPathContextPtr xpath_ctxt;
+	unsigned char *required_params;
 } xplCommandInfo, *xplCommandInfoPtr;
 
 /* XPL command handler */
@@ -50,7 +54,11 @@ typedef bool (*xplCommandInitializer) (void*, xmlChar **error);
 typedef void (*xplCommandFinalizer) (void*);
 
 #define XPL_CMD_FLAG_CONTENT_SAFE 0x0001UL
-#define XPL_CMD_FLAG_INITIALIZED 0x0100UL
+#define XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE 0x0010UL
+#define XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE 0x0020UL
+#define XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE 0x0040UL
+#define XPL_CMD_FLAG_REQUIRE_CONTENT 0x0080UL
+#define XPL_CMD_FLAG_INITIALIZED 0x1000UL
 
 typedef enum _xplCmdParamType
 {
@@ -163,9 +171,13 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, bool *value, bool defaultValue);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandInfo, void *values);
+	xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandInfo);
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplFillCommandInfo(xplCommandPtr command, xplCommandInfoPtr info, bool inPrologue);
 XPLPUBFUN void XPLCALL
 	xplClearCommandParams(xplCommandPtr command, void *values);
+XPLPUBFUN void XPLCALL
+	xplClearCommandInfo(xplCommandPtr command, xplCommandInfoPtr info);
 
 XPLPUBFUN xmlXPathObjectPtr XPLCALL
 	xplSelectNodes(xplCommandInfoPtr commandInfo, xmlNodePtr src, xmlChar *expr);
