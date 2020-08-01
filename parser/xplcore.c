@@ -1166,7 +1166,7 @@ static ParserStartStopStep start_stop_steps[] =
 	{ xplReadConfig, _ssReleaseConfigBasedResources }, // TODO this should be split into individual steps
 	{ xplInitMessages, xplCleanupMessages },
 	{ xplInitCommands, xplCleanupCommands },
-	{ xplRegisterBuiltinCommands, NULL },
+	{ xplRegisterBuiltinCommands, xplUnregisterBuiltinCommands },
 	{ xplInitNamePointers, NULL },
 	{ _ssSessionManagerInit, xplSessionManagerCleanup }
 };

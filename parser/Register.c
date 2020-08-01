@@ -260,3 +260,15 @@ bool xplRegisterBuiltinCommands()
 
 	return true;
 }
+
+void xplUnregisterBuiltinCommands()
+{
+	int i;
+
+	for (i = 0; i < BUILTIN_COMMAND_COUNT; i++)
+	{
+		if ((builtinCommands[i].flags & XPL_CMDSIG_COMPAT_ONLY) && !cfgLuciferCompat)
+			continue;
+		xplUnregisterCommand(builtinCommands[i].name);
+	}
+}

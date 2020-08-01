@@ -13,7 +13,8 @@ extern "C" {
 
 XPLPUBFUN bool XPLCALL
 	xplRegisterBuiltinCommands();
-
+XPLPUBFUN void XPLCALL
+	xplUnregisterBuiltinCommands();
 #ifdef __cplusplus
 }
 #endif
