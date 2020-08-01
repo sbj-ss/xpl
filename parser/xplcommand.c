@@ -270,6 +270,8 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 								ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath query '%s' evaluated to a nodeset but a scalar value is needed", value_text);
 								goto done;
 							}
+						xpath_obj->user = value_text;
+						value_text = NULL;
 					}
 					break;
 				default:
@@ -277,7 +279,8 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 					XPL_FREE(value_text);
 			}
 			required_params[param->index] = 0;
-			XPL_FREE(value_text);
+			if (value_text)
+				XPL_FREE(value_text);
 			value_text = NULL;
 		}
 		attr = attr->next;
@@ -315,6 +318,8 @@ static void _paramCleanValueScanner(void *payload, void *data, xmlChar *name)
 		xpath_obj = (xmlXPathObjectPtr*) ((uintptr_t) data + param->value_offset);
 		if (*xpath_obj)
 		{
+			if ((*xpath_obj)->user)
+				XPL_FREE((*xpath_obj)->user);
 			xmlXPathFreeObject(*xpath_obj);
 			*xpath_obj = NULL;
 		}
