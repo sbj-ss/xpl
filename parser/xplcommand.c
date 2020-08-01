@@ -248,26 +248,29 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 					*((int*) ((uintptr_t) values + param->value_offset)) = int_value;
 					break;
 				case XPL_CMD_PARAM_TYPE_XPATH:
-					xpath_obj = xplSelectNodes(commandInfo, commandInfo->element, value_text);
-					if (!xpath_obj)
+					if (value_text)
 					{
-						ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s': invalid XPath expression '%s'", attr->name, value_text);
-						goto done;
+						xpath_obj = xplSelectNodes(commandInfo, commandInfo->element, value_text);
+						if (!xpath_obj)
+						{
+							ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s': invalid XPath expression '%s'", attr->name, value_text);
+							goto done;
+						}
+						*((xmlXPathObjectPtr*) ((uintptr_t) values + param->value_offset)) = xpath_obj;
+						if (param->xpath_type == XPL_CMD_PARAM_XPATH_TYPE_NODESET)
+						{
+							if (xpath_obj->type != XPATH_NODESET)
+							{
+								ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath query '%s' evaluated to non-nodeset type", value_text);
+								goto done;
+							}
+						} else if (param->xpath_type == XPL_CMD_PARAM_XPATH_TYPE_SCALAR)
+							if (xpath_obj->type != XPATH_BOOLEAN && xpath_obj->type != XPATH_NUMBER && xpath_obj->type != XPATH_STRING)
+							{
+								ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath query '%s' evaluated to a nodeset but a scalar value is needed", value_text);
+								goto done;
+							}
 					}
-					*((xmlXPathObjectPtr*) ((uintptr_t) values + param->value_offset)) = xpath_obj;
-					if (param->xpath_type == XPL_CMD_PARAM_XPATH_TYPE_NODESET)
-					{
-						if (xpath_obj->type != XPATH_NODESET)
-						{
-							ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath query '%s' evaluated to non-nodeset type", value_text);
-							goto done;
-						}
-					} else if (param->xpath_type == XPL_CMD_PARAM_XPATH_TYPE_SCALAR)
-						if (xpath_obj->type != XPATH_BOOLEAN && xpath_obj->type != XPATH_NUMBER && xpath_obj->type != XPATH_STRING)
-						{
-							ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath query '%s' evaluated to a nodeset but a scalar value is needed", value_text);
-							goto done;
-						}
 					break;
 				default:
 					DISPLAY_INTERNAL_ERROR_MESSAGE();
