@@ -43,7 +43,7 @@ static xplModuleCmdResult _registerCommandParams(xplCommandPtr cmd, xmlChar **er
 			cmd->param_hash = NULL;
 			return XPL_MODULE_CMD_PARAM_NAME_CLASH;
 		}
-		for (alias = param->aliases; *alias; alias++)
+		for (alias = param->aliases; alias && *alias; alias++)
 			if (xmlHashAddEntry(cmd->param_hash, *alias, param))
 			{
 				xmlHashFree(cmd->param_hash, NULL);
