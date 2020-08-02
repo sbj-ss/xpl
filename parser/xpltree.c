@@ -78,12 +78,16 @@ void xplUnlinkProp(xmlAttrPtr cur)
 }
 
 /* TODO change signature. this may fail (if ns is not found or tag name is invalid */
-void xplAssignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *value, bool allowReplace)
+bool xplAssignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *value, bool allowReplace)
 {
 	xmlNsPtr ns = NULL;
 	xmlChar *colon_pos, *tagname;
 	xmlAttrPtr prev;
 
+	if (!*name)
+		return false;
+	if (xmlValidateQName(name, 0))
+		return false;
 	colon_pos = (xmlChar*) xmlStrchr(name, ':');
 	if (colon_pos)
 	{
@@ -93,8 +97,8 @@ void xplAssignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *
 		tagname = colon_pos + 1;
 		if (ns)
 			prev = xmlHasNsProp(dst, tagname, ns->href);
-		else /* TODO fail here */
-			prev = xmlHasProp(dst, tagname);
+		else
+			return false;
 	} else {
 		tagname = name;
 		prev = xmlHasProp(dst, tagname);
@@ -102,7 +106,7 @@ void xplAssignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *
 	if (prev)
 	{
 		if (!allowReplace)
-			return;
+			return true; /* no error, just nothing to do */
 		xmlFreeNodeList(prev->children);
 		xplSetChildren((xmlNodePtr) prev, xmlNewDocText(dst->doc, value));
 	} else {
@@ -111,6 +115,7 @@ void xplAssignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *
 		else
 			xmlNewProp(dst, tagname, value);
 	}
+	return true;
 }
 
 /* TODO distinguish out of memory condition from invalid name */

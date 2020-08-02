@@ -49,7 +49,7 @@ XPLPUBFUN xmlChar* XPLCALL
 XPLPUBFUN void XPLCALL
 	xplUnlinkProp(xmlAttrPtr cur);
 /* attaches new property to dst. src is used for namespace search. name may be a QName */
-XPLPUBFUN void XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplAssignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *value, bool allowReplace);
 
 /* creates an element. invoker is used for namespace search. name may be a QName */

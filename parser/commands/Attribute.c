@@ -3,95 +3,89 @@
 #include <libxpl/xpltree.h>
 #include "commands/Attribute.h"
 
+typedef struct _xplCmdAttributeParams
+{
+	xmlChar *name;
+	xmlXPathObjectPtr destination;
+	bool replace;
+	bool force_blank;
+} xplCmdAttributeParams, *xplCmdAttributeParamsPtr;
+
+static const xplCmdAttributeParams params_stencil =
+{
+	.name = NULL,
+	.destination = NULL,
+	.replace = true,
+	.force_blank = false
+};
+
+xplCommand xplAttributeCommand =
+{
+	.prologue = xplCmdAttributePrologue,
+	.epilogue = xplCmdAttributeEpilogue,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdAttributeParams),
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.required = true,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = BAD_CAST "destination",
+			.type = XPL_CMD_PARAM_TYPE_XPATH,
+			.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
+			.value_stencil = &params_stencil.destination
+		}, {
+			.name = BAD_CAST "replace",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.replace
+		}, {
+			.name = BAD_CAST "forceblank",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.force_blank
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdAttributePrologue(xplCommandInfoPtr commandInfo)
 {
 }
 
 void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR (BAD_CAST "name")
-#define DST_ATTR (BAD_CAST "destination")
-#define REPLACE_ATTR (BAD_CAST "replace")
-#define FORCEBLANK_ATTR (BAD_CAST "forceblank")
-
-	xmlChar *txt = NULL;
-	xmlChar *name_attr = NULL;
-	xmlChar *dst_attr = NULL;
-	bool forceblank;
-	bool replace;
-	xmlXPathObjectPtr dest_list = NULL;
+	xplCmdAttributeParamsPtr cmd_params = (xplCmdAttributeParamsPtr) commandInfo->params;
 	xmlChar *attr_value;
-	xmlNodePtr cur, error;
+	xmlNodePtr cur;
 	size_t i;
+	bool ret;
 	
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	if (!name_attr || !*name_attr)
+	if (!commandInfo->content)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "name attribute is missing or empty"), true, true);
-		return;
-	}
-
-	if (!xplCheckNodeListForText(commandInfo->element->children))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes in content"), true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, FORCEBLANK_ATTR, &forceblank, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, true);
-	if (!txt)
-	{
-		if (!forceblank)
+		if (!cmd_params->force_blank)
 		{
 			ASSIGN_RESULT(NULL, false, true);
-			goto done; // empty value, nothing to do
+			return; /* empty value, nothing to do */
 		} else
 			attr_value = BAD_CAST "";
 	} else
-		attr_value = txt;
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPLACE_ATTR, &replace, true)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
+		attr_value = commandInfo->content;
 
-	dst_attr = xmlGetNoNsProp(commandInfo->element, DST_ATTR);
-	if (dst_attr)
+	if (cmd_params->destination && cmd_params->destination->nodesetval)
 	{
-		dest_list = xplSelectNodes(commandInfo, commandInfo->element, dst_attr);
-		if (dest_list)
+		for (i = 0; i < (size_t) cmd_params->destination->nodesetval->nodeNr; i++)
 		{
-			if (dest_list->type == XPATH_NODESET)
-			{
-				if (dest_list->nodesetval)
-				{
-					for (i = 0; i < (size_t) dest_list->nodesetval->nodeNr; i++)
-					{
-						cur = dest_list->nodesetval->nodeTab[i];
-						if (cur->type == XML_ELEMENT_NODE)
-							xplAssignAttribute(commandInfo->element, cur, name_attr, attr_value, replace);
-					}
-				}
-			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "destination XPath (%s) evaluated to scalar or undefined", dst_attr), true, true);
-				goto done;
-			}
-		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid destination XPath (%s)", dst_attr), true, true);
-			xmlResetLastError();
-			goto done;
+			cur = cmd_params->destination->nodesetval->nodeTab[i];
+			if (cur->type == XML_ELEMENT_NODE)
+				ret = xplAssignAttribute(commandInfo->element, cur, cmd_params->name, attr_value, cmd_params->replace);
 		}
 	} else if (commandInfo->element->parent) 
-		xplAssignAttribute(commandInfo->element, commandInfo->element->parent, name_attr, attr_value, replace);
-	ASSIGN_RESULT(NULL, false, true);
-done:
-	if (txt) XPL_FREE(txt);
-	if (name_attr) XPL_FREE(name_attr);
-	if (dst_attr) XPL_FREE(dst_attr);
-	if (dest_list) xmlXPathFreeObject(dest_list);
+		ret = xplAssignAttribute(commandInfo->element, commandInfo->element->parent, cmd_params->name, attr_value, cmd_params->replace);
+	if (!ret)
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid attribute name '%s'", cmd_params->name), true, true);
+	else
+		ASSIGN_RESULT(NULL, false, true);
 }
-
-xplCommand xplAttributeCommand = { xplCmdAttributePrologue, xplCmdAttributeEpilogue };
