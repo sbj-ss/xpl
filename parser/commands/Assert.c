@@ -4,15 +4,41 @@
 #include <libxpl/xpltree.h>
 #include "commands/Assert.h"
 
+typedef struct _xplCmdAssertParams
+{
+	xmlChar *message;
+} xplCmdAssertParams, *xplCmdAssertParamsPtr;
+
+static const xplCmdAssertParams params_stencil =
+{
+	.message = NULL
+};
+
+xplCommand xplAssertCommand =
+{
+	.prologue = xplCmdAssertPrologue,
+	.epilogue = xplCmdAssertEpilogue,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdAssertParams),
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE | XPL_CMD_FLAG_REQUIRE_CONTENT,
+	.parameters = {
+		{
+			.name = BAD_CAST "message",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.message
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdAssertPrologue(xplCommandInfoPtr commandInfo)
 {
 }
 
 void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define MESSAGE_ATTR (BAD_CAST "message")
-	xmlChar *txt = NULL;
-	xmlChar *message_attr = NULL;
+	xplCmdAssertParamsPtr cmd_params = (xplCmdAssertParamsPtr) commandInfo->params;
 	xmlXPathObjectPtr ct = NULL;
 	int smth = 0;
 
@@ -21,19 +47,7 @@ void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
-	if (!xplCheckNodeListForText(commandInfo->element->children))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is non-text"), true, true);
-		return;
-	}
-	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, true);
-	if (!txt)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "condition is empty"), true, true);
-		return;
-	}
-	message_attr = xmlGetNoNsProp(commandInfo->element, MESSAGE_ATTR);
-	ct = xplSelectNodes(commandInfo, commandInfo->element, txt);
+	ct = xplSelectNodes(commandInfo, commandInfo->element, commandInfo->content);
 	if (ct)
 	{
 		switch(ct->type)
@@ -51,27 +65,24 @@ void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			smth = (ct->stringval && *ct->stringval);
 			break;
 		default:
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unsupported XPath result type (expression is %s)", txt), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unsupported XPath result type %d (expression is %s)", ct->type, commandInfo->content), true, true);
 			goto done;
 		}
-		xmlXPathFreeObject(ct);
 		if (!smth)
 		{
-			if (message_attr)
+			if (cmd_params->message)
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, message_attr), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, cmd_params->message), true, true);
 			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "assertion \"%s\" failed", txt), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "assertion \"%s\" failed", commandInfo->content), true, true);
 			}
 		} else {
 			ASSIGN_RESULT(NULL, false, true);
 		}
 	} else {
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath expression (%s)", txt), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath expression (%s)", commandInfo->content), true, true);
 	}
 done:
-	if (txt) XPL_FREE(txt);
-	if (message_attr) XPL_FREE(message_attr);
+	if (ct)
+		xmlXPathFreeObject(ct);
 }
-
-xplCommand xplAssertCommand = { xplCmdAssertPrologue, xplCmdAssertEpilogue };
