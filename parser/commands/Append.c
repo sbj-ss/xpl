@@ -3,28 +3,15 @@
 #include <libxpl/xpltree.h>
 #include "commands/Append.h"
 
-typedef enum {
+typedef enum _AppendPosition
+{
 	POS_BEFORE,
 	POS_AFTER,
 	POS_FIRST,
-	POS_LAST,
-	POS_ERROR = -1
-} AppendMode;
+	POS_LAST
+} AppendPosition;
 
-AppendMode appendModeFromString(xmlChar *s)
-{
-	if (!xmlStrcasecmp(s, BAD_CAST "before"))
-		return POS_BEFORE;
-	else if (!xmlStrcasecmp(s, BAD_CAST "after"))
-		return POS_AFTER;
-	else if (!xmlStrcasecmp(s, BAD_CAST "first"))
-		return POS_FIRST;
-	else if (!xmlStrcasecmp(s, BAD_CAST "last"))
-		return POS_LAST;
-	return POS_ERROR;
-}
-
-void doAppend(xmlNodePtr src, xmlNodePtr dst, AppendMode mode)
+static void _doAppend(xmlNodePtr src, xmlNodePtr dst, AppendPosition mode)
 {
 	switch (mode)
 	{
@@ -65,122 +52,114 @@ void doAppend(xmlNodePtr src, xmlNodePtr dst, AppendMode mode)
 	}
 }
 
+typedef struct _xplCmdAppendParams
+{
+	xmlXPathObjectPtr source;
+	xmlXPathObjectPtr destination;
+	AppendPosition position;
+} xplCmdAppendParams, *xplCmdAppendParamsPtr;
+
+static const xplCmdAppendParams params_stencil =
+{
+	.destination = NULL,
+	.source = NULL,
+	.position = POS_LAST
+};
+
+static xplCmdParamDictValue position_dict_values[] =
+{
+	{ BAD_CAST "before", POS_BEFORE },
+	{ BAD_CAST "after", POS_AFTER },
+	{ BAD_CAST "first", POS_FIRST },
+	{ BAD_CAST "last", POS_LAST },
+	{ NULL, 0 }
+};
+
+static xmlChar* destination_aliases[] = { BAD_CAST "select", NULL };
+
+xplCommand xplAppendCommand =
+{
+	.prologue = xplCmdAppendPrologue,
+	.epilogue = xplCmdAppendEpilogue,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdAppendParams),
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.parameters = {
+		{
+			.name = BAD_CAST "destination",
+			.type = XPL_CMD_PARAM_TYPE_XPATH,
+			.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
+			.required = true,
+			.aliases = destination_aliases,
+			.value_stencil = &params_stencil.destination
+		}, {
+			.name = BAD_CAST "source",
+			.type = XPL_CMD_PARAM_TYPE_XPATH,
+			.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
+			.value_stencil = &params_stencil.source
+		}, {
+			.name = BAD_CAST "position",
+			.type = XPL_CMD_PARAM_TYPE_DICT,
+			.dict_values = position_dict_values,
+			.value_stencil = &params_stencil.position
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdAppendPrologue(xplCommandInfoPtr commandInfo)
 {
 }
 
 void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define SELECT_ATTR (BAD_CAST "select")
-#define DESTINATION_ATTR (BAD_CAST "destination")
-#define SOURCE_ATTR (BAD_CAST "source")
-#define POSITION_ATTR (BAD_CAST "position")
+#define PARENT(node) (((cmd_params->position == POS_AFTER) || (cmd_params->position == POS_BEFORE))? ((node)->parent): (node))
+	xplCmdAppendParamsPtr cmd_params = (xplCmdAppendParamsPtr) commandInfo->params;
+	xmlNodePtr parent, clone, cur_dst;
+	ssize_t i, j;
 
-#define PARENT(node) ((position == POS_AFTER) || (position == POS_BEFORE))?((node)->parent):node
-
-	xmlChar* position_attr = NULL;
-	xmlChar *select_attr = NULL;
-	xmlChar *source_attr = NULL;
-	AppendMode position = POS_LAST;
-	xmlXPathObjectPtr src = NULL;
-	xmlXPathObjectPtr dst = NULL;
-	xmlNodePtr parent;
-	xmlNodePtr clone;
-	ptrdiff_t i, j;
-
-	position_attr = xmlGetNoNsProp(commandInfo->element, POSITION_ATTR);
-	if (position_attr)
-	{
-		if ((position = appendModeFromString(position_attr)) == POS_ERROR)
-		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid position argument: %s", position_attr), true, true);
-			goto done;
-		}
-	}
-
-	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
-	if (!select_attr)
-		select_attr = xmlGetNoNsProp(commandInfo->element, DESTINATION_ATTR);
-	if (!select_attr)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "neither select nor destination attribute specified"), true, true);
-		goto done;
-	}
-
-	source_attr = xmlGetNoNsProp(commandInfo->element, SOURCE_ATTR);
-	if (source_attr) /* �� ���� ����� ������... */
-	{
-		src = xplSelectNodes(commandInfo, commandInfo->element, source_attr);
-		if (src)
-		{
-			if (src->type != XPATH_NODESET)
-			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "source XPath (%s) returned non-nodeset value", source_attr), true, true);
-				goto done;
-			}
-		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid source XPath (%s)", source_attr), true, true);
-			xmlResetLastError();
-			goto done;
-		}
-	} else if (!commandInfo->element->children) {
-		/* ������������ ����������� ���, ����� ������ �� ������ */
+	if (
+		(cmd_params->source && (!cmd_params->source->nodesetval || !cmd_params->source->nodesetval->nodeNr))
+		||
+		(!cmd_params->source && !commandInfo->element->children)
+	){
+		/* no nodes to append */
 		ASSIGN_RESULT(NULL, false, true);
-		goto done;
+		return;
 	}
 
-	dst = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
-	if (dst)
+	if (cmd_params->destination && cmd_params->destination->nodesetval)
 	{
-		if (dst->type == XPATH_NODESET)
+
+		for (i = 0; i < (size_t) cmd_params->destination->nodesetval->nodeNr; i++)
 		{
-			if (dst->nodesetval)
+			cur_dst = cmd_params->destination->nodesetval->nodeTab[i];
+			if ((cmd_params->position > POS_AFTER) && (cur_dst->type != XML_ELEMENT_NODE))
+				/* don't assign content to non-elements */
+				continue;
+			if (cur_dst->type == XML_ATTRIBUTE_NODE)
+				/* can't add elements to attributes */
+				continue;
+			parent = PARENT(cur_dst);
+			if (!cmd_params->source) /* add own content */
 			{
-				for (i = 0; i < (ptrdiff_t) dst->nodesetval->nodeNr; i++)
+				clone = xplCloneNodeList(commandInfo->element->children, parent, commandInfo->element->doc);
+				_doAppend(clone, cur_dst, cmd_params->position);
+			} else if (cmd_params->source->nodesetval) {
+				/* add source selection */
+				if (cmd_params->position == POS_FIRST || cmd_params->position == POS_AFTER)
 				{
-					if ((position > POS_AFTER) && (dst->nodesetval->nodeTab[i]->type != XML_ELEMENT_NODE))
-					/* �� ����� ����������� �������� �������� ���� ������, ����� ������ ������ */
-						continue;
-					/* ������� ������� ��������� ���� �� � ���� */
-					if (dst->nodesetval->nodeTab[i]->type == XML_ATTRIBUTE_NODE)
-						continue;
-					parent = PARENT(dst->nodesetval->nodeTab[i]);
-					if (!src) /* ���������� ���������� ������� */
-					{
-						clone = xplCloneNodeList(commandInfo->element->children, parent, commandInfo->element->doc);
-						doAppend(clone, dst->nodesetval->nodeTab[i], position);
-					} else if (src->nodesetval) {
-						/* ���������� �������-�������� */
-						if (position == POS_FIRST || position == POS_AFTER)
-						{
-							/* ��� ����������� ����� �� ������ ������������� ���� ��� ���������� ������� ���������� */
-							for (j = (ptrdiff_t) src->nodesetval->nodeNr - 1; j >= 0; j--)
-								doAppend(xplCloneAsNodeChild(src->nodesetval->nodeTab[j], parent), dst->nodesetval->nodeTab[i], position);
-						} else {
-							for (j = 0; j < (ptrdiff_t) src->nodesetval->nodeNr; j++)
-								doAppend(xplCloneAsNodeChild(src->nodesetval->nodeTab[j], parent), dst->nodesetval->nodeTab[i], position);
-						}
-					}
+					/* reverse loop to keep node order */
+					for (j = (size_t) cmd_params->source->nodesetval->nodeNr - 1; j >= 0; j--)
+						_doAppend(xplCloneAsNodeChild(cmd_params->source->nodesetval->nodeTab[j], parent), cur_dst, cmd_params->position);
+				} else {
+					for (j = 0; j < (size_t) cmd_params->source->nodesetval->nodeNr; j++)
+						_doAppend(xplCloneAsNodeChild(cmd_params->source->nodesetval->nodeTab[j], parent), cur_dst, cmd_params->position);
 				}
 			}
-		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "destination XPath (%s) returned non-nodeset value", select_attr), true, true);
-			goto done; 
 		}
-	} else {
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid destination XPath (%s)", select_attr), true, true);
-		xmlResetLastError();
-		goto done;
 	}
 
 	ASSIGN_RESULT(NULL, false, true);
-done:
-	if (position_attr) XPL_FREE(position_attr);
-	if (select_attr) XPL_FREE(select_attr);
-	if (source_attr) XPL_FREE(source_attr);
-	if (src) xmlXPathFreeObject(src);
-	if (dst) xmlXPathFreeObject(dst);
 }
-
-xplCommand xplAppendCommand = { xplCmdAppendPrologue, xplCmdAppendEpilogue };
-
