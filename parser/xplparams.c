@@ -99,12 +99,12 @@ xmlChar* xplCleanTextValue(xmlChar *data_buf, xplExpectType expect)
 
 int xplParamTypeMaskFromString(xmlChar* mask)
 {
-	char *token;
+	char *token, *state;
 	int ret = 0;
 
 	if (!mask)
 		return 0;
-	token = strtok((char*) mask, ",");
+	token = strtok_r((char*) mask, ", ", &state);
 	while (token)
 	{
 		if (!strcmp(token, "userdata"))
@@ -117,7 +117,7 @@ int xplParamTypeMaskFromString(xmlChar* mask)
 			ret |= 0xFF;
 		else
 			return -1;
-		token = strtok(NULL, ",");
+		token = strtok_r(NULL, ", ", &state);
 	}
 	return ret;
 }
