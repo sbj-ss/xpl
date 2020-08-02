@@ -215,6 +215,7 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 			{
 				case XPL_CMD_PARAM_TYPE_STRING:
 					*((xmlChar**) ((uintptr_t) commandInfo->params + param->value_offset)) = value_text;
+					value_text = NULL;
 					break;
 				case XPL_CMD_PARAM_TYPE_INTEGER:
 					*((int*) ((uintptr_t) commandInfo->params + param->value_offset)) = strtol((char*) value_text, &end_ptr, 0);
@@ -292,7 +293,7 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 	for (i = 0; i < command->param_count; i++)
 		if (required_params[i])
 		{
-			ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter %s must be set", command->parameters[i].name);
+			ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s' must be specified", command->parameters[i].name);
 			goto done;
 		}
 done:
@@ -340,7 +341,7 @@ static void _paramCleanValueScanner(void *payload, void *data, xmlChar *name)
 	if (param->type == XPL_CMD_PARAM_TYPE_STRING)
 	{
 		value = (char**) ((uintptr_t) data + param->value_offset);
-		default_value = (char**) ((uintptr_t) data + param->value_offset);
+		default_value = (char**) param->value_stencil;
 		if (*value && *value != *default_value)
 		{
 			XPL_FREE(*value);
