@@ -35,7 +35,7 @@ bool xplIsAncestor(xmlNodePtr maybeChild, xmlNodePtr maybeAncestor)
 xmlNsPtr xplGetResultingNs(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
 {
 	xmlNsPtr ret;
-	/* TODO this is terribly wrong. Hrefs must be used */
+
 	if ((ret = xmlSearchNs(parent->doc, parent, name)))
 		return ret;
 	if ((ret = xmlSearchNs(invoker->doc, invoker, name)))
@@ -75,47 +75,6 @@ void xplUnlinkProp(xmlAttrPtr cur)
 		}
 		tmp = tmp->next;
 	}
-}
-
-/* TODO change signature. this may fail (if ns is not found or tag name is invalid */
-bool xplAssignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *value, bool allowReplace)
-{
-	xmlNsPtr ns = NULL;
-	xmlChar *colon_pos, *tagname;
-	xmlAttrPtr prev;
-
-	if (!*name)
-		return false;
-	if (xmlValidateQName(name, 0))
-		return false;
-	colon_pos = (xmlChar*) xmlStrchr(name, ':');
-	if (colon_pos)
-	{
-		*colon_pos = 0;
-		ns = xplGetResultingNs(dst, src, name);
-		*colon_pos = ':';
-		tagname = colon_pos + 1;
-		if (ns)
-			prev = xmlHasNsProp(dst, tagname, ns->href);
-		else
-			return false;
-	} else {
-		tagname = name;
-		prev = xmlHasProp(dst, tagname);
-	}
-	if (prev)
-	{
-		if (!allowReplace)
-			return true; /* no error, just nothing to do */
-		xmlFreeNodeList(prev->children);
-		xplSetChildren((xmlNodePtr) prev, xmlNewDocText(dst->doc, value));
-	} else {
-		if (ns)
-			xmlNewNsProp(dst, ns, tagname, value);
-		else
-			xmlNewProp(dst, tagname, value);
-	}
-	return true;
 }
 
 /* TODO distinguish out of memory condition from invalid name */

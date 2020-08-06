@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <string.h>
+#include <libxpl/xplmessages.h>
 #include <libxpl/xplparams.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
@@ -7,7 +8,7 @@
 xplExpectType xplExpectTypeFromString(const xmlChar *expect)
 {
 	if (!expect)
-		return XPL_EXPECT_UNDEFINED;
+		return XPL_EXPECT_UNSPECIFIED;
 	if (!xmlStrcasecmp(expect, BAD_CAST "number"))
 		return XPL_EXPECT_NUMBER;
 	if (!xmlStrcasecmp(expect, BAD_CAST "hex"))
@@ -19,6 +20,16 @@ xplExpectType xplExpectTypeFromString(const xmlChar *expect)
 	if (!xmlStrcasecmp(expect, BAD_CAST "any"))
 		return XPL_EXPECT_ANY;
 	return XPL_EXPECT_UNKNOWN;
+}
+
+xmlChar* xplExpectTypeGetter(const xmlChar *expect, int *result)
+{
+	if (!result)
+		return BAD_CAST XPL_STRDUP("xplExpectTypeGetter: result is NULL");
+	*result = xplExpectTypeFromString(expect);
+	if (*result == XPL_EXPECT_UNKNOWN)
+		return xplFormatMessage(BAD_CAST "unknown expect type '%s'", expect);
+	return NULL;
 }
 
 static xmlChar* xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, xmlChar *out)
@@ -97,7 +108,7 @@ xmlChar* xplCleanTextValue(xmlChar *data_buf, xplExpectType expect)
 	return ret;
 }
 
-int xplParamTypeMaskFromString(xmlChar* mask)
+int xplParamTypeMaskFromString(const xmlChar* mask)
 {
 	char *token, *state;
 	int ret = 0;
@@ -120,6 +131,13 @@ int xplParamTypeMaskFromString(xmlChar* mask)
 		token = strtok_r(NULL, ", ", &state);
 	}
 	return ret;
+}
+
+xmlChar* xplParamTypeMaskGetter(const xmlChar *mask, int *result)
+{
+	if ((*result = xplParamTypeMaskFromString(mask)) == -1)
+		return xplFormatMessage(BAD_CAST "invalid type mask '%s'", mask);
+	return NULL;
 }
 
 bool xplParamTypeIsAtomic(xplParamType type)

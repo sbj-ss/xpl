@@ -3,9 +3,31 @@
 #include <libxpl/xpltree.h>
 #include "commands/Attribute.h"
 
+static void _assignAttribute(xmlNodePtr dst, xplQNamePtr qname, xmlChar *value, bool allowReplace)
+{
+	xmlAttrPtr prev;
+
+	if (qname->ns)
+		prev = xmlHasNsProp(dst, qname->ncname, qname->ns->href);
+	else
+		prev = xmlHasProp(dst, qname->ncname);
+	if (prev)
+	{
+		if (!allowReplace)
+			return;
+		xmlFreeNodeList(prev->children);
+		xplSetChildren((xmlNodePtr) prev, xmlNewDocText(dst->doc, value));
+	} else {
+		if (qname->ns)
+			xmlNewNsProp(dst, qname->ns, qname->ncname, value);
+		else
+			xmlNewProp(dst, qname->ncname, value);
+	}
+}
+
 typedef struct _xplCmdAttributeParams
 {
-	xmlChar *name;
+	xplQName qname;
 	xmlXPathObjectPtr destination;
 	bool replace;
 	bool force_blank;
@@ -13,7 +35,7 @@ typedef struct _xplCmdAttributeParams
 
 static const xplCmdAttributeParams params_stencil =
 {
-	.name = NULL,
+	.qname = {},
 	.destination = NULL,
 	.replace = true,
 	.force_blank = false
@@ -29,13 +51,13 @@ xplCommand xplAttributeCommand =
 	.parameters = {
 		{
 			.name = BAD_CAST "name",
-			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.type = XPL_CMD_PARAM_TYPE_QNAME,
 			.required = true,
-			.value_stencil = &params_stencil.name
+			.value_stencil = &params_stencil.qname
 		}, {
 			.name = BAD_CAST "destination",
 			.type = XPL_CMD_PARAM_TYPE_XPATH,
-			.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
+			.extra.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
 			.value_stencil = &params_stencil.destination
 		}, {
 			.name = BAD_CAST "replace",
@@ -61,7 +83,6 @@ void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlChar *attr_value;
 	xmlNodePtr cur;
 	size_t i;
-	bool ret;
 	
 	if (!commandInfo->content)
 	{
@@ -80,12 +101,9 @@ void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			cur = cmd_params->destination->nodesetval->nodeTab[i];
 			if (cur->type == XML_ELEMENT_NODE)
-				ret = xplAssignAttribute(commandInfo->element, cur, cmd_params->name, attr_value, cmd_params->replace);
+				_assignAttribute(cur, &cmd_params->qname, attr_value, cmd_params->replace);
 		}
 	} else if (commandInfo->element->parent) 
-		ret = xplAssignAttribute(commandInfo->element, commandInfo->element->parent, cmd_params->name, attr_value, cmd_params->replace);
-	if (!ret)
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid attribute name '%s'", cmd_params->name), true, true);
-	else
+		_assignAttribute(commandInfo->element->parent, &cmd_params->qname, attr_value, cmd_params->replace);
 		ASSIGN_RESULT(NULL, false, true);
 }

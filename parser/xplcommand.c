@@ -181,17 +181,141 @@ void xplCleanupCommands()
 	}
 }
 
+static xmlChar* xplGetParamStringValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
+{
+	*((xmlChar**) ((uintptr_t) info->params + param->value_offset)) = *raw_value;
+	*raw_value = NULL;
+	return NULL;
+}
+
+static xmlChar* xplGetParamIntValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
+{
+	char *end_ptr;
+
+	*((int*) ((uintptr_t) info->params + param->value_offset)) = strtol((char*) *raw_value, &end_ptr, 0);
+	if (*end_ptr)
+		return xplFormatMessage(BAD_CAST "'%s': not a valid integer", *raw_value);
+	else
+		return NULL;
+}
+
+static xmlChar* xplGetParamBoolValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
+{
+	int int_value;
+
+	int_value = xplGetBooleanValue(*raw_value);
+	if (int_value < 0)
+		return xplFormatMessage(BAD_CAST "'%s': not a valid boolean", *raw_value);
+	else {
+		*((bool*) ((uintptr_t) info->params + param->value_offset)) = (bool) int_value;
+		return NULL;
+	}
+}
+
+static xmlChar* xplGetParamDictValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
+{
+	xplCmdParamDictValuePtr dict_value;
+	int int_value;
+
+	dict_value = param->extra.dict_values;
+	while (dict_value->name)
+	{
+		if (!xmlStrcasecmp(dict_value->name, *raw_value))
+		{
+			int_value = dict_value->value;
+			break;
+		}
+		dict_value++;
+	}
+	if (!dict_value->name) /* nothing matched */
+		return xplFormatMessage(BAD_CAST "'%s': not in the allowed list", *raw_value);
+	else {
+		*((int*) ((uintptr_t) info->params + param->value_offset)) = int_value;
+		return NULL;
+	}
+}
+
+static xmlChar* xplGetParamXPathValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
+{
+	xmlXPathObjectPtr xpath_obj;
+
+	xpath_obj = xplSelectNodes(info, info->element, *raw_value);
+	if (!xpath_obj)
+		return xplFormatMessage(BAD_CAST "invalid XPath expression '%s'", *raw_value);
+	*((xmlXPathObjectPtr*) ((uintptr_t) info->params + param->value_offset)) = xpath_obj;
+	if (param->extra.xpath_type == XPL_CMD_PARAM_XPATH_TYPE_NODESET)
+	{
+		if (xpath_obj->type != XPATH_NODESET)
+			return xplFormatMessage(BAD_CAST "XPath query '%s' evaluated to non-nodeset type", *raw_value);
+	} else if (param->extra.xpath_type == XPL_CMD_PARAM_XPATH_TYPE_SCALAR)
+		if (xpath_obj->type != XPATH_BOOLEAN && xpath_obj->type != XPATH_NUMBER && xpath_obj->type != XPATH_STRING)
+			return xplFormatMessage(BAD_CAST "XPath query '%s' evaluated to a non-scalar value", *raw_value);
+	xpath_obj->user = *raw_value;
+	*raw_value = NULL;
+	return NULL;
+}
+
+static xmlChar* xplGetParamQNameValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
+{
+	xplQNamePtr dst;
+	xmlChar *prefix, *error = NULL;
+
+	if (xmlValidateQName(*raw_value, 0))
+		return xplFormatMessage(BAD_CAST "invalid QName/NCName '%s'", *raw_value);
+	dst = (xplQNamePtr) ((uintptr_t) info->params + param->value_offset);
+	dst->ncname = xmlSplitQName2(*raw_value, &prefix);
+	if (!dst->ncname) /* not a QName */
+	{
+		dst->ncname = *raw_value;
+		*raw_value = NULL;
+		dst->ns = NULL;
+	} else {
+		dst->ns = xmlSearchNs(info->element->doc, info->element->parent, prefix);
+		if (!dst->ns)
+		{
+			dst->ns = xmlSearchNs(info->element->doc, info->element, prefix);
+			if (!dst->ns)
+				error = xplFormatMessage(BAD_CAST "invalid namespace prefix '%s'", prefix);
+			else /* namespace is declared on the command element and it will be gone soon */
+				dst->ns = xmlNewNs(info->element->parent, dst->ns->href, dst->ns->prefix);
+		}
+	}
+	XPL_FREE(prefix);
+	return error;
+}
+
+static xmlChar* xplGetParamCustomIntValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
+{
+	xmlChar *error;
+	int value;
+
+	if (!param->extra.int_getter)
+		return BAD_CAST XPL_STRDUP("int_getter is NULL");
+	error = param->extra.int_getter(*raw_value, &value);
+	*((int*) ((uintptr_t) info->params + param->value_offset)) = value;
+	return error;
+}
+
+static xmlChar* xplGetParamCustomPtrValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
+{
+	xmlChar *error;
+	void* value;
+
+	if (!param->extra.ptr_getter)
+		return BAD_CAST XPL_STRDUP("ptr_getter is NULL");
+	error = param->extra.ptr_getter(*raw_value, &value);
+	*((void**) ((uintptr_t) info->params + param->value_offset)) = value;
+	return error;
+}
+
 xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandInfo)
 {
 	xmlAttrPtr attr = commandInfo->element->properties;
 	xplCmdParamPtr param;
-	xmlChar *value_text = NULL;
-	char *end_ptr;
-	int int_value, i;
-	xplCmdParamDictValuePtr dict_value;
+	xmlChar *value_text = NULL, *error = NULL;
+	int i;
 	unsigned char *required_params = NULL;
 	xmlNodePtr ret = NULL;
-	xmlXPathObjectPtr xpath_obj;
 
 	if (!command->param_hash)
 		return xplCreateErrorNode(commandInfo->element, BAD_CAST "command->param_hash is NULL");
@@ -214,70 +338,28 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 			switch (param->type)
 			{
 				case XPL_CMD_PARAM_TYPE_STRING:
-					*((xmlChar**) ((uintptr_t) commandInfo->params + param->value_offset)) = value_text;
-					value_text = NULL;
+					error = xplGetParamStringValue(commandInfo, param, &value_text);
 					break;
-				case XPL_CMD_PARAM_TYPE_INTEGER:
-					*((int*) ((uintptr_t) commandInfo->params + param->value_offset)) = strtol((char*) value_text, &end_ptr, 0);
-					if (*end_ptr)
-					{
-						ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s', value '%s': not a valid integer", attr->name, value_text);
-						goto done;
-					}
+				case XPL_CMD_PARAM_TYPE_INT:
+					error = xplGetParamIntValue(commandInfo, param, &value_text);
 					break;
 				case XPL_CMD_PARAM_TYPE_BOOL:
-					int_value = xplGetBooleanValue(value_text);
-					if (int_value < 0)
-					{
-						ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s', value '%s': not a valid boolean", attr->name, value_text);
-						goto done;
-					}
-					*((bool*) ((uintptr_t) commandInfo->params + param->value_offset)) = (bool) int_value;
+					error = xplGetParamBoolValue(commandInfo, param, &value_text);
 					break;
 				case XPL_CMD_PARAM_TYPE_DICT:
-					dict_value = param->dict_values;
-					while (dict_value->name)
-					{
-						if (!xmlStrcasecmp(dict_value->name, value_text))
-						{
-							int_value = dict_value->value;
-							break;
-						}
-						dict_value++;
-					}
-					if (!dict_value->name) /* nothing matched */
-					{
-						ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s', value '%s': not in the allowed list", attr->name, value_text);
-						goto done;
-					}
-					*((int*) ((uintptr_t) commandInfo->params + param->value_offset)) = int_value;
+					error = xplGetParamDictValue(commandInfo, param, &value_text);
 					break;
 				case XPL_CMD_PARAM_TYPE_XPATH:
-					if (value_text)
-					{
-						xpath_obj = xplSelectNodes(commandInfo, commandInfo->element, value_text);
-						if (!xpath_obj)
-						{
-							ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s': invalid XPath expression '%s'", attr->name, value_text);
-							goto done;
-						}
-						*((xmlXPathObjectPtr*) ((uintptr_t) commandInfo->params + param->value_offset)) = xpath_obj;
-						if (param->xpath_type == XPL_CMD_PARAM_XPATH_TYPE_NODESET)
-						{
-							if (xpath_obj->type != XPATH_NODESET)
-							{
-								ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath query '%s' evaluated to non-nodeset type", value_text);
-								goto done;
-							}
-						} else if (param->xpath_type == XPL_CMD_PARAM_XPATH_TYPE_SCALAR)
-							if (xpath_obj->type != XPATH_BOOLEAN && xpath_obj->type != XPATH_NUMBER && xpath_obj->type != XPATH_STRING)
-							{
-								ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath query '%s' evaluated to a nodeset but a scalar value is needed", value_text);
-								goto done;
-							}
-						xpath_obj->user = value_text;
-						value_text = NULL;
-					}
+					error = xplGetParamXPathValue(commandInfo, param, &value_text);
+					break;
+				case XPL_CMD_PARAM_TYPE_QNAME:
+					error = xplGetParamQNameValue(commandInfo, param, &value_text);
+					break;
+				case XPL_CMD_PARAM_TYPE_INT_CUSTOM_GETTER:
+					error = xplGetParamCustomIntValue(commandInfo, param, &value_text);
+					break;
+				case XPL_CMD_PARAM_TYPE_PTR_CUSTOM_GETTER:
+					error = xplGetParamCustomPtrValue(commandInfo, param, &value_text);
 					break;
 				default:
 					DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -285,8 +367,16 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 			}
 			required_params[param->index] = 0;
 			if (value_text)
+			{
 				XPL_FREE(value_text);
-			value_text = NULL;
+				value_text = NULL;
+			}
+			if (error)
+			{
+				ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s': %s", attr->name, error);
+				XPL_FREE(error);
+				goto done;
+			}
 		}
 		attr = attr->next;
 	}
@@ -297,8 +387,6 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 			goto done;
 		}
 done:
-	if (value_text)
-		XPL_FREE(value_text);
 	if (required_params)
 		XPL_FREE(required_params);
 	return ret;
@@ -337,25 +425,37 @@ static void _paramCleanValueScanner(void *payload, void *data, xmlChar *name)
 	xplCmdParamPtr param = (xplCmdParamPtr) payload;
 	char **value, **default_value;
 	xmlXPathObjectPtr *xpath_obj;
+	xplQNamePtr qname;
 
-	if (param->type == XPL_CMD_PARAM_TYPE_STRING)
+	switch (param->type)
 	{
-		value = (char**) ((uintptr_t) data + param->value_offset);
-		default_value = (char**) param->value_stencil;
-		if (*value && *value != *default_value)
-		{
-			XPL_FREE(*value);
-			*value = NULL;
-		}
-	} else if (param->type == XPL_CMD_PARAM_TYPE_XPATH) {
-		xpath_obj = (xmlXPathObjectPtr*) ((uintptr_t) data + param->value_offset);
-		if (*xpath_obj)
-		{
-			if ((*xpath_obj)->user)
-				XPL_FREE((*xpath_obj)->user);
-			xmlXPathFreeObject(*xpath_obj);
-			*xpath_obj = NULL;
-		}
+		case XPL_CMD_PARAM_TYPE_STRING:
+		case XPL_CMD_PARAM_TYPE_PTR_CUSTOM_GETTER:
+			value = (char**) ((uintptr_t) data + param->value_offset);
+			default_value = (char**) param->value_stencil;
+			if (*value && *value != *default_value)
+			{
+				XPL_FREE(*value);
+				*value = NULL;
+			}
+			break;
+		case XPL_CMD_PARAM_TYPE_XPATH:
+			xpath_obj = (xmlXPathObjectPtr*) ((uintptr_t) data + param->value_offset);
+			if (*xpath_obj)
+			{
+				if ((*xpath_obj)->user)
+					XPL_FREE((*xpath_obj)->user);
+				xmlXPathFreeObject(*xpath_obj);
+				*xpath_obj = NULL;
+			}
+			break;
+		case XPL_CMD_PARAM_TYPE_QNAME:
+			qname = (xplQNamePtr) ((uintptr_t) data + param->value_offset);
+			if (qname->ncname)
+				XPL_FREE(qname->ncname);
+			break;
+		default:
+			break;
 	}
 }
 

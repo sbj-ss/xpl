@@ -63,10 +63,13 @@ typedef void (*xplCommandFinalizer) (void*);
 typedef enum _xplCmdParamType
 {
 	XPL_CMD_PARAM_TYPE_STRING,
-	XPL_CMD_PARAM_TYPE_INTEGER,
+	XPL_CMD_PARAM_TYPE_INT,
 	XPL_CMD_PARAM_TYPE_BOOL,
 	XPL_CMD_PARAM_TYPE_DICT,
-	XPL_CMD_PARAM_TYPE_XPATH
+	XPL_CMD_PARAM_TYPE_XPATH,
+	XPL_CMD_PARAM_TYPE_QNAME,
+	XPL_CMD_PARAM_TYPE_INT_CUSTOM_GETTER,
+	XPL_CMD_PARAM_TYPE_PTR_CUSTOM_GETTER
 } xplCmdParamType;
 
 typedef enum _xplCmdParamXPathType
@@ -82,15 +85,26 @@ typedef struct _xplCmdParamDictValue
 	int value;
 } xplCmdParamDictValue, *xplCmdParamDictValuePtr;
 
+/* return: error message if any */
+typedef xmlChar* (*xplParamIntValueGetter)(const xmlChar *raw_value, int* result);
+typedef xmlChar* (*xplParamPtrValueGetter)(const xmlChar *raw_value, void** result);
+
+typedef union _xplCmdParamExtraDesc
+{
+	xplCmdParamDictValuePtr dict_values;/* (.name=NULL)-terminated */
+	xplCmdParamXPathType xpath_type;
+	xplParamIntValueGetter int_getter;
+	xplParamPtrValueGetter ptr_getter;
+} xplCmdParamExtraDesc;
+
 typedef struct _xplCmdParam
 {
 	xmlChar *name;
 	xplCmdParamType type;
 	bool required;
 	const void *value_stencil;
-	xplCmdParamDictValuePtr dict_values;/* (.name=NULL)-terminated */
 	xmlChar **aliases;					/* NULL-terminated */
-	xplCmdParamXPathType xpath_type;
+	xplCmdParamExtraDesc extra;			/* depending on .type */
 	int index;							/* managed by xplRegisterCommand */
 	ptrdiff_t value_offset;				/* managed by xplRegisterCommand */
 } xplCmdParam, *xplCmdParamPtr;

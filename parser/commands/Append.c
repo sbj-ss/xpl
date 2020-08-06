@@ -88,19 +88,19 @@ xplCommand xplAppendCommand =
 		{
 			.name = BAD_CAST "destination",
 			.type = XPL_CMD_PARAM_TYPE_XPATH,
-			.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
+			.extra.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
 			.required = true,
 			.aliases = destination_aliases,
 			.value_stencil = &params_stencil.destination
 		}, {
 			.name = BAD_CAST "source",
 			.type = XPL_CMD_PARAM_TYPE_XPATH,
-			.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
+			.extra.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
 			.value_stencil = &params_stencil.source
 		}, {
 			.name = BAD_CAST "position",
 			.type = XPL_CMD_PARAM_TYPE_DICT,
-			.dict_values = position_dict_values,
+			.extra.dict_values = position_dict_values,
 			.value_stencil = &params_stencil.position
 		}, {
 			.name = NULL

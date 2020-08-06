@@ -15,6 +15,12 @@
 extern "C" {
 #endif
 
+typedef struct _xplQName
+{
+	xmlNsPtr ns;
+	xmlChar *ncname;
+} xplQName, *xplQNamePtr;
+
 #define EXTRACT_NS_AND_TAGNAME(src, ns, tagName, parent) do { \
 	tagName = BAD_CAST xmlStrchr((src), ':'); \
 	if (tagName) \
@@ -27,6 +33,9 @@ extern "C" {
 		ns = NULL; \
 	} \
 } while(0);
+
+#define EXTRACT_NS_AND_TAGNAME_TO_QNAME(src, qname, parent) EXTRACT_NS_AND_TAGNAME(src, qname.ns, qname.ncname, parent)
+#define EXTRACT_NS_AND_TAGNAME_TO_QNAME_PTR(src, qnameptr, parent) EXTRACT_NS_AND_TAGNAME(src, qname->ns, qname->ncname, parent)
 
 #define XPL_NODE_DELETION_REQUEST_FLAG ((xmlElementType) 0x0080UL)
 #define XPL_NODE_DELETION_DEFERRED_FLAG ((xmlElementType) 0x0100UL)
@@ -48,9 +57,6 @@ XPLPUBFUN xmlChar* XPLCALL
 /* unlinks a property but doesn't free it */
 XPLPUBFUN void XPLCALL
 	xplUnlinkProp(xmlAttrPtr cur);
-/* attaches new property to dst. src is used for namespace search. name may be a QName */
-XPLPUBFUN bool XPLCALL
-	xplAssignAttribute(xmlNodePtr src, xmlNodePtr dst, xmlChar *name, xmlChar *value, bool allowReplace);
 
 /* creates an element. invoker is used for namespace search. name may be a QName */
 XPLPUBFUN xmlNodePtr XPLCALL

@@ -18,17 +18,19 @@ extern "C" {
 /* misc */
 typedef enum _xplExpectType 
 {
+	XPL_EXPECT_UNSPECIFIED,
 	XPL_EXPECT_NUMBER,
 	XPL_EXPECT_HEX,
 	XPL_EXPECT_STRING,
 	XPL_EXPECT_PATH,
 	XPL_EXPECT_ANY,
-	XPL_EXPECT_UNDEFINED,
-	XPL_EXPECT_UNKNOWN
+	XPL_EXPECT_UNKNOWN = -1
 } xplExpectType;
 
-XPLPUBFUN xplExpectType XPLCALL 
+XPLPUBFUN xplExpectType XPLCALL
 	xplExpectTypeFromString(const xmlChar *expect);
+XPLPUBFUN xmlChar* XPLCALL
+	xplExpectTypeGetter(const xmlChar *expect, int *result);
 XPLPUBFUN xmlChar* XPLCALL
 	xplCleanTextValue(xmlChar *data_buf, xplExpectType expect);
 
@@ -51,7 +53,9 @@ typedef enum
 } xplParamType;
 
 XPLPUBFUN int XPLCALL
-	xplParamTypeMaskFromString(xmlChar* mask);
+	xplParamTypeMaskFromString(const xmlChar* mask);
+XPLPUBFUN xmlChar* XPLCALL
+	xplParamTypeMaskGetter(const xmlChar *mask, int *result);
 XPLPUBFUN bool XPLCALL
 	xplParamTypeIsAtomic(xplParamType type);
 
