@@ -4,6 +4,52 @@
 #include <libxpl/xpltree.h>
 #include "commands/GetDB.h"
 
+typedef struct _xplCmdGetDBParams
+{
+	xmlChar *name;
+	xplQName response_tag_name;
+	bool show_tags;
+	bool repeat;
+} xplCmdGetDBParams, *xplCmdGetDBParamsPtr;
+
+static const xplCmdGetDBParams params_stencil =
+{
+	.name = NULL,
+	.response_tag_name = { NULL, BAD_CAST "Database" },
+	.show_tags = false,
+	.repeat = true
+};
+
+xplCommand xplGetDBCommand =
+{
+	.prologue = xplCmdGetDBPrologue,
+	.epilogue = xplCmdGetDBEpilogue,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdGetDBParams),
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = BAD_CAST "responsetagname",
+			.type = XPL_CMD_PARAM_TYPE_QNAME,
+			.value_stencil = &params_stencil.response_tag_name
+		}, {
+			.name = BAD_CAST "showtags",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.show_tags
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdGetDBPrologue(xplCommandInfoPtr commandInfo)
 {
 
@@ -11,58 +57,29 @@ void xplCmdGetDBPrologue(xplCommandInfoPtr commandInfo)
 
 void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR (BAD_CAST "name")
-#define RESPONSETAGNAME_ATTR (BAD_CAST "responsetagname")
-#define SHOWTAGS_ATTR (BAD_CAST "showtags")
-#define REPEAT_ATTR (BAD_CAST "repeat")
-
-	xmlChar *name_attr = NULL;
-	xmlChar *responsetagname_attr = NULL;
-	bool show_tags;
-	bool repeat;
+	xplCmdGetDBParamsPtr cmd_params = (xplCmdGetDBParamsPtr) commandInfo->params;
 	xplDBListPtr db_list;
-	xmlNodePtr ret, error;
-
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	responsetagname_attr = xmlGetNoNsProp(commandInfo->element, RESPONSETAGNAME_ATTR);
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWTAGS_ATTR, &show_tags, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
+	xmlNodePtr ret;
 
 	if (!xplSessionGetSaMode(commandInfo->document->session))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
-		goto done;
+		return;
 	}
 
-	if (name_attr)
+	if (cmd_params->name)
 	{
-		db_list = xplLocateDBList(name_attr);
+		db_list = xplLocateDBList(cmd_params->name);
 		if (!db_list)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid database name \"%s\"", name_attr), true, true);
-			goto done;
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid database name \"%s\"", cmd_params->name), true, true);
+			return;
 		}
 		ret = xmlNewDocText(commandInfo->element->doc, db_list->conn_string);
-		repeat = false;
+		cmd_params->repeat = false;
 	} else {
-		ret = xplDatabasesToNodeList(commandInfo->element,
-			responsetagname_attr?responsetagname_attr:BAD_CAST "Database", show_tags);
+		ret = xplDatabasesToNodeList(commandInfo->element, cmd_params->response_tag_name, cmd_params->show_tags);
 		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	}
-	ASSIGN_RESULT(ret, repeat, true);
-done:
-	if (name_attr) XPL_FREE(name_attr);
-	if (responsetagname_attr) XPL_FREE(responsetagname_attr);
+	ASSIGN_RESULT(ret, cmd_params->repeat, true);
 }
-
-xplCommand xplGetDBCommand = { xplCmdGetDBPrologue, xplCmdGetDBEpilogue };
-
-

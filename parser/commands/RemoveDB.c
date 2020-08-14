@@ -2,6 +2,41 @@
 #include <libxpl/xplmessages.h>
 #include "commands/RemoveDB.h"
 
+typedef struct _xplCmdRemoveDBParams
+{
+	xmlChar *name;
+	bool ignore_if_not_exists;
+} xplCmdRemoveDBParams, *xplCmdRemoveDBParamsPtr;
+
+static const xplCmdRemoveDBParams params_stencil =
+{
+	.name = NULL,
+	.ignore_if_not_exists = false
+};
+
+xplCommand xplRemoveDBCommand =
+{
+	.prologue = xplCmdRemoveDBPrologue,
+	.epilogue = xplCmdRemoveDBEpilogue,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdRemoveDBParams),
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.required = true,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = BAD_CAST "ignoreifnotexists",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.ignore_if_not_exists
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdRemoveDBPrologue(xplCommandInfoPtr commandInfo)
 {
 
@@ -9,36 +44,23 @@ void xplCmdRemoveDBPrologue(xplCommandInfoPtr commandInfo)
 
 void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR (BAD_CAST "name")
-
-	xmlChar *name_attr = NULL;
+	xplCmdRemoveDBParamsPtr cmd_params = (xplCmdRemoveDBParamsPtr) commandInfo->params;
 	xplDBConfigResult cfg_result;
-
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
 
 	if (!xplSessionGetSaMode(commandInfo->document->session))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
-		goto done;
-	}
-
-	if (!name_attr)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no database name specified"), true, true);
-		goto done;
+		return;
 	}
 	xplLockThreads(true);
-	cfg_result = xplRemoveDB(name_attr);
+	cfg_result = xplRemoveDB(cmd_params->name);
+	if (cfg_result == XPL_DBCR_NOT_FOUND && cmd_params->ignore_if_not_exists)
+		cfg_result = XPL_DBCR_OK;
+	xplLockThreads(false);
 	if (cfg_result == XPL_DBCR_OK)
 		ASSIGN_RESULT(NULL, false, true);
 	else
 		ASSIGN_RESULT(xplCreateErrorNode(
-			commandInfo->element, BAD_CAST "can't remove database \"%s\": %s", name_attr, xplDecodeDBConfigResult(cfg_result)
+			commandInfo->element, BAD_CAST "can't remove database \"%s\": %s", cmd_params->name, xplDecodeDBConfigResult(cfg_result)
 		), true, true);
-	xplLockThreads(false);
-done:
-	if (name_attr)
-		XPL_FREE(name_attr);
 }
-
-xplCommand xplRemoveDBCommand = { xplCmdRemoveDBPrologue, xplCmdRemoveDBEpilogue };

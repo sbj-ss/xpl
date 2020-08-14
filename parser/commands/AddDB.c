@@ -4,6 +4,46 @@
 #include <libxpl/xpltree.h>
 #include "commands/AddDB.h"
 
+typedef struct _xplCmdAddDBParams
+{
+	xmlChar *name;
+	bool check;
+	bool modify_if_exists;
+} xplCmdAddDBParams, *xplCmdAddDBParamsPtr;
+
+static const xplCmdAddDBParams params_stencil =
+{
+	.name = NULL,
+	.check = false,
+	.modify_if_exists = false
+};
+
+xplCommand xplAddDBCommand =
+{
+	.prologue = xplCmdAddDBPrologue,
+	.epilogue = xplCmdAddDBEpilogue,
+	.stencil_size = sizeof(xplCmdAddDBParams),
+	.params_stencil = &params_stencil,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE | XPL_CMD_FLAG_REQUIRE_CONTENT,
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = BAD_CAST "check",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.check
+		}, {
+			.name = BAD_CAST "modifyifexists",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.modify_if_exists
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdAddDBPrologue(xplCommandInfoPtr commandInfo)
 {
 
@@ -11,60 +51,23 @@ void xplCmdAddDBPrologue(xplCommandInfoPtr commandInfo)
 
 void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR (BAD_CAST "name")
-#define CHECK_ATTR (BAD_CAST "check")
-
-	xmlChar *name_attr = NULL;
-	bool check;
-	xmlChar *content = NULL;
-	xmlNodePtr error;
+	xplCmdAddDBParamsPtr cmd_params = (xplCmdAddDBParamsPtr) commandInfo->params;
 	xplDBConfigResult cfg_result;
 
 	if (!xplSessionGetSaMode(commandInfo->document->session))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
-		goto done;
-	}
-
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	if (!name_attr)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no database name specified"), true, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, CHECK_ATTR, &check, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-
-	if (!xplCheckNodeListForText(commandInfo->element->children))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "connection string is non-text"), true, true);
-		goto done;
-	}
-	content = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
-	if (!content)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "connection string is empty"), true, true);
-		goto done;
-	}
 	xplLockThreads(true);
-	cfg_result = xplAddDB(name_attr, content, check);
+	cfg_result = xplAddDB(cmd_params->name, commandInfo->content, cmd_params->check);
+	if (cfg_result == XPL_DBCR_ALREADY_EXISTS && cmd_params->modify_if_exists)
+		cfg_result = xplChangeDB(cmd_params->name, commandInfo->content, cmd_params->check);
+	xplLockThreads(false);
 	if (cfg_result == XPL_DBCR_OK)
 		ASSIGN_RESULT(NULL, false, true);
 	else
 		ASSIGN_RESULT(xplCreateErrorNode(
-			commandInfo->element, BAD_CAST "can't add database \"%s\": %s", name_attr, xplDecodeDBConfigResult(cfg_result)
+			commandInfo->element, BAD_CAST "can't add database \"%s\": %s", cmd_params->name, xplDecodeDBConfigResult(cfg_result)
 		), true, true);
-	xplLockThreads(false);
-done:
-	if (name_attr)
-		XPL_FREE(name_attr);
-	if (content)
-		XPL_FREE(content);
 }
-
-xplCommand xplAddDBCommand = { xplCmdAddDBPrologue, xplCmdAddDBEpilogue };
-
-

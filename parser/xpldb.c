@@ -222,7 +222,7 @@ static void databaseListScanner(void *payload, void *data, xmlChar *name)
 		ctxt->head = ctxt->tail = cur;
 }
 
-xmlNodePtr xplDatabasesToNodeList(xmlNodePtr parent, const xmlChar *tagName, bool showTags)
+xmlNodePtr xplDatabasesToNodeList(xmlNodePtr parent, const xplQName qname, bool showTags)
 {
 	getDBListContext ctxt;
 
@@ -230,7 +230,8 @@ xmlNodePtr xplDatabasesToNodeList(xmlNodePtr parent, const xmlChar *tagName, boo
 		return NULL;
 	ctxt.doc = parent->doc;
 	ctxt.head = NULL;
-	EXTRACT_NS_AND_TAGNAME(tagName, ctxt.ns, ctxt.tag_name, parent)
+	ctxt.ns = qname.ns;
+	ctxt.tag_name = qname.ncname;
 	ctxt.show_tags = showTags;
 	xmlHashScan(databases, databaseListScanner, &ctxt);
 	return ctxt.head;

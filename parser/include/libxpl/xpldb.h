@@ -9,6 +9,7 @@
 #include <libxml/tree.h>
 #include <libxml/xmlstring.h>
 #include <libxpl/abstraction/xpr.h>
+#include <libxpl/xpltree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,7 +72,7 @@ XPLPUBFUN xplDBConfigResult XPLCALL
 	xplChangeDB(xmlChar *name, xmlChar *newConnString, bool withCheck);
 
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplDatabasesToNodeList(xmlNodePtr parent, const xmlChar *tagName, bool showTags);
+	xplDatabasesToNodeList(xmlNodePtr parent, const xplQName qname, bool showTags);
 
 XPLPUBFUN bool XPLCALL
 	xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors);
