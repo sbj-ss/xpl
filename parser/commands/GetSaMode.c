@@ -2,6 +2,16 @@
 #include <libxpl/xplsession.h>
 #include "commands/GetSaMode.h"
 
+xplCommand xplGetSaModeCommand =
+{
+	.prologue = xplCmdGetSaModePrologue,
+	.epilogue = xplCmdGetSaModeEpilogue,
+	.flags = 0,
+	.parameters = {
+		{ .name = NULL }
+	}
+};
+
 void xplCmdGetSaModePrologue(xplCommandInfoPtr commandInfo)
 {
 }
@@ -18,5 +28,3 @@ void xplCmdGetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ret = xmlNewDocText(commandInfo->element->doc, txt);
 	ASSIGN_RESULT(ret, false, true);
 }
-
-xplCommand xplGetSaModeCommand = { xplCmdGetSaModePrologue, xplCmdGetSaModeEpilogue };
