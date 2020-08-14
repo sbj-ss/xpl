@@ -363,7 +363,6 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 					break;
 				default:
 					DISPLAY_INTERNAL_ERROR_MESSAGE();
-					XPL_FREE(value_text);
 			}
 			required_params[param->index] = 0;
 			if (value_text)
