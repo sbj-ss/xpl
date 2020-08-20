@@ -129,7 +129,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 					{
 						xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(cur));
 						xplSetChildren(cur, repl);
-						xplNodeApply(commandInfo->document, cur, true, &temp_result);
+						xplNodeApply(commandInfo->document, cur, &temp_result);
 						if ((int) cur->type & XPL_NODE_DELETION_MASK)
 							xmlUnlinkNode(cur);
 						else {
@@ -139,7 +139,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 						xplDocDeferNodeDeletion(commandInfo->document, cur);
 					} else if (mode == WITH_MODE_APPEND) {
 						xplAppendChildren(cur, repl);
-						xplNodeListApply(commandInfo->document, repl, true, &temp_result);
+						xplNodeListApply(commandInfo->document, repl, &temp_result);
 					} else
 						DISPLAY_INTERNAL_ERROR_MESSAGE();
 				} /* for */
