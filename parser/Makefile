@@ -56,6 +56,8 @@ commands/Digest.c\
 commands/Edge.c\
 commands/Element.c\
 commands/Error.c\
+commands/Expand.c\
+commands/ExpandAfter.c\
 commands/Fatal.c\
 commands/FileExists.c\
 commands/ForEach.c\
@@ -80,6 +82,7 @@ commands/ListMacros.c\
 commands/LoadModule.c\
 commands/ModuleLoaded.c\
 commands/Namespace.c\
+commands/NoExpand.c\
 commands/Otherwise.c\
 commands/ParseXml.c\
 commands/ProcessingInstruction.c\

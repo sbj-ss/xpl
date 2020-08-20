@@ -52,6 +52,7 @@ struct _xplDocument
 	xplParamsPtr environment;		/* external parameters */
 	xplSessionPtr session;			/* session variables */
 	xmlDocPtr document;				/* underlying XML document */
+	bool expand;					/* current expansion mode */
 	int recursion_level;			/* protection from infinite loops in macros */
 	xmlXPathContextPtr xpath_ctxt;	/* reusable XPath context */
 	xmlNodePtr fatal_content;		/* for xpl:fatal */
@@ -117,9 +118,9 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNodePtr oldElement, xmlNodePtr macroContent);
 XPLPUBFUN void XPLCALL
-	xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xplResultPtr result);
+	xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result);
 XPLPUBFUN void XPLCALL
-	xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, bool expand, xplResultPtr result);
+	xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr result);
 XPLPUBFUN xmlNodePtr XPLCALL 
 	xplAddMacro(
 		xplDocumentPtr doc, 

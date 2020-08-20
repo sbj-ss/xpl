@@ -20,6 +20,8 @@
 #include <commands/Edge.h>
 #include <commands/Element.h>
 #include <commands/Error.h>
+#include <commands/Expand.h>
+#include <commands/ExpandAfter.h>
 #include <commands/Fatal.h>
 #include <commands/FileExists.h>
 #include <commands/ForEach.h>
@@ -44,6 +46,7 @@
 #include <commands/LoadModule.h>
 #include <commands/ModuleLoaded.h>
 #include <commands/Namespace.h>
+#include <commands/NoExpand.h>
 #include <commands/Otherwise.h>
 #include <commands/ParseXml.h>
 #include <commands/ProcessingInstruction.h>
@@ -146,6 +149,8 @@ static xplCommandSignature builtinCommands[] =
 	{ BAD_CAST "edge", &xplEdgeCommand },
 	{ BAD_CAST "element", &xplElementCommand },
 	{ BAD_CAST "error", &xplErrorCommand },
+	{ BAD_CAST "expand", &xplExpandCommand },
+	{ BAD_CAST "expand-after", &xplExpandAfterCommand },
 	{ BAD_CAST "fatal", &xplFatalCommand },
 	{ BAD_CAST "file-exists", &xplFileExistsCommand },
 	{ BAD_CAST "for-each", &xplForEachCommand },
@@ -171,6 +176,7 @@ static xplCommandSignature builtinCommands[] =
 	{ BAD_CAST "load-module", &xplLoadModuleCommand },
 	{ BAD_CAST "module-loaded", &xplModuleLoadedCommand },
 	{ BAD_CAST "namespace", &xplNamespaceCommand },
+	{ BAD_CAST "no-expand", &xplNoExpandCommand },
 	{ BAD_CAST "otherwise", &xplOtherwiseCommand },
 	{ BAD_CAST "parse-xml", &xplParseXmlCommand },
 	{ BAD_CAST "processing-instruction", &xplProcessingInstructionCommand },

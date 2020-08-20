@@ -292,6 +292,7 @@ xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xpl
 		xplDocumentFree(doc);
 		return NULL;
 	}
+	doc->expand = true;
 	doc->session = aSession;
 	doc->environment = aEnvironment;
 	doc->status = XPL_ERR_NOT_YET_REACHED;
@@ -654,25 +655,25 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 
 /* node mode-based processing */
 static void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result);
-static void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xplResultPtr result);
+static void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result);
 static xplMacroPtr xplNodeHasMacro(xplDocumentPtr doc, xmlNodePtr element);
 
-void xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xplResultPtr result)
+void xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result)
 {
 	xplMacroPtr macro;
 	xmlHashTablePtr macros;
 	
-    if (expand && (macro = xplNodeHasMacro(doc, element)))
+    if (doc->expand && (macro = xplNodeHasMacro(doc, element)))
 	{
 		macro->times_encountered++;
         if (!macro->disabled_spin)
 			xplMacroParserApply(doc, element, macro, result);     
 		else
-			xplNodeListApply(doc, element->children, expand, result); /* CopyParserApply */
-	} else if (xplCheckNodeForXplNs(doc, element))
-        xplNameParserApply(doc, element, expand, result);
+			xplNodeListApply(doc, element->children, result); /* CopyParserApply */
+	} else if (doc->expand && xplCheckNodeForXplNs(doc, element))
+        xplNameParserApply(doc, element, result);
     else
-		xplNodeListApply(doc, element->children, expand, result); /* CopyParserApply */
+		xplNodeListApply(doc, element->children, result); /* CopyParserApply */
 	if ((macros = (xmlHashTablePtr) element->_private))
 	{
 		xplMacroTableFree(macros);
@@ -680,7 +681,7 @@ void xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xplResult
 	}
 }
 
-void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, bool expand, xplResultPtr result)
+void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr result)
 {
 	xmlNodePtr tail, c = children;
 
@@ -688,7 +689,7 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, bool expand, xplR
 	{
 		if (c->type == XML_ELEMENT_NODE)
 		{
-			xplNodeApply(doc, c, expand, result);
+			xplNodeApply(doc, c, result);
 			if (!c->parent || (c->parent->type & XPL_NODE_DELETION_MASK))
 			{
 				/* parent removed from inside, immediate stop */
@@ -771,7 +772,7 @@ void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr mac
 		macro->node_original_content = element->children; 
 		out = xplReplaceContentEntries(doc, macro->id, element, macro->content);
 		xplSetChildren(element, out);
-		xplNodeListApply(doc, element->children, true, result);
+		xplNodeListApply(doc, element->children, result);
 		xplDownshiftNodeListNsDef(out, element->nsDef);
 		out = xplDetachContent(element);
 		if (!out) /* contents could be removed by :return */
@@ -802,17 +803,17 @@ void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr mac
 	}
 }
 
-void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xplResultPtr result)
+void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result)
 {
 	xmlNodePtr error;
 	xplCommandPtr cmd;
 	xplCommandInfo cmdInfo;
 
-	if (expand && !xmlStrcmp(element->name, BAD_CAST "define"))
+	if (doc->expand && !xmlStrcmp(element->name, BAD_CAST "define"))
 	{ 
 		error = xplAddMacro(doc, element, element->parent, false, XPL_MACRO_EXPAND_NO_DEFAULT, true);
 		ASSIGN_RESULT(error, error? true: false, true);
-	} else if (!xmlStrcmp(element->name, BAD_CAST "no-expand")) {
+	}/* else if (!xmlStrcmp(element->name, BAD_CAST "no-expand")) {
 		xplNodeListApply(doc, element->children, false, result);
 		ASSIGN_RESULT(xplDetachContent(element), false, true);
 	} else if (!xmlStrcmp(element->name, BAD_CAST "expand")) {
@@ -822,40 +823,36 @@ void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, bool expand, xpl
 		xplNodeListApply(doc, element->children, false, result);
 		xplNodeListApply(doc, element->children, true, result);
 		ASSIGN_RESULT(xplDetachContent(element), false, true);
-	} else {
-		if (expand)
+	}*/ else {
+		cmd = xplGetCommand(element);
+		if (cmd)
 		{
-			cmd = xplGetCommand(element);
-			if (cmd)
+			memset(&cmdInfo, 0, sizeof(cmdInfo));
+			cmdInfo.element = element;
+			cmdInfo.document = doc;
+			cmdInfo.xpath_ctxt = doc->xpath_ctxt;
+			if (!(error = xplFillCommandInfo(cmd, &cmdInfo, true)))
 			{
-				memset(&cmdInfo, 0, sizeof(cmdInfo));
-				cmdInfo.element = element;
-				cmdInfo.document = doc;
-				cmdInfo.xpath_ctxt = doc->xpath_ctxt;
-				if (!(error = xplFillCommandInfo(cmd, &cmdInfo, true)))
+				cmd->prologue(&cmdInfo);
+				/* element could be removed (:with) */
+				if (!(element->type & XPL_NODE_DELETION_MASK))
+					xplNodeListApply(doc, cmdInfo.element->children, result);
+				/* element could be removed by its children */
+				if ((!(element->type & XPL_NODE_DELETION_MASK)) || (cmd->flags & XPL_CMD_FLAG_CONTENT_SAFE))
 				{
-					cmd->prologue(&cmdInfo);
-					/* element could be removed (:with) */
-					if (!(element->type & XPL_NODE_DELETION_MASK))
-						xplNodeListApply(doc, cmdInfo.element->children, expand, result);
-					/* element could be removed by its children */
-					if ((!(element->type & XPL_NODE_DELETION_MASK)) || (cmd->flags & XPL_CMD_FLAG_CONTENT_SAFE))
-					{
-						if (!(error = xplFillCommandInfo(cmd, &cmdInfo, false)))
-							cmd->epilogue(&cmdInfo, result);
-						else
-							ASSIGN_RESULT(error, true, true);
-					}
-				} else
-					ASSIGN_RESULT(error, true, true);
-				xplClearCommandInfo(cmd, &cmdInfo);
-			} else {
-				if (cfgWarnOnUnknownCommand)
-					xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown command \"%s\" (file \"%s\", line %d)", element->name, element->doc->URL, element->line);
-				xplNodeListApply(doc, element->children, expand, result);
-			} 
-		} else 
-			xplNodeListApply(doc, element->children, expand, result);
+					if (!(error = xplFillCommandInfo(cmd, &cmdInfo, false)))
+						cmd->epilogue(&cmdInfo, result);
+					else
+						ASSIGN_RESULT(error, true, true);
+				}
+			} else
+				ASSIGN_RESULT(error, true, true);
+			xplClearCommandInfo(cmd, &cmdInfo);
+		} else {
+			if (cfgWarnOnUnknownCommand)
+				xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown command \"%s\" (file \"%s\", line %d)", element->name, element->doc->URL, element->line);
+			xplNodeListApply(doc, element->children, result);
+		}
 	}
 }
 
@@ -934,7 +931,7 @@ xmlNodePtr xplAddMacro(
 		prev_macro = doc->current_macro;
 		doc->current_macro = mb;
 		mb->caller = macro;
-		xplNodeListApply(doc, macro->children, true, &tmp_result);
+		xplNodeListApply(doc, macro->children, &tmp_result);
 		doc->current_macro = prev_macro;
 	}
 	mb->content = xplDetachContent(macro);
@@ -1035,7 +1032,7 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 			if (!xprMutexRelease(&global_conf_mutex))
 				DISPLAY_INTERNAL_ERROR_MESSAGE();
 			xplCheckRootNs(doc, root_element);
-			xplNodeApply(doc, root_element, true, &res);
+			xplNodeApply(doc, root_element, &res);
 #ifdef _THREADING_SUPPORT
 			if (doc->threads)
 			{
