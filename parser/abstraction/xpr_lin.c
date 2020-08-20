@@ -266,6 +266,7 @@ static int active_subsystems = 0;
 
 bool xprStartup(int what)
 {
+	what &= ~active_subsystems;
 	if (what & XPR_STARTSTOP_LOW_LEVEL)
 	{
 		NOOP();
@@ -284,6 +285,7 @@ bool xprStartup(int what)
 
 void xprShutdown(int what)
 {
+	what &= active_subsystems;
 	if (what & XPR_STARTSTOP_LOW_LEVEL)
 	{
 		NOOP();
