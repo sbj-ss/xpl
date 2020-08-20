@@ -72,7 +72,7 @@ xplModuleCmdResult xplRegisterCommand(const xmlChar *name, xplCommandPtr cmd, xm
 			xmlHashRemoveEntry(commands, name, NULL);
 			return XPL_MODULE_CMD_COMMAND_INIT_FAILED;
 		}
-	if (cmd->parameters && cmd->params_stencil)
+	if (cmd->params_stencil)
 		if ((ret = _registerCommandParams(cmd, error)) != XPL_MODULE_CMD_OK)
 			return ret;
 	return XPL_MODULE_CMD_OK;
