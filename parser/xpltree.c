@@ -32,6 +32,8 @@ bool xplIsAncestor(xmlNodePtr maybeChild, xmlNodePtr maybeAncestor)
 	return false;
 }
 
+/* TODO this is wrong! prefixes can't be used here! */
+/* TODO check for occurrences and possibly remove */
 xmlNsPtr xplGetResultingNs(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
 {
 	xmlNsPtr ret;
@@ -60,16 +62,20 @@ xmlChar* xplGetPropValue(xmlAttrPtr prop)
 void xplUnlinkProp(xmlAttrPtr cur)
 {
 	xmlAttrPtr tmp = cur->parent->properties;
-	if (tmp == cur) {
+
+	if (tmp == cur)
+	{
 		cur->parent->properties = cur->next;
-		if (cur->next != NULL)
+		if (cur->next)
 			cur->next->prev = NULL;
 		return;
 	}
-	while (tmp != NULL) {
-		if (tmp->next == cur) {
+	while (tmp)
+	{
+		if (tmp->next == cur)
+		{
 			tmp->next = cur->next;
-			if (tmp->next != NULL)
+			if (tmp->next)
 				tmp->next->prev = tmp;
 			return;
 		}
@@ -77,7 +83,7 @@ void xplUnlinkProp(xmlAttrPtr cur)
 	}
 }
 
-/* TODO distinguish out of memory condition from invalid name */
+/* TODO remove */
 xmlNodePtr xplCreateElement(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
 {
 	xmlChar *tagname;
@@ -114,7 +120,7 @@ xmlNodePtr xplDetachContent(xmlNodePtr el)
 	return item;
 }
 
-static xmlNodePtr setListParent(xmlNodePtr el, xmlNodePtr list)
+static xmlNodePtr _setListParent(xmlNodePtr el, xmlNodePtr list)
 {
 	list->parent = el;
 	while (list->next)
@@ -135,7 +141,7 @@ xmlNodePtr xplSetChildren(xmlNodePtr el, xmlNodePtr list)
 		el->last = NULL;
 		return NULL;
 	}
-	return el->last = setListParent(el, list);
+	return el->last = _setListParent(el, list);
 }
 
 /* TODO all tree modifications must flatten adjacent text nodes */
@@ -148,7 +154,7 @@ xmlNodePtr xplAppendChildren(xmlNodePtr el, xmlNodePtr list)
 	if (el->children)
 		return xplAppendList(el->last? el->last: xplFindTail(el->children), list);
 	el->children = list;
-	return el->last = setListParent(el, list);
+	return el->last = _setListParent(el, list);
 }
 
 xmlNodePtr xplAppendList(xmlNodePtr el, xmlNodePtr list)
@@ -159,7 +165,7 @@ xmlNodePtr xplAppendList(xmlNodePtr el, xmlNodePtr list)
 		return NULL;
 	if (!el)
 		return xplFindTail(list);
-	tail = setListParent(el->parent, list);
+	tail = _setListParent(el->parent, list);
 	tail->next = el->next;
 	if (el->next)
 		el->next->prev = tail;
@@ -181,7 +187,7 @@ xmlNodePtr xplPrependList(xmlNodePtr el, xmlNodePtr list)
 	list->prev = el->prev;
 	if (el->prev)
 		el->prev->next = list;
-	tail = setListParent(el->parent, list);
+	tail = _setListParent(el->parent, list);
 	el->prev = tail;
 	tail->next = el;
 	if (el->parent && (el->parent->children == el))
@@ -203,7 +209,7 @@ xmlNodePtr xplReplaceWithList(xmlNodePtr el, xmlNodePtr list)
 	if (el->prev)
 		el->prev->next = list;
 	list->prev = el->prev;
-	tail = setListParent(el->parent, list);
+	tail = _setListParent(el->parent, list);
 	if (el->next)
 		el->next->prev = tail;
 	tail->next = el->next;
@@ -225,12 +231,12 @@ xmlNodePtr xplCloneAsNodeChild(xmlNodePtr cur, xmlNodePtr parent)
 	{
 		if (cur->children)
 		{
-			if (cur->children->next)
-			{
+			if (!cur->children->next && ((cur->children->type == XML_TEXT_NODE) || (cur->children->type == XML_CDATA_SECTION_NODE)))
+				ret = xmlNewDocText(parent->doc, cur->children->content);
+			else {
 				ret = xmlNewDocText(parent->doc, NULL);			
 				ret->content = xmlNodeListGetString(parent->doc, cur->children, 1);
-			} else
-				ret = xmlNewDocText(parent->doc, cur->children->content);
+			}
 		} else 
 			ret = xmlNewDocText(parent->doc, BAD_CAST "");
 	} else {
@@ -262,6 +268,7 @@ bool xplCheckNodeSetForText(xmlNodeSetPtr s)
 	for (i = 0; i < (size_t) s->nodeNr; i++)
 		if ((s->nodeTab[i]->type != XML_TEXT_NODE) 
 			&& (s->nodeTab[i]->type != XML_ATTRIBUTE_NODE)
+			&& (s->nodeTab[i]->type != XML_ENTITY_REF_NODE)
 			&& (s->nodeTab[i]->type != XML_CDATA_SECTION_NODE)
 		)
 			return false;
@@ -272,7 +279,7 @@ void xplMarkAncestorAxisForDeletion(xmlNodePtr bottom, xmlNodePtr top)
 {
 	if (!bottom || !top)
 		return;
-	while (1) 
+	while (true)
 	{
 		bottom->type = (xmlElementType) ((int) bottom->type | XPL_NODE_DELETION_REQUEST_FLAG);
 		if (bottom == top)
@@ -368,11 +375,44 @@ bool xplInitNamePointers()
 	return true;
 }
 
+#define MAX_PREFIX_SIZE 32
+static xmlChar*  _newNsPrefix(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns)
+{
+	xmlNsPtr def;
+	xmlChar *prefix;
+	int counter = 1;
+
+	prefix = BAD_CAST XPL_MALLOC(MAX_PREFIX_SIZE);
+	if (!prefix)
+		return NULL;
+
+    if (!ns->prefix)
+		snprintf((char*) prefix, MAX_PREFIX_SIZE, "default");
+    else
+		snprintf((char*) prefix, MAX_PREFIX_SIZE, "%.20s", (char*) ns->prefix);
+
+    def = xmlSearchNs(doc, tree, prefix);
+    while (def)
+	{
+        if (counter > 1000)
+        {
+        	XPL_FREE(prefix);
+			return NULL;
+        }
+		if (!ns->prefix)
+			snprintf((char*) prefix, MAX_PREFIX_SIZE, "default%d", counter++);
+		else
+			snprintf((char*) prefix, MAX_PREFIX_SIZE, "%.20s%d", (char *)ns->prefix, counter++);
+		def = xmlSearchNs(doc, tree, prefix);
+    }
+    return prefix;
+}
+#undef MAX_PREFIX_SIZE
+
 xmlNsPtr newReconciliedNs(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns) 
 {
     xmlNsPtr def;
-    xmlChar prefix[50];
-    int counter = 1;
+    xmlChar *prefix;
 
     if (!tree)
 		return NULL;
@@ -389,27 +429,13 @@ xmlNsPtr newReconciliedNs(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns)
      * Find a close prefix which is not already in use.
      * Let's strip namespace prefixes longer than 20 chars !
      */
-    if (!ns->prefix)
-		snprintf((char *) prefix, sizeof(prefix), "default");
-    else
-		snprintf((char *) prefix, sizeof(prefix), "%.20s", (char *)ns->prefix);
-
-    def = xmlSearchNs(doc, tree, prefix);
-    while (def) 
-	{
-        if (counter > 1000) 
-			return NULL;
-		if (!ns->prefix)
-			snprintf((char *) prefix, sizeof(prefix), "default%d", counter++);
-		else
-			snprintf((char *) prefix, sizeof(prefix), "%.20s%d", (char *)ns->prefix, counter++);
-		def = xmlSearchNs(doc, tree, prefix);
-    }
-
+    if (!(prefix = _newNsPrefix(doc, tree, ns)))
+    	return NULL;
     /*
      * OK, now we are ready to create a new one.
      */
-    def = xmlNewNs(tree, ns->href, prefix);
+    def = xmlNewNs(tree, ns->href, NULL);
+    def->prefix = prefix;
     return def;
 }
 
@@ -731,7 +757,7 @@ xmlNodePtr xplCloneNodeList(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc)
 	return cloneNodeListInner(node, parent, doc, NULL);
 }
 
-void addNsDef(xmlNodePtr cur, xmlNsPtr def)
+static void _addNsDef(xmlNodePtr cur, xmlNsPtr def)
 {
 	xmlNsPtr last_ns = cur->nsDef;
 	if (!last_ns)
@@ -741,6 +767,72 @@ void addNsDef(xmlNodePtr cur, xmlNsPtr def)
 			last_ns = last_ns->next;
 		last_ns->next = def;
 	}
+}
+
+static void _switchNodeListNsDef(xmlNodePtr cur, xmlNsPtr old_ns, xmlNsPtr new_ns);
+
+static void _switchNodeNsDef(xmlNodePtr cur, xmlNsPtr old_ns, xmlNsPtr new_ns)
+{
+	xmlAttrPtr prop = cur->properties;
+
+	if (cur->ns == old_ns)
+		cur->ns = new_ns;
+	while (prop)
+	{
+		if (prop->ns == old_ns)
+			prop->ns = new_ns;
+		prop = prop->next;
+	}
+	if (cur->children)
+		_switchNodeListNsDef(cur->children, old_ns, new_ns);
+}
+
+static void _switchNodeListNsDef(xmlNodePtr cur, xmlNsPtr old_ns, xmlNsPtr new_ns)
+{
+	while (cur)
+	{
+		_switchNodeNsDef(cur, old_ns, new_ns);
+		cur = cur->next;
+	}
+}
+
+static xmlNsPtr _upshiftNsDef(xmlNodePtr cur, xmlNsPtr def)
+{
+	xmlNsPtr parent_def;
+    xmlChar *prefix;
+
+	if ((parent_def = xmlSearchNsByHref(cur->doc, cur->parent, def->href)))
+	{ /* fix child pointers */
+		_switchNodeNsDef(cur, def, parent_def);
+		return parent_def;
+	}
+	/* move definition up */
+	if (!(prefix = _newNsPrefix(cur->doc, cur->parent, def)))
+		return NULL;
+	XPL_FREE(BAD_CAST def->prefix);
+	def->prefix = prefix;
+	if (cur->parent->nsDef)
+		cur->parent->nsDef->next = def;
+	else
+		cur->parent->nsDef = def;
+	return def;
+}
+
+bool xplUpshiftNodeNsDefs(xmlNodePtr cur)
+{
+	xmlNsPtr def = cur->nsDef, next, shifted;
+
+	while (def)
+	{
+		if (!(shifted = _upshiftNsDef(cur, def)))
+			return false; /* failed. stop in a consistent state */
+		next = def->next;
+		if (shifted != def)
+			xmlFreeNs(def);
+		def = next;
+	}
+	cur->nsDef = NULL; /* all definitions were either linked to parent or deleted as duplicates */
+	return true;
 }
 
 void xplDownshiftNodeNsDef(xmlNodePtr cur, xmlNsPtr ns_list)
@@ -763,7 +855,7 @@ void xplDownshiftNodeNsDef(xmlNodePtr cur, xmlNsPtr ns_list)
 				else {
 					ns_to_shift = xmlCopyNamespace(cur->ns);
 					cur->ns = ns_to_shift;
-					addNsDef(cur, ns_to_shift);
+					_addNsDef(cur, ns_to_shift);
 				}
 				break;
 			}
@@ -787,7 +879,7 @@ void xplDownshiftNodeNsDef(xmlNodePtr cur, xmlNsPtr ns_list)
 					else {
 						ns_to_shift = xmlCopyNamespace(prop->ns);
 						prop->ns = ns_to_shift;
-						addNsDef(cur, ns_to_shift);
+						_addNsDef(cur, ns_to_shift);
 					}
 					break;
 				}
