@@ -108,7 +108,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		filename = xplFullFilename(file_attr, commandInfo->document->app_path);
 	if (format)
 		options |= XML_SAVE_FORMAT;
-	xprConvertSlashes(filename);
+	xprConvertSlashes(filename); // TODO not here
 	doc = xmlNewDoc(BAD_CAST "1.0");
 	if (!omit_root)
 	{
