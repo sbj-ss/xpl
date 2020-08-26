@@ -60,7 +60,8 @@ void xplCmdGetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 						if (!ret)
 							ret = tail;
 					}
-				}
+				} else
+					ret = NULL;
 			} else if (sel->type != XPATH_UNDEFINED) {
 				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", select_attr), true, true);
 				goto done;
