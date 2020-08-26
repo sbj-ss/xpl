@@ -444,7 +444,7 @@ static void buildDocumentStep(IncludeContextPtr ctxt)
 		if ((ctxt->input_source != INPUT_SOURCE_LOCAL) && 
 			(xmlHasProp(ctxt->command_element, SELECT_ATTR) || (ctxt->output_format == OUTPUT_FORMAT_XML))) 
 		{ /* we need a document somewhere on the way, let's build it */
-			if (ctxt->content_size > INT32_MAX)
+			if (ctxt->content_size > INT_MAX) // TODO do we need this limitation?
 			{
 				ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "input document is bigger than 2 Gb");
 				return;
