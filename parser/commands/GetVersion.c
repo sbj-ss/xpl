@@ -5,7 +5,7 @@
 #include <libxpl/xpltree.h>
 #include "commands/GetVersion.h"
 
-#ifdef __GNUC__
+#if defined(__GNUC__) & !defined(__MINGW32__)
 	#include <gnu/libc-version.h>
 #else
 	#include <iconv.h>
@@ -36,7 +36,7 @@ xmlNodePtr listLibraryVersions(xmlNsPtr ns, xmlChar *tagname, xmlDocPtr doc) // 
 /* libiconv */
 	ret = tail = cur = xmlNewDocNode(doc, ns, tagname, NULL);
 	xmlNewProp(cur, NAME_A, BAD_CAST "libiconv");
-#ifdef __GNUC__
+#if defined(__GNUC__) & !defined(__MINGW32__)
 	snprintf(buf, sizeof(buf), "%s", gnu_get_libc_version());
 #else
 	snprintf(buf, sizeof(buf), "%d.%d", _LIBICONV_VERSION >> 8, _LIBICONV_VERSION & 0xFF);
