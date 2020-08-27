@@ -42,7 +42,7 @@ bool xplSessionManagerInit(time_t max_lifetime)
 	return true;
 }
 
-static void freeObjectCallback(void *payload, xmlChar *name)
+static void freeObjectCallback(void *payload, const xmlChar *name)
 {
 	xmlUnlinkNode((xmlNodePtr) payload);
 	xmlFreeNode((xmlNodePtr) payload);
@@ -62,7 +62,7 @@ static void xplSessionFree(xplSessionPtr session)
 	}
 }
 
-static void freeSessionCallback(void *payload, xmlChar *name)
+static void freeSessionCallback(void *payload, const xmlChar *name)
 {
 	xplSessionFree((xplSessionPtr) payload);
 }
@@ -160,7 +160,12 @@ xplSessionPtr xplSessionCreateWithAutoId()
 	}
 	while (flag)
 	{
+// TODO move this to XPR
+#if defined(_MSC_VER) || defined (__MINGW32__)
+		snprintf((char*) id, sizeof(id), "%08X", rand());
+#else
 		snprintf((char*) id, sizeof(id), "%08X", (unsigned int) lrand48());
+#endif
 		flag = (xplSessionLookupInternal(id) != NULL);
 	}
 	ret = xplSessionCreateInner(id);
@@ -197,7 +202,7 @@ void xplDeleteSession(const xmlChar *id)
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 }
 
-void enumStaleSessionsCallback(void *payload, void *data, xmlChar *name)
+void enumStaleSessionsCallback(void *payload, void *data, const xmlChar *name)
 {
 	xplSessionPtr s = (xplSessionPtr) payload;
 	if (time(NULL) - s->init_ts > max_session_lifetime)
