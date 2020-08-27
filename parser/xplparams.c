@@ -398,10 +398,11 @@ xmlChar* xplParamValuesToString(const xplParamValuesPtr values, bool unique, con
 	return ret;
 }
 
-xmlNodePtr xplParamValuesToList(const xplParamValuesPtr values, bool unique, xplExpectType expect, const xmlNsPtr ns, const xmlChar *nodeName, xmlNodePtr parent)
+xmlNodePtr xplParamValuesToList(const xplParamValuesPtr values, bool unique, xplExpectType expect, const xplQName qname, xmlNodePtr parent)
 {
 	xmlNodePtr ret = NULL, tail, cur, txt;
 	xmlHashTablePtr unique_table = NULL;
+	xplParamFileInfoPtr file_info;
 	xmlChar *clean_value;
 	int i;
 	char size_buf[32];
@@ -409,7 +410,11 @@ xmlNodePtr xplParamValuesToList(const xplParamValuesPtr values, bool unique, xpl
 	if (!values)
 		return NULL;
 	if (unique)
+	{
 		unique_table = xmlHashCreate(values->param_nr);
+		if (!unique_table)
+			return NULL;
+	}
 	for (i = 0; i < values->param_nr; i++)
 	{
 		cur = NULL;
@@ -417,22 +422,23 @@ xmlNodePtr xplParamValuesToList(const xplParamValuesPtr values, bool unique, xpl
 		{
 			clean_value = xplCleanTextValue((xmlChar*) values->param_tab[i], expect);
 			if (unique_table && (xmlHashAddEntry(unique_table, clean_value, (void*) 1) == -1))
-				XPL_FREE(clean_value); // dup
+				XPL_FREE(clean_value); /* duplicate found */
 			else {
-				cur = xmlNewDocNode(parent->doc, ns, nodeName, NULL);
+				cur = xmlNewDocNode(parent->doc, qname.ns, qname.ncname, NULL);
 				txt = xmlNewDocText(parent->doc, NULL);
 				txt->content = clean_value;
 				txt->parent = cur;
 				cur->children = cur->last = txt;
 			}
 		} else if (values->type == XPL_PARAM_TYPE_FILE) {
-			cur = xmlNewDocNode(parent->doc, ns, nodeName, NULL);
-			xmlNewProp(cur, BAD_CAST "realpath", ((xplParamFileInfoPtr) values->param_tab[i])->real_path);
-			xmlNewProp(cur, BAD_CAST "filename", ((xplParamFileInfoPtr) values->param_tab[i])->filename);
-			snprintf(size_buf, 32, "%d", ((xplParamFileInfoPtr) values->param_tab[i])->size);
+			cur = xmlNewDocNode(parent->doc, qname.ns, qname.ncname, NULL);
+			file_info = (xplParamFileInfoPtr) values->param_tab[i];
+			xmlNewProp(cur, BAD_CAST "realpath", file_info->real_path);
+			xmlNewProp(cur, BAD_CAST "filename", file_info->filename);
+			snprintf(size_buf, sizeof(size_buf), "%d", file_info->size);
 			xmlNewProp(cur, BAD_CAST "size", BAD_CAST size_buf);
 		} else
-			;
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
 		if (cur)
 		{
 			if (!ret)
@@ -666,6 +672,7 @@ static void xplParamsToListScanner(void *payload, void *data, xmlChar *name)
 	xplParamsToListCtxt *ctxt;
 	xplParamValuesPtr values;
 	xmlNodePtr cur, vals;
+	static const xplQName qname = { NULL, BAD_CAST "Value" };
 	
 	values = (const xplParamValuesPtr) payload;
 	if (!values)
@@ -673,7 +680,7 @@ static void xplParamsToListScanner(void *payload, void *data, xmlChar *name)
 	ctxt = (xplParamsToListCtxt*) data;
 	if (!(values->type & ctxt->type_mask))
 		return;
-	vals = xplParamValuesToList(values, ctxt->unique, ctxt->expect, NULL, BAD_CAST "Value", ctxt->parent);
+	vals = xplParamValuesToList(values, ctxt->unique, ctxt->expect, qname, ctxt->parent);
 	cur = xmlNewDocNode(ctxt->parent->doc, ctxt->ns, ctxt->node_name? ctxt->node_name: name, NULL);
 	if (ctxt->node_name)
 		xmlNewProp(cur, BAD_CAST "name", name);
@@ -687,17 +694,17 @@ static void xplParamsToListScanner(void *payload, void *data, xmlChar *name)
 	}
 }
 
-xmlNodePtr xplParamsToList(const xplParamsPtr params, bool unique, xplExpectType expect, const xmlNsPtr ns, const xmlChar *nodeName, xmlNodePtr parent, int typeMask)
+xmlNodePtr xplParamsToList(const xplParamsPtr params, bool unique, xplExpectType expect, const xplQName qname, xmlNodePtr parent, int typeMask)
 {
 	xplParamsToListCtxt ctxt;
 
 	if (!params)
 		return NULL;
 	ctxt.expect = expect;
-	if (nodeName)
+	if (qname.ncname)
 	{
-		ctxt.ns = ns;
-		ctxt.node_name = nodeName;
+		ctxt.ns = qname.ns;
+		ctxt.node_name = qname.ncname;
 	} else {
 		ctxt.node_name = NULL;
 		ctxt.ns = NULL;

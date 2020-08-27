@@ -5,150 +5,145 @@
 #include <libxpl/xpltree.h>
 #include "commands/GetParam.h"
 
+typedef struct _xplCmdGetParamParams
+{
+	xmlChar *default_value;
+	xmlChar *delimiter;
+	xplExpectType expect;
+	xmlChar *name;
+	bool repeat;
+	xplQName response_tag_name;
+	bool show_tags;
+	int type;
+	bool unique;
+} xplCmdGetParamParams, *xplCmdGetParamParamsPtr;
+
+static const xplCmdGetParamParams params_stencil =
+{
+	.default_value = NULL,
+	.delimiter = BAD_CAST "",
+	.expect = XPL_EXPECT_UNSPECIFIED,
+	.name = NULL,
+	.repeat = true,
+	.response_tag_name = {},
+	.show_tags = false,
+	.type = XPL_PARAM_TYPE_USERDATA,
+	.unique = false
+};
+
+xplCommand xplGetParamCommand =
+{
+	.prologue = xplCmdGetParamPrologue,
+	.epilogue = xplCmdGetParamEpilogue,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdGetParamParams),
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.parameters = {
+		{
+			.name = BAD_CAST "default",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.default_value
+		}, {
+			.name = BAD_CAST "delimiter",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.delimiter,
+		}, {
+			.name = BAD_CAST "expect",
+			.type = XPL_CMD_PARAM_TYPE_INT_CUSTOM_GETTER,
+			.extra.int_getter = xplExpectTypeGetter,
+			.value_stencil = &params_stencil.expect
+		}, {
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = BAD_CAST "responsetagname",
+			.type = XPL_CMD_PARAM_TYPE_QNAME,
+			.value_stencil = &params_stencil.response_tag_name
+		}, {
+			.name = BAD_CAST "showtags",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.show_tags
+		}, {
+			.name = BAD_CAST "type",
+			.type = XPL_CMD_PARAM_TYPE_INT_CUSTOM_GETTER,
+			.extra.int_getter = xplParamTypeMaskGetter,
+			.value_stencil = &params_stencil.type
+		}, {
+			.name = BAD_CAST "unique",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.unique
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdGetParamPrologue(xplCommandInfoPtr commandInfo)
 {
 }
 
+static const xplQName default_qname = { NULL, BAD_CAST "param" };
+static const xplQName empty_qname = { NULL, NULL };
+
 void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define EXPECT_ATTR (BAD_CAST "expect")
-#define RESPONSE_TAG_NAME_ATTR (BAD_CAST "responsetagname")
-#define SHOW_TAGS_ATTR (BAD_CAST "showtags")
-#define NAME_ATTR (BAD_CAST "name")
-#define DELIM_ATTR (BAD_CAST "delim")
-#define DELIMITER_ATTR (BAD_CAST "delimiter")
-#define UNIQUE_ATTR (BAD_CAST "unique")
-#define TYPE_ATTR (BAD_CAST "type")
-#define REPEAT_ATTR (BAD_CAST "repeat")
-#define DEFAULT_ATTR (BAD_CAST "default")
-
-	xmlChar *name_attr = NULL; 
-	xmlChar *expect_attr = NULL;
-	xmlChar *response_tag_name_attr = NULL;
-	xmlChar *delim_attr = NULL;
-	xmlChar *type_attr = NULL;
-	xmlChar *default_attr = NULL;
-	xmlChar *txt, *node_name;
-	xmlNsPtr ns;
-	xplExpectType expect;
+	xplCmdGetParamParamsPtr cmd_params = (xplCmdGetParamParamsPtr) commandInfo->params;
+	xmlChar *txt;
 	xplParamValuesPtr values;
-	xmlNodePtr ret = NULL, error;
-	bool repeat;
-	bool unique;
-	bool show_tags;
+	xmlNodePtr ret = NULL;
+	xplQName single_qname;
 	bool free_needed = false;
-	int type_mask = XPL_PARAM_TYPE_USERDATA; /* backward compatibility */
 
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	expect_attr = xmlGetNoNsProp(commandInfo->element, EXPECT_ATTR);
-	response_tag_name_attr = xmlGetNoNsProp(commandInfo->element, RESPONSE_TAG_NAME_ATTR);
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOW_TAGS_ATTR, &show_tags, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, UNIQUE_ATTR, &unique, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if (!(delim_attr = xmlGetNoNsProp(commandInfo->element, DELIM_ATTR)))
-		delim_attr = xmlGetNoNsProp(commandInfo->element, DELIMITER_ATTR);
-	type_attr = xmlGetNoNsProp(commandInfo->element, TYPE_ATTR);
-	default_attr = xmlGetNoNsProp(commandInfo->element, DEFAULT_ATTR);
+	if (cfgWarnOnNoExpectParam && cmd_params->expect == XPL_EXPECT_UNSPECIFIED)
+		xplDisplayMessage(xplMsgWarning, BAD_CAST "no expect attribute in get-param command (file \"%s\", line %d)",
+			commandInfo->element->doc->URL, commandInfo->element->line);
 
-	expect = xplExpectTypeFromString(expect_attr);
-	if (cfgWarnOnNoExpectParam) 
-	{
-		switch(expect)
-		{
-			case XPL_EXPECT_UNDEFINED:
-				xplDisplayMessage(xplMsgWarning, BAD_CAST "no expect attribute in get-param command (file \"%s\", line %d)",
-					commandInfo->element->doc->URL, commandInfo->element->line);
-				break;
-			case XPL_EXPECT_UNKNOWN:
-				xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown expect attribute \"%s\" in get-param command (file \"%s\", line %d). Defaulting to \"number\" as most restrictive",
-					expect_attr, commandInfo->element->doc->URL, commandInfo->element->line);
-				expect = XPL_EXPECT_NUMBER;
-				break;
-			default:
-				break;
-		}
-	} else if (expect == XPL_EXPECT_UNKNOWN) /* can't clean values here */
-		expect = XPL_EXPECT_ANY;
-
-	if (type_attr)
-	{
-		type_mask = xplParamTypeMaskFromString(type_attr);
-		if (type_mask == -1)
-		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "The type mask \"%s\" is invalid", type_attr), true, true);
-			goto done;
-		}
-	}
-	if (name_attr) 
+	if (cmd_params->name)
 	{
 		/* specified parameter */
-		repeat = repeat && (show_tags || response_tag_name_attr);
-		values = xplParamGet(commandInfo->document->environment, name_attr);
-		if (values && !(values->type & type_mask))
+		cmd_params->repeat &= cmd_params->show_tags || cmd_params->response_tag_name.ncname;
+		values = xplParamGet(commandInfo->document->environment, cmd_params->name);
+		if (values && !(values->type & cmd_params->type))
 			values = NULL; /* skip unwanted */
-		else if (!values && default_attr) {
+		else if (!values && cmd_params->default_value) {
 			values = xplParamValuesCreate();
 			free_needed = true;
-			xplParamValuesAdd(values, default_attr, XPL_PARAM_TYPE_USERDATA);
+			xplParamValuesAdd(values, cmd_params->default_value, XPL_PARAM_TYPE_USERDATA);
 		}
 		if (!values)
-			; /* nothing to do */
-		else if (response_tag_name_attr) {
-			EXTRACT_NS_AND_TAGNAME(response_tag_name_attr, ns, node_name, commandInfo->element);
-			ret = xplParamValuesToList(values, unique, expect, ns, node_name, commandInfo->element);
-		} else if (show_tags)
-			ret = xplParamValuesToList(values, unique, expect, NULL, name_attr, commandInfo->element);
-		else {
-			txt = xplParamValuesToString(values, unique, delim_attr, expect);
+			NOOP(); /* nothing to do */
+		else if (cmd_params->show_tags || cmd_params->response_tag_name.ncname) { /* wrap in elements */
+			if (cmd_params->show_tags)
+				single_qname.ncname = cmd_params->name;
+			ret = xplParamValuesToList(
+				values,
+				cmd_params->unique,
+				cmd_params->expect,
+				cmd_params->show_tags? single_qname: cmd_params->response_tag_name,
+				commandInfo->element);
+		} else { /* stringify */
+			txt = xplParamValuesToString(values, cmd_params->unique, cmd_params->delimiter, cmd_params->expect);
 			if (txt)
 			{
 				ret = xmlNewDocText(commandInfo->document->document, NULL);
 				ret->content = txt;
 			}
 		}
-	} else {
-		/* all params */
-		if (show_tags)
-		{
-			node_name = NULL;
-			ns = NULL;
-		} else if (response_tag_name_attr) {
-			EXTRACT_NS_AND_TAGNAME(response_tag_name_attr, ns, node_name, commandInfo->element);
-		} else {
-			ns = NULL;
-			node_name = BAD_CAST "param";
-		}
-		ret = xplParamsToList(commandInfo->document->environment, unique, expect, ns, node_name, commandInfo->element, type_mask);
-		// ToDo: downshiftNodeListNsDef?..
-	} 
-	ASSIGN_RESULT(ret, repeat, true);
-done:
-	if (name_attr)
-		XPL_FREE(name_attr);
-	if (expect_attr)
-		XPL_FREE(expect_attr);
-	if (response_tag_name_attr)
-		XPL_FREE(response_tag_name_attr);
-	if (delim_attr)
-		XPL_FREE(delim_attr);
-	if (type_attr)
-		XPL_FREE(type_attr);
+	} else /* all parameters */
+		ret = xplParamsToList(
+			commandInfo->document->environment,
+			cmd_params->unique,
+			cmd_params->expect,
+			cmd_params->show_tags? empty_qname: cmd_params->response_tag_name.ncname? cmd_params->response_tag_name: default_qname,
+			commandInfo->element,
+			cmd_params->type);
+	ASSIGN_RESULT(ret, cmd_params->repeat, true);
+
 	if (free_needed)
 		xplParamValuesFree(values);
-	else if (default_attr)
-		XPL_FREE(default_attr);
 }
-
-xplCommand xplGetParamCommand = { xplCmdGetParamPrologue, xplCmdGetParamEpilogue };

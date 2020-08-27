@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <libxml/tree.h>
 #include <libxml/xmlstring.h>
+#include <libxpl/xpltree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -107,7 +108,7 @@ XPLPUBFUN xmlChar* XPLCALL
 	xplParamValuesToString(const xplParamValuesPtr values, bool unique, const xmlChar *delim, xplExpectType expect);
 /* Make a list of node-packed values */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplParamValuesToList(const xplParamValuesPtr values, bool unique, xplExpectType expect, const xmlNsPtr ns, const xmlChar *nodeName, xmlNodePtr parent);
+	xplParamValuesToList(const xplParamValuesPtr values, bool unique, xplExpectType expect, const xplQName qname, xmlNodePtr parent);
 
 /* user-defined parameters collection */
 typedef void* xplParamsPtr;
@@ -133,7 +134,7 @@ XPLPUBFUN xplParamResult XPLCALL
 XPLPUBFUN void XPLCALL
 	xplParamsScan(xplParamsPtr params, xplParamsScanner f, void *userData);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplParamsToList(const xplParamsPtr params, bool unique, xplExpectType expect, const xmlNsPtr ns, const xmlChar *nodeName, xmlNodePtr parent, int typeMask);
+	xplParamsToList(const xplParamsPtr params, bool unique, xplExpectType expect, const xplQName qname, xmlNodePtr parent, int typeMask);
 XPLPUBFUN void XPLCALL
 	xplParamsLockValue(xplParamsPtr params, const xmlChar *name, bool doLock);
 XPLPUBFUN void XPLCALL
