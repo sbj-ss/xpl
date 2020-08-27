@@ -50,7 +50,7 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	OnigRegion *region = NULL;
 	xmlChar onig_err_str[ONIG_MAX_ERROR_MESSAGE_LEN+1];
 	int onig_ret_code;
-	xmlNodePtr ret = NULL, tail, cur, error;
+	xmlNodePtr ret = NULL, tail = NULL, cur, error;
 	bool match;
 	xmlChar *start, *end, *prev_boundary;
 	xmlHashTablePtr unique_hash = NULL;
@@ -170,9 +170,11 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 					tmp = *end;
 					*end = 0;
 					if (!unique || (xmlHashAddEntry(unique_hash, prev_boundary, &marker) != -1))
+					{
 						cur = xmlNewDocNode(commandInfo->element->doc, ns, tagname, prev_boundary);
+						APPEND()
+					}
 					*end = tmp;
-					APPEND()
 				}
 				end = content + (size_t) region->end[0];
 				if (keepdelimiter)
@@ -196,8 +198,10 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 				if (!*prev_boundary)
 					prev_boundary = NULL;
 				if (!unique || (xmlHashAddEntry(unique_hash, prev_boundary, &marker) != -1))
+				{
 					cur = xmlNewDocNode(commandInfo->element->doc, ns, tagname, prev_boundary);
-				APPEND()
+					APPEND()
+				}
 			} 
 			XPL_FREE(content);
 		} /* first match found */
