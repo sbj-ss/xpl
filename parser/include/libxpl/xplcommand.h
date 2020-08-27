@@ -201,7 +201,7 @@ XPLPUBFUN xplModuleCmdResult XPLCALL
 XPLPUBFUN xplModuleCmdResult XPLCALL
 	xplLoadModule(xmlChar *name, xmlChar **error_data);
 XPLPUBFUN void XPLCALL
-	xplUnloadModule(xmlChar *name);
+	xplUnloadModule(const xmlChar *name);
 XPLPUBFUN bool XPLCALL
 	xplIsModuleLoaded(const xmlChar *name);
 XPLPUBFUN xmlChar* XPLCALL
