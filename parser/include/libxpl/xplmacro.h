@@ -49,7 +49,7 @@ XPLPUBFUN xplMacroExpansionState XPLCALL
 XPLPUBFUN xplMacroPtr XPLCALL
 	xplMacroCreate(xmlChar *aId, xmlNodePtr aContent, xplMacroExpansionState expansionState);
 XMLPUBFUN void XMLCALL
-	xplMacroDeallocator(void *payload, xmlChar *name);
+	xplMacroDeallocator(void *payload, const xmlChar *name);
 XPLPUBFUN void XPLCALL
 	xplMacroFree(xplMacroPtr macro);
 XPLPUBFUN xplMacroPtr XPLCALL

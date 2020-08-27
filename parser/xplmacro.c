@@ -66,7 +66,7 @@ xplMacroPtr xplMacroCopy(xplMacroPtr macro, xmlNodePtr parent)
 	return ret;
 }
 
-void xplMacroDeallocator(void *payload, xmlChar *name)
+void xplMacroDeallocator(void *payload, const xmlChar *name)
 {
 	xplMacroFree((xplMacroPtr) payload);
 }
@@ -101,7 +101,7 @@ typedef struct
 	size_t delimiter_len;
 } macroStringScannerCtxt, *macroStringScannerCtxtPtr;
 
-static void macroCountScanner(void *payload, void *data, xmlChar *name)
+static void macroCountScanner(void *payload, void *data, const xmlChar *name)
 {
 	macroStringScannerCtxtPtr ctxt = (macroStringScannerCtxtPtr) data;
 	xplMacroPtr macro = (xplMacroPtr) payload;
@@ -120,7 +120,7 @@ static void macroCountScanner(void *payload, void *data, xmlChar *name)
 	}
 }
 
-static void macroStringScanner(void *payload, void *data, xmlChar *name)
+static void macroStringScanner(void *payload, void *data, const xmlChar *name)
 {
 	macroStringScannerCtxtPtr ctxt = (macroStringScannerCtxtPtr) data;
 	xplMacroPtr macro = (xplMacroPtr) payload;
@@ -265,7 +265,7 @@ typedef struct
 	xmlNodePtr parent;
 } macroListScannerCtxt, *macroListScannerCtxtPtr;
 
-static void macroListScanner(void *payload, void *data, xmlChar *name)
+static void macroListScanner(void *payload, void *data, const xmlChar *name)
 {
 	macroListScannerCtxtPtr ctxt = (macroListScannerCtxtPtr) data;
 	xplMacroPtr macro = (xplMacroPtr) payload;
@@ -318,7 +318,7 @@ typedef struct
 	xmlHashTablePtr table;
 } xplMacroTableCopyUpScannerCtxt, *xplMacroTableCopyUpScannerCtxtPtr;
 
-static void macroTableCopyUpScanner(void *payload, void *data, xmlChar *name)
+static void macroTableCopyUpScanner(void *payload, void *data, const xmlChar *name)
 {
 	xplMacroTableCopyUpScannerCtxtPtr ctxt = (xplMacroTableCopyUpScannerCtxtPtr) data;
 	xplMacroPtr macro = (xplMacroPtr) payload;
