@@ -57,7 +57,7 @@ void fillMacroHashFromList(xmlNodePtr source, xmlHashTablePtr target, xmlChar *l
 	}
 }
 
-void switchMacro(void *payload, void *data, xmlChar *name)
+void switchMacro(void *payload, void *data, const xmlChar *name)
 {
 	((xplMacroPtr) payload)->disabled_spin += (int) (ptrdiff_t) data;
 }
