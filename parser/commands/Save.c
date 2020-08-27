@@ -59,7 +59,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	bool omit_root;
 	xmlDocPtr doc = NULL;
 	xmlXPathObjectPtr sel = NULL;
-	xmlNodePtr root, error;
+	xmlNodePtr root = NULL, error;
 	size_t i;
 	int options = 0;
 
