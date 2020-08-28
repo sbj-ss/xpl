@@ -1,82 +1,60 @@
-#include "Common.h"
-#include <Winhttp.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <winhttp.h>
 #include <libxpl/abstraction/xef.h>
-#include <libxpl/abstraction/xefinternal.h>
 #include <libxpl/xplbuffer.h>
-#include <libxpl/xplcore.h>
-#include <libxpl/xplutils.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
+#include <libxpl/xplstring.h>
 
-XEF_STARTUP_PROTO(Transport)
+bool xefStartupTransport(xefStartupParamsPtr params)
 {
 	return true;
 }
 
-XEF_SHUTDOWN_PROTO(Transport)
+void xefShutdownTransport(void)
 {
-
 }
 
-typedef struct _xefTransportErrorMessage
+static xmlChar* xefCreateTransportErrorMessage(xmlChar *fmt, ...)
 {
-	xefErrorMessageHeader header;
-	xmlChar *message_text;
-	DWORD last_error;
-} xefTransportErrorMessage, *xefTransportErrorMessagePtr;
+	WCHAR *buffer;
+	xmlChar *sys_error = NULL, *formatted, *ret;
+	va_list args;
 
-xefErrorMessagePtr xefCreateTransportErrorMessage(xmlChar *src)
-{
-	xefTransportErrorMessagePtr ret = (xefTransportErrorMessagePtr) XPL_MALLOC(sizeof(xefTransportErrorMessage));
-	if (!ret)
+	va_start(args, fmt);
+	FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, (LPWSTR) &buffer, 0, NULL);
+	if (!buffer)
 		return NULL;
-	ret->header.subsystem = XEF_SUBSYSTEM_TRANSPORT;
-	ret->last_error = GetLastError();
-	ret->message_text = src;
-	return (xefErrorMessagePtr) ret;
-}
-
-XEF_GET_ERROR_TEXT_PROTO(Transport)
-{
-	xmlChar *sys_error = NULL, *ret;
-	wchar_t *buffer;
-	xefTransportErrorMessagePtr real_msg = (xefTransportErrorMessagePtr) msg;
-	FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, real_msg->last_error, 0, (LPWSTR) &buffer, 0, NULL);
-	if (buffer)
-	{
-		xstrIconvString("utf-8", "utf-16le", (char*) buffer, (char*) buffer + wcslen(buffer)*sizeof(wchar_t), (char**) &sys_error, NULL);
-		LocalFree(buffer);
-		ret = xplFormatMessage("%s: %s", real_msg->message_text, sys_error);
-		XPL_FREE(sys_error);
-	} else
-		ret = XPL_STRDUP(real_msg->message_text);
+	xstrIconvString("utf-8", "utf-16le", (char*) buffer, (char*) buffer + wcslen(buffer)*sizeof(WCHAR), (char**) &sys_error, NULL);
+	LocalFree(buffer);
+	if (!sys_error)
+		return NULL;
+	formatted = xplVFormatMessage(fmt, args);
+	if (!formatted)
+		return NULL;
+	ret = xplFormatMessage(BAD_CAST "%s: %s", formatted, sys_error);
+	XPL_FREE(sys_error);
+	XPL_FREE(formatted);
 	return ret;
-}
-
-XEF_FREE_ERROR_MESSAGE_PROTO(Transport)
-{
-	xefTransportErrorMessagePtr real_msg = (xefTransportErrorMessagePtr) msg;
-	if (!msg)
-		return;
-	if (real_msg->message_text) 
-		XPL_FREE(real_msg->message_text);
-	XPL_FREE(msg);
 }
 
 #define INT_RETRYTIMES 3
 
 bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 {
-	/* ������������ ��� - (c) 2007-2009 Cheng Shi, shicheng107@hotmail.com */
+	/* original code (c) 2007-2009 Cheng Shi, shicheng107@hotmail.com */
 	HINTERNET hSession;
 	HINTERNET hConnect = NULL;
 	HINTERNET hRequest = NULL;
-	wchar_t *wszRequestUrl = NULL;
+	WCHAR *wszRequestUrl = NULL;
 	URL_COMPONENTSW urlComp;
 	char *szProxy = NULL;
 	WINHTTP_PROXY_INFOW proxyInfo;
-	wchar_t *wszProxyUser = NULL;
-	wchar_t *wszProxyPassword = NULL;
-	wchar_t *wszHeader;
-	wchar_t *wsz_extra_headers;
+	WCHAR *wszProxyUser = NULL;
+	WCHAR *wszProxyPassword = NULL;
+	WCHAR *wszHeader;
+	WCHAR *wsz_extra_headers;
 	size_t iconv_len;
 	bool bOpResult = false, bResponseSucceeded = false;
 	unsigned int iRetryTimes = 0;
@@ -84,19 +62,19 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	DWORD extra_query_len;
 	DWORD options;
 	DWORD dwSize = 0, dwRead, dwTotal;
-	ReszBufPtr buf = NULL;
+	rbBufPtr buf = NULL;
 	unsigned short zero = 0;
 
 	params->document = NULL;
 	params->document_size = 0;
 	if (!params->uri)
 	{
-		params->error = xefCreateCommonErrorMessage(BAD_CAST "empty URI");
+		params->error = BAD_CAST XPL_STRDUP("empty URI");
 		return false;
 	}
 
 	/* ToDo: maybe reuse at document level?.. */
-	/* �������� ��� ������ ��������� */
+	/* ToDo: configurable agent */
 	hSession = WinHttpOpen(L"Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",  
 		WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
 		WINHTTP_NO_PROXY_NAME, 
@@ -110,15 +88,15 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	memset(&urlComp, 0, sizeof(urlComp));
 	urlComp.dwStructSize = sizeof(urlComp);
 	urlComp.dwHostNameLength = 256;
-	urlComp.lpszHostName = (wchar_t*) XPL_MALLOC((size_t) urlComp.dwHostNameLength);
+	urlComp.lpszHostName = (WCHAR*) XPL_MALLOC((size_t) urlComp.dwHostNameLength);
 	urlComp.dwUrlPathLength = 1024*2;
-	urlComp.lpszUrlPath = (wchar_t*) XPL_MALLOC((size_t) urlComp.dwUrlPathLength);
+	urlComp.lpszUrlPath = (WCHAR*) XPL_MALLOC((size_t) urlComp.dwUrlPathLength);
 	urlComp.dwExtraInfoLength = 1024*32;
-	urlComp.lpszExtraInfo = (wchar_t*) XPL_MALLOC((size_t) urlComp.dwExtraInfoLength); /* ������� ������ - � POST */
-	xstrIconvString("utf-16le", "utf-8", params->uri, params->uri + strlen(params->uri), (char**) &wszRequestUrl, NULL);
+	urlComp.lpszExtraInfo = (WCHAR*) XPL_MALLOC((size_t) urlComp.dwExtraInfoLength); /* use POST for larger data volumes */
+	xstrIconvString("utf-16le", "utf-8", (char*) params->uri, (char*) params->uri + xmlStrlen(params->uri), (char**) &wszRequestUrl, NULL);
 	if (!WinHttpCrackUrl(wszRequestUrl, 0, 0, &urlComp))
 	{
-		params->error = xefCreateCommonErrorMessage(BAD_CAST "the specified URI \"%s\" is incorrect", params->uri);
+		params->error = xefCreateTransportErrorMessage(BAD_CAST "the specified URI \"%s\" is incorrect", params->uri);
 		goto done;
 	}
 
@@ -126,20 +104,19 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	hConnect = WinHttpConnect(hSession, urlComp.lpszHostName, urlComp.nPort, 0);
 	if (!hConnect)
 	{
-		params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot connect to the specified server");
+		params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot connect to %s", params->uri);
 		goto done;
 	}
 
 	/* instantiate a request */
 	options = (urlComp.nScheme == INTERNET_SCHEME_HTTPS) ? WINHTTP_FLAG_SECURE : 0;
-	/* wszRequestUrl �� ������, ��� ��� ��� ���������� */
 	wcscpy(wszRequestUrl, urlComp.lpszUrlPath);
 	wcscat(wszRequestUrl, urlComp.lpszExtraInfo);
 	hRequest = WinHttpOpenRequest(hConnect, params->extra_query? L"POST": L"GET", wszRequestUrl,
 		NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES,	options);
 	if (!hRequest)
 	{
-		params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot open WinHTTP request");
+		params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot open WinHTTP request to %s", params->uri);
 		goto done;
 	}
 
@@ -159,11 +136,11 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	if (cfgProxyServer)
 	{
 		proxyInfo.dwAccessType = WINHTTP_ACCESS_TYPE_NAMED_PROXY;
-		szProxy = xplFormatMessage("%s:%d", cfgProxyServer, cfgProxyPort?cfgProxyPort:80);
+		szProxy = (char*) xplFormatMessage(BAD_CAST "%s:%d", cfgProxyServer, cfgProxyPort?cfgProxyPort:80);
 		xstrIconvString("utf-16le", "utf-8", (char*) szProxy, (char*) (szProxy + strlen(szProxy)), (char**) &proxyInfo.lpszProxy, NULL);
 		if (!WinHttpSetOption(hRequest, WINHTTP_OPTION_PROXY, &proxyInfo, sizeof(proxyInfo)))
 		{
-			params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot set up proxy");
+			params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot set up proxy %s:%d", cfgProxyServer, cfgProxyPort);
 			goto done;
 		}
 		if (cfgProxyUser)
@@ -171,7 +148,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 			xstrIconvString("utf-16le", "utf-8", (char*) cfgProxyUser, (char*) (cfgProxyUser + xmlStrlen(cfgProxyUser)), (char**) &wszProxyUser, &iconv_len);
 			if (!WinHttpSetOption(hRequest, WINHTTP_OPTION_PROXY_USERNAME, (LPVOID) wszProxyUser, (DWORD) iconv_len))
 			{
-				params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot set up proxy user");
+				params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot set up proxy user %s", cfgProxyUser);
 				goto done;
 			}
 			if (cfgProxyPassword)
@@ -195,14 +172,14 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 		extra_query_len = 0;
 	}
 
-	/* Retry for several times if fails. */
+	/* Retry for several times if fails. TODO: configure */
 	while (!bResponseSucceeded && iRetryTimes++ < INT_RETRYTIMES)
 	{
 		if (!WinHttpSendRequest(hRequest, wsz_extra_headers, -1, params->extra_query, extra_query_len, extra_query_len, (DWORD_PTR) NULL))
 		{
 			if (iRetryTimes == INT_RETRYTIMES)
 			{
-				params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot send request");
+				params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot send request to %s", params->uri);
 				goto done;
 			} else
 				continue; /* next try */
@@ -211,21 +188,21 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 		{
 			if (iRetryTimes == INT_RETRYTIMES)
 			{
-				params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot receive server response");
+				params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot receive server response from %s", params->uri);
 				goto done;
 			} else
 				continue; /* next try */
 		}
 #if 0
-		/* ToDo: ������� ��������� */
+		/* ToDo: find encoding */
 		dwSize = 0;
 		bOpResult = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_CONTENT_ENCODING, WINHTTP_HEADER_NAME_BY_INDEX, NULL, &dwSize, WINHTTP_NO_HEADER_INDEX);
 		if (bOpResult || (!bOpResult && (GetLastError() == ERROR_INSUFFICIENT_BUFFER)))
 		{
-			wszHeader = (wchar_t*) XPL_MALLOC(dwSize*sizeof(wchar_t));
+			wszHeader = (WCHAR*) XPL_MALLOC(dwSize*sizeof(WCHAR));
 			if (wszHeader)
 			{
-				memset(wszHeader, 0, dwSize* sizeof(wchar_t));
+				memset(wszHeader, 0, dwSize* sizeof(WCHAR));
 				if (WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_CONTENT_ENCODING, WINHTTP_HEADER_NAME_BY_INDEX,	wszHeader, &dwSize, WINHTTP_NO_HEADER_INDEX))
 				{
 					six = wcsstr(wszHeader, L"Content-Length: ");
@@ -239,18 +216,17 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 			} /* if the header is allocated */
 		} /* query headers */
 #endif
-		/* ��������� ������� */
+		/* temp stub */
 		params->encoding = NULL;
-		/* ������� ��� ������� */
-		/* ToDo: ��������� ��� */
+		/* ToDo: maybe check status code? */
 		dwSize = 0;
 		bOpResult = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE, WINHTTP_HEADER_NAME_BY_INDEX, NULL, &dwSize, WINHTTP_NO_HEADER_INDEX);
 		if (bOpResult || (!bOpResult && (GetLastError() == ERROR_INSUFFICIENT_BUFFER)))
 		{
-			wszHeader = (wchar_t*) XPL_MALLOC((size_t) dwSize*sizeof(wchar_t));
+			wszHeader = (WCHAR*) XPL_MALLOC((size_t) dwSize*sizeof(WCHAR));
 			if (wszHeader != NULL)
 			{
-				memset(wszHeader, 0, (size_t) dwSize* sizeof(wchar_t));
+				memset(wszHeader, 0, (size_t) dwSize* sizeof(WCHAR));
 				if (WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE, WINHTTP_HEADER_NAME_BY_INDEX, wszHeader, &dwSize, WINHTTP_NO_HEADER_INDEX))
 				{
 					swscanf_s(wszHeader, L"%d", &status_code, dwSize);
@@ -260,7 +236,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 			}
 		} /* if status queried */
 
-		buf = rbCreateBufParams(16384, RESZ_BUF_GROW_DOUBLE, 2);
+		buf = rbCreateBufParams(16384, RB_GROW_DOUBLE, 2);
 		dwTotal = 0;
 		do
 		{
@@ -274,9 +250,9 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 				} else
 					continue; /* next try */
 			}
-			if (rbEnsureBufFreeSize(buf, (size_t) dwSize) != RESZ_BUF_RESULT_OK)
+			if (rbEnsureBufFreeSize(buf, (size_t) dwSize) != RB_RESULT_OK)
 			{
-				params->error = xefCreateCommonErrorMessage(BAD_CAST "insufficient memory");
+				params->error = BAD_CAST XPL_STRDUP("insufficient memory");
 				goto done;
 			}
 			params->document = rbGetBufPosition(buf);
@@ -298,7 +274,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	params->document = (xmlChar*) rbDetachBufContent(buf);
 	params->document_size = (size_t) dwTotal;
 	params->error = NULL;
-	/* ToDo: ��������� */
+	/* ToDo: set this field */
 	params->real_uri = NULL;
 done:
 	if (hSession) WinHttpCloseHandle(hSession);
