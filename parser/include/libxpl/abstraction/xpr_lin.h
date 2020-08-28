@@ -30,21 +30,6 @@ int _scprintf(const char *format, ...);
 #define XPR_FS_ENCODING "utf-8"
 #define XPR_CONSOLE_ENCODING "utf-8"
 
-/* the same for console */
-#define XPR_CONSOLE_CHAR char
-#define XPR_MK_CONSOLE_CHAR(x) x
-#define XPR_MK_CONSOLE_STRING(x) x
-
-#define XPR_CONSOLE_STRCAT(s, t) strcat(s, t)
-#define XPR_CONSOLE_STRCHR(s, c) strchr(s, c)
-#define XPR_CONSOLE_STRCMP(s1, s2) strcmp(s1, s2)
-#define XPR_CONSOLE_STRCPY(d, s) strcpy(d, s)
-#define XPR_CONSOLE_STRDUP(s) strdup(s)
-#define XPR_CONSOLE_STRLEN(s) strlen(s)
-#define XPR_CONSOLE_STRNCMP(d, s, l) strncmp(d, s, l)
-#define XPR_CONSOLE_STRNCPY(d, s, l) strncpy(d, s, l)
-#define XPR_CONSOLE_STRRCHR(s, c) strrchr(s, c)
-
 /*
 #define XPR_FILE_FIND_DATA struct _wfinddata64_t
 #define XPR_FILE_FIND_HANDLE intptr_t
@@ -65,10 +50,10 @@ int _scprintf(const char *format, ...);
 #define XPR_FILE_WTIME_FROM_FDP(fdp) (&(fdp)->time_write)
 #define XPR_FILE_NAME_FROM_FDP(fdp) ((fdp)->name)
 */
-
+/*
 #define XPR_FILE_UNLINK(s) unlink(s)
 #define XPR_FILE_UNLINK_FAILED(x) ((x) == -1)
-
+*/
 #define O_BINARY 0
 #define O_TEXT 0
 /*
@@ -79,8 +64,7 @@ int _scprintf(const char *format, ...);
 #define XPR_MKDIR(s) _wmkdir(s)
 #define XPR_MKDIR_FAILED(x) ((x) == -1)
 #define XPR_STAT(fn, buf) _wstat64(fn, buf)
-*/
-/*
+
 #define XPR_GET_OS_ERROR() GetLastError()
 */
 #define XPR_SHARED_OBJECT_EXT (BAD_CAST ".so")
