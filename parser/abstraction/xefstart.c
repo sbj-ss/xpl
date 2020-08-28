@@ -9,7 +9,7 @@ void xefShutdownRegex(void);
 
 #ifdef _XEF_HAS_TRANSPORT
 bool xefStartupTransport(xefStartupParamsPtr params);
-void xefShutdownRegex(void);
+void xefShutdownTransport(void);
 #endif
 
 #ifdef _XEF_HAS_DB
