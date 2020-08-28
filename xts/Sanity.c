@@ -332,7 +332,7 @@ static xtsTest unexpected_leak_test =
 	.expectedMemoryDelta = 0
 };
 
-static void leak_deallocator(void *payload, xmlChar *name)
+static void leak_deallocator(void *payload, XML_HCBNC xmlChar *name)
 {
 	XPL_FREE(payload);
 }
