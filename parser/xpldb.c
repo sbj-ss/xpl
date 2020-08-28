@@ -134,6 +134,7 @@ const xmlChar* xplDecodeDBConfigResult(xplDBConfigResult result)
 
 static void dbDeallocator(void *payload, XML_HCBNC xmlChar *name)
 {
+	UNUSED_PARAM(name);
 	xplDBListFree((xplDBListPtr) payload);
 }
 
@@ -291,6 +292,8 @@ static void checkDatabase(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	xmlChar *msg;
 	bool is_avail = xefDbCheckAvail(((xplDBListPtr) payload)->conn_string, name, &msg);
+
+	UNUSED_PARAM(data);
 	if (msg)
 	{
 		xplDisplayMessage(is_avail? xplMsgInfo: xplMsgWarning, msg);

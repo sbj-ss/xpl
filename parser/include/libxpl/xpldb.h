@@ -78,10 +78,10 @@ XPLPUBFUN bool XPLCALL
 	xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors);
 
 XPLPUBFUN void XPLCALL
-	xplCheckDatabases();
+	xplCheckDatabases(void);
 
 XPLPUBFUN void XPLCALL
-	xplCleanupDatabases();
+	xplCleanupDatabases(void);
 
 #ifdef __cplusplus
 }
