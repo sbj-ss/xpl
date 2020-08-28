@@ -75,6 +75,7 @@ xplCommand xplAttributeCommand =
 
 void xplCmdAttributePrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
