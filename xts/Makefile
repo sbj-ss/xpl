@@ -4,7 +4,8 @@
 #******************************************
 
 INCLUDE = -I./include -I/usr/include/libxml2 -I ../parser/include
-LIBS = -lxml2
+LIB = -L.
+LIBS = -lxml2 -lxts
 WARNINGS = -Wall -Werror
 CFLAGS = $(WARNINGS)
 ifeq ($(DEBUG), 1)
@@ -12,31 +13,39 @@ CFLAGS += -D_DEBUG
 endif
 
 SRC = xts.c
-TEST_SRC = $(SRC) Sanity.c Runner.c 
+TEST_SRC = $(SRC) Sanity.c Runner.c
 
-OBJS = $(SRC:.c=.o)
-TEST_OBJS = $(TEST_SRC:.c=.o)
+CC = gcc
+AR = ar
+
+BUILD_DIR = build
+OBJS = $(SRC:%.c=$(BUILD_DIR)/%.o)
+TEST_OBJS = $(TEST_SRC:%.c=$(BUILD_DIR)/%.o)
 TEST_BIN = ./Runner
 
 .DEFAULT_GOAL = all
 
-.c.o:
-	gcc $(CFLAGS) $(INCLUDE) -c $< -o $@
+$(BUILD_DIR):
+	echo $(OBJS)
+	mkdir $@
+
+$(BUILD_DIR)/%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 	
 $(OBJS): $(SRC)
 
 $(TEST_OBJS): $(TEST_SRC)
 
 libxts.a: $(OBJS)
-	ar rcs $@ $(OBJS)
+	$(AR) rcs $@ $(OBJS)
 
-$(TEST_BIN): $(TEST_OBJS)
-	gcc -L. $(TEST_OBJS) -o $@ $(LIBS) -lxts 
+$(TEST_BIN): $(TEST_OBJS) libxts.a
+	$(CC) $(TEST_OBJS) -o $@ $(LIB) $(LIBS)
 
 test: $(TEST_BIN)
 	$(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
 	
 clean:
-	rm -f *.o *.a $(TEST_BIN)
+	rm -f $(BUILD_DIR)/*.o *.a $(TEST_BIN)
 	
-all: libxts.a
+all: $(BUILD_DIR) libxts.a
