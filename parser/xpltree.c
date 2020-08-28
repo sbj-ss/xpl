@@ -409,7 +409,7 @@ static xmlChar*  _newNsPrefix(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns)
 }
 #undef MAX_PREFIX_SIZE
 
-xmlNsPtr newReconciliedNs(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns) 
+static xmlNsPtr newReconciliedNs(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns)
 {
     xmlNsPtr def;
     xmlChar *prefix;
@@ -439,7 +439,7 @@ xmlNsPtr newReconciliedNs(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns)
     return def;
 }
 
-xmlAttrPtr clonePropInternal(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, xmlNodePtr top_clone) 
+static xmlAttrPtr clonePropInternal(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, xmlNodePtr top_clone)
 {
     xmlAttrPtr ret;
 
@@ -515,7 +515,7 @@ xmlAttrPtr clonePropInternal(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, x
     return(ret);
 }
 
-xmlAttrPtr clonePropListInner(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, xmlNodePtr top_clone) 
+static xmlAttrPtr clonePropListInner(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, xmlNodePtr top_clone)
 {
     xmlAttrPtr ret = NULL;
     xmlAttrPtr last = NULL, tmp;
@@ -538,9 +538,9 @@ xmlAttrPtr clonePropListInner(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, 
     return(ret);
 }
 
-xmlNodePtr cloneNodeListInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xmlNodePtr top_clone);
+static xmlNodePtr cloneNodeListInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xmlNodePtr top_clone);
 
-xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xmlNodePtr top_clone)
+static xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xmlNodePtr top_clone)
 {
     xmlNodePtr ret;
 
@@ -703,7 +703,7 @@ xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xml
     return(ret);
 }
 
-xmlNodePtr cloneNodeListInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xmlNodePtr top_clone)
+static xmlNodePtr cloneNodeListInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xmlNodePtr top_clone)
 {
     xmlNodePtr ret = NULL;
     xmlNodePtr p = NULL, q;
@@ -1117,6 +1117,8 @@ void xplRegisterXPathExtensions(xmlXPathContextPtr ctxt)
 {
 #if 0
     xmlXPathRegisterFunc(ctxt, (const xmlChar *) "is-defined", xplXPathIsDefinedFunction);
+#else
+    UNUSED_PARAM(ctxt);
 #endif
 }
 
