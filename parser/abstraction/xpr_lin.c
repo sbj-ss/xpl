@@ -11,6 +11,8 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/xmlerror.h>
 
+static int active_subsystems = 0;
+
 int _vscprintf (const char *format, va_list pargs)
 {
 	int retval;
@@ -262,8 +264,6 @@ bool xprIsDebuggerPresent(void)
    return debugged;
 }
 
-static int active_subsystems = 0;
-
 bool xprStartup(int what)
 {
 	what &= ~active_subsystems;
@@ -283,6 +283,11 @@ bool xprStartup(int what)
 	return true;
 }
 
+int xprGetActiveSubsystems(void)
+{
+	return active_subsystems;
+}
+
 void xprShutdown(int what)
 {
 	what &= active_subsystems;
@@ -299,9 +304,4 @@ void xprShutdown(int what)
 		NOOP();
 	}
 	active_subsystems &= ~what;
-}
-
-int xprGetActiveSubsystems(void)
-{
-	return active_subsystems;
 }
