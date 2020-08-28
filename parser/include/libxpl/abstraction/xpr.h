@@ -26,7 +26,7 @@ extern "C" {
 
 /* ///////////////////////// xpr.c //////////////////////////// */
 
-/* Перевернуть слэши под текущую платформу, модифицирует саму строку */
+/* Converts slashes to match current OS. Modifies input string */
 XPLPUBFUN void XPLCALL
 	xprConvertSlashes(xmlChar* path);
 
@@ -85,12 +85,10 @@ XPLPUBFUN void* XPLCALL
 XPLPUBFUN void XPLCALL 
 	xprSleep(int ms);
 
-/* Текст ошибки ОС. Указатель необходимо освободить */
+/* OS error text. Result must be freed. */
 XPLPUBFUN xmlChar* XPLCALL
 	xprFormatSysError(int error);
 
-/* Мы не передаём сюда строку: может оказаться так, что библиотека собрана
-   в юникоде, а использующая её программа - в мультибайте. */
 XPLPUBFUN bool XPLCALL
 	xprParseCommandLine(void);
 
