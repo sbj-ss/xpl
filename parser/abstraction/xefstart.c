@@ -64,7 +64,7 @@ bool xefStartup(xefStartupParamsPtr params)
 	
 	if (xef_is_started)
 		return true;
-	for (i = 0; i < XEF_START_STOP_STEP_COUNT; i++)
+	for (i = 0; i < (int) XEF_START_STOP_STEP_COUNT; i++)
 	{
 		if (!xef_start_stop_steps[i].start_fn)
 			continue;
