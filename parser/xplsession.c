@@ -44,6 +44,7 @@ bool xplSessionManagerInit(time_t max_lifetime)
 
 static void freeObjectCallback(void *payload, XML_HCBNC xmlChar *name)
 {
+	UNUSED_PARAM(name);
 	xmlUnlinkNode((xmlNodePtr) payload);
 	xmlFreeNode((xmlNodePtr) payload);
 }
@@ -64,6 +65,7 @@ static void xplSessionFree(xplSessionPtr session)
 
 static void freeSessionCallback(void *payload, XML_HCBNC xmlChar *name)
 {
+	UNUSED_PARAM(name);
 	xplSessionFree((xplSessionPtr) payload);
 }
 
@@ -202,9 +204,12 @@ void xplDeleteSession(const xmlChar *id)
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 }
 
-void enumStaleSessionsCallback(void *payload, void *data, XML_HCBNC xmlChar *name)
+static void enumStaleSessionsCallback(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	xplSessionPtr s = (xplSessionPtr) payload;
+
+	UNUSED_PARAM(name);
+	UNUSED_PARAM(data);
 	if (time(NULL) - s->init_ts > max_session_lifetime)
 		xmlHashRemoveEntry(session_mgr, name, freeSessionCallback);
 }
