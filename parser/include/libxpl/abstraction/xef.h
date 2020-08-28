@@ -192,6 +192,25 @@ XPLPUBFUN bool XPLCALL
 	#pragma message("WARNING: no database module, xpl:sql is unusable")
 #endif
 
+#ifdef _XEF_HAS_REGEX
+bool xefStartupRegex(xefStartupParamsPtr params);
+void xefShutdownRegex(void);
+#endif
+
+#ifdef _XEF_HAS_TRANSPORT
+bool xefStartupTransport(xefStartupParamsPtr params);
+void xefShutdownTransport(void);
+#endif
+
+#ifdef _XEF_HAS_DB
+bool xefStartupDatabase(xefStartupParamsPtr params);
+void xefShutdownDatabase(void);
+#endif
+
+#ifdef _XEF_HAS_HTML_CLEANER
+bool xefStartupHtmlCleaner(xefStartupParamsPtr params);
+void xefShutdownHtmlCleaner(void);
+#endif
 
 #ifdef __cplusplus
 }

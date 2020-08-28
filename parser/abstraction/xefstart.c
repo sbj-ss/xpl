@@ -2,26 +2,6 @@
 #include <libxpl/abstraction/xef.h>
 #include <libxpl/xplmessages.h>
 
-#ifdef _XEF_HAS_REGEX
-bool xefStartupRegex(xefStartupParamsPtr params);
-void xefShutdownRegex(void);
-#endif
-
-#ifdef _XEF_HAS_TRANSPORT
-bool xefStartupTransport(xefStartupParamsPtr params);
-void xefShutdownTransport(void);
-#endif
-
-#ifdef _XEF_HAS_DB
-bool xefStartupDatabase(xefStartupParamsPtr params);
-void xefShutdownDatabase(void);
-#endif
-
-#ifdef _XEF_HAS_HTML_CLEANER
-bool xefStartupHtmlCleaner(xefStartupParamsPtr params);
-void xefShutdownHtmlCleaner(void);
-#endif
-
 typedef struct _xefStartStopStep
 {
 	bool (*start_fn)(xefStartupParamsPtr params);
