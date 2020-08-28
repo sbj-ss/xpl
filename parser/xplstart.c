@@ -81,6 +81,7 @@ static bool startXml(const xplStartParamsPtr params, int argc, const char **argv
 	UNUSED_PARAM(params);
 	UNUSED_PARAM(argc);
 	UNUSED_PARAM(argv);
+	UNUSED_PARAM(error);
 
 	LIBXML_TEST_VERSION // TODO replace with nondestructive behavior. setjmp?..
 	xmlInitParser(); /* no return codes here */
@@ -125,6 +126,7 @@ static bool startXpl(const xplStartParamsPtr params, int argc, const char **argv
 	char *fn_pos;
 	xplError err_code;
 
+	UNUSED_PARAM(argc);
 	if (xmlStrchr(params->config_file_name, XPR_PATH_DELIM))
 		conf_path = BAD_CAST XPL_STRDUP((char*) params->config_file_name);
 	else {
@@ -175,7 +177,7 @@ bool xplStartEngine(const xplStartParamsPtr params, int argc, const char **argv,
 {
 	int i, j;
 
-	for (i = 0; i < START_STOP_STEP_COUNT; i++)
+	for (i = 0; i < (int) START_STOP_STEP_COUNT; i++)
 		if (!start_stop_steps[i].start_fn(params, argc, argv, error))
 		{
 			for (j = i - 1; j >= 0; j--)
