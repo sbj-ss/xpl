@@ -144,7 +144,7 @@ bool xstrIsValidUtf8Sample(xmlChar *s, size_t len, bool isCompleteString)
 	{
 		if (step == U8CS_DECISION) /* beginning of a char */
 		{
-			for (i = 0; i < U8_DECISION_LIST_SIZE; i++)
+			for (i = 0; i < (int) U8_DECISION_LIST_SIZE; i++)
 				if ((*p & U8DecisionList[i].mask) == U8DecisionList[i].result)
 				{
 					step = U8DecisionList[i].next;
@@ -311,7 +311,7 @@ int xstrIconvString (const char* tocode, const char* fromcode,
 		*lengthp = outptr - result;
 	result = (char*) XPL_REALLOC(result, outptr - result + 2);
 	if (resultp)
-		*resultp = result;
+		*resultp = result; // TODO otherwise result is lost
 	return 0;
 }
 
