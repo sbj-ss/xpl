@@ -344,7 +344,7 @@ void xplParamValuesFree(xplParamValuesPtr values)
 			} else if ((values->type == XPL_PARAM_TYPE_FILE) && values->param_tab[i])
 				xplParamFileInfoFree((xplParamFileInfoPtr) values->param_tab[i]);
 			else
-				/* we missed something */;
+				DISPLAY_INTERNAL_ERROR_MESSAGE();
 		}
 		XPL_FREE(values->param_tab);
 	}
@@ -539,6 +539,7 @@ int xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xpl
 
 static void* copyParamsCallback(void *payload, XML_HCBNC xmlChar *name)
 {
+	UNUSED_PARAM(name);
 	return xplParamValuesCopy((xplParamValuesPtr) payload);
 }
 
@@ -567,6 +568,7 @@ xmlChar *xplParamGetFirstValue(const xplParamsPtr params, const xmlChar *name)
 
 static void freeParamsCallback(void* payload, XML_HCBNC xmlChar* name)
 {
+	UNUSED_PARAM(name);
 	xplParamValuesFree((xplParamValuesPtr) payload);
 }
 
