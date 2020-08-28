@@ -28,7 +28,7 @@ typedef struct xefDbContext
 
 static SQLHANDLE hEnv = NULL;
 
-size_t sqlwcharlen(SQLWCHAR* s)
+static size_t sqlwcharlen(SQLWCHAR* s)
 {
 	SQLWCHAR *p = s;
 
@@ -39,6 +39,7 @@ size_t sqlwcharlen(SQLWCHAR* s)
 /*============== basic XEF stuff ===============*/
 bool xefStartupDatabase(xefStartupParamsPtr params)
 {
+	UNUSED_PARAM(params);
 	if (hEnv)
 		return true;
 	if (!SQL_SUCCEEDED(SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &hEnv)))
@@ -785,6 +786,7 @@ void xefDbEnumRows(xefDbContextPtr ctxt, xefDbGetRowCallback cb, void *user_data
 
 xmlChar* xefDbAccessStreamData(xefDbContextPtr ctxt, size_t *size)
 {
+	UNUSED_PARAM(ctxt);
 	if (size)
 		*size = 0;
 	return NULL;
@@ -792,6 +794,8 @@ xmlChar* xefDbAccessStreamData(xefDbContextPtr ctxt, size_t *size)
 
 void xefDbUnaccessStreamData(xefDbContextPtr ctxt, xmlChar *data)
 {
+	UNUSED_PARAM(ctxt);
+	UNUSED_PARAM(data);
 }
 
 void xefDbFreeParams(xefDbQueryParamsPtr params, bool freeCarrier)
