@@ -4,16 +4,17 @@
 #include <tidy/tidy.h>
 #include <tidy/tidybuffio.h>
 
-
-void* TIDY_CALL xml_tidyMalloc(size_t len)
+static void* TIDY_CALL xml_tidyMalloc(size_t len)
 {
 	return XPL_MALLOC(len);
 }
-void* TIDY_CALL xml_tidyRealloc(void* buf, size_t len)
+
+static void* TIDY_CALL xml_tidyRealloc(void* buf, size_t len)
 {
 	return XPL_REALLOC(buf, len);
 }
-void TIDY_CALL xml_tidyFree(void* buf)
+
+static void TIDY_CALL xml_tidyFree(void* buf)
 {
 	XPL_FREE(buf);
 }
