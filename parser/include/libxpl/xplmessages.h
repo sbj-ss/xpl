@@ -46,9 +46,9 @@ XPLPUBFUN void XPLCALL
 	__FUNCTION__, __FILE__, __LINE__);
 
 XPLPUBFUN bool XPLCALL
-	xplInitMessages();
+	xplInitMessages(void);
 XPLPUBFUN void XPLCALL
-	xplCleanupMessages();
+	xplCleanupMessages(void);
 
 #ifdef __cplusplus
 }
