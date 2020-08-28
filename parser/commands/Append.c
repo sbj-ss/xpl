@@ -110,6 +110,7 @@ xplCommand xplAppendCommand =
 
 void xplCmdAppendPrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
@@ -132,7 +133,7 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (cmd_params->destination && cmd_params->destination->nodesetval)
 	{
 
-		for (i = 0; i < (size_t) cmd_params->destination->nodesetval->nodeNr; i++)
+		for (i = 0; i < (ssize_t) cmd_params->destination->nodesetval->nodeNr; i++)
 		{
 			cur_dst = cmd_params->destination->nodesetval->nodeTab[i];
 			if ((cmd_params->position > POS_AFTER) && (cur_dst->type != XML_ELEMENT_NODE))
@@ -151,10 +152,10 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				if (cmd_params->position == POS_FIRST || cmd_params->position == POS_AFTER)
 				{
 					/* reverse loop to keep node order */
-					for (j = (size_t) cmd_params->source->nodesetval->nodeNr - 1; j >= 0; j--)
+					for (j = (ssize_t) cmd_params->source->nodesetval->nodeNr - 1; j >= 0; j--)
 						_doAppend(xplCloneAsNodeChild(cmd_params->source->nodesetval->nodeTab[j], parent), cur_dst, cmd_params->position);
 				} else {
-					for (j = 0; j < (size_t) cmd_params->source->nodesetval->nodeNr; j++)
+					for (j = 0; j < (ssize_t) cmd_params->source->nodesetval->nodeNr; j++)
 						_doAppend(xplCloneAsNodeChild(cmd_params->source->nodesetval->nodeTab[j], parent), cur_dst, cmd_params->position);
 				}
 			}
