@@ -495,7 +495,7 @@ bool xplCheckNodeForXplNs(xplDocumentPtr doc, xmlNodePtr element)
 /* content stuff for <xpl:content/> */
 void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, const xmlChar* id, xmlNodeSetPtr list);
 
-xmlNodeSetPtr getContentList(xplDocumentPtr doc, xmlNodePtr root, const xmlChar* id)
+static xmlNodeSetPtr getContentList(xplDocumentPtr doc, xmlNodePtr root, const xmlChar* id)
 {
 	/* ReszBuf not needed here: node sets grow by doubling */
 	xmlNodeSetPtr nodeset = xmlXPathNodeSetCreate(NULL);
@@ -656,14 +656,14 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 /* node mode-based processing */
 static void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result);
 static void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result);
-static xplMacroPtr xplNodeHasMacro(xplDocumentPtr doc, xmlNodePtr element);
+static xplMacroPtr xplFindMacroForNode(xmlNodePtr element);
 
 void xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result)
 {
 	xplMacroPtr macro;
 	xmlHashTablePtr macros;
 	
-    if (doc->expand && (macro = xplNodeHasMacro(doc, element)))
+    if (doc->expand && (macro = xplFindMacroForNode(element)))
 	{
 		macro->times_encountered++;
         if (!macro->disabled_spin)
@@ -707,7 +707,7 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr resu
 					xmlUnlinkNode(c);
 					xmlFreeNode(c); /* with children */
 				} else
-					; /* if DELETION_DEFERRED is set contents will be deleted after processing */
+					NOOP(); /* if DELETION_DEFERRED is set contents will be deleted after processing */
 			} else if (result->has_list) {
 				if (result->list && result->repeat)
 						tail = result->list;
@@ -856,7 +856,7 @@ void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr res
 	}
 }
 
-xplMacroPtr xplNodeHasMacro(xplDocumentPtr doc, xmlNodePtr element)
+xplMacroPtr xplFindMacroForNode(xmlNodePtr element)
 {
 	return xplMacroLookup(element->parent, element->ns? element->ns->href: NULL, element->name);
 }
@@ -1155,7 +1155,7 @@ xplError xplInitParser(xmlChar *cfgFile)
 	if (!cfgFile)
 		return XPL_ERR_NO_CONFIG_FILE;
 	config_file_path = BAD_CAST XPL_STRDUP((char*) cfgFile);
-	for (i = 0; i < START_STOP_STEP_COUNT; i++)
+	for (i = 0; i < (int) START_STOP_STEP_COUNT; i++)
 	{
 		if (!start_stop_steps[i].start_fn)
 			continue;
