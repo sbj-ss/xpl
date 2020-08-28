@@ -12,9 +12,9 @@ extern "C" {
 #endif
 
 XPLPUBFUN bool XPLCALL
-	xplRegisterBuiltinCommands();
+	xplRegisterBuiltinCommands(void);
 XPLPUBFUN void XPLCALL
-	xplUnregisterBuiltinCommands();
+	xplUnregisterBuiltinCommands(void);
 #ifdef __cplusplus
 }
 #endif
