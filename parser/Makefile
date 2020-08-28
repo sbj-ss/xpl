@@ -6,10 +6,17 @@
 INCLUDE = -I./include -I./tests/include -I../xts/include -I/usr/include/libxml2
 LIBS = -lxml2 -lxpl -lonig -ltidy -lcrypto -lidn -lodbc
 WARNINGS = -Wall -Werror
-CFLAGS = -fpic -D_IN_DLL $(WARNINGS)
+FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_DB_ODBC
+CFLAGS = -fpic -D_IN_DLL $(FEATURES) $(WARNINGS)
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -D_DEBUG
+else
+CFLAGS += -O2
 endif
+
+CC = gcc
+SO_EXT = .so
+BIN_EXT =
 
 SRC = \
 abstraction/xefstart.c\
@@ -168,7 +175,7 @@ tests/test_xplsave.c
 BUILD_DIR = build
 OBJS = $(SRC:%.c=$(BUILD_DIR)/%.o)
 TEST_OBJS = $(TEST_SRC:%.c=$(BUILD_DIR)/%.o)
-TEST_BIN = tests/Runner
+TEST_BIN = tests/Runner$(BIN_EXT)
 
 .DEFAULT_GOAL = all
 
@@ -183,18 +190,18 @@ $(BUILD_DIR)/tests:
 	mkdir -p $@
 
 $(BUILD_DIR)/%.o: %.c
-	gcc $(CFLAGS) $(INCLUDE) -c $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 	
-libxpl.so: $(OBJS)
-	gcc -shared -o $@ $(OBJS)
+libxpl$(SO_EXT): $(OBJS)
+	$(CC) -shared -o $@ $(OBJS)
 
-$(TEST_BIN): $(TEST_OBJS)
-	gcc $(TEST_OBJS) -o $@ -L../xts -L. $(LIBS) -lxts
+$(TEST_BIN): libxpl$(SO_EXT) $(TEST_OBJS)
+	$(CC) $(TEST_OBJS) -o $@ -L../xts -L. $(LIBS) -lxts
 
 test: $(TEST_BIN)
 	$(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
 	
 clean:
-	rm -rf $(BUILD_DIR) *.so
+	rm -rf $(BUILD_DIR) *$(SO_EXT)
 	
-all: build_dirs libxpl.so
+all: build_dirs libxpl$(SO_EXT)
