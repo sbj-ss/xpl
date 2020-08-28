@@ -21,17 +21,22 @@ static xplModuleCmdResult _registerCommandParams(xplCommandPtr cmd, xmlChar **er
 	xplCmdParamPtr param;
 	xmlChar **alias;
 
-	// TODO error details in **error
-	if (!(cmd->param_hash = xmlHashCreate(16)))
-		return XPL_MODULE_CMD_INSUFFICIENT_MEMORY;
 	for (i = 0; cmd->parameters[i].name; i++)
 		NOOP();
 	cmd->param_count = i;
+	if (!(cmd->param_hash = xmlHashCreate(cmd->param_count*2)))
+	{
+		if (error)
+			*error = BAD_CAST XPL_STRDUP("insufficient memory");
+		return XPL_MODULE_CMD_INSUFFICIENT_MEMORY;
+	}
 	cmd->required_params = (unsigned char*) XPL_MALLOC(cmd->param_count);
 	if (!cmd->required_params)
 	{
 		xmlHashFree(cmd->param_hash, NULL);
 		cmd->param_hash = NULL;
+		if (error)
+			*error = BAD_CAST XPL_STRDUP("insufficient memory");
 		return XPL_MODULE_CMD_INSUFFICIENT_MEMORY;
 	}
 	for (i = 0; i < cmd->param_count; i++)
@@ -41,6 +46,8 @@ static xplModuleCmdResult _registerCommandParams(xplCommandPtr cmd, xmlChar **er
 		{
 			xmlHashFree(cmd->param_hash, NULL);
 			cmd->param_hash = NULL;
+			if (error)
+				*error = xplFormatMessage(BAD_CAST "duplicate parameter name '%'s", param->name);
 			return XPL_MODULE_CMD_PARAM_NAME_CLASH;
 		}
 		for (alias = param->aliases; alias && *alias; alias++)
@@ -48,12 +55,16 @@ static xplModuleCmdResult _registerCommandParams(xplCommandPtr cmd, xmlChar **er
 			{
 				xmlHashFree(cmd->param_hash, NULL);
 				cmd->param_hash = NULL;
+				if (error)
+					*error = xplFormatMessage(BAD_CAST "duplicate alias name '%s'", *alias);
 				return XPL_MODULE_CMD_PARAM_NAME_CLASH;
 			}
 		param->value_offset = (uintptr_t) param->value_stencil - (uintptr_t) cmd->params_stencil;
 		cmd->required_params[i] = param->required;
 		param->index = i;
 	}
+	if (error)
+		*error = NULL;
 	return XPL_MODULE_CMD_OK;
 }
 
