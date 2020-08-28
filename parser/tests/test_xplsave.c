@@ -141,15 +141,15 @@ cleanup:
 	return ok;
 }
 
-static char temp_tmpl[] = "xts_save_XXXXXX";
+/*static char temp_tmpl[] = "xts_save_XXXXXX";*/
 
 static bool save_fixture_setup(xtsContextPtr ctxt)
 {
 	xmlDocPtr doc;
 
-	if (!mkdtemp(temp_tmpl))
+/*	if (!mkdtemp(temp_tmpl))
 		return false;
-	xmlHashAddEntry(ctxt->env, BAD_CAST "dir", temp_tmpl);
+	xmlHashAddEntry(ctxt->env, BAD_CAST "dir", temp_tmpl);*/
 	if (!(doc = create_test_doc()))
 		return false;
 	xmlHashAddEntry(ctxt->env, BAD_CAST "doc", doc);
