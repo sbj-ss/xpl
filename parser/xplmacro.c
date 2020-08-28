@@ -68,6 +68,7 @@ xplMacroPtr xplMacroCopy(xplMacroPtr macro, xmlNodePtr parent)
 
 void xplMacroDeallocator(void *payload, XML_HCBNC xmlChar *name)
 {
+	UNUSED_PARAM(name);
 	xplMacroFree((xplMacroPtr) payload);
 }
 
