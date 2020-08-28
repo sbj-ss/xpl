@@ -73,7 +73,7 @@ XPLPUBFUN void XPLCALL
 	xprInterlockedIncrement(volatile int *value);
 
 XPLPUBFUN XPR_THREAD_ID XPLCALL
-	xprGetCurrentThreadId();
+	xprGetCurrentThreadId(void);
 
 XPLPUBFUN XPR_SHARED_OBJECT_HANDLE XPLCALL
 	xprLoadSharedObject(xmlChar *path);
