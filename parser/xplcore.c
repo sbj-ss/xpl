@@ -1372,7 +1372,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 }
 
 
-#if defined(_IN_DLL) && defined(_WIN32)
+#if defined(_IN_DLL) && (defined(_WIN32) || defined(_WIN64))
 int __stdcall DllMain(int reason)
 {
 	switch(reason)
@@ -1386,6 +1386,6 @@ int __stdcall DllMain(int reason)
 	case DLL_THREAD_DETACH:
 		break;
 	}
-	return 0;
+	return 1;
 }
 #endif
