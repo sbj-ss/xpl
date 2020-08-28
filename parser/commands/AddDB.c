@@ -46,7 +46,7 @@ xplCommand xplAddDBCommand =
 
 void xplCmdAddDBPrologue(xplCommandInfoPtr commandInfo)
 {
-
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
