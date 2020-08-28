@@ -34,6 +34,7 @@ xplCommand xplAssertCommand =
 
 void xplCmdAssertPrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
