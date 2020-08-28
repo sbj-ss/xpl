@@ -112,7 +112,7 @@ XPLPUBFUN xmlNodePtr XPLCALL
 
 /* user-defined parameters collection */
 typedef void* xplParamsPtr;
-typedef void (*xplParamsScanner)(void *payload, void *data, const xmlChar *name);
+typedef void (*xplParamsScanner)(void *payload, void *data, XML_HCBNC xmlChar *name);
 
 XPLPUBFUN xplParamsPtr XPLCALL
 	xplParamsCreate(void);

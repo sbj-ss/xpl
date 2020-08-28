@@ -537,7 +537,7 @@ int xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xpl
 	return 1;
 }
 
-static void* copyParamsCallback(void *payload, const xmlChar *name)
+static void* copyParamsCallback(void *payload, XML_HCBNC xmlChar *name)
 {
 	return xplParamValuesCopy((xplParamValuesPtr) payload);
 }
@@ -565,7 +565,7 @@ xmlChar *xplParamGetFirstValue(const xplParamsPtr params, const xmlChar *name)
 		return NULL;
 }
 
-static void freeParamsCallback(void* payload, const xmlChar* name)
+static void freeParamsCallback(void* payload, XML_HCBNC xmlChar* name)
 {
 	xplParamValuesFree((xplParamValuesPtr) payload);
 }
@@ -667,7 +667,7 @@ typedef struct _xplParamsToListCtxt
 	int type_mask;
 } xplParamsToListCtxt;
 
-static void xplParamsToListScanner(void *payload, void *data, const xmlChar *name)
+static void xplParamsToListScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	xplParamsToListCtxt *ctxt;
 	xplParamValuesPtr values;

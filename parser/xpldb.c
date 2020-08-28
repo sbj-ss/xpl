@@ -132,7 +132,7 @@ const xmlChar* xplDecodeDBConfigResult(xplDBConfigResult result)
 	}
 }
 
-static void dbDeallocator(void *payload, const xmlChar *name)
+static void dbDeallocator(void *payload, XML_HCBNC xmlChar *name)
 {
 	xplDBListFree((xplDBListPtr) payload);
 }
@@ -204,7 +204,7 @@ typedef struct _getDBListContext
 	bool show_tags;
 } getDBListContext, *getDBListContextPtr;
 
-static void databaseListScanner(void *payload, void *data, const xmlChar *name)
+static void databaseListScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	getDBListContextPtr ctxt = (getDBListContextPtr) data;
 	xplDBListPtr db = (xplDBListPtr) payload;
@@ -287,7 +287,7 @@ bool xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors)
 	return !warningsAsErrors || ok;
 }
 
-static void checkDatabase(void *payload, void *data, const xmlChar *name)
+static void checkDatabase(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	xmlChar *msg;
 	bool is_avail = xefDbCheckAvail(((xplDBListPtr) payload)->conn_string, name, &msg);

@@ -134,7 +134,7 @@ typedef struct _CommandListScannerContext
 	xmlNodePtr head, tail;
 } CommandListScannerContext, *PCommandListScannerContext;
 
-static void commandListScanner(void *payload, void *data, const xmlChar *name)
+static void commandListScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	xmlNodePtr cur;
 	PCommandListScannerContext ctxt = (PCommandListScannerContext) data;
@@ -165,7 +165,7 @@ xmlNodePtr xplSupportedCommandsToList(xmlDocPtr doc, xmlNodePtr parent, const xm
 	return ctxt.head;
 }
 
-static void commandDeallocator(void *payload, const xmlChar *name)
+static void commandDeallocator(void *payload, XML_HCBNC xmlChar *name)
 {
 	xplCommandPtr cmd = (xplCommandPtr) payload;
 	if (cmd->finalizer)
@@ -419,7 +419,7 @@ xmlNodePtr xplFillCommandInfo(xplCommandPtr command, xplCommandInfoPtr info, boo
 	return NULL;
 }
 
-static void _paramCleanValueScanner(void *payload, void *data, const xmlChar *name)
+static void _paramCleanValueScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	xplCmdParamPtr param = (xplCmdParamPtr) payload;
 	char **value, **default_value;
@@ -485,7 +485,7 @@ xmlXPathObjectPtr xplSelectNodes(xplCommandInfoPtr commandInfo, xmlNodePtr src, 
 	return xplSelectNodesWithCtxt(commandInfo->xpath_ctxt, src, expr);
 }
 
-static void FreeModulesCallback(void *payload, const xmlChar *name)
+static void FreeModulesCallback(void *payload, XML_HCBNC xmlChar *name)
 {
 	xplUnloadModule(name);
 }
@@ -667,7 +667,7 @@ typedef struct _LoadedModulesCountScannerCtxt
 	size_t len;
 } LoadedModulesCountScannerCtxt, *LoadedModulesCountScannerCtxtPtr;
 
-static void loadedModulesCountScanner(void *payload, void *data, const xmlChar *name)
+static void loadedModulesCountScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	LoadedModulesCountScannerCtxtPtr ctxt = (LoadedModulesCountScannerCtxtPtr) data;
 	ctxt->len += xmlStrlen(name);
@@ -681,7 +681,7 @@ typedef struct _LoadedModulesStringScannerCtxt
 	size_t delim_len;
 } LoadedModulesStringScannerCtxt, *LoadedModulesStringScannerCtxtPtr;
 
-static void loadedModulesStringScanner(void *payload, void *data, const xmlChar *name)
+static void loadedModulesStringScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	LoadedModulesStringScannerCtxtPtr ctxt = (LoadedModulesStringScannerCtxtPtr) data;
 	size_t len = xmlStrlen(name);
@@ -735,7 +735,7 @@ typedef struct _LoadedModulesListScannerCtxt
 	xmlChar *tagname;
 } LoadedModulesListScannerCtxt, *LoadedModulesListScannerCtxtPtr;
 
-static void loadedModulesListScanner(void *payload, void *data, const xmlChar *name)
+static void loadedModulesListScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	LoadedModulesListScannerCtxtPtr ctxt = (LoadedModulesListScannerCtxtPtr) data;
 	xmlNodePtr cur;

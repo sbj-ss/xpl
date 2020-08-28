@@ -42,7 +42,7 @@ bool xplSessionManagerInit(time_t max_lifetime)
 	return true;
 }
 
-static void freeObjectCallback(void *payload, const xmlChar *name)
+static void freeObjectCallback(void *payload, XML_HCBNC xmlChar *name)
 {
 	xmlUnlinkNode((xmlNodePtr) payload);
 	xmlFreeNode((xmlNodePtr) payload);
@@ -62,7 +62,7 @@ static void xplSessionFree(xplSessionPtr session)
 	}
 }
 
-static void freeSessionCallback(void *payload, const xmlChar *name)
+static void freeSessionCallback(void *payload, XML_HCBNC xmlChar *name)
 {
 	xplSessionFree((xplSessionPtr) payload);
 }
@@ -202,7 +202,7 @@ void xplDeleteSession(const xmlChar *id)
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 }
 
-void enumStaleSessionsCallback(void *payload, void *data, const xmlChar *name)
+void enumStaleSessionsCallback(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	xplSessionPtr s = (xplSessionPtr) payload;
 	if (time(NULL) - s->init_ts > max_session_lifetime)

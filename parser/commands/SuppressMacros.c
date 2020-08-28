@@ -6,7 +6,7 @@
 #include <libxpl/xpltree.h>
 #include "commands/SuppressMacros.h"
 
-void fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target, xmlNodeSetPtr nodeset)
+static void fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target, xmlNodeSetPtr nodeset)
 {
 	xplMacroPtr macro;
 	xmlNodePtr cur;
@@ -24,7 +24,7 @@ void fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target, xmlNode
 	} /* for */
 }
 
-void fillMacroHashFromList(xmlNodePtr source, xmlHashTablePtr target, xmlChar *list)
+static void fillMacroHashFromList(xmlNodePtr source, xmlHashTablePtr target, xmlChar *list)
 {
 	xmlChar *prev, *cur, *tagname;
 	void *macro;
@@ -57,7 +57,7 @@ void fillMacroHashFromList(xmlNodePtr source, xmlHashTablePtr target, xmlChar *l
 	}
 }
 
-void switchMacro(void *payload, void *data, const xmlChar *name)
+static void switchMacro(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	((xplMacroPtr) payload)->disabled_spin += (int) (ptrdiff_t) data;
 }

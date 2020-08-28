@@ -8,10 +8,11 @@
 
 #include <string.h>
 #include <libxml/xmlstring.h>
+#include <libxml/xmlversion.h>
 /* Calling conventions */
 /* _IN_DLL should be set in Makefile or project properties */
-#if defined(_MSC_VER)
-    // Microsoft
+#if defined(_MSC_VER) || defined (__MINGW32__)
+    // Microsoft and alike
     #define SHARED_EXPORT __declspec(dllexport)
     #define SHARED_IMPORT __declspec(dllimport)
 #elif defined(__GNUC__)
@@ -54,6 +55,13 @@
 	#define PRINTF_ARGS(x, y) __attribute__((format(printf, x, y)))
 #else
 	#define PRINTF_ARGS(x, y)
+#endif
+
+/* libxml2 hash callbacks const modifier for the name param */
+#if LIBXML_VERSION > 20904
+#define XML_HCBNC const
+#else
+#define XML_HCBNC
 #endif
 
 /* Hard-coded params */
