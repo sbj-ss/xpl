@@ -138,6 +138,8 @@ static void commandListScanner(void *payload, void *data, XML_HCBNC xmlChar *nam
 {
 	xmlNodePtr cur;
 	PCommandListScannerContext ctxt = (PCommandListScannerContext) data;
+	UNUSED_PARAM(payload);
+
 	if (ctxt->name)
 		cur = xmlNewDocNode(ctxt->doc, ctxt->ns, ctxt->name, name);
 	else
@@ -168,6 +170,8 @@ xmlNodePtr xplSupportedCommandsToList(xmlDocPtr doc, xmlNodePtr parent, const xm
 static void commandDeallocator(void *payload, XML_HCBNC xmlChar *name)
 {
 	xplCommandPtr cmd = (xplCommandPtr) payload;
+
+	UNUSED_PARAM(name);
 	if (cmd->finalizer)
 		cmd->finalizer(NULL);
 }
@@ -426,6 +430,7 @@ static void _paramCleanValueScanner(void *payload, void *data, XML_HCBNC xmlChar
 	xmlXPathObjectPtr *xpath_obj;
 	xplQNamePtr qname;
 
+	UNUSED_PARAM(name);
 	switch (param->type)
 	{
 		case XPL_CMD_PARAM_TYPE_STRING:
@@ -487,6 +492,7 @@ xmlXPathObjectPtr xplSelectNodes(xplCommandInfoPtr commandInfo, xmlNodePtr src, 
 
 static void FreeModulesCallback(void *payload, XML_HCBNC xmlChar *name)
 {
+	UNUSED_PARAM(payload);
 	xplUnloadModule(name);
 }
 
@@ -669,6 +675,7 @@ typedef struct _LoadedModulesCountScannerCtxt
 
 static void loadedModulesCountScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
+	UNUSED_PARAM(payload);
 	LoadedModulesCountScannerCtxtPtr ctxt = (LoadedModulesCountScannerCtxtPtr) data;
 	ctxt->len += xmlStrlen(name);
 	ctxt->len += ctxt->delim_len;
@@ -685,6 +692,8 @@ static void loadedModulesStringScanner(void *payload, void *data, XML_HCBNC xmlC
 {
 	LoadedModulesStringScannerCtxtPtr ctxt = (LoadedModulesStringScannerCtxtPtr) data;
 	size_t len = xmlStrlen(name);
+
+	UNUSED_PARAM(payload);
 	memcpy(ctxt->string_pos, name, len);
 	ctxt->string_pos += len;
 	if (ctxt->delimiter)
@@ -739,6 +748,8 @@ static void loadedModulesListScanner(void *payload, void *data, XML_HCBNC xmlCha
 {
 	LoadedModulesListScannerCtxtPtr ctxt = (LoadedModulesListScannerCtxtPtr) data;
 	xmlNodePtr cur;
+
+	UNUSED_PARAM(payload);
 	if (ctxt->tagname)
 		cur = xmlNewDocNode(ctxt->doc, ctxt->ns, ctxt->tagname, name);
 	else

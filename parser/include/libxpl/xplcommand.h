@@ -168,7 +168,7 @@ typedef enum _xplModuleCmdResult
 } xplModuleCmdResult;
 
 XPLPUBFUN bool XPLCALL
-	xplInitCommands();
+	xplInitCommands(void);
 XPLPUBFUN xplModuleCmdResult XPLCALL
 	xplRegisterCommand(const xmlChar* name, xplCommandPtr cmd, xmlChar **error);
 XPLPUBFUN void XPLCALL
@@ -180,7 +180,7 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplSupportedCommandsToList(xmlDocPtr doc, xmlNodePtr parent, const xmlChar *tagName);
 XPLPUBFUN void XPLCALL
-	xplCleanupCommands();
+	xplCleanupCommands(void);
 
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, bool *value, bool defaultValue);
