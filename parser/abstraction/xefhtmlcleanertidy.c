@@ -21,6 +21,7 @@ static void TIDY_CALL xml_tidyFree(void* buf)
 
 bool xefStartupHtmlCleaner(xefStartupParamsPtr params)
 {
+	UNUSED_PARAM(params);
 #ifdef _LEAK_DETECTION
 	tidySetMallocCall(xml_tidyMalloc);
 	tidySetReallocCall(xml_tidyRealloc);
