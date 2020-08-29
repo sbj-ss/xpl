@@ -4,13 +4,10 @@
 #include <libxpl/xpltree.h>
 #include "commands/Break.h"
 
-void xplCmdBreakPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 static bool checkForAncestor(xmlNodeSetPtr set, xmlNodePtr ancestor)
 {
 	size_t i;
+
 	for (i = 0; i < (size_t) set->nodeNr; i++)
 		if (set->nodeTab[i] == ancestor)
 			return true;
@@ -29,54 +26,77 @@ static xmlNodePtr createBreak(xplCommandInfoPtr commandInfo, xmlChar *where)
 	return ret;
 }
 
+typedef struct _xplCmdBreakParams
+{
+	xmlXPathObjectPtr point;
+} xplCmdBreakParams, *xplCmdBreakParamsPtr;
+
+static const xplCmdBreakParams params_stencil =
+{
+	.point = NULL
+};
+
+xplCommand xplBreakCommand =
+{
+	.prologue = xplCmdBreakPrologue,
+	.epilogue = xplCmdBreakEpilogue,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdBreakParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "point",
+			.type = XPL_CMD_PARAM_TYPE_XPATH,
+			.extra.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_ANY,
+			.value_stencil = &params_stencil.point
+		}, {
+			.name = NULL
+		}
+	}
+};
+
+void xplCmdBreakPrologue(xplCommandInfoPtr commandInfo)
+{
+	UNUSED_PARAM(commandInfo);
+}
+
 void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-
-#define POINT_ATTR (BAD_CAST "point")
-	xmlChar *point_attr = NULL;
-	xmlXPathObjectPtr point = NULL;
+	xplCmdBreakParamsPtr cmd_params = (xplCmdBreakParamsPtr) commandInfo->params;
 	xmlChar number_buf[32];
-	bool do_break = true;
+	bool do_ascend = true;
 	bool do_climb = false;
 	xmlChar *upper_point;
 	xmlNodePtr upper_break;
 
-	point_attr = xmlGetNoNsProp(commandInfo->element, POINT_ATTR);
-	if (point_attr) /* ������� ����� */
+	if (cmd_params->point)
 	{
-		point = xplSelectNodes(commandInfo, commandInfo->element, point_attr);
-		if (!point)
+		switch (cmd_params->point->type)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid point XPath expression \"%s\"", point_attr), true, true);
-			goto done;
-		}
-		switch (point->type)
-		{
-		case XPATH_BOOLEAN: 
-			do_break = point->boolval;
-			break;
-		case XPATH_STRING:
-			do_break = (point->stringval && *point->stringval);
-			break;
-		case XPATH_NUMBER:
-			do_climb = (point->floatval > 1.0);
-			if (do_climb)
-			{
-				snprintf((char*) number_buf, sizeof(number_buf) - 1, "%d", (int) point->floatval - 1);
-				number_buf[sizeof(number_buf) - 1] = 0;
-				upper_point = number_buf;
-			}
-			break;
-		case XPATH_NODESET:
-			if (point->nodesetval && point->nodesetval->nodeNr)
-				do_climb = !checkForAncestor(point->nodesetval, commandInfo->element->parent);
-			else
-				do_climb = true;
-			upper_point = point_attr;
-			break;
-		default:
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "point XPath expression \"%s\" evaluated to invalid type", point_attr), true, true);
-			goto done;
+			case XPATH_BOOLEAN:
+				do_ascend = cmd_params->point->boolval;
+				break;
+			case XPATH_STRING:
+				do_ascend = (cmd_params->point->stringval && *cmd_params->point->stringval);
+				break;
+			case XPATH_NUMBER:
+				do_climb = (cmd_params->point->floatval > 1.0);
+				if (do_climb)
+				{
+					snprintf((char*) number_buf, sizeof(number_buf) - 1, "%d", (int) cmd_params->point->floatval - 1);
+					number_buf[sizeof(number_buf) - 1] = 0;
+					upper_point = number_buf;
+				}
+				break;
+			case XPATH_NODESET:
+				if (cmd_params->point->nodesetval && cmd_params->point->nodesetval->nodeNr)
+					do_climb = !checkForAncestor(cmd_params->point->nodesetval, commandInfo->element->parent);
+				else
+					do_climb = true;
+				upper_point = (xmlChar*) cmd_params->point->user;
+				break;
+			default:
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "point XPath expression \"%s\" evaluated to invalid type", cmd_params->point->user), true, true);
+				return;
 		}
 		if (do_climb)
 		{
@@ -88,16 +108,11 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			}
 		}
 	}
-	if (do_break)
+	if (do_ascend)
 	{
 		xplDocDeferNodeListDeletion(commandInfo->document, commandInfo->element->next);
 		commandInfo->element->next = NULL;
 		commandInfo->element->parent->last = commandInfo->element;
 	}
 	ASSIGN_RESULT(NULL, false, true);
-done:
-	if (point) xmlXPathFreeObject(point);
-	if (point_attr) XPL_FREE(point_attr);
 }
-
-xplCommand xplBreakCommand = { xplCmdBreakPrologue, xplCmdBreakEpilogue };
