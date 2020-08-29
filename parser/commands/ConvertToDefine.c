@@ -3,44 +3,67 @@
 #include <libxpl/xplmessages.h>
 #include "commands/ConvertToDefine.h"
 
+typedef struct _xplCmdConvertToDefineParams
+{
+	xplMacroExpansionState default_expand;
+	bool default_replace;
+} xplCmdConvertToDefineParams, *xplCmdConvertToDefineParamsPtr;
+
+static const xplCmdConvertToDefineParams params_stencil =
+{
+	.default_expand = XPL_MACRO_EXPAND_NO_DEFAULT,
+	.default_replace = true
+};
+
+static xmlChar* _getDefaultExpand(const xmlChar *raw_value, int *result)
+{
+	*result = xplMacroExpansionStateFromString(raw_value, true);
+	if (*result == XPL_MACRO_EXPAND_UNKNOWN)
+		return xplFormatMessage(BAD_CAST "invalid defaultexpand value '%s'", raw_value);
+	return NULL;
+}
+
+xplCommand xplConvertToDefineCommand =
+{
+	.prologue = xplCmdConvertToDefinePrologue,
+	.epilogue = xplCmdConvertToDefineEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdConvertToDefineParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "defaultexpand",
+			.type = XPL_CMD_PARAM_TYPE_INT_CUSTOM_GETTER,
+			.extra = {
+				.int_getter = _getDefaultExpand
+			},
+			.value_stencil = &params_stencil.default_expand
+		}, {
+			.name = BAD_CAST "defaultreplace",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.default_replace
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdConvertToDefinePrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define DEFAULTEXPAND_ATTR (BAD_CAST "defaultexpand")
-#define DEFAULTREPLACE_ATTR (BAD_CAST "defaultreplace")
-	xmlChar *defaultexpand_attr = NULL;
+	xplCmdConvertToDefineParamsPtr params = (xplCmdConvertToDefineParamsPtr) commandInfo->params;
 	xmlNodePtr tmp;
-	xplMacroExpansionState default_expand;
-	bool default_replace = true;
 
-	if ((defaultexpand_attr = xmlGetNoNsProp(commandInfo->element, DEFAULTEXPAND_ATTR)))
-	{
-		if ((default_expand = xplMacroExpansionStateFromString(defaultexpand_attr, true)) == XPL_MACRO_EXPAND_UNKNOWN)
-		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown defaultexpand value: \"%s\"", defaultexpand_attr), true, true);
-			goto done;
-		}
-	} else
-		default_expand = XPL_MACRO_EXPAND_NO_DEFAULT;
-	if ((tmp = xplDecodeCmdBoolParam(commandInfo->element, DEFAULTREPLACE_ATTR, &default_replace, true)))
-	{
-		ASSIGN_RESULT(tmp, true, true);
-		goto done;
-	}
 	tmp = commandInfo->element->children;
 	while (tmp)
 	{
 		if (tmp->type == XML_ELEMENT_NODE)
-			xplAddMacro(commandInfo->document, tmp, commandInfo->element->parent, true, default_expand, default_replace);
+			xplAddMacro(commandInfo->document, tmp, commandInfo->element->parent, true, params->default_expand, params->default_replace);
 		tmp = tmp->next;
 	}
 	ASSIGN_RESULT(NULL, false, true);
-done:
-	if (defaultexpand_attr)
-		XPL_FREE(defaultexpand_attr);
 }
-
-xplCommand xplConvertToDefineCommand = { xplCmdConvertToDefinePrologue, xplCmdConvertToDefineEpilogue };
