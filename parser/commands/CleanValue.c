@@ -3,64 +3,97 @@
 #include <libxpl/xpltree.h>
 #include "commands/CleanValue.h"
 
+typedef enum _xplCmdCleanBehavior
+{
+	CLEAN_BEHAVIOR_EXTRACT,
+	CLEAN_BEHAVIOR_CLEAR,
+	CLEAN_BEHAVIOR_COMPLAIN
+} xplCmdCleanBehavior;
+
+typedef struct _xplCmdCleanValueParams
+{
+	xplExpectType expect;
+	xplCmdCleanBehavior behavior;
+} xplCmdCleanValueParams, *xplCmdCleanValueParamsPtr;
+
+static const xplCmdCleanValueParams params_stencil =
+{
+	.expect = XPL_EXPECT_UNSPECIFIED,
+	.behavior = CLEAN_BEHAVIOR_COMPLAIN
+};
+
+static xplCmdParamDictValue behavior_values[] =
+{
+	{ BAD_CAST "extract", CLEAN_BEHAVIOR_EXTRACT },
+	{ BAD_CAST "clear", CLEAN_BEHAVIOR_CLEAR },
+	{ BAD_CAST "complain", CLEAN_BEHAVIOR_COMPLAIN },
+	{ NULL, 0 }
+};
+
+xplCommand xplCleanValueCommand =
+{
+	.prologue = xplCmdCleanValuePrologue,
+	.epilogue = xplCmdCleanValueEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdCleanValueParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "expect",
+			.type = XPL_CMD_PARAM_TYPE_INT_CUSTOM_GETTER,
+			.extra.int_getter = xplExpectTypeGetter,
+			.value_stencil = &params_stencil.expect
+		}, {
+			.name = BAD_CAST "behavior",
+			.type = XPL_CMD_PARAM_TYPE_DICT,
+			.extra.dict_values = behavior_values,
+			.value_stencil = &params_stencil.behavior
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdCleanValuePrologue(xplCommandInfoPtr commandInfo)
 {
 }
 
 void xplCmdCleanValueEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define EXPECT_ATTR (BAD_CAST "expect")
-#define REMOVEONNONMATCH_ATTR (BAD_CAST "removeonnonmatch")
-	xmlChar *expect_attr = NULL;
-	xplExpectType expect;
-	bool remove_on_nonmatch;
-	xmlNodePtr error, ret;
-	xmlChar *value = NULL, *clean_value;
+	xplCmdCleanValueParamsPtr params = (xplCmdCleanValueParamsPtr) commandInfo->params;
+	xmlChar *clean_value;
+	xmlNodePtr ret = NULL;
 
-	expect_attr = xmlGetNoNsProp(commandInfo->element, EXPECT_ATTR);
-	if (!expect_attr)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing expect attribute"), true, true);
-		goto done;
-	}
-	if ((expect = xplExpectTypeFromString(expect_attr)) == XPL_EXPECT_UNDEFINED)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown expect value: \"%s\"", expect_attr), true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REMOVEONNONMATCH_ATTR, &remove_on_nonmatch, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if (!xplCheckNodeListForText(commandInfo->element->children))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
-		goto done;
-	}
-	value = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
-	if (!value)
+	if (!commandInfo->content)
 	{
 		ASSIGN_RESULT(NULL, false, true);
-		goto done; 
+		return;
 	}
-	clean_value = xplCleanTextValue(value, expect);
-	if (remove_on_nonmatch && (xmlStrlen(value) != xmlStrlen(clean_value)))
+	if ((clean_value = xplCleanTextValue(commandInfo->content, params->expect)))
 	{
-		XPL_FREE(clean_value);
-		clean_value = NULL;
-	}
-	if (clean_value)
-	{
-		ret = xmlNewDocText(commandInfo->element->doc, NULL);
-		ret->content = clean_value;
+		if (xmlStrcmp(commandInfo->content, clean_value))
+		{
+			switch (params->behavior)
+			{
+				case CLEAN_BEHAVIOR_EXTRACT:
+					ret = xmlNewDocText(commandInfo->element->doc, NULL);
+					ret->content = clean_value;
+					break;
+				case CLEAN_BEHAVIOR_CLEAR:
+					XPL_FREE(clean_value);
+					break;
+				case CLEAN_BEHAVIOR_COMPLAIN:
+					ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "value '%s' doesn't pass validation", commandInfo->content);
+					XPL_FREE(clean_value);
+					break;
+				default:
+					DISPLAY_INTERNAL_ERROR_MESSAGE();
+			}
+		} else {
+			ret = xmlNewDocText(commandInfo->element->doc, NULL);
+			ret->content = clean_value;
+		}
 		ASSIGN_RESULT(ret, false, true);
-	} else {
+	} else
 		ASSIGN_RESULT(NULL, false, true);
-	}
-done:
-	if (expect_attr) XPL_FREE(expect_attr);
-	if (value) XPL_FREE(value);
 }
-
-xplCommand xplCleanValueCommand = { xplCmdCleanValuePrologue, xplCmdCleanValueEpilogue };
