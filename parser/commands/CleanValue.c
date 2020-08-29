@@ -56,6 +56,7 @@ xplCommand xplCleanValueCommand =
 
 void xplCmdCleanValuePrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdCleanValueEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
