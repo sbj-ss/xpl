@@ -1063,7 +1063,7 @@ static void replaceRedundantNamespacesInner(NsReplacementContextPtr ctxt, xmlNod
 	}
 }
 
-void replaceRedundantNamespaces(xmlNodePtr top)
+void xplReplaceRedundantNamespaces(xmlNodePtr top)
 {
 	NsReplacementContext ctxt;
 

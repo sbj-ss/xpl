@@ -116,6 +116,9 @@ XPLPUBFUN xmlNodePtr XPLCALL
 /* translate cur's namespace list to its parent */
 XPLPUBFUN bool XPLCALL
 	xplUpshiftNodeNsDefs(xmlNodePtr cur);
+/* ditto */
+XPLPUBFUN void XPLCALL
+	xplReplaceRedundantNamespaces(xmlNodePtr top);
 /* Translate parent's ns_list to cur before deleting its parent. Assume cur is already detached. */
 XPLPUBFUN void XPLCALL
 	xplDownshiftNodeNsDef(xmlNodePtr cur, xmlNsPtr ns_list);
