@@ -5,7 +5,7 @@
 #include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
 
-xplMacroExpansionState xplMacroExpansionStateFromString(xmlChar *state, bool allowNoDefault)
+xplMacroExpansionState xplMacroExpansionStateFromString(const xmlChar *state, bool allowNoDefault)
 {
 	if (!state)
 		return XPL_MACRO_EXPAND_ALWAYS; /* default */
@@ -204,7 +204,7 @@ xmlChar* xplMacroTableToString(xmlNodePtr element, xmlChar* delimiter, bool uniq
 	return ret;
 }
 
-static xmlNodePtr xplMacroToNodeInner(xplMacroPtr macro, xmlNsPtr ns, xmlChar *tagName, xmlNodePtr parent)
+xmlNodePtr xplMacroToNode(xplMacroPtr macro, xplQName tagname, xmlNodePtr parent)
 {
 	xmlNodePtr ret;
 	xmlChar *expansion_state;
@@ -213,7 +213,7 @@ static xmlNodePtr xplMacroToNodeInner(xplMacroPtr macro, xmlNsPtr ns, xmlChar *t
 
 	if (!macro || !parent)
 		return NULL;
-	ret = xmlNewDocNode(parent->doc, ns, tagName, NULL);
+	ret = xmlNewDocNode(parent->doc, tagname.ns, tagname.ncname, NULL);
 	xmlNewProp(ret, BAD_CAST "namespaceuri", macro->ns? macro->ns->href: NULL);
 	xmlNewProp(ret, BAD_CAST "prefix", macro->ns? macro->ns->prefix: NULL);
 	xmlNewProp(ret, BAD_CAST "name", macro->name);
@@ -248,21 +248,12 @@ static xmlNodePtr xplMacroToNodeInner(xplMacroPtr macro, xmlNsPtr ns, xmlChar *t
 	return ret;
 }
 
-xmlNodePtr xplMacroToNode(xplMacroPtr macro, xmlChar *tagName, xmlNodePtr parent)
-{
-	xmlNsPtr ns;
-	xmlChar *tag_name;
-	EXTRACT_NS_AND_TAGNAME(tagName, ns, tag_name, parent);
-	return xplMacroToNodeInner(macro, ns, tag_name, parent);
-}
-
 typedef struct
 {
 	xmlHashTablePtr unique_hash;
 	xmlNodePtr cur;
 	xmlNodePtr head;
-	xmlNsPtr ns;
-	xmlChar *tag_name;
+	xplQName tagname;
 	xmlNodePtr parent;
 } macroListScannerCtxt, *macroListScannerCtxtPtr;
 
@@ -274,7 +265,7 @@ static void macroListScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
 
 	if (!ctxt->unique_hash || !xmlHashLookup2(ctxt->unique_hash, name, macro->ns? macro->ns->href: NULL))
 	{
-		cur = xplMacroToNodeInner((xplMacroPtr) payload, ctxt->ns, ctxt->tag_name, ctxt->parent);
+		cur = xplMacroToNode((xplMacroPtr) payload, ctxt->tagname, ctxt->parent);
 		if (ctxt->head)
 		{
 			ctxt->cur->next = cur;
@@ -287,14 +278,15 @@ static void macroListScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
 		xmlHashAddEntry2(ctxt->unique_hash, name, macro->ns? macro->ns->href: NULL, (void*) 1);
 }
 
-xmlNodePtr xplMacroTableToNodeList(xmlNodePtr element, xmlChar *tagQName, bool unique, xmlNodePtr parent)
+xmlNodePtr xplMacroTableToNodeList(xmlNodePtr element, xplQName tagname, bool unique, xmlNodePtr parent)
 {
 	macroListScannerCtxt ctxt;
 	xmlNodePtr cur;
 
-	if (!element || !parent || !tagQName)
+	if (!element || !parent || !tagname.ncname)
 		return NULL;
-	EXTRACT_NS_AND_TAGNAME(tagQName, ctxt.ns, ctxt.tag_name, parent);
+
+	ctxt.tagname = tagname;
 	if (unique)
 		ctxt.unique_hash = xmlHashCreate(cfgInitialMacroTableSize * 2);
 	else

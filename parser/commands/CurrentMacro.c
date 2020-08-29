@@ -4,48 +4,64 @@
 #include <libxpl/xpltree.h>
 #include "commands/CurrentMacro.h"
 
+typedef struct _xplCmdCurrentMacroParams
+{
+	xplQName tagname;
+	bool repeat;
+	bool detailed;
+} xplCmdCurrentMacroParams, *xplCmdCurrentMacroParamsPtr;
+
+static const xplCmdCurrentMacroParams params_stencil =
+{
+	.tagname = { NULL, BAD_CAST "macro" },
+	.repeat = true,
+	.detailed = false
+};
+
+xplCommand xplCurrentMacroCommand =
+{
+	.prologue = xplCmdCurrentMacroPrologue,
+	.epilogue = xplCmdCurrentMacroEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdCurrentMacroParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "tagname",
+			.type = XPL_CMD_PARAM_TYPE_QNAME,
+			.value_stencil = &params_stencil.tagname
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = BAD_CAST "detailed",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.detailed
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdCurrentMacroPrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdCurrentMacroEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define TAGNAME_ATTR (BAD_CAST "tagname")
-#define REPEAT_ATTR (BAD_CAST "repeat")
-#define DETAILED_ATTR (BAD_CAST "detailed")
-	xmlChar *tagname_attr = NULL;
-	bool repeat;
-	bool detailed;
-	xmlChar *tagname;
-	xmlNodePtr error;
+	xplCmdCurrentMacroParamsPtr params = (xplCmdCurrentMacroParamsPtr) commandInfo->params;
 
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, DETAILED_ATTR, &detailed, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		return;
-	}
-	tagname_attr = xmlGetNoNsProp(commandInfo->element, TAGNAME_ATTR);
-	tagname = tagname_attr? tagname_attr: BAD_CAST "macro";
 	if (!commandInfo->document->current_macro)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no active macros"), true, true);
-		goto done;
+		return;
 	}
-	if (detailed)
+	if (params->detailed)
 	{
-		ASSIGN_RESULT(xplMacroToNode(commandInfo->document->current_macro, tagname, commandInfo->element), repeat, true);
+		ASSIGN_RESULT(xplMacroToNode(commandInfo->document->current_macro, params->tagname, commandInfo->element), params->repeat, true);
 		xplDownshiftNodeNsDef(result->list, commandInfo->element->nsDef);
-	} else {
+	} else
 		ASSIGN_RESULT(xmlNewDocText(commandInfo->element->doc, commandInfo->document->current_macro->name), false, true);
-	}
-done:
-	if (tagname_attr) XPL_FREE(tagname_attr);
 }
-
-xplCommand xplCurrentMacroCommand = { xplCmdCurrentMacroPrologue, xplCmdCurrentMacroEpilogue };
-

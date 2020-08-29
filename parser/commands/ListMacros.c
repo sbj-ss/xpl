@@ -3,55 +3,75 @@
 #include <libxpl/xpltree.h>
 #include "commands/ListMacros.h"
 
+typedef struct _xplCmdListMacrosParams
+{
+	xplQName tagname;
+	bool repeat;
+	xmlChar *delimiter;
+	bool unique;
+} xplCmdListMacrosParams, *xplCmdListMacrosParamsPtr;
+
+static const xplCmdListMacrosParams params_stencil =
+{
+	.tagname = { NULL, BAD_CAST "macro" },
+	.repeat = true,
+	.delimiter = NULL,
+	.unique = false
+};
+
+xplCommand xplListMacrosCommand =
+{
+	.prologue = xplCmdListMacrosPrologue,
+	.epilogue = xplCmdListMacrosEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdListMacrosParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "tagname",
+			.type = XPL_CMD_PARAM_TYPE_QNAME,
+			.value_stencil = &params_stencil.tagname
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = BAD_CAST "delimiter",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.delimiter
+		}, {
+			.name = BAD_CAST "unique",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.unique
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdListMacrosPrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define TAGNAME_ATTR (BAD_CAST "tagname")
-#define REPEAT_ATTR (BAD_CAST "repeat")
-#define DELIMITER_ATTR (BAD_CAST "delimiter")
-#define UNIQUE_ATTR (BAD_CAST "unique")
-	xmlChar *tagname_attr = NULL;
-	xmlChar *delimiter_attr = NULL;
-	xmlChar *tagname;
-	bool repeat;
-	bool unique;
-	xmlNodePtr ret, error;
+	xplCmdListMacrosParamsPtr params = (xplCmdListMacrosParamsPtr) commandInfo->params;
+	xmlNodePtr ret;
 
-	tagname_attr = xmlGetNoNsProp(commandInfo->element, TAGNAME_ATTR);
-	tagname = tagname_attr? tagname_attr: BAD_CAST "macro";
-	delimiter_attr = xmlGetNoNsProp(commandInfo->element, DELIMITER_ATTR);
-	if (delimiter_attr && tagname_attr)
+	if (params->delimiter && params->tagname.ncname)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot use delimiter and tagname at the same time"), true, true);
-		goto done;
+		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, UNIQUE_ATTR, &unique, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if (delimiter_attr)
+	if (params->delimiter)
 	{
 		ret = xmlNewDocText(commandInfo->element->doc, NULL);
-		ret->content = xplMacroTableToString(commandInfo->element, delimiter_attr, unique);
+		ret->content = xplMacroTableToString(commandInfo->element, params->delimiter, params->unique);
+		ASSIGN_RESULT(ret, false, true);
 	} else {
-		ret = xplMacroTableToNodeList(commandInfo->element, tagname, unique, commandInfo->element);
+		ret = xplMacroTableToNodeList(commandInfo->element, params->tagname, params->unique, commandInfo->element);
 		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
+		ASSIGN_RESULT(ret, params->repeat, true);
 	}
-	ASSIGN_RESULT(ret, repeat, true);
-done:
-	if (tagname_attr)
-		XPL_FREE(tagname_attr);
-	if (delimiter_attr)
-		XPL_FREE(delimiter_attr);
 }
-
-xplCommand xplListMacrosCommand = { xplCmdListMacrosPrologue, xplCmdListMacrosEpilogue };
