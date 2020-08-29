@@ -430,7 +430,7 @@ xmlNodePtr xplFillCommandInfo(xplCommandPtr command, xplCommandInfoPtr info, boo
 	return NULL;
 }
 
-static void _paramCleanValueScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
+static void _paramClearValueScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
 	xplCmdParamPtr param = (xplCmdParamPtr) payload;
 	char **value, **default_value;
@@ -474,7 +474,7 @@ void xplClearCommandParams(xplCommandPtr command, void *values)
 {
 	if (!command->param_hash || !values)
 		return;
-	xmlHashScan(command->param_hash, _paramCleanValueScanner, values);
+	xmlHashScan(command->param_hash, _paramClearValueScanner, values);
 }
 
 void xplClearCommandInfo(xplCommandPtr command, xplCommandInfoPtr info)
