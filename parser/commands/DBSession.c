@@ -1,22 +1,43 @@
 #include <libxpl/xpltree.h>
 #include "commands/DBSession.h"
 
+typedef struct _xplCmdDBSessionParams
+{
+	bool repeat;
+} xplCmdDBSessionParams, *xplCmdDBSessionParamsPtr;
+
+static const xplCmdDBSessionParams params_stencil =
+{
+	.repeat = false
+};
+
+xplCommand xplDBSessionCommand =
+{
+	.prologue = xplCmdDBSessionPrologue,
+	.epilogue = xplCmdDBSessionEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdDBSessionParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdDBSessionPrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 #define REPEAT_ATTR (BAD_CAST "repeat")
 void xplCmdDBSessionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	bool repeat;
-	xmlNodePtr error;
+	xplCmdDBSessionParamsPtr params = (xplCmdDBSessionParamsPtr) commandInfo->params;
 
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		return;
-	}
-	ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
+	ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
 }
-
-xplCommand xplDBSessionCommand = { xplCmdDBSessionPrologue, xplCmdDBSessionEpilogue };
