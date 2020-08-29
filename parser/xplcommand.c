@@ -118,9 +118,6 @@ xplCommandPtr xplGetCommand(xmlNodePtr el)
 
 static const xmlChar* builtins[] =
 {
-	BAD_CAST "expand",
-	BAD_CAST "no-expand",
-	BAD_CAST "expand-after",
 	BAD_CAST "content",
 	BAD_CAST "define"
 };
@@ -139,9 +136,8 @@ bool xplCommandSupported(const xmlChar* name)
 
 typedef struct _CommandListScannerContext
 {
-	xmlChar *name;
 	xmlDocPtr doc;
-	xmlNsPtr ns;
+	xplQName tagname;
 	xmlNodePtr head, tail;
 } CommandListScannerContext, *PCommandListScannerContext;
 
@@ -151,8 +147,8 @@ static void commandListScanner(void *payload, void *data, XML_HCBNC xmlChar *nam
 	PCommandListScannerContext ctxt = (PCommandListScannerContext) data;
 	UNUSED_PARAM(payload);
 
-	if (ctxt->name)
-		cur = xmlNewDocNode(ctxt->doc, ctxt->ns, ctxt->name, name);
+	if (ctxt->tagname.ncname)
+		cur = xmlNewDocNode(ctxt->doc, ctxt->tagname.ns, ctxt->tagname.ncname, name);
 	else
 		cur = xmlNewDocNode(ctxt->doc, NULL, name, NULL);
 	if (ctxt->head)
@@ -164,14 +160,14 @@ static void commandListScanner(void *payload, void *data, XML_HCBNC xmlChar *nam
 		ctxt->head = ctxt->tail = cur;
 }
 
-xmlNodePtr xplSupportedCommandsToList(xmlDocPtr doc, xmlNodePtr parent, const xmlChar *tagName)
+xmlNodePtr xplSupportedCommandsToList(xmlNodePtr parent, const xplQName tagname)
 {
 	CommandListScannerContext ctxt;
 	unsigned int i;
 
-	ctxt.doc = doc;
+	ctxt.doc = parent->doc;
+	ctxt.tagname = tagname;
 	ctxt.head = NULL;
-	EXTRACT_NS_AND_TAGNAME(tagName, ctxt.ns, ctxt.name, parent)
 	for (i = 0; i < sizeof(builtins) / sizeof(builtins[0]); i++)
 		commandListScanner(NULL, &ctxt, BAD_CAST builtins[i]);
 	xmlHashScan(commands, commandListScanner, &ctxt);

@@ -11,6 +11,7 @@
 #include <libxml/xmlstring.h>
 #include <libxml/xpath.h>
 #include <libxpl/abstraction/xpr.h>
+#include <libxpl/xpltree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -178,7 +179,7 @@ XPLPUBFUN xplCommandPtr XPLCALL
 XPLPUBFUN bool XPLCALL
 	xplCommandSupported(const xmlChar* name);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplSupportedCommandsToList(xmlDocPtr doc, xmlNodePtr parent, const xmlChar *tagName);
+	xplSupportedCommandsToList(xmlNodePtr parent, const xplQName tagname);
 XPLPUBFUN void XPLCALL
 	xplCleanupCommands(void);
 
