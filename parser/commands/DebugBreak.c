@@ -2,8 +2,16 @@
 #include <libxpl/xplmessages.h>
 #include "commands/DebugBreak.h"
 
+xplCommand xplDebugBreakCommand = {
+	.prologue = xplCmdDebugBreakPrologue,
+	.epilogue = xplCmdDebugBreakEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
+
 void xplCmdDebugBreakPrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdDebugBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
@@ -14,6 +22,3 @@ void xplCmdDebugBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		xplDisplayMessage(xplMsgWarning, BAD_CAST "xpl:debug-break called when running outside of IDE (file \"%s\", line %d)", commandInfo->element->doc->URL, commandInfo->element->line);
 	ASSIGN_RESULT(NULL, false, true);
 }
-
-xplCommand xplDebugBreakCommand = { xplCmdDebugBreakPrologue, xplCmdDebugBreakEpilogue };
-
