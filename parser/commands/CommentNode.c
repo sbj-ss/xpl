@@ -2,8 +2,17 @@
 #include <libxpl/xpltree.h>
 #include "commands/CommentNode.h"
 
+xplCommand xplCommentNodeCommand =
+{
+	.prologue = xplCmdCommentNodePrologue,
+	.epilogue = xplCmdCommentNodeEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
+
 void xplCmdCommentNodePrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdCommentNodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
@@ -20,5 +29,3 @@ void xplCmdCommentNodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resul
 	ret->content = txt;
 	ASSIGN_RESULT(ret, false, true);
 }
-
-xplCommand xplCommentNodeCommand = { xplCmdCommentNodePrologue, xplCmdCommentNodeEpilogue };
