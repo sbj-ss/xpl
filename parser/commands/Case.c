@@ -75,9 +75,7 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 	xmlXPathObjectPtr parent_sel;
 	xmlNodePtr parent = commandInfo->element->parent;
 
-	if (!parent->ns || 
-		((parent->ns != commandInfo->document->root_xpl_ns) && xmlStrcmp(parent->ns->href, cfgXplNsUri)) ||
-		xmlStrcmp(parent->name, BAD_CAST "switch"))
+	if (!xplCheckNodeForXplNs(commandInfo->document, parent) ||	xmlStrcmp(parent->name, BAD_CAST "switch"))
 	{
 		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "parent element must be a switch command");
 		goto done;
