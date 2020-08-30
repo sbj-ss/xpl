@@ -2,37 +2,56 @@
 #include <libxpl/xplmessages.h>
 #include "commands/FileExists.h"
 
+typedef struct _xplCmdFileExistsParams
+{
+	xmlChar *file;
+	bool abs_path;
+} xplCmdFileExistsParams, *xplCmdFileExistsParamsPtr;
+
+static const xplCmdFileExistsParams params_stencil =
+{
+	.file = NULL,
+	.abs_path = false
+};
+
+xplCommand xplFileExistsCommand =
+{
+	.prologue = xplCmdFileExistsPrologue,
+	.epilogue = xplCmdFileExistsEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdFileExistsParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "file",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.file
+		}, {
+			.name = BAD_CAST "abspath",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.abs_path
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdFileExistsPrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdFileExistsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 /* TODO check R/W access */
-#define FILE_ATTR (BAD_CAST "file")
-#define ABS_PATH_ATTR (BAD_CAST "abspath")
+	xplCmdFileExistsParamsPtr params = (xplCmdFileExistsParamsPtr) commandInfo->params;
+	xmlChar *filename = NULL, *value;
+	xmlNodePtr ret;
 
-	xmlChar *file_attr = NULL;
-	xmlChar *filename = NULL;
-	xmlChar *value;
-	xmlNodePtr ret, error;
-	bool abs_path;
-
-	file_attr = xmlGetNoNsProp(commandInfo->element, FILE_ATTR);
-	if (!file_attr)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "file attribute not found"), true, true);
-		return;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, ABS_PATH_ATTR, &abs_path, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if (abs_path)
-		filename = BAD_CAST XPL_STRDUP((char*) file_attr);
+	if (params->abs_path)
+		filename = BAD_CAST XPL_STRDUP((char*) params->file);
 	else
-		filename = xplFullFilename(file_attr, commandInfo->document->app_path);
+		filename = xplFullFilename(params->file, commandInfo->document->app_path);
 
 	if (xprCheckFilePresence(filename))
 		value = BAD_CAST "true";
@@ -40,10 +59,4 @@ void xplCmdFileExistsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		value = BAD_CAST "false";
 	ret = xmlNewDocText(commandInfo->document->document, value);
 	ASSIGN_RESULT(ret, false, true);
-done:
-	if (file_attr) XPL_FREE(file_attr);
-	if (filename) XPL_FREE(filename);
 }
-
-xplCommand xplFileExistsCommand = { xplCmdFileExistsPrologue, xplCmdFileExistsEpilogue };
-
