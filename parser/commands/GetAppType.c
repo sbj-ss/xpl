@@ -1,9 +1,17 @@
 #include <libxpl/xplcore.h>
 #include "commands/GetAppType.h"
 
+xplCommand xplGetAppTypeCommand =
+{
+	.prologue = xplCmdGetAppTypePrologue,
+	.epilogue = xplCmdGetAppTypeEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
 
 void xplCmdGetAppTypePrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdGetAppTypeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
@@ -11,5 +19,3 @@ void xplCmdGetAppTypeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	xmlNodePtr ret = xmlNewDocText(commandInfo->element->doc, xplGetAppType());
 	ASSIGN_RESULT(ret, false, true);
 }
-
-xplCommand xplGetAppTypeCommand = { xplCmdGetAppTypePrologue, xplCmdGetAppTypeEpilogue };
