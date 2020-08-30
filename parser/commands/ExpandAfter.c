@@ -7,9 +7,7 @@ xplCommand xplExpandAfterCommand =
 	.prologue = xplCmdExpandAfterPrologue,
 	.epilogue = xplCmdExpandAfterEpilogue,
 	.flags = XPL_CMD_FLAG_CONTENT_SAFE,
-	.parameters = {
-		{ .name = NULL }
-	}
+	.params_stencil = NULL
 };
 
 void xplCmdExpandAfterPrologue(xplCommandInfoPtr commandInfo)
