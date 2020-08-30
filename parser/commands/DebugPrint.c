@@ -3,46 +3,58 @@
 #include <libxpl/xpltree.h>
 #include "commands/DebugPrint.h"
 
+typedef struct _xplCmdDebugPrintParams
+{
+	xplMsgType severity;
+} xplCmdDebugPrintParams, *xplCmdDebugPrintParamsPtr;
+
+static const xplCmdDebugPrintParams params_stencil =
+{
+	.severity = xplMsgDebug
+};
+
+static xmlChar* _getSeverity(const xmlChar *raw_value, int *result)
+{
+	if ((*result = xplMsgTypeFromString(raw_value, false)) == xplMsgUnknown)
+		return xplFormatMessage(BAD_CAST "unknown severity value '%s'", raw_value);
+	return NULL;
+}
+
+xplCommand xplDebugPrintCommand =
+{
+	.prologue = xplCmdDebugPrintPrologue,
+	.epilogue = xplCmdDebugPrintEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdDebugPrintParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "severity",
+			.type = XPL_CMD_PARAM_TYPE_INT_CUSTOM_GETTER,
+			.extra = {
+				.int_getter = _getSeverity
+			},
+			.value_stencil = &params_stencil.severity
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdDebugPrintPrologue(xplCommandInfoPtr commandInfo)
 {
-
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdDebugPrintEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define SEVERITY_ATTR (BAD_CAST "severity")
-	xmlChar *severity_attr = NULL;
-	xmlChar *content = NULL;
-	xplMsgType severity = xplMsgDebug;
+	xplCmdDebugPrintParamsPtr params = (xplCmdDebugPrintParamsPtr) commandInfo->params;
 
-	severity_attr = xmlGetNoNsProp(commandInfo->element, SEVERITY_ATTR);
-	if (severity_attr)
-		if ((severity = xplMsgTypeFromString(severity_attr, false)) == xplMsgUnknown)
-		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown severity value: \"%s\"", severity_attr), true, true);
-			goto done;
-		}
-	if ((int) severity < cfgMinDebugPrintLevel) /* suppress unwanted noise */
+	if ((int) params->severity < cfgMinDebugPrintLevel) /* suppress unwanted noise */
 	{
 		ASSIGN_RESULT(NULL, false, true);
-		goto done;
+		return;
 	}
-	if (!xplCheckNodeListForText(commandInfo->element->children))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "content is non-text"), true, true);
-			goto done;
-	} 
-	if (commandInfo->element->children)
-		content = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
-	if (!content)
-		content = BAD_CAST XPL_STRDUP("<no text provided>");
-	xplDisplayMessage(severity, BAD_CAST "%s", content);
+	xplDisplayMessage(params->severity, BAD_CAST "%s", commandInfo->content? commandInfo->content: BAD_CAST "<no message provided>");
 	ASSIGN_RESULT(NULL, true, true);
-done:
-	if (content)
-		XPL_FREE(content);
-	if (severity_attr)
-		XPL_FREE(severity_attr);
 }
-
-xplCommand xplDebugPrintCommand = { xplCmdDebugPrintPrologue, xplCmdDebugPrintEpilogue };

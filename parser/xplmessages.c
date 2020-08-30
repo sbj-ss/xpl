@@ -8,7 +8,7 @@
 static FILE *log_file = NULL;
 static XPR_MUTEX console_interlock;
 
-xplMsgType xplMsgTypeFromString(xmlChar *severity, bool allowInternalError)
+xplMsgType xplMsgTypeFromString(const xmlChar *severity, bool allowInternalError)
 {
 	if (!xmlStrcasecmp(severity, BAD_CAST "debug"))
 		return xplMsgDebug;

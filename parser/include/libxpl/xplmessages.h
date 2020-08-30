@@ -25,7 +25,7 @@ typedef enum _xplMsgType
 } xplMsgType;
 
 XPLPUBFUN xplMsgType XPLCALL
-	xplMsgTypeFromString(xmlChar *severity, bool allowInternalError);
+	xplMsgTypeFromString(const xmlChar *severity, bool allowInternalError);
 XPLPUBFUN xmlChar* XPLCALL
 	xplFormatMessage(xmlChar *fmt, ...);
 /* The same via va_list - for wrappers */
