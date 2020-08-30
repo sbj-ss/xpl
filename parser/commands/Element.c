@@ -2,41 +2,51 @@
 #include <libxpl/xpltree.h>
 #include "commands/Element.h"
 
+typedef struct _xplCmdElementParams
+{
+	xplQName name;
+	bool repeat;
+} xplCmdElementParams, *xplCmdElementParamsPtr;
+
+static const xplCmdElementParams params_stencil =
+{
+	.name = { NULL, NULL },
+	.repeat = true
+};
+
+xplCommand xplElementCommand =
+{
+	.prologue = xplCmdElementPrologue,
+	.epilogue = xplCmdElementEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdElementParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_QNAME,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdElementPrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdElementEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR (BAD_CAST "name")
-#define REPEAT_ATTR (BAD_CAST "repeat")
+	xplCmdElementParamsPtr params = (xplCmdElementParamsPtr) commandInfo->params;
+	xmlNodePtr el;
 
-	xmlChar *name_attr = NULL;
-	bool repeat;
-	xmlNodePtr el, error;
-
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	if (!name_attr || !*name_attr)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "name attribute is missing or empty"), true, true);
-		return;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-
-	el = xplCreateElement(commandInfo->element->parent, commandInfo->element, name_attr);
-	if (!el)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "can't create element (possibly the name \"%s\" is invalid)", name_attr), true, true);
-		goto done;
-	}
+	el = xmlNewDocNode(commandInfo->element->doc, params->name.ns, params->name.ncname, NULL);
 	xplSetChildren(el, xplDetachContent(commandInfo->element));
-	ASSIGN_RESULT(el, repeat, true);
-done:
-	if (name_attr) XPL_FREE(name_attr);
+	ASSIGN_RESULT(el, params->repeat, true);
 }
-
-xplCommand xplElementCommand = { xplCmdElementPrologue, xplCmdElementEpilogue };
