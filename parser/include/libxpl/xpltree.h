@@ -58,10 +58,6 @@ XPLPUBFUN xmlChar* XPLCALL
 XPLPUBFUN void XPLCALL
 	xplUnlinkProp(xmlAttrPtr cur);
 
-/* creates an element. invoker is used for namespace search. name may be a QName */
-XPLPUBFUN xmlNodePtr XPLCALL
-	xplCreateElement(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name);
-
 /* detaches el's children */
 XPLPUBFUN xmlNodePtr XPLCALL /* TODO rename */
 	xplDetachContent(xmlNodePtr el);

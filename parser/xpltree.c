@@ -83,26 +83,6 @@ void xplUnlinkProp(xmlAttrPtr cur)
 	}
 }
 
-/* TODO remove */
-xmlNodePtr xplCreateElement(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
-{
-	xmlChar *tagname;
-	xmlNsPtr ns;
-
-	if ((tagname = BAD_CAST xmlStrchr(name, ':')))
-	{
-		*tagname = 0;
-		ns = xplGetResultingNs(parent, invoker, name);
-		*tagname++ = ':';
-	} else {
-		tagname = name;
-		ns = NULL;
-	}
-	if (xmlValidateName(tagname, 0))
-		return NULL;
-	return xmlNewDocNode(parent->doc, ns, tagname, NULL);
-}
-
 xmlNodePtr xplDetachContent(xmlNodePtr el)
 {
 	xmlNodePtr item;
