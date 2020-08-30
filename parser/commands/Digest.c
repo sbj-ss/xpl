@@ -75,6 +75,7 @@ xplCommand xplDigestCommand =
 					.deallocator = NULL
 				}
 			},
+			.required = true,
 			.value_stencil = &params_stencil.method
 		}, {
 			.name = NULL
