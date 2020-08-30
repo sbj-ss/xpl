@@ -87,15 +87,23 @@ typedef struct _xplCmdParamDictValue
 } xplCmdParamDictValue, *xplCmdParamDictValuePtr;
 
 /* return: error message if any */
-typedef xmlChar* (*xplParamIntValueGetter)(const xmlChar *raw_value, int* result);
-typedef xmlChar* (*xplParamPtrValueGetter)(const xmlChar *raw_value, void** result);
+typedef xmlChar* (*xplCmdParamIntValueGetter)(const xmlChar *raw_value, int* result);
+typedef xmlChar* (*xplCmdParamPtrValueGetter)(const xmlChar *raw_value, void** result);
+
+typedef void (*xplCmdParamPtrValueDeallocator)(void *value);
+
+typedef struct _xplCmdParamPtrFunctions
+{
+	xplCmdParamPtrValueGetter getter;
+	xplCmdParamPtrValueDeallocator deallocator;
+} xplCmdParamPtrFunctions, *xplCmdParamPtrFunctionsPtr;
 
 typedef union _xplCmdParamExtraDesc
 {
 	xplCmdParamDictValuePtr dict_values;/* (.name=NULL)-terminated */
 	xplCmdParamXPathType xpath_type;
-	xplParamIntValueGetter int_getter;
-	xplParamPtrValueGetter ptr_getter;
+	xplCmdParamIntValueGetter int_getter;
+	xplCmdParamPtrFunctions ptr_fn;
 } xplCmdParamExtraDesc;
 
 typedef struct _xplCmdParam

@@ -312,9 +312,9 @@ static xmlChar* xplGetParamCustomPtrValue(xplCommandInfoPtr info, xplCmdParamPtr
 	xmlChar *error;
 	void* value;
 
-	if (!param->extra.ptr_getter)
-		return BAD_CAST XPL_STRDUP("ptr_getter is NULL");
-	error = param->extra.ptr_getter(*raw_value, &value);
+	if (!param->extra.ptr_fn.getter)
+		return BAD_CAST XPL_STRDUP("ptr_fn_.getter is NULL");
+	error = param->extra.ptr_fn.getter(*raw_value, &value);
 	*((void**) ((uintptr_t) info->params + param->value_offset)) = value;
 	return error;
 }
@@ -446,7 +446,10 @@ static void _paramClearValueScanner(void *payload, void *data, XML_HCBNC xmlChar
 			default_value = (char**) param->value_stencil;
 			if (*value && *value != *default_value)
 			{
-				XPL_FREE(*value);
+				if (param->type == XPL_CMD_PARAM_TYPE_STRING)
+					XPL_FREE(*value);
+				else if (param->type == XPL_CMD_PARAM_TYPE_PTR_CUSTOM_GETTER && param->extra.ptr_fn.deallocator)
+					param->extra.ptr_fn.deallocator(*value);
 				*value = NULL;
 			}
 			break;
