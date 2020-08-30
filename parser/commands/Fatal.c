@@ -2,47 +2,56 @@
 #include <libxpl/xpltree.h>
 #include "commands/Fatal.h"
 
+xplCommand xplFatalCommand =
+{
+	.prologue = xplCmdFatalPrologue,
+	.epilogue = xplCmdFatalEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
+
+static xmlNodePtr _onlyFirstChildElement(xmlNodePtr parent)
+{
+	xmlNodePtr cur, tmp;
+
+	cur = xplDetachContent(parent);
+	/* remove all non-elements */
+	while (cur && cur->type != XML_ELEMENT_NODE)
+	{
+		tmp = cur->next;
+		xmlUnlinkNode(cur);
+		xmlFreeNode(cur);
+		cur = tmp;
+	}
+	if (cur) /* element found */
+	{ 
+		/* delete tail */
+		tmp = cur->next;
+		if (tmp)
+		{
+			cur->next = NULL;
+			tmp->prev = NULL;
+			xmlFreeNodeList(tmp);
+		}
+		return cur;
+	}
+	/* garbage inside, use predefined message */
+	return xmlNewDocNode(parent->doc, NULL, BAD_CAST "error", BAD_CAST "fatal command called");
+}
+
 void xplCmdFatalPrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdFatalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xmlNodePtr ct, cur, root_element;
+	xmlNodePtr root;
 
-	cur = ct = xplDetachContent(commandInfo->element);
-	/* remove all non-elements */
-	while (ct && ct->type != XML_ELEMENT_NODE)
-	{
-		ct = cur->next;
-		xmlUnlinkNode(cur);
-		xmlFreeNode(cur);
-		cur = ct;
-	}
-	if (ct) /* element found */
-	{ 
-		/* delete tail */
-		cur = ct->next;
-		if (cur)
-		{
-			ct->next = NULL;
-			cur->prev = NULL;
-			xmlFreeNodeList(cur);
-		}
-	} else { /* garbage inside, use predefined message */
-		ct = xmlNewDocNode(commandInfo->element->doc, NULL, BAD_CAST "error", BAD_CAST "fatal command called");
-	}
-	commandInfo->document->fatal_content = ct;
-	root_element = commandInfo->element->doc->children;
-	while (root_element)
-	{
-		if (root_element->type == XML_ELEMENT_NODE)
-			break;
-		root_element = root_element->next;
-	}
-	xplMarkAncestorAxisForDeletion(commandInfo->element->parent, root_element);
+	commandInfo->document->fatal_content = _onlyFirstChildElement(commandInfo->element);
+	root = commandInfo->element->doc->children;
+	while (root && root->type != XML_ELEMENT_NODE)
+		root = root->next;
+	xplMarkAncestorAxisForDeletion(commandInfo->element->parent, root);
 	ASSIGN_RESULT(NULL, false, true);
 }
-
-xplCommand xplFatalCommand = { xplCmdFatalPrologue, xplCmdFatalEpilogue };
-
