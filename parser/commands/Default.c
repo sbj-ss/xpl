@@ -4,12 +4,45 @@
 #include <libxpl/xpltree.h>
 #include "commands/Default.h"
 
+typedef struct _xplCmdDefaultParams
+{
+	bool repeat;
+	bool do_break;
+} xplCmdDefaultParams, *xplCmdDefaultParamsPtr;
+
+static const xplCmdDefaultParams params_stencil =
+{
+	.repeat = false,
+	.do_break = true
+};
+
+xplCommand xplDefaultCommand =
+{
+	.prologue = xplCmdDefaultPrologue,
+	.epilogue = xplCmdDefaultEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdDefaultParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = BAD_CAST "break",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.do_break
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdDefaultPrologue(xplCommandInfoPtr commandInfo)
 {
 	xmlNodePtr parent = commandInfo->element->parent;
-	if (!parent->ns || 
-		((parent->ns != commandInfo->document->root_xpl_ns) && xmlStrcmp(parent->ns->href, cfgXplNsUri)) ||
-		xmlStrcmp(parent->name, BAD_CAST "switch"))
+
+	if (!xplCheckNodeForXplNs(commandInfo->document, parent) || xmlStrcmp(parent->name, BAD_CAST "switch"))
 	{
 		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "parent tag must be :switch");
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
@@ -18,34 +51,18 @@ void xplCmdDefaultPrologue(xplCommandInfoPtr commandInfo)
 
 void xplCmdDefaultEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define REPEAT_ATTR (BAD_CAST "repeat")
-#define BREAK_ATTR (BAD_CAST "break")
-	bool repeat;
-	bool do_break;
-	xmlNodePtr error;
+	xplCmdDefaultParamsPtr params = (xplCmdDefaultParamsPtr) commandInfo->params;
 
 	if (commandInfo->prologue_error)
 	{
 		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
-	} else {
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
-		{
-			ASSIGN_RESULT(error, true, true);
-			return;
-		}
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, BREAK_ATTR, &do_break, true)))
-		{
-			ASSIGN_RESULT(error, true, true);
-		} else {
-			ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
-		}
-		if (do_break)
-		{
-			xplDocDeferNodeListDeletion(commandInfo->document, commandInfo->element->next);
-			commandInfo->element->next = NULL;
-			commandInfo->element->parent->last = commandInfo->element;
-		}
+		return;
+	}
+	ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+	if (params->do_break)
+	{
+		xplDocDeferNodeListDeletion(commandInfo->document, commandInfo->element->next);
+		commandInfo->element->next = NULL;
+		commandInfo->element->parent->last = commandInfo->element;
 	}
 }
-
-xplCommand xplDefaultCommand = { xplCmdDefaultPrologue, xplCmdDefaultEpilogue };
