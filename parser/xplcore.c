@@ -813,17 +813,7 @@ void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr res
 	{ 
 		error = xplAddMacro(doc, element, element->parent, false, XPL_MACRO_EXPAND_NO_DEFAULT, true);
 		ASSIGN_RESULT(error, error? true: false, true);
-	}/* else if (!xmlStrcmp(element->name, BAD_CAST "no-expand")) {
-		xplNodeListApply(doc, element->children, false, result);
-		ASSIGN_RESULT(xplDetachContent(element), false, true);
-	} else if (!xmlStrcmp(element->name, BAD_CAST "expand")) {
-		xplNodeListApply(doc, element->children, true, result);
-		ASSIGN_RESULT(xplDetachContent(element), false, true);
-	} else if (!xmlStrcmp(element->name, BAD_CAST "expand-after")) {
-		xplNodeListApply(doc, element->children, false, result);
-		xplNodeListApply(doc, element->children, true, result);
-		ASSIGN_RESULT(xplDetachContent(element), false, true);
-	}*/ else {
+	} else {
 		cmd = xplGetCommand(element);
 		if (cmd)
 		{
