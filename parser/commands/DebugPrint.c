@@ -13,8 +13,9 @@ static const xplCmdDebugPrintParams params_stencil =
 	.severity = xplMsgDebug
 };
 
-static xmlChar* _getSeverity(const xmlChar *raw_value, int *result)
+static xmlChar* _getSeverity(xplCommandInfoPtr info, const xmlChar *raw_value, int *result)
 {
+	UNUSED_PARAM(info);
 	if ((*result = xplMsgTypeFromString(raw_value, false)) == xplMsgUnknown)
 		return xplFormatMessage(BAD_CAST "unknown severity value '%s'", raw_value);
 	return NULL;

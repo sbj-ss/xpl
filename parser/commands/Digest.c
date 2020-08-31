@@ -42,10 +42,11 @@ static const xplCmdDigestParams params_stencil =
 	.method = NULL
 };
 
-static xmlChar* _getMethod(const xmlChar* raw_value, void **result)
+static xmlChar* _getMethod(xplCommandInfoPtr info, const xmlChar* raw_value, void **result)
 {
 	xplCmdDigestMethodDescPtr desc = digest_methods;
 
+	UNUSED_PARAM(info);
 	while (desc->name)
 	{
 		if (!xmlStrcasecmp(desc->name, raw_value))

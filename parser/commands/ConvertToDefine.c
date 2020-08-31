@@ -15,8 +15,9 @@ static const xplCmdConvertToDefineParams params_stencil =
 	.default_replace = true
 };
 
-static xmlChar* _getDefaultExpand(const xmlChar *raw_value, int *result)
+static xmlChar* _getDefaultExpand(xplCommandInfoPtr info, const xmlChar *raw_value, int *result)
 {
+	UNUSED_PARAM(info);
 	*result = xplMacroExpansionStateFromString(raw_value, true);
 	if (*result == XPL_MACRO_EXPAND_UNKNOWN)
 		return xplFormatMessage(BAD_CAST "invalid defaultexpand value '%s'", raw_value);

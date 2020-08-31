@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <libxml/tree.h>
 #include <libxml/xmlstring.h>
+#include <libxpl/xplcommand.h>
 #include <libxpl/xpltree.h>
 
 #ifdef __cplusplus
@@ -31,7 +32,7 @@ typedef enum _xplExpectType
 XPLPUBFUN xplExpectType XPLCALL
 	xplExpectTypeFromString(const xmlChar *expect);
 XPLPUBFUN xmlChar* XPLCALL
-	xplExpectTypeGetter(const xmlChar *expect, int *result);
+	xplExpectTypeGetter(xplCommandInfoPtr commandInfo, const xmlChar *expect, int *result);
 XPLPUBFUN xmlChar* XPLCALL
 	xplCleanTextValue(xmlChar *data_buf, xplExpectType expect);
 
@@ -56,7 +57,7 @@ typedef enum
 XPLPUBFUN int XPLCALL
 	xplParamTypeMaskFromString(const xmlChar* mask);
 XPLPUBFUN xmlChar* XPLCALL
-	xplParamTypeMaskGetter(const xmlChar *mask, int *result);
+	xplParamTypeMaskGetter(xplCommandInfoPtr info, const xmlChar *mask, int *result);
 XPLPUBFUN bool XPLCALL
 	xplParamTypeIsAtomic(xplParamType type);
 

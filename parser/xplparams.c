@@ -22,8 +22,9 @@ xplExpectType xplExpectTypeFromString(const xmlChar *expect)
 	return XPL_EXPECT_UNKNOWN;
 }
 
-xmlChar* xplExpectTypeGetter(const xmlChar *expect, int *result)
+xmlChar* xplExpectTypeGetter(xplCommandInfoPtr commandInfo, const xmlChar *expect, int *result)
 {
+	UNUSED_PARAM(commandInfo);
 	if (!result)
 		return BAD_CAST XPL_STRDUP("xplExpectTypeGetter: result is NULL");
 	*result = xplExpectTypeFromString(expect);
@@ -133,8 +134,9 @@ int xplParamTypeMaskFromString(const xmlChar* mask)
 	return ret;
 }
 
-xmlChar* xplParamTypeMaskGetter(const xmlChar *mask, int *result)
+xmlChar* xplParamTypeMaskGetter(xplCommandInfoPtr info, const xmlChar *mask, int *result)
 {
+	UNUSED_PARAM(info);
 	if ((*result = xplParamTypeMaskFromString(mask)) == -1)
 		return xplFormatMessage(BAD_CAST "invalid type mask '%s'", mask);
 	return NULL;

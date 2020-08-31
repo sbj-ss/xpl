@@ -87,8 +87,8 @@ typedef struct _xplCmdParamDictValue
 } xplCmdParamDictValue, *xplCmdParamDictValuePtr;
 
 /* return: error message if any */
-typedef xmlChar* (*xplCmdParamIntValueGetter)(const xmlChar *raw_value, int* result);
-typedef xmlChar* (*xplCmdParamPtrValueGetter)(const xmlChar *raw_value, void** result);
+typedef xmlChar* (*xplCmdParamIntValueGetter)(xplCommandInfoPtr info, const xmlChar *raw_value, int *result);
+typedef xmlChar* (*xplCmdParamPtrValueGetter)(xplCommandInfoPtr info, const xmlChar *raw_value, void **result);
 
 typedef void (*xplCmdParamPtrValueDeallocator)(void *value);
 
