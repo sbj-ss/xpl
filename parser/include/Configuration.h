@@ -124,6 +124,8 @@
 /* Additional features */
 /* Use tcmalloc. Slows down the interpreter on Windows. */
 #undef _USE_TCMALLOC
+/* Use zlib for compressed XML */
+#define _USE_ZLIB
 /* Use liblzma in addition to zlib. For compressed XML only. */
 #define _USE_LZMA
 /* Use libidn. Disabling this will break uri-encode and web-include. */
