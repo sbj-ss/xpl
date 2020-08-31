@@ -302,8 +302,8 @@ static xmlChar* xplGetParamCustomIntValue(xplCommandInfoPtr info, xplCmdParamPtr
 
 	if (!param->extra.int_getter)
 		return BAD_CAST XPL_STRDUP("int_getter is NULL");
-	error = param->extra.int_getter(*raw_value, &value);
-	*((int*) ((uintptr_t) info->params + param->value_offset)) = value;
+	if (!(error = param->extra.int_getter(*raw_value, &value)))
+		*((int*) ((uintptr_t) info->params + param->value_offset)) = value;
 	return error;
 }
 
@@ -313,9 +313,9 @@ static xmlChar* xplGetParamCustomPtrValue(xplCommandInfoPtr info, xplCmdParamPtr
 	void* value;
 
 	if (!param->extra.ptr_fn.getter)
-		return BAD_CAST XPL_STRDUP("ptr_fn_.getter is NULL");
-	error = param->extra.ptr_fn.getter(*raw_value, &value);
-	*((void**) ((uintptr_t) info->params + param->value_offset)) = value;
+		return BAD_CAST XPL_STRDUP("ptr_fn.getter is NULL");
+	if (!(error = param->extra.ptr_fn.getter(*raw_value, &value)))
+		*((void**) ((uintptr_t) info->params + param->value_offset)) = value;
 	return error;
 }
 
