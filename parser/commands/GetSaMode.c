@@ -7,13 +7,12 @@ xplCommand xplGetSaModeCommand =
 	.prologue = xplCmdGetSaModePrologue,
 	.epilogue = xplCmdGetSaModeEpilogue,
 	.flags = 0,
-	.parameters = {
-		{ .name = NULL }
-	}
+	.params_stencil = NULL
 };
 
 void xplCmdGetSaModePrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdGetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
