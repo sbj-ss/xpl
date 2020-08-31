@@ -976,6 +976,7 @@ void xplMakeNsSelfContainedTree(xmlNodePtr top)
 static xmlNsPtr getIrredundantNsByAncestor(xmlNsPtr ns, xmlNodePtr carrier)
 {
 	xmlNsPtr cur_ns, ret = ns, six;
+
 	while ((carrier = carrier->parent))
 	{
 		cur_ns = carrier->nsDef;
@@ -985,7 +986,7 @@ static xmlNsPtr getIrredundantNsByAncestor(xmlNsPtr ns, xmlNodePtr carrier)
 			{
 				/* remove right here */
 				if (carrier->nsDef == ret)
-					carrier->nsDef = six->next;
+					carrier->nsDef = ret->next;
 				else {
 					six = carrier->nsDef;
 					while (six->next != ret)
@@ -996,6 +997,7 @@ static xmlNsPtr getIrredundantNsByAncestor(xmlNsPtr ns, xmlNodePtr carrier)
 				ret = cur_ns; /* we're at the parent definition */
 				break;
 			}
+			cur_ns = cur_ns->next;
 		}
 	}
 	return ns;
