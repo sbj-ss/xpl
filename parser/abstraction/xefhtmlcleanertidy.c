@@ -4,6 +4,7 @@
 #include <tidy/tidy.h>
 #include <tidy/tidybuffio.h>
 
+#ifdef _LEAK_DETECTION
 static void* TIDY_CALL xml_tidyMalloc(size_t len)
 {
 	return XPL_MALLOC(len);
@@ -18,6 +19,7 @@ static void TIDY_CALL xml_tidyFree(void* buf)
 {
 	XPL_FREE(buf);
 }
+#endif
 
 bool xefStartupHtmlCleaner(xefStartupParamsPtr params)
 {
