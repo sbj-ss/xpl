@@ -183,7 +183,7 @@ XPLPUBFUN xplError XPLCALL
    basePath = "d:\\Tomcat 4.1\\webapps\\ROOT"
    relativePath = "/Impulse/Developer.xpl" */
 XPLPUBFUN bool XPLCALL
-	xplGetDocByRole(xplDocumentPtr docIn, xmlChar *strRole, xplDocumentPtr *docOut);
+	xplGetDocByRole(xplDocumentPtr docIn, const xmlChar *strRole, xplDocumentPtr *docOut);
 XPLPUBFUN xplError XPLCALL
 	xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr environment, xplSessionPtr session, xplDocumentPtr *docOut);
 

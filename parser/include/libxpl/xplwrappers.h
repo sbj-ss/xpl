@@ -22,7 +22,7 @@ typedef enum _xplDocRole
 } xplDocRole;
 
 XPLPUBFUN xplDocRole XPLCALL
-	xplDocRoleFromString(xmlChar *role);
+	xplDocRoleFromString(const xmlChar *role);
 XPLPUBFUN const xmlChar* XPLCALL
 	xplDocRoleToString(xplDocRole role);
 

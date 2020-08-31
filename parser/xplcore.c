@@ -208,7 +208,7 @@ xmlChar* xplGetAppType()
 	return BAD_CAST "unknown";
 }
 
-bool xplGetDocByRole(xplDocumentPtr docIn, xmlChar *strRole, xplDocumentPtr *docOut)
+bool xplGetDocByRole(xplDocumentPtr docIn, const xmlChar *strRole, xplDocumentPtr *docOut)
 {
 	xplDocRole role;
 

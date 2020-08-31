@@ -7,7 +7,7 @@
 
 static XPR_MUTEX mapper_interlock;
 
-xplDocRole xplDocRoleFromString(xmlChar *role)
+xplDocRole xplDocRoleFromString(const xmlChar *role)
 {
 	if (!role)
 		return XPL_DOC_ROLE_UNKNOWN;
