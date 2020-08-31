@@ -751,8 +751,7 @@ typedef struct _LoadedModulesListScannerCtxt
 	xmlNodePtr first;
 	xmlNodePtr last;
 	xmlDocPtr doc;
-	xmlNsPtr ns;
-	xmlChar *tagname;
+	xplQName tagname;
 } LoadedModulesListScannerCtxt, *LoadedModulesListScannerCtxtPtr;
 
 static void loadedModulesListScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
@@ -761,8 +760,8 @@ static void loadedModulesListScanner(void *payload, void *data, XML_HCBNC xmlCha
 	xmlNodePtr cur;
 
 	UNUSED_PARAM(payload);
-	if (ctxt->tagname)
-		cur = xmlNewDocNode(ctxt->doc, ctxt->ns, ctxt->tagname, name);
+	if (ctxt->tagname.ncname)
+		cur = xmlNewDocNode(ctxt->doc, ctxt->tagname.ns, ctxt->tagname.ncname, name);
 	else
 		cur = xmlNewDocNode(ctxt->doc, NULL, name, NULL);
 	if (ctxt->first)
@@ -774,16 +773,13 @@ static void loadedModulesListScanner(void *payload, void *data, XML_HCBNC xmlCha
 		ctxt->last = ctxt->first = cur;
 }
 
-xmlNodePtr xplLoadedModulesToNodeList(const xmlChar *tagQName, xmlNodePtr parent)
+xmlNodePtr xplLoadedModulesToNodeList(const xplQName tagname, xmlNodePtr parent)
 {
 	LoadedModulesListScannerCtxt ctxt;
+
 	if (!loaded_modules)
 		return NULL;
-	if (tagQName)
-	{
-		EXTRACT_NS_AND_TAGNAME(tagQName, ctxt.ns, ctxt.tagname, parent)
-	} else
-		ctxt.tagname = NULL;
+	ctxt.tagname = tagname;
 	ctxt.doc = parent->doc;
 	ctxt.first = ctxt.last = NULL;
 	xmlHashScan(loaded_modules, loadedModulesListScanner, &ctxt);

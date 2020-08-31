@@ -216,7 +216,7 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN xmlChar* XPLCALL
 	xplLoadedModulesToString(const xmlChar *delimiter);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplLoadedModulesToNodeList(const xmlChar *tagQName, xmlNodePtr parent);
+	xplLoadedModulesToNodeList(const xplQName tagname, xmlNodePtr parent);
 XPLPUBFUN void XPLCALL
 	xplLoadableModulesCleanup(void);
 #ifdef __cplusplus

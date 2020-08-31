@@ -1,54 +1,70 @@
 #include <libxpl/xplcommand.h>
 #include "commands/ModuleLoaded.h"
 
+typedef struct _xplCmdModuleLoadedParams
+{
+	xmlChar *name;
+	xplQName tagname;
+	bool show_tags;
+	bool repeat;
+} xplCmdModuleLoadedParams, *xplCmdModuleLoadedParamsPtr;
+
+static const xplCmdModuleLoadedParams params_stencil =
+{
+	.name = NULL,
+	.tagname = { NULL, BAD_CAST "module" },
+	.show_tags = false,
+	.repeat = true
+};
+
+xplCommand xplModuleLoadedCommand =
+{
+	.prologue = xplCmdModuleLoadedPrologue,
+	.epilogue = xplCmdModuleLoadedEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdModuleLoadedParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = BAD_CAST "tagname",
+			.type = XPL_CMD_PARAM_TYPE_QNAME,
+			.value_stencil = &params_stencil.tagname
+		}, {
+			.name = BAD_CAST "showtags",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.show_tags
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdModuleLoadedPrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
+
+static const xplQName empty_qname = { NULL, NULL };
 
 void xplCmdModuleLoadedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR (BAD_CAST "name")
-#define TAGNAME_ATTR (BAD_CAST "tagname")
-#define SHOWTAGS_ATTR (BAD_CAST "showtags")
-#define REPEAT_ATTR (BAD_CAST "repeat")
-	xmlChar *name_attr = NULL;
-	xmlChar *tagname_attr = NULL;
-	xmlChar *name;
-	bool showtags;
-	bool repeat;
-	xmlNodePtr ret, error;
+	xplCmdModuleLoadedParamsPtr params = (xplCmdModuleLoadedParamsPtr) commandInfo->params;
+	xmlNodePtr ret;
 
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	tagname_attr = xmlGetNoNsProp(commandInfo->element, TAGNAME_ATTR);
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWTAGS_ATTR, &showtags, false)))
+	if (params->name)
 	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if (name_attr)
-	{
-		ret = xmlNewDocText(commandInfo->element->doc, xplIsModuleLoaded(name_attr)? BAD_CAST "true": BAD_CAST "false");
+		ret = xmlNewDocText(commandInfo->element->doc, xplIsModuleLoaded(params->name)? BAD_CAST "true": BAD_CAST "false");
 		ASSIGN_RESULT(ret, false, true);
 	} else {
-		if (showtags)
-			name = NULL;
-		else if (tagname_attr)
-			name = tagname_attr;
-		else 
-			name = BAD_CAST "module";
-		ret = xplLoadedModulesToNodeList(name, commandInfo->element);
-		ASSIGN_RESULT(ret, repeat, true);
+		ret = xplLoadedModulesToNodeList(params->show_tags? empty_qname: params->tagname, commandInfo->element);
+		ASSIGN_RESULT(ret, params->repeat, true);
 	}
-done:
-	if (name_attr)
-		XPL_FREE(name_attr);
-	if (tagname_attr)
-		XPL_FREE(tagname_attr);
 }
-
-xplCommand xplModuleLoadedCommand = { xplCmdModuleLoadedPrologue, xplCmdModuleLoadedEpilogue };
