@@ -459,20 +459,20 @@ xmlChar *xplGetOptionValue(xmlChar *optionName, bool showPasswords)
 	return xplGetOptionValueInner(p, showPasswords);
 }
 
-xmlNodePtr xplOptionsToList(xmlDocPtr doc, xmlNodePtr parent, xmlChar *tagName, bool showTags, bool showPasswords)
+xmlNodePtr xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showTags, bool showPasswords)
 {
 	unsigned int i;
 	xmlNodePtr ret = NULL, tail, cur, value;
-	xmlNsPtr ns;
-	xmlChar *tag_name;
 
-	EXTRACT_NS_AND_TAGNAME(tagName, ns, tag_name, parent);
 	for (i = 0; i < CONFIG_ENTRIES_COUNT; i++)
 	{
 		if (configEntries[i].options & CFG_OPTION_DEPRECATED)
 			continue;
-		cur = xmlNewDocNode(doc, ns, showTags?configEntries[i].name:tag_name, NULL);
-		value = xmlNewDocText(doc, NULL);
+		if (showTags)
+			cur = xmlNewDocNode(parent->doc, NULL, configEntries[i].name, NULL);
+		else
+			cur = xmlNewDocNode(parent->doc, tagname.ns, tagname.ncname, NULL);
+		value = xmlNewDocText(parent->doc, NULL);
 		value->content = xplGetOptionValueInner(&configEntries[i], showPasswords);
 		value->parent = cur;
 		cur->children = cur->last = value;

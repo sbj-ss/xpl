@@ -5,65 +5,82 @@
 #include <libxpl/xpltree.h>
 #include "commands/GetOption.h"
 
+typedef struct _xplCmdGetOptionParams
+{
+	xmlChar *name;
+	xplQName response_tag_name;
+	bool show_tags;
+	bool show_passwords;
+	bool repeat;
+} xplCmdGetOptionParams, *xplCmdGetOptionParamsPtr;
+
+static const xplCmdGetOptionParams params_stencil =
+{
+	.name = NULL,
+	.response_tag_name = { NULL, BAD_CAST "option" },
+	.show_tags = false,
+	.show_passwords = false,
+	.repeat = true
+};
+
+xplCommand xplGetOptionCommand =
+{
+	.prologue = xplCmdGetOptionPrologue,
+	.epilogue = xplCmdGetOptionEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdGetOptionParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = BAD_CAST "responsetagname",
+			.type = XPL_CMD_PARAM_TYPE_QNAME,
+			.value_stencil = &params_stencil.response_tag_name
+		}, {
+			.name = BAD_CAST "showtags",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.show_tags
+		}, {
+			.name = BAD_CAST "showpasswords",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.show_passwords
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdGetOptionPrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR (BAD_CAST "name")
-#define RESPONSETAGNAME_ATTR (BAD_CAST "responsetagname")
-#define SHOWTAGS_ATTR (BAD_CAST "showtags")
-#define SHOWPASSWORDS_ATTR (BAD_CAST "showpasswords")
-#define REPEAT_ATTR (BAD_CAST "repeat")
+	xplCmdGetOptionParamsPtr params = (xplCmdGetOptionParamsPtr) commandInfo->params;
+	xmlNodePtr ret;
 
-	xmlChar *name_attr = NULL;
-	xmlChar *responsetagname_attr = NULL;
-	bool show_tags;
-	bool show_passwords;
-	bool repeat;
-	xmlNodePtr ret, error;
-
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	responsetagname_attr = xmlGetNoNsProp(commandInfo->element, RESPONSETAGNAME_ATTR);
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWTAGS_ATTR, &show_tags, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SHOWPASSWORDS_ATTR, &show_passwords, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-
-	if (show_passwords && !xplSessionGetSaMode(commandInfo->document->session))
+	if (params->show_passwords && !xplSessionGetSaMode(commandInfo->document->session))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
-		goto done;
+		return;
 	}
 
-	if (name_attr)
+	if (params->name)
 	{
 		ret = xmlNewDocText(commandInfo->element->doc, NULL);
-		ret->content = xplGetOptionValue(name_attr, show_passwords);
-		repeat = false;
+		ret->content = xplGetOptionValue(params->name, params->show_passwords);
+		params->repeat = false;
 	} else {
-		ret = xplOptionsToList(commandInfo->element->doc, commandInfo->element, 
-			responsetagname_attr?responsetagname_attr:BAD_CAST "Option", show_tags, show_passwords);
+		ret = xplOptionsToList(commandInfo->element, params->response_tag_name, params->show_tags, params->show_passwords);
 		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	}
-	ASSIGN_RESULT(ret, repeat, true);
-done:
-	if (name_attr)
-		XPL_FREE(name_attr);
-	if (responsetagname_attr)
-		XPL_FREE(responsetagname_attr);
+	ASSIGN_RESULT(ret, params->repeat, true);
 }
-
-xplCommand xplGetOptionCommand = { xplCmdGetOptionPrologue, xplCmdGetOptionEpilogue };

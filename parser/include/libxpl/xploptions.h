@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <libxml/tree.h>
 #include <libxml/xmlstring.h>
+#include <libxpl/xpltree.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,13 +17,12 @@ extern "C" {
 
 XPLPUBFUN int XPLCALL
 	xplGetBooleanValue(xmlChar* str);
-/* Получить строковое значение параметра конфигурации. Память нужно
- * будет освободить. */
+/* get option value. result must be freed. */
 XPLPUBFUN xmlChar* XPLCALL
 	xplGetOptionValue(xmlChar *optionName, bool showPasswords);
-/* Получить список узлов со всеми параметрами конфигурации. */
+/* get all options in a node list */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplOptionsToList(xmlDocPtr doc, xmlNodePtr parent, xmlChar *tagName, bool showTags, bool showPasswords);
+	xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showTags, bool showPasswords);
 
 typedef enum _xplSetOptionResult
 {
@@ -32,8 +32,7 @@ typedef enum _xplSetOptionResult
 	XPL_SET_OPTION_INTERNAL_ERROR = -3
 } xplSetOptionResult;
 
-/* Установить значение параметра конфигурации. Перед этим необходимо
- * вызвать блокировку создания новых потоков. Права доступа не проверяются! */
+/* set option value. threads must be locked first. access rights aren't checked here */
 XPLPUBFUN xplSetOptionResult XPLCALL
 	xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool byDefault);
 
