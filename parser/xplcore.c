@@ -242,6 +242,13 @@ bool xplGetDocByRole(xplDocumentPtr docIn, const xmlChar *strRole, xplDocumentPt
 	return false;
 }
 
+xmlChar* xplDocByRoleGetter(xplCommandInfoPtr info, const xmlChar *raw_value, void **result)
+{
+	if (!xplGetDocByRole(info->document, raw_value, (xplDocumentPtr*) result))
+		return xplFormatMessage(BAD_CAST "invalid document attribute value '%s'", raw_value);
+	return NULL;
+}
+
 /* common document initialization part */
 xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xplSessionPtr aSession)
 {

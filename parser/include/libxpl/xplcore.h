@@ -184,6 +184,9 @@ XPLPUBFUN xplError XPLCALL
    relativePath = "/Impulse/Developer.xpl" */
 XPLPUBFUN bool XPLCALL
 	xplGetDocByRole(xplDocumentPtr docIn, const xmlChar *strRole, xplDocumentPtr *docOut);
+/* command params helper */
+XPLPUBFUN xmlChar* XPLCALL
+	xplDocByRoleGetter(xplCommandInfoPtr info, const xmlChar *raw_value, void **result);
 XPLPUBFUN xplError XPLCALL
 	xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr environment, xplSessionPtr session, xplDocumentPtr *docOut);
 

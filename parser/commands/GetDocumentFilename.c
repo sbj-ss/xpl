@@ -12,13 +12,6 @@ static const xplCmdGetDocumentFilenameParams params_stencil =
 	.document = NULL
 };
 
-static xmlChar* _getDocument(xplCommandInfoPtr info, const xmlChar *raw_value, void **result)
-{
-	if (!xplGetDocByRole(info->document, raw_value, (xplDocumentPtr*) result))
-		return xplFormatMessage(BAD_CAST "invalid document attribute value '%s'", raw_value);
-	return NULL;
-}
-
 xplCommand xplGetDocumentFilenameCommand =
 {
 	.prologue = xplCmdGetDocumentFilenamePrologue,
@@ -32,7 +25,7 @@ xplCommand xplGetDocumentFilenameCommand =
 			.type = XPL_CMD_PARAM_TYPE_PTR_CUSTOM_GETTER,
 			.extra = {
 				.ptr_fn = {
-					.getter = _getDocument,
+					.getter = xplDocByRoleGetter,
 					.deallocator = NULL
 				}
 			},
