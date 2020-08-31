@@ -435,7 +435,7 @@ static void _paramClearValueScanner(void *payload, void *data, XML_HCBNC xmlChar
 	xplCmdParamPtr param = (xplCmdParamPtr) payload;
 	char **value, **default_value;
 	xmlXPathObjectPtr *xpath_obj;
-	xplQNamePtr qname;
+	xplQNamePtr qname, default_qname;
 
 	UNUSED_PARAM(name);
 	switch (param->type)
@@ -465,7 +465,8 @@ static void _paramClearValueScanner(void *payload, void *data, XML_HCBNC xmlChar
 			break;
 		case XPL_CMD_PARAM_TYPE_QNAME:
 			qname = (xplQNamePtr) ((uintptr_t) data + param->value_offset);
-			if (qname->ncname)
+			default_qname = (xplQNamePtr) param->value_stencil;
+			if (qname->ncname && qname->ncname != default_qname->ncname)
 				XPL_FREE(qname->ncname);
 			break;
 		default:
