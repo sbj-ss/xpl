@@ -3,42 +3,68 @@
 #include <libxpl/xpltree.h>
 #include "commands/GetOutputDocument.h"
 
+typedef struct _xplCmdGetOutputDocumentParams
+{
+	xmlChar *select; /* we can't use XPL_CMD_PARAM_TYPE_XPATH here as we'll be selecting from a different document */
+	bool repeat;
+} xplCmdGetOutputDocumentParams, *xplCmdGetOutputDocumentParamsPtr;
+
+static const xplCmdGetOutputDocumentParams params_stencil =
+{
+	.select = NULL,
+	.repeat = true
+};
+
+xplCommand xplGetOutputDocumentCommand =
+{
+	.prologue = xplCmdGetOutputDocumentPrologue,
+	.epilogue = xplCmdGetOutputDocumentEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdGetOutputDocumentParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "select",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.select
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdGetOutputDocumentPrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdGetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define SELECT_ATTR (BAD_CAST "select")
-#define REPEAT_ATTR (BAD_CAST "repeat")
-	xmlChar *select_attr = NULL;
+	xplCmdGetOutputDocumentParamsPtr params = (xplCmdGetOutputDocumentParamsPtr) commandInfo->params;
 	xmlDocPtr doc = NULL;
-	bool repeat;
 	xmlXPathObjectPtr sel = NULL;
 	size_t i;
-	xmlNodePtr sibling, prnt, copy, ret, tail, error;
+	xmlNodePtr sibling, prnt, copy, ret, tail;
 
 	if (commandInfo->document->role != XPL_DOC_ROLE_EPILOGUE)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "this command is only available from epilogue wrapper"), true, true);
-		goto done;
+		return;
 	}
 	if (!commandInfo->document->main || !commandInfo->document->main->document)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "main document wasn't evaluated due to some error"), true, true);
-		goto done;
+		return;
 	}
 	doc = commandInfo->document->main->document;
-	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
 
-	if (select_attr)
+	if (params->select)
 	{
-		sel = xplSelectNodes(commandInfo, (xmlNodePtr) doc, select_attr);
+		sel = xplSelectNodes(commandInfo, doc->children, params->select);
 		if (sel)
 		{
 			if (sel->type == XPATH_NODESET)
@@ -62,25 +88,21 @@ void xplCmdGetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 					}
 				} else
 					ret = NULL;
-			} else if (sel->type != XPATH_UNDEFINED) {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", select_attr), true, true);
+			} else if (sel->type != XPATH_UNDEFINED) { // TODO aren't scalar values OK here?
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", params->select), true, true);
 				goto done;
 			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to undef", select_attr), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to undefined", params->select), true, true);
 				goto done;
 			}
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", params->select), true, true);
 			goto done;
 		}
-	} else {
+	} else
 		ret = xplCloneNode(doc->children, commandInfo->element, commandInfo->document->document);
-		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
-	}
-	ASSIGN_RESULT(ret, repeat, true);
+	ASSIGN_RESULT(ret, params->repeat, true);
 done:
-	if (select_attr) XPL_FREE(select_attr);
-	if (sel) xmlXPathFreeObject(sel);
+	if (sel)
+		xmlXPathFreeObject(sel);
 }
-
-xplCommand xplGetOutputDocumentCommand = { xplCmdGetOutputDocumentPrologue, xplCmdGetOutputDocumentEpilogue };
