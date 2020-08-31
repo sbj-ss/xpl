@@ -2,8 +2,17 @@
 #include "commands/GetElapsedTime.h"
 #include <time.h>
 
-void xplCmdProfileCheckpointPrologue(xplCommandInfoPtr commandInfo)
+xplCommand xplGetElapsedTimeCommand =
 {
+	.prologue = xplCmdGetElapsedTimePrologue,
+	.epilogue = xplCmdGetElapsedTimeEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
+
+void xplCmdGetElapsedTimePrologue(xplCommandInfoPtr commandInfo)
+{
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdGetElapsedTimeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
@@ -25,5 +34,3 @@ void xplCmdGetElapsedTimeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	ASSIGN_RESULT(ret, false, true);
 	commandInfo->document->main->profile_checkpoint = current;
 }
-
-xplCommand xplGetElapsedTimeCommand = { xplCmdProfileCheckpointPrologue, xplCmdGetElapsedTimeEpilogue };
