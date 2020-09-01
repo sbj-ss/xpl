@@ -14,38 +14,12 @@
 #define DOC_START (BAD_CAST "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Root>")
 #define DOC_END (BAD_CAST "</Root>")
 
-void xplCmdSqlPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 #ifndef _XEF_HAS_DB
 void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "No database support is compiled in"), true, true);
 }
 #else
-static xmlNodePtr _getNonTextQueryError(xmlNodePtr queryParent)
-{
-	xmlNodePtr cur = queryParent->children;
-	while (cur)
-	{
-		if (cur->type == XML_TEXT_NODE)
-			break;
-		cur = cur->next;
-	}
-	if (cur)
-		return xplCreateErrorNode(queryParent, BAD_CAST "query \"%s...\" is non-text", cur->content);
-	cur = queryParent->children;
-	while (cur)
-	{
-		if (cur->type == XML_ELEMENT_NODE)
-			break;
-		cur = cur->next;
-	}
-	if (cur)
-		return xplCreateErrorNode(queryParent, BAD_CAST "query \"<%s...\" is non-text", cur->name);
-	return xplCreateErrorNode(queryParent, BAD_CAST "query is non-text");
-}
 
 typedef struct _xplSqlRowTagNames
 {
@@ -553,73 +527,93 @@ static xmlNodePtr _buildDoc(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_
 	return ret;
 }
 
+typedef struct _xplCmdSqlParams
+{
+	bool as_attributes;
+	bool cleanup_stream;
+	xmlChar *default_column_name;
+	bool merge_table_as_xml;
+	bool repeat;
+	bool keep_nulls;
+	xmlChar *response_tag_name;
+	bool show_nulls;
+} xplCmdSqlParams, *xplCmdSqlParamsPtr;
+
+static const xplCmdSqlParams params_stencil =
+{
+	.as_attributes = false,
+	.cleanup_stream = false,
+	.default_column_name = DEFAULT_COLUMN_NAME,
+	.keep_nulls = false,
+	.merge_table_as_xml = false,
+	.repeat = true,
+	.response_tag_name = DEFAULT_RESPONSE_TAG_NAME,
+	.show_nulls = false
+};
+
+xplCommand xplSqlCommand =
+{
+	.prologue = xplCmdSqlPrologue,
+	.epilogue = xplCmdSqlEpilogue,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdSqlParams),
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE | XPL_CMD_FLAG_REQUIRE_CONTENT,
+	.parameters = {
+		{
+			.name = BAD_CAST "asattributes",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.as_attributes
+		}, {
+			.name = BAD_CAST "cleanupstream",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.cleanup_stream
+		}, {
+			.name = BAD_CAST "defaultcolumnname",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.default_column_name
+		}, {
+			.name = BAD_CAST "keepnulls",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.keep_nulls
+		}, {
+			.name = BAD_CAST "mergetableasxml",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.merge_table_as_xml
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = BAD_CAST "responsetagname",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.response_tag_name
+		}, {
+			.name = BAD_CAST "shownulls",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.show_nulls
+		}, {
+			.name = NULL
+		}
+	}
+};
+
+void xplCmdSqlPrologue(xplCommandInfoPtr commandInfo)
+{
+}
+
 void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define RESPONSE_TAG_NAME_ATTR (BAD_CAST "responsetagname")
-#define MERGE_TABLE_AS_XML_ATTR (BAD_CAST "mergetableasxml")
-#define REPEAT_ATTR (BAD_CAST "repeat")
-#define CLEANUPSTREAM_ATTR (BAD_CAST "cleanupstream")
-#define ASATTRIBUTES_ATTR (BAD_CAST "asattributes")
-#define KEEPNULLS_ATTR (BAD_CAST "keepnulls")
-#define DEFAULT_COLUMN_NAME_ATTR (BAD_CAST "defaultcolumnname")
-#define SHOWNULLS_ATTR (BAD_CAST "shownulls")
-
-	xmlChar *response_tag_name_attr = NULL;
+	xplCmdSqlParamsPtr cmd_params = (xplCmdSqlParamsPtr) commandInfo->params;
 	xmlChar *dbname_attr = NULL;
-	xmlChar *default_column_name_attr = NULL;
-	bool as_xml;
-	bool repeat;
-	bool cleanup_stream;
-	bool keep_nulls;
-	bool as_attributes;
-	bool show_nulls;
-	xmlNodePtr attr_error;
-	xmlChar *sql = NULL;
 	xplSqlRowTagNamesPtr row_tag_names = NULL;
 
 	xmlNodePtr dbs;
 	xplDBListPtr db_list;
 
-	xefDbQueryParams params;
+	xefDbQueryParams dbq_params;
 	xefDbContextPtr db_ctxt = NULL;
 	xplTdsFragmentRowContext frag_ctxt;
 	xplTdsDocRowContext doc_ctxt;
-
-	memset(&params, 0, sizeof(params));
-
-	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
-	{
-		ASSIGN_RESULT(attr_error, true, true);
-		return;
-	}
-	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, CLEANUPSTREAM_ATTR, &cleanup_stream, false)))
-	{
-		ASSIGN_RESULT(attr_error, true, true);
-		return;
-	}
-	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, MERGE_TABLE_AS_XML_ATTR, &as_xml, false)))
-	{
-		ASSIGN_RESULT(attr_error, true, true);
-		return;
-	}
-	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, ASATTRIBUTES_ATTR, &as_attributes, false)))
-	{
-		ASSIGN_RESULT(attr_error, true, true);
-		return;
-	}
-	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, KEEPNULLS_ATTR, &keep_nulls, false)))
-	{
-		ASSIGN_RESULT(attr_error, true, true);
-		return;
-	}
-	if ((attr_error = xplDecodeCmdBoolParam(commandInfo->element, SHOWNULLS_ATTR, &show_nulls, false)))
-	{
-		ASSIGN_RESULT(attr_error, true, true);
-		return;
-	}
-
-	response_tag_name_attr = xmlGetNoNsProp(commandInfo->element, RESPONSE_TAG_NAME_ATTR);
-	default_column_name_attr = xmlGetNoNsProp(commandInfo->element, DEFAULT_COLUMN_NAME_ATTR);
 
 	dbs = commandInfo->element->parent;
 	while (dbs)
@@ -646,61 +640,43 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			dbname_attr, dbs->ns? dbs->ns->prefix: BAD_CAST ""), true, true);
 		goto done;
 	}
-	if (!xplCheckNodeListForText(commandInfo->element->children))
-	{
-		ASSIGN_RESULT(_getNonTextQueryError(commandInfo->element), true, true);
-		goto done;
-	}
-	sql = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
-	if (!sql || !*sql)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "query is empty"), true, true);
-		goto done;
-	}
 
-	params.cleanup_nonprintable = cleanup_stream;
-	params.db_list = db_list;
-	params.query = sql;
-	params.desired_stream_type = as_xml? XEF_DB_STREAM_XML: XEF_DB_STREAM_TDS;
-	params.error = NULL;
-	db_ctxt = xefDbQuery(&params);
-	if (!db_ctxt || params.error)
+	memset(&dbq_params, 0, sizeof(dbq_params));
+	dbq_params.cleanup_nonprintable = cmd_params->cleanup_stream;
+	dbq_params.db_list = db_list;
+	dbq_params.query = commandInfo->content;
+	dbq_params.desired_stream_type = cmd_params->merge_table_as_xml? XEF_DB_STREAM_XML: XEF_DB_STREAM_TDS;
+	dbq_params.error = NULL;
+	db_ctxt = xefDbQuery(&dbq_params);
+	if (!db_ctxt || dbq_params.error)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, params.error? params.error: BAD_CAST "unknown error"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, dbq_params.error? dbq_params.error: BAD_CAST "unknown error"), true, true);
 		goto done;
 	}
-	if (params.desired_stream_type == XEF_DB_STREAM_XML)
+	if (dbq_params.desired_stream_type == XEF_DB_STREAM_XML)
 	{
 		doc_ctxt.parent = commandInfo->element;
-		ASSIGN_RESULT(_buildDoc(db_ctxt, &doc_ctxt, &repeat), repeat, true);
+		ASSIGN_RESULT(_buildDoc(db_ctxt, &doc_ctxt, &cmd_params->repeat), cmd_params->repeat, true);
 	} else {
-		if (response_tag_name_attr)
-			row_tag_names = _createRowTagNames(response_tag_name_attr);
-		frag_ctxt.as_attributes = as_attributes;
-		frag_ctxt.keep_nulls = keep_nulls;
-		frag_ctxt.show_nulls = show_nulls;
+		if (cmd_params->response_tag_name)
+			row_tag_names = _createRowTagNames(cmd_params->response_tag_name);
+		frag_ctxt.as_attributes = cmd_params->as_attributes;
+		frag_ctxt.keep_nulls = cmd_params->keep_nulls;
+		frag_ctxt.show_nulls = cmd_params->show_nulls;
 		frag_ctxt.first = frag_ctxt.cur = NULL;
 		frag_ctxt.parent = commandInfo->element;
-		frag_ctxt.default_column_name = default_column_name_attr? default_column_name_attr: DEFAULT_COLUMN_NAME;
+		frag_ctxt.default_column_name = cmd_params->default_column_name? cmd_params->default_column_name: DEFAULT_COLUMN_NAME;
 		frag_ctxt.xml_desc = NULL;
-		ASSIGN_RESULT(_buildFragmentFromTds(db_ctxt, &frag_ctxt, row_tag_names, &repeat), repeat, true);
+		ASSIGN_RESULT(_buildFragmentFromTds(db_ctxt, &frag_ctxt, row_tag_names, &cmd_params->repeat), cmd_params->repeat, true);
 	}
 done:
-	if (params.error)
-		XPL_FREE(params.error);
+	if (dbq_params.error)
+		XPL_FREE(dbq_params.error);
 	if (db_ctxt)
 		xefDbFreeContext(db_ctxt);
 	if (dbname_attr)
 		XPL_FREE(dbname_attr);
-	if (sql)
-		XPL_FREE(sql);
 	if (row_tag_names)
 		_freeRowTagNames(row_tag_names);
-	if (response_tag_name_attr)
-		XPL_FREE(response_tag_name_attr);
-	if (default_column_name_attr)
-		XPL_FREE(default_column_name_attr);
 }
 #endif
-
-xplCommand xplSqlCommand = { xplCmdSqlPrologue, xplCmdSqlEpilogue };
