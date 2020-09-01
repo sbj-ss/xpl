@@ -3,79 +3,66 @@
 #include <libxpl/xpltree.h>
 #include "commands/Namespace.h"
 
+typedef struct _xplCmdNamespaceParams
+{
+	xmlChar *prefix;
+	xmlXPathObjectPtr destination;
+} xplCmdNamespaceParams, *xplCmdNamespaceParamsPtr;
+
+static const xplCmdNamespaceParams params_stencil =
+{
+	.prefix = NULL,
+	.destination = NULL
+};
+
+xplCommand xplNamespaceCommand =
+{
+	.prologue = xplCmdNamespacePrologue,
+	.epilogue = xplCmdNamespaceEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdNamespaceParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "prefix",
+			.type = XPL_CMD_PARAM_TYPE_NCNAME,
+			.required = true,
+			.value_stencil = &params_stencil.prefix
+		}, {
+			.name = BAD_CAST "destination",
+			.type = XPL_CMD_PARAM_TYPE_XPATH,
+			.extra.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
+			.value_stencil = &params_stencil.destination
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdNamespacePrologue(xplCommandInfoPtr commandInfo)
 {
+	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdNamespaceEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define PREFIX_ATTR (BAD_CAST "prefix")
-#define DESTINATION_ATTR (BAD_CAST "destination")
-
-	xmlChar *prefix_attr = NULL;
-	xmlChar *destination_attr = NULL;
-	xmlXPathObjectPtr sel = NULL;
-	xmlChar *uri = NULL;
-	xmlNodePtr ret = NULL;
+	xplCmdNamespaceParamsPtr params = (xplCmdNamespaceParamsPtr) commandInfo->params;
+	xmlNodeSetPtr nodeset;
 	size_t i;
 
-	prefix_attr = xmlGetNoNsProp(commandInfo->element, PREFIX_ATTR);
-	destination_attr = xmlGetNoNsProp(commandInfo->element, DESTINATION_ATTR);
-	if (!commandInfo->element->children)
+	if (params->destination && params->destination->nodesetval)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "uri is empty"), true, true);
-		goto done;
-	}
-	if (!xplCheckNodeListForText(commandInfo->element->children))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "uri is non-text"), true, true);
-		goto done;
-	}
-	uri = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
-	if (!uri)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "uri is empty"), true, true);
-		goto done;
-	}
-	if (destination_attr)
-	{
-		sel = xplSelectNodes(commandInfo, commandInfo->element, destination_attr);
-		if (sel)
+		nodeset = params->destination->nodesetval;
+		for (i = 0; i < (size_t) nodeset->nodeNr; i++)
 		{
-			if (sel->type == XPATH_NODESET)
-			{
-				if (sel->nodesetval)
-				{
-					for (i = 0; i < (size_t) sel->nodesetval->nodeNr; i++)
-					{
-						if (sel->nodesetval->nodeTab[i]->type != XML_ELEMENT_NODE)
-							continue;
-						xmlNewNs(sel->nodesetval->nodeTab[i], uri, prefix_attr);
-						/* ToDo: warnings */
-					}
-				}
-			} else {
-				ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "destination XPath (%s) evaluated to non-nodeset value", destination_attr);
-				goto done;
-			}
-		} else {
-			ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid destination XPath expression (%s)", destination_attr);
-			goto done;
+			if (nodeset->nodeTab[i]->type != XML_ELEMENT_NODE)
+				continue;
+			xmlNewNs(nodeset->nodeTab[i], commandInfo->content, params->prefix);
+			/* ToDo: checks and warnings */
 		}
 	} else {
-		xmlNewNs(commandInfo->element->parent, uri, prefix_attr);
-		/* ToDo: warnings */
+		xmlNewNs(commandInfo->element->parent, commandInfo->content, params->prefix);
+		/* ToDo: checks and warnings */
 	}
-done:
-	if (sel)
-		xmlXPathFreeObject(sel);
-	if (prefix_attr)
-		XPL_FREE(prefix_attr);
-	if (destination_attr)
-		XPL_FREE(destination_attr);
-	if (uri)
-		XPL_FREE(uri);
-	ASSIGN_RESULT(ret, ret? true: false, true);
+	ASSIGN_RESULT(NULL, false, true);
 }
-
-xplCommand xplNamespaceCommand = { xplCmdNamespacePrologue, xplCmdNamespaceEpilogue };
