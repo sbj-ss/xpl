@@ -192,6 +192,8 @@ void xplCleanupCommands()
 	}
 }
 
+typedef xmlChar* (*xplParamValueGetter)(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value);
+
 static xmlChar* xplGetParamStringValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
 {
 	*((xmlChar**) ((uintptr_t) info->params + param->value_offset)) = *raw_value;
@@ -319,6 +321,29 @@ static xmlChar* xplGetParamCustomPtrValue(xplCommandInfoPtr info, xplCmdParamPtr
 	return error;
 }
 
+static xmlChar* xplGetParamNCNameValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
+{
+	if (xmlValidateNCName(*raw_value, 0))
+		return xplFormatMessage(BAD_CAST "invalid NCName '%s'", *raw_value);
+	*((xmlChar**) ((uintptr_t) info->params + param->value_offset)) = *raw_value;
+	*raw_value = NULL;
+	return NULL;
+}
+
+static const xplParamValueGetter value_getters[] =
+{
+	[XPL_CMD_PARAM_TYPE_STRING] = xplGetParamStringValue,
+	[XPL_CMD_PARAM_TYPE_INT] = xplGetParamIntValue,
+	[XPL_CMD_PARAM_TYPE_BOOL] = xplGetParamBoolValue,
+	[XPL_CMD_PARAM_TYPE_DICT] = xplGetParamDictValue,
+	[XPL_CMD_PARAM_TYPE_XPATH] = xplGetParamXPathValue,
+	[XPL_CMD_PARAM_TYPE_QNAME] = xplGetParamQNameValue,
+	[XPL_CMD_PARAM_TYPE_INT_CUSTOM_GETTER] = xplGetParamCustomIntValue,
+	[XPL_CMD_PARAM_TYPE_PTR_CUSTOM_GETTER] = xplGetParamCustomPtrValue,
+	[XPL_CMD_PARAM_TYPE_NCNAME] = xplGetParamNCNameValue
+};
+
+
 xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandInfo)
 {
 	xmlAttrPtr attr = commandInfo->element->properties;
@@ -345,35 +370,13 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 	{
 		if ((param = (xplCmdParamPtr) xmlHashLookup(command->param_hash, attr->name)))
 		{
-			value_text = xplGetPropValue(attr);
-			switch (param->type)
+			if ((int) param->type < 0 || (int) param->type > XPL_CMD_PARAM_TYPE_MAX)
 			{
-				case XPL_CMD_PARAM_TYPE_STRING:
-					error = xplGetParamStringValue(commandInfo, param, &value_text);
-					break;
-				case XPL_CMD_PARAM_TYPE_INT:
-					error = xplGetParamIntValue(commandInfo, param, &value_text);
-					break;
-				case XPL_CMD_PARAM_TYPE_BOOL:
-					error = xplGetParamBoolValue(commandInfo, param, &value_text);
-					break;
-				case XPL_CMD_PARAM_TYPE_DICT:
-					error = xplGetParamDictValue(commandInfo, param, &value_text);
-					break;
-				case XPL_CMD_PARAM_TYPE_XPATH:
-					error = xplGetParamXPathValue(commandInfo, param, &value_text);
-					break;
-				case XPL_CMD_PARAM_TYPE_QNAME:
-					error = xplGetParamQNameValue(commandInfo, param, &value_text);
-					break;
-				case XPL_CMD_PARAM_TYPE_INT_CUSTOM_GETTER:
-					error = xplGetParamCustomIntValue(commandInfo, param, &value_text);
-					break;
-				case XPL_CMD_PARAM_TYPE_PTR_CUSTOM_GETTER:
-					error = xplGetParamCustomPtrValue(commandInfo, param, &value_text);
-					break;
-				default:
-					DISPLAY_INTERNAL_ERROR_MESSAGE();
+				DISPLAY_INTERNAL_ERROR_MESSAGE();
+				error = xplFormatMessage(BAD_CAST "unknown parameter type '%d'", (int) param->type);
+			} else {
+				value_text = xplGetPropValue(attr);
+				error = value_getters[param->type](commandInfo, param, &value_text);
 			}
 			required_params[param->index] = 0;
 			if (value_text)
