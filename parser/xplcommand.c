@@ -74,6 +74,10 @@ xplModuleCmdResult xplRegisterCommand(const xmlChar *name, xplCommandPtr cmd, xm
 
 	if (!commands)
 		return XPL_MODULE_CMD_NO_PARSER;
+	if (!cmd)
+		return XPL_MODULE_CMD_WRONG_PARAMS;
+	if (cmd->flags & XPL_CMD_FLAG_INITIALIZED) /* already initialized with another name */
+		return XPL_MODULE_CMD_OK;
 	/* Don't allow overrides */
 	if (xmlHashAddEntry(commands, name, cmd) == -1)
 		return XPL_MODULE_CMD_COMMAND_NAME_CLASH;
@@ -86,6 +90,7 @@ xplModuleCmdResult xplRegisterCommand(const xmlChar *name, xplCommandPtr cmd, xm
 	if (cmd->params_stencil)
 		if ((ret = _registerCommandParams(cmd, error)) != XPL_MODULE_CMD_OK)
 			return ret;
+	cmd->flags |= XPL_CMD_FLAG_INITIALIZED;
 	return XPL_MODULE_CMD_OK;
 }
 
@@ -95,20 +100,24 @@ void xplUnregisterCommand(const xmlChar *name)
 
 	if (!commands)
 		return;
+	if (!name)
+		return;
 	cmd = (xplCommandPtr) xmlHashLookup(commands, name);
-	if (cmd)
+	if (!cmd)
+		return;
+	if (!(cmd->flags & XPL_CMD_FLAG_INITIALIZED)) /* aliased command */
+		return;
+	if (cmd->finalizer)
+		cmd->finalizer(NULL);
+	if (cmd->param_hash)
 	{
-		if (cmd->finalizer)
-			cmd->finalizer(NULL);
-		if (cmd->param_hash)
-		{
-			xmlHashFree(cmd->param_hash, NULL);
-			cmd->param_hash = NULL;
-		}
-		if (cmd->required_params)
-			XPL_FREE(cmd->required_params);
-		xmlHashRemoveEntry(commands, name, NULL);
+		xmlHashFree(cmd->param_hash, NULL);
+		cmd->param_hash = NULL;
 	}
+	if (cmd->required_params)
+		XPL_FREE(cmd->required_params);
+	xmlHashRemoveEntry(commands, name, NULL);
+	cmd->flags &= ~XPL_CMD_FLAG_INITIALIZED;
 }
 
 xplCommandPtr xplGetCommand(xmlNodePtr el)
