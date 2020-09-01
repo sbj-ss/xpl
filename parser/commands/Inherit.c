@@ -44,7 +44,7 @@ xplCommand xplInheritCommand =
 	}
 };
 
-inline xplMacroPtr _macroLookup(xmlNodePtr node, xplQName name)
+static inline xplMacroPtr _macroLookup(xmlNodePtr node, xplQName name)
 {
 	return xplMacroLookup(node, name.ns? name.ns->href: NULL, name.ncname);
 }
