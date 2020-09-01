@@ -9,7 +9,7 @@ LIBS = -lxml2 -lxts
 WARNINGS = -Wall -Werror
 CFLAGS = $(WARNINGS)
 ifeq ($(DEBUG), 1)
-CFLAGS += -D_DEBUG
+CFLAGS += -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -fstack-protector
 endif
 
 SRC = xts.c
@@ -40,7 +40,7 @@ libxts.a: $(OBJS)
 	$(AR) rcs $@ $(OBJS)
 
 $(TEST_BIN): $(TEST_OBJS) libxts.a
-	$(CC) $(TEST_OBJS) -o $@ $(LIB) $(LIBS)
+	$(CC) $(CFLAGS) $(TEST_OBJS) -o $@ $(LIB) $(LIBS)
 
 test: $(TEST_BIN)
 	$(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)

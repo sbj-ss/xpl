@@ -9,7 +9,7 @@ WARNINGS = -Wall -Werror
 FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_DB_ODBC
 CFLAGS = -fpic -D_IN_DLL $(FEATURES) $(WARNINGS)
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -D_DEBUG
+CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -fstack-protector
 else
 CFLAGS += -O2
 endif
@@ -196,7 +196,7 @@ libxpl$(SO_EXT): $(OBJS)
 	$(CC) -shared -o $@ $(OBJS)
 
 $(TEST_BIN): libxpl$(SO_EXT) $(TEST_OBJS)
-	$(CC) $(TEST_OBJS) -o $@ -L../xts -L. $(LIBS) -lxts
+	$(CC) $(CFLAGS) $(TEST_OBJS) -o $@ -L../xts -L. $(LIBS) -lxts
 
 test: $(TEST_BIN)
 	$(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
