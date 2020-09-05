@@ -19,7 +19,7 @@ xplCommand xplNamespaceCommand =
 {
 	.prologue = xplCmdNamespacePrologue,
 	.epilogue = xplCmdNamespaceEpilogue,
-	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE | XPL_CMD_FLAG_REQUIRE_CONTENT,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdNamespaceParams),
 	.parameters = {
