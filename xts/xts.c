@@ -404,7 +404,7 @@ bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error)
 	if (!ok)
 	{
 		strncpy((char*) part, (char*) ctxt.cur, sizeof(part));
-		part[20] = 0;
+		part[sizeof(part) - 1] = 0;
 		error_len = 128; /* introducing XPR dependency is bad */
 		*error = XPL_MALLOC(error_len + 1);
 		snprintf((char*) *error, error_len, fmt, ctxt.error, part);
