@@ -226,7 +226,6 @@ bool xtsSkipTest(xtsFixturePtr *suite, const xmlChar *fixture_id, const xmlChar 
 	assert(fixture_id);
 	assert(test_id);
 
-
 	if (!(fixture = xtsLocateFixture(suite, fixture_id)))
 		return false;
 	if (!(test = xtsLocateTest(fixture, test_id)))
@@ -245,13 +244,13 @@ typedef struct _xtsSkipListParserCtxt
 	xmlChar *error;
 } xtsSkipListParserCtxt, *xtsSkipListParserCtxtPtr;
 
-static void xtsOmitSkipListSpace(xtsSkipListParserCtxtPtr ctxt)
+static void _omitSkipListSpace(xtsSkipListParserCtxtPtr ctxt)
 {
 	while (xmlIsBlank_ch(*(ctxt->cur)))
 		ctxt->cur++;
 }
 
-static xmlChar* xtsExtractEntityId(xtsSkipListParserCtxtPtr ctxt)
+static xmlChar* _extractEntityId(xtsSkipListParserCtxtPtr ctxt)
 {
 	const xmlChar *ent_end;
 	xmlChar *ent_id;
@@ -274,7 +273,7 @@ static xmlChar* xtsExtractEntityId(xtsSkipListParserCtxtPtr ctxt)
 	return ent_id;
 }
 
-static bool xtsParseSkipListTest(xtsSkipListParserCtxtPtr ctxt)
+static bool _parseSkipListTests(xtsSkipListParserCtxtPtr ctxt)
 {
 	xmlChar *test_id;
 	xtsTestPtr test;
@@ -294,8 +293,8 @@ static bool xtsParseSkipListTest(xtsSkipListParserCtxtPtr ctxt)
 		return false;
 	}
 	ctxt->cur++;
-	xtsOmitSkipListSpace(ctxt);
-	test_id = xtsExtractEntityId(ctxt);
+	_omitSkipListSpace(ctxt);
+	test_id = _extractEntityId(ctxt);
 	test = xtsLocateTest(ctxt->fixture, test_id);
 	XPL_FREE(test_id);
 	if (!test)
@@ -305,13 +304,13 @@ static bool xtsParseSkipListTest(xtsSkipListParserCtxtPtr ctxt)
 	}
 	xtsSkipSingleTest(test, ctxt->skip);
 	ctxt->cur = ctxt->new_cur;
-	xtsOmitSkipListSpace(ctxt);
+	_omitSkipListSpace(ctxt);
 	if (*(ctxt->cur) == (xmlChar) '#')
-		return xtsParseSkipListTest(ctxt);
+		return _parseSkipListTests(ctxt);
 	return true;
 }
 
-static bool xtsParseSkipListFixture(xtsSkipListParserCtxtPtr ctxt)
+static bool _parseSkipListFixture(xtsSkipListParserCtxtPtr ctxt)
 {
 	xmlChar *fixture_id;
 
@@ -329,8 +328,8 @@ static bool xtsParseSkipListFixture(xtsSkipListParserCtxtPtr ctxt)
 		return false;
 	}
 	ctxt->cur++;
-	xtsOmitSkipListSpace(ctxt);
-	fixture_id = xtsExtractEntityId(ctxt);
+	_omitSkipListSpace(ctxt);
+	fixture_id = _extractEntityId(ctxt);
 	ctxt->fixture = xtsLocateFixture(ctxt->suite, fixture_id);
 	XPL_FREE(fixture_id);
 	if (!ctxt->fixture)
@@ -339,19 +338,20 @@ static bool xtsParseSkipListFixture(xtsSkipListParserCtxtPtr ctxt)
 		return false;
 	}
 	ctxt->cur = ctxt->new_cur;
-	xtsOmitSkipListSpace(ctxt);
-	if (!xtsParseSkipListTest(ctxt))
+	_omitSkipListSpace(ctxt);
+	if (!_parseSkipListTests(ctxt))
 		return false;
-	xtsOmitSkipListSpace(ctxt);
+	_omitSkipListSpace(ctxt);
 	if (*ctxt->cur == (xmlChar) '@')
-		return xtsParseSkipListFixture(ctxt);
+		return _parseSkipListFixture(ctxt);
 	return true;
 }
 
-static bool xtsParseSkipListStatement(xtsSkipListParserCtxtPtr ctxt)
+static bool _parseSkipListStatements(xtsSkipListParserCtxtPtr ctxt)
 {
 	assert(ctxt);
 	assert(ctxt->cur);
+	_omitSkipListSpace(ctxt);
 	if (!*(ctxt->cur))
 		return true;
 	if (*(ctxt->cur) == (xmlChar) 'i')
@@ -363,15 +363,15 @@ static bool xtsParseSkipListStatement(xtsSkipListParserCtxtPtr ctxt)
 		return false;
 	}
 	ctxt->cur++;
-	xtsOmitSkipListSpace(ctxt);
+	_omitSkipListSpace(ctxt);
 	if (*(ctxt->cur) != (xmlChar) ':')
 	{
 		ctxt->error = BAD_CAST "missing colon after operation";
 		return false;
 	}
 	ctxt->cur++;
-	xtsOmitSkipListSpace(ctxt);
-	if (!xtsParseSkipListFixture(ctxt))
+	_omitSkipListSpace(ctxt);
+	if (!_parseSkipListFixture(ctxt))
 		return false;
 	if (*(ctxt->cur) != (xmlChar) ';')
 	{
@@ -379,9 +379,8 @@ static bool xtsParseSkipListStatement(xtsSkipListParserCtxtPtr ctxt)
 		return false;
 	}
 	ctxt->cur++;
-	xtsOmitSkipListSpace(ctxt);
 	if (*(ctxt->cur))
-		return xtsParseSkipListStatement(ctxt);
+		return _parseSkipListStatements(ctxt);
 	return true;
 }
 
@@ -399,8 +398,7 @@ bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error)
 	memset(&ctxt, 0, sizeof(ctxt));
 	ctxt.suite = suite;
 	ctxt.cur = s;
-	xtsOmitSkipListSpace(&ctxt);
-	ok = xtsParseSkipListStatement(&ctxt);
+	ok = _parseSkipListStatements(&ctxt);
 	if (!ok)
 	{
 		strncpy((char*) part, (char*) ctxt.cur, sizeof(part));
