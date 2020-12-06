@@ -73,17 +73,19 @@ typedef struct _xtsFixture
 } xtsFixture, *xtsFixturePtr;
 
 bool xtsRunFixture(const xtsFixturePtr fixture, xtsContextPtr ctxt);
-xtsTestPtr xtsLocateTest(const xtsFixturePtr fixture, const xmlChar *test_id);
 
 /* entire suite */
 /* fixtures must be NULL-terminated */
-bool xtsRunSuite(const xtsFixturePtr *suite, xtsContextPtr ctxt);
-xtsFixturePtr xtsLocateFixture(const xtsFixturePtr *suite, const xmlChar *fixture_id);
+bool xtsRunSuite(const xtsFixturePtr suite[], xtsContextPtr ctxt);
+
+/* parts location */
+xtsTestPtr xtsLocateTest(const xtsFixturePtr fixture, const xmlChar *test_id);
+xtsFixturePtr xtsLocateFixture(const xtsFixturePtr suite[], const xmlChar *fixture_id);
 
 /* skipping control */
 /* grammar ("s" for "skip", "i" for "include"):
- * LIST = { STATEMENT ";" }
- * LINE = OPERATION ":" FIXTURE { FIXTURE }
+ * LIST = STATEMENT ";" { STATEMENT ";" }
+ * STATEMENT = OPERATION ":" FIXTURE { FIXTURE }
  * OPERATION = "s" | "i"
  * FIXTURE = "*" | ("@" identifier TEST { TEST })
  * TEST = "*" | ("#" identifier)
@@ -93,9 +95,9 @@ xtsFixturePtr xtsLocateFixture(const xtsFixturePtr *suite, const xmlChar *fixtur
 
 void xtsSkipSingleTest(xtsTestPtr test, bool skip);
 void xtsSkipAllTestsInFixture(xtsFixturePtr fixture, bool skip);
-void xtsSkipAllTestsInSuite(xtsFixturePtr *suite, bool skip);
-bool xtsSkipTest(xtsFixturePtr *suite, const xmlChar *fixture_id, const xmlChar *test_id, bool skip);
-bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error);
+void xtsSkipAllTestsInSuite(xtsFixturePtr suite[], bool skip);
+bool xtsSkipTest(xtsFixturePtr suite[], const xmlChar *fixture_id, const xmlChar *test_id, bool skip);
+bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr suite[], xmlChar **error);
 
 void xtsDisplayUsage(char *prog_name);
 

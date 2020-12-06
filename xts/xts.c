@@ -139,16 +139,16 @@ bool xtsRunFixture(const xtsFixturePtr fixture, xtsContextPtr ctxt)
 	return ok;
 }
 
-bool xtsRunSuite(const xtsFixturePtr *fixtures, xtsContextPtr ctxt)
+bool xtsRunSuite(const xtsFixturePtr suite[], xtsContextPtr ctxt)
 {
 	xtsFixturePtr fixture;
 	bool ok = true;
 
-	assert(fixtures);
+	assert(suite);
 	assert(ctxt);
 	if (ctxt->verbosity > XTS_VERBOSITY_QUIET)
 		xmlGenericError(xmlGenericErrorContext, "Running test suite...\n");
-	for (; (fixture = *fixtures); fixtures++)
+	for (; (fixture = *suite); suite++)
 	{
 		ok &= xtsRunFixture(fixture, ctxt);
 		if (!ok && (ctxt->fail_mode == XTS_FAIL_FIRST))
@@ -177,7 +177,7 @@ xtsTestPtr xtsLocateTest(const xtsFixturePtr fixture, const xmlChar *test_id)
 	return NULL;
 }
 
-xtsFixturePtr xtsLocateFixture(const xtsFixturePtr *suite, const xmlChar *fixture_id)
+xtsFixturePtr xtsLocateFixture(const xtsFixturePtr suite[], const xmlChar *fixture_id)
 {
 	xtsFixturePtr fixture;
 
@@ -208,7 +208,7 @@ void xtsSkipAllTestsInFixture(xtsFixturePtr fixture, bool skip)
 		xtsSkipSingleTest(test, skip);
 }
 
-void xtsSkipAllTestsInSuite(xtsFixturePtr *suite, bool skip)
+void xtsSkipAllTestsInSuite(xtsFixturePtr suite[], bool skip)
 {
 	xtsFixturePtr fixture;
 
@@ -217,7 +217,7 @@ void xtsSkipAllTestsInSuite(xtsFixturePtr *suite, bool skip)
 		xtsSkipAllTestsInFixture(fixture, skip);
 }
 
-bool xtsSkipTest(xtsFixturePtr *suite, const xmlChar *fixture_id, const xmlChar *test_id, bool skip)
+bool xtsSkipTest(xtsFixturePtr suite[], const xmlChar *fixture_id, const xmlChar *test_id, bool skip)
 {
 	xtsFixturePtr fixture = NULL;
 	xtsTestPtr test;
@@ -384,7 +384,7 @@ static bool _parseSkipListStatements(xtsSkipListParserCtxtPtr ctxt)
 	return true;
 }
 
-bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr *suite, xmlChar **error)
+bool xtsApplySkipList(const xmlChar *s, xtsFixturePtr suite[], xmlChar **error)
 {
 	xtsSkipListParserCtxt ctxt;
 	bool ok;
