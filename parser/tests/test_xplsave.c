@@ -13,7 +13,7 @@
 	goto cleanup;\
 } while(0);
 
-static xmlDocPtr create_test_doc()
+static xmlDocPtr _createTestDoc()
 {
 	const char doc_src[] =
 		"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
@@ -36,7 +36,7 @@ static xmlDocPtr create_test_doc()
 
 #define NODE_A_CODE "<foo:a xmlns:foo=\"http://foo.com/foo\" xmlns:bar=\"http://foo.com/bar\" attr-a=\"value a\" bar:attr-b=\"value&quot; b\"/>"
 
-static xmlNodePtr build_node_a()
+static xmlNodePtr _buildNodeA()
 {
 	xmlNodePtr node;
 	xmlNsPtr ns_foo, ns_bar;
@@ -58,7 +58,7 @@ static xmlNodePtr build_node_a()
 
 #define NODE_B_CODE "<b>test</b>"
 
-static xmlNodePtr build_node_b()
+static xmlNodePtr _buildNodeB()
 {
 	xmlNodePtr node, content;
 
@@ -70,14 +70,14 @@ static xmlNodePtr build_node_b()
 	return node;
 }
 
-static bool xtsTestSave_SerializeNodeList(xtsContextPtr ctxt)
+static bool _testSerializeNodeList(xtsContextPtr ctxt)
 {
 	xmlNodePtr node_a, node_b;
 	xmlChar *result;
 	bool ok = false;
 
-	node_a = build_node_a();
-	node_b = build_node_b();
+	node_a = _buildNodeA();
+	node_b = _buildNodeB();
 	xmlAddSibling(node_a, node_b);
 	result = serializeNodeList(node_a);
 	if (!result)
@@ -93,15 +93,15 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestSave_SerializeNodeSet(xtsContextPtr ctxt)
+static bool _testSerializeNodeSet(xtsContextPtr ctxt)
 {
 	xmlNodePtr node_a, node_b;
 	xmlNodeSetPtr set;
 	xmlChar *result;
 	bool ok = false;
 
-	node_a = build_node_a();
-	node_b = build_node_b();
+	node_a = _buildNodeA();
+	node_b = _buildNodeB();
 	set = xmlXPathNodeSetCreate(NULL);
 	assert(set);
 	xmlXPathNodeSetAdd(set, node_a);
@@ -124,7 +124,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestSave_SerializeNodeXX_NullInput(xtsContextPtr ctxt)
+static bool _testSerializeNodeXXWitNullInput(xtsContextPtr ctxt)
 {
 	bool ok = false;
 	xmlChar *result;
@@ -143,20 +143,20 @@ cleanup:
 
 /*static char temp_tmpl[] = "xts_save_XXXXXX";*/
 
-static bool save_fixture_setup(xtsContextPtr ctxt)
+static bool _saveFixtureSetup(xtsContextPtr ctxt)
 {
 	xmlDocPtr doc;
 
 /*	if (!mkdtemp(temp_tmpl))
 		return false;
 	xmlHashAddEntry(ctxt->env, BAD_CAST "dir", temp_tmpl);*/
-	if (!(doc = create_test_doc()))
+	if (!(doc = _createTestDoc()))
 		return false;
 	xmlHashAddEntry(ctxt->env, BAD_CAST "doc", doc);
 	return true;
 }
 
-static void save_fixture_teardown(xtsContextPtr ctxt)
+static void _saveFixtureTeardown(xtsContextPtr ctxt)
 {
 	xmlDocPtr doc;
 	char *dir;
@@ -172,17 +172,17 @@ static xtsTest save_tests[] =
 	{
 		.id = BAD_CAST "serialize_node_list",
 		.displayName = BAD_CAST "Node list serialization",
-		.testFunction = xtsTestSave_SerializeNodeList,
+		.testFunction = _testSerializeNodeList,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, 	{
 		.id = BAD_CAST "serialize_node_set",
 		.displayName = BAD_CAST "Node set serialization",
-		.testFunction = xtsTestSave_SerializeNodeSet,
+		.testFunction = _testSerializeNodeSet,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, 	{
 		.id = BAD_CAST "serialize_null_input",
 		.displayName = BAD_CAST "Node list/set serialization with NULL input",
-		.testFunction = xtsTestSave_SerializeNodeXX_NullInput,
+		.testFunction = _testSerializeNodeXXWitNullInput,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}
 };
@@ -191,8 +191,8 @@ xtsFixture xtsTestSaveFixture =
 {
 	.id = BAD_CAST "save",
 	.displayName = BAD_CAST "saving/serialization test group",
-	.setup = save_fixture_setup,
-	.teardown = save_fixture_teardown,
+	.setup = _saveFixtureSetup,
+	.teardown = _saveFixtureTeardown,
 	.test_count = sizeof(save_tests) / sizeof(save_tests[0]),
 	.tests = save_tests
 };

@@ -8,7 +8,32 @@
 	goto cleanup;\
 } while(0);
 
-static bool xtsTestReszBuf_CreateDefaultParams(xtsContextPtr ctxt)
+static int flush_calls = 0;
+static xmlChar *flush_buf = NULL;
+
+static int _flushToDevNullAndSucceed(void *data, size_t size)
+{
+	flush_calls++;
+	return 0;
+}
+
+static int _flushToDevNullAndFail(void *data, size_t size)
+{
+	return -1;
+}
+
+static int _flushToStrcat(void *data, size_t size)
+{
+	if (flush_buf)
+		flush_buf = xmlStrncat(flush_buf, data, size);
+	else
+		flush_buf = xmlStrndup(data, size);
+	return 0;
+}
+
+static unsigned char src_bytes[RB_DEFAULT_INITIAL_SIZE] = { 0 };
+
+static bool _testCreateWithDefaultParams(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	bool ok = false;
@@ -29,7 +54,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_CreateWithSize(xtsContextPtr ctxt)
+static bool _testCreateWithSize(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	bool ok = false;
@@ -48,7 +73,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_CreateExplicit(xtsContextPtr ctxt)
+static bool _testCreateExplicit(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	bool ok = false;
@@ -67,12 +92,7 @@ cleanup:
 	return ok;
 }
 
-static int flush_to_dev_null_and_succeed(void *data, size_t size)
-{
-	return 0;
-}
-
-static bool xtsTestReszBuf_CreateFlushable(xtsContextPtr ctxt)
+static bool _testCreateFlushable(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	bool ok = false;
@@ -80,7 +100,7 @@ static bool xtsTestReszBuf_CreateFlushable(xtsContextPtr ctxt)
 	buf = rbCreateFlushableBuf(1234, NULL);
 	if (buf)
 		FAIL("creating a flushable buffer without flush callback must fail");
-	buf = rbCreateFlushableBuf(2345, flush_to_dev_null_and_succeed);
+	buf = rbCreateFlushableBuf(2345, _flushToDevNullAndSucceed);
 	assert(buf);
 	if (rbGetBufTotalSize(buf) != 2345)
 		FAIL("wrong buffer size");
@@ -92,9 +112,7 @@ cleanup:
 	return ok;
 }
 
-static unsigned char src_bytes[RB_DEFAULT_INITIAL_SIZE] = { 0 };
-
-static bool xtsTestReszBuf_GrowExact(xtsContextPtr ctxt)
+static bool _testGrowExact(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	bool ok = false;
@@ -123,7 +141,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_GrowIncrement(xtsContextPtr ctxt)
+static bool _testGrowIncrement(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	bool ok = false;
@@ -152,7 +170,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_GrowDouble(xtsContextPtr ctxt)
+static bool _testGrowDouble(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	bool ok = false;
@@ -181,7 +199,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_GrowFixed(xtsContextPtr ctxt)
+static bool _testGrowFixed(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	bool ok = false;
@@ -210,20 +228,12 @@ cleanup:
 	return ok;
 }
 
-static int flush_calls = 0;
-
-static int flush_to_dev_null(void *data, size_t size)
-{
-	flush_calls++;
-	return 0;
-}
-
-static bool xtsTestReszBuf_GrowFlush(xtsContextPtr ctxt)
+static bool _testGrowFlush(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	bool ok = false;
 
-	buf = rbCreateFlushableBuf(16, flush_to_dev_null);
+	buf = rbCreateFlushableBuf(16, _flushToDevNullAndSucceed);
 	assert(buf);
 
 	flush_calls = 0;
@@ -267,31 +277,17 @@ cleanup:
 	return ok;
 }
 
-static int flush_to_dev_null_and_fail(void *data, size_t size)
-{
-	return -1;
-}
-
-static xmlChar *flush_buf = NULL;
-static int flush_to_strcat(void *data, size_t size)
-{
-	if (flush_buf)
-		flush_buf = xmlStrncat(flush_buf, data, size);
-	else
-		flush_buf = xmlStrndup(data, size);
-	return 0;
-}
-
+// TODO rbAddStringToBuf
 #define ADD_DATA(s) rbAddDataToBuf(buf, s, xmlStrlen(BAD_CAST s))
 
-static bool xtsTestReszBuf_Flush(xtsContextPtr ctxt)
+static bool _testFlush(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	bool ok = false;
 
-	buf = rbCreateFlushableBuf(8, flush_to_dev_null_and_fail);
+	buf = rbCreateFlushableBuf(8, _flushToDevNullAndFail);
 	assert(buf);
-	if (rbGetBufFlushCallback(buf) != flush_to_dev_null_and_fail)
+	if (rbGetBufFlushCallback(buf) != _flushToDevNullAndFail)
 		FAIL("getting flush callback failed");
 	if (rbAddDataToBuf(buf, src_bytes, 2) != RB_RESULT_OK)
 		FAIL("adding data must succeed if they fit");
@@ -299,9 +295,9 @@ static bool xtsTestReszBuf_Flush(xtsContextPtr ctxt)
 		FAIL("flushing must fail if callback reports an error");
 	if (rbAddDataToBuf(buf, src_bytes, 10) != RB_RESULT_FLUSH_FAILED)
 		FAIL("adding data  must fail if flush callback reports an error");
-	if (rbSetBufFlushCallback(buf, flush_to_strcat) != flush_to_dev_null_and_fail)
+	if (rbSetBufFlushCallback(buf, _flushToStrcat) != _flushToDevNullAndFail)
 		FAIL("setting flush callback failed");
-	if (rbGetBufFlushCallback(buf) != flush_to_strcat)
+	if (rbGetBufFlushCallback(buf) != _flushToStrcat)
 		FAIL("getting flush callback failed (2)");
 	ADD_DATA("This");
 	if (!xmlStrcmp(flush_buf, BAD_CAST "This"))
@@ -328,7 +324,7 @@ cleanup:
 
 #undef ADD_DATA
 
-static bool xtsTestReszBuf_InvalidParams(xtsContextPtr ctxt)
+static bool _testInvalidParams(xtsContextPtr ctxt)
 {
 	bool ok = false;
 	rbBufPtr buf;
@@ -365,7 +361,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_InvalidBuf(xtsContextPtr ctxt)
+static bool _testInvalidBuf(xtsContextPtr ctxt)
 {
 	bool ok = false;
 
@@ -404,7 +400,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_GrowDynamic(xtsContextPtr ctxt)
+static bool _testGrowWithDynamicStrategy(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	bool ok = false;
@@ -453,7 +449,7 @@ static bool xtsTestReszBuf_GrowDynamic(xtsContextPtr ctxt)
 	if (rbGetBufTotalSize(buf) != 66) /* 33*2 */
 		FAIL("total size must be 66 at this point:1");
 
-	if (rbSetBufFlushCallback(buf, flush_to_dev_null_and_succeed) != RB_RESULT_OK)
+	if (rbSetBufFlushCallback(buf, _flushToDevNullAndSucceed) != RB_RESULT_OK)
 		FAIL("setting buffer flush function must succeed");
 	if (rbSetBufGrowStrategy(buf, RB_GROW_FLUSH) != RB_RESULT_OK)
 		FAIL("setting grow_strategy to flushing must succeed");
@@ -470,7 +466,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_DetachContent_Fixed(xtsContextPtr ctxt)
+static bool _testDetachContentGrowFixed(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	void *content;
@@ -495,7 +491,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_DetachContent_Exact(xtsContextPtr ctxt)
+static bool _testDetachContentGrowExact(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	void *content;
@@ -520,7 +516,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_DetachContent_Increment(xtsContextPtr ctxt)
+static bool _testDetachContentGrowIncrement(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	void *content;
@@ -545,7 +541,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_DetachContent_Double(xtsContextPtr ctxt)
+static bool _testDetachContentGrowDouble(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	void *content;
@@ -570,13 +566,13 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_DetachContent_Flush(xtsContextPtr ctxt)
+static bool _testDetachContentGrowFlush(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	void *content;
 	bool ok = false;
 
-	buf = rbCreateFlushableBuf(16, flush_to_dev_null_and_succeed);
+	buf = rbCreateFlushableBuf(16, _flushToDevNullAndSucceed);
 	assert(buf);
 	if (rbAddDataToBuf(buf, src_bytes, 24) != RB_RESULT_OK)
 		FAIL("adding data to a growable buffer must succeed");
@@ -595,7 +591,7 @@ cleanup:
 	return ok;
 }
 
-static bool xtsTestReszBuf_Position(xtsContextPtr ctxt)
+static bool _testPosition(xtsContextPtr ctxt)
 {
 	rbBufPtr buf;
 	xmlChar *test_string = BAD_CAST "This is a test";
@@ -635,97 +631,97 @@ static xtsTest resz_buf_tests[] =
 	{
 		.id = BAD_CAST "create_default_params",
 		.displayName = BAD_CAST "Creation with default parameters",
-		.testFunction = xtsTestReszBuf_CreateDefaultParams,
+		.testFunction = _testCreateWithDefaultParams,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "create_with_size",
 		.displayName = BAD_CAST "Creation with explicit size",
-		.testFunction = xtsTestReszBuf_CreateWithSize,
+		.testFunction = _testCreateWithSize,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "create_explicit",
 		.displayName = BAD_CAST "Creation with explicit parameters",
-		.testFunction = xtsTestReszBuf_CreateExplicit,
+		.testFunction = _testCreateExplicit,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "create_flushable",
 		.displayName = BAD_CAST "Flushable buffer creation",
-		.testFunction = xtsTestReszBuf_CreateFlushable,
+		.testFunction = _testCreateFlushable,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "grow_exact",
 		.displayName = BAD_CAST "Adding data with exact grow strategy",
-		.testFunction = xtsTestReszBuf_GrowExact,
+		.testFunction = _testGrowExact,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "grow_increment",
 		.displayName = BAD_CAST "Adding data with incremental grow strategy",
-		.testFunction = xtsTestReszBuf_GrowIncrement,
+		.testFunction = _testGrowIncrement,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "grow_double",
 		.displayName = BAD_CAST "Adding data with doubling grow strategy",
-		.testFunction = xtsTestReszBuf_GrowDouble,
+		.testFunction = _testGrowDouble,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "grow_fixed",
 		.displayName = BAD_CAST "Adding data with fixed grow strategy",
-		.testFunction = xtsTestReszBuf_GrowFixed,
+		.testFunction = _testGrowFixed,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "grow_flush",
 		.displayName = BAD_CAST "Adding data with flush grow strategy",
-		.testFunction = xtsTestReszBuf_GrowFlush,
+		.testFunction = _testGrowFlush,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "flush",
 		.displayName = BAD_CAST "Various flush functions",
-		.testFunction = xtsTestReszBuf_Flush,
+		.testFunction = _testFlush,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "invalid_params",
 		.displayName = BAD_CAST "Invalid function parameters",
-		.testFunction = xtsTestReszBuf_InvalidParams,
+		.testFunction = _testInvalidParams,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "invalid_buf",
 		.displayName = BAD_CAST "Invalid (NULL) buffer",
-		.testFunction = xtsTestReszBuf_InvalidBuf,
+		.testFunction = _testInvalidBuf,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "grow_dynamic",
 		.displayName = BAD_CAST "Dynamically changing grow strategy",
-		.testFunction = xtsTestReszBuf_GrowDynamic,
+		.testFunction = _testGrowWithDynamicStrategy,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "detach_fixed",
 		.displayName = BAD_CAST "Detaching content and reusing buffer (fixed GS)",
-		.testFunction = xtsTestReszBuf_DetachContent_Fixed,
+		.testFunction = _testDetachContentGrowFixed,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "detach_exact",
 		.displayName = BAD_CAST "Detaching content and reusing buffer (exact GS)",
-		.testFunction = xtsTestReszBuf_DetachContent_Exact,
+		.testFunction = _testDetachContentGrowExact,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "detach_increment",
 		.displayName = BAD_CAST "Detaching content and reusing buffer (incremental GS)",
-		.testFunction = xtsTestReszBuf_DetachContent_Increment,
+		.testFunction = _testDetachContentGrowIncrement,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "detach_double",
 		.displayName = BAD_CAST "Detaching content and reusing buffer (doubling GS)",
-		.testFunction = xtsTestReszBuf_DetachContent_Double,
+		.testFunction = _testDetachContentGrowDouble,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "detach_flush",
 		.displayName = BAD_CAST "Detaching content and reusing buffer (flush GS)",
-		.testFunction = xtsTestReszBuf_DetachContent_Flush,
+		.testFunction = _testDetachContentGrowFlush,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "position",
 		.displayName = BAD_CAST "Rewinding and advancing position",
-		.testFunction = xtsTestReszBuf_Position,
+		.testFunction = _testPosition,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}
 };

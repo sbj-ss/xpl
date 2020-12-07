@@ -10,21 +10,21 @@
 
 static int dealloc_invocations;
 
-static void dummy_dealloc(void* conn)
+static void _dummyDealloc(void* conn)
 {
 	dealloc_invocations++;
 }
 
-static bool xtsTestDB_DBCreateFree(xtsContextPtr ctxt)
+static bool _testDBCreateFree(xtsContextPtr ctxt)
 {
 	xplDBPtr db;
 
 	dealloc_invocations = 0;
-	db = xplDBCreate((xplDBPtr) 0x1234, dummy_dealloc);
+	db = xplDBCreate((xplDBPtr) 0x1234, _dummyDealloc);
 	assert(db);
 	if (db->next != (xplDBPtr) 0x1234)
 		FAIL(".next of a newly created xplDB must be equal to aNext parameter");
-	if (db->dealloc != dummy_dealloc)
+	if (db->dealloc != _dummyDealloc)
 		FAIL(".dealloc of a newly created xplDB must be equal to aDealloc parameter");
 	if (db->connection != NULL)
 		FAIL(".connection of a newly created xplDB must be NULL");
@@ -42,7 +42,7 @@ cleanup:
 	return true;
 }
 
-static bool xtsTestDB_DBListCreateFree(xtsContextPtr ctxt)
+static bool _testDBListCreateFree(xtsContextPtr ctxt)
 {
 	bool ok = false;
 	xplDBListPtr list;
@@ -69,12 +69,12 @@ static xtsTest db_tests[] =
 	{
 		.id = BAD_CAST "db_create_free",
 		.displayName = BAD_CAST "Creation and freeing of a single container",
-		.testFunction = xtsTestDB_DBCreateFree,
+		.testFunction = _testDBCreateFree,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}, {
 		.id = BAD_CAST "dblist_create_free",
 		.displayName = BAD_CAST "Creation and freeing of a container list",
-		.testFunction = xtsTestDB_DBListCreateFree,
+		.testFunction = _testDBListCreateFree,
 		.flags = XTS_FLAG_CHECK_MEMORY
 	}
 };

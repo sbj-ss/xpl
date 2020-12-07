@@ -20,7 +20,6 @@ int main(int argc, char **argv)
 	ret = xtsInit(argc, argv, &ctxt, suite);
 	if (ret)
 		return ret;
-	xmlMemSetup(xmlMemFree, xmlMemMalloc, xmlMemRealloc, xmlMemoryStrdup);
 	xmlInitParser();
 	ret = xtsWrap(suite, &ctxt);
 	xmlCleanupParser();
