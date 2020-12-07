@@ -10,7 +10,16 @@
 #define SUMMARY_PREAMBLE "==========================================\n"
 #define UNKNOWN_ERROR_MESSAGE BAD_CAST "(Unknown error)"
 
+#define COLOR_LIGHTGRAY "\033[0m"
+#define COLOR_BROWN "\033[33m"
+#define COLOR_RED "\033[31m"
+#define COLOR_GREEN "\033[32m"
+
 static bool use_ansi_colors = false;
+static char *c_default = "";
+static char *c_skipped = "";
+static char *c_failed = "";
+static char *c_succeeded = "";
 
 void xtsInitContext(xtsContextPtr ctxt, xtsFailMode fail_mode, xtsVerbosity verbosity)
 {
@@ -40,10 +49,10 @@ bool xtsRunTest(const xtsTestPtr test, xtsContextPtr ctxt)
 	if (test->flags & XTS_FLAG_SKIP)
 	{
 		if (ctxt->verbosity >= XTS_VERBOSITY_TEST)
-			xmlGenericError(xmlGenericErrorContext, "%s%03d %sSkipping%s %s (#%s)...\n",
+			xmlGenericError(xmlGenericErrorContext, "%s%03d %s (#%s): %sSKIPPED%s\n",
 				SINGLE_TEST_PREAMBLE, ctxt->total,
-				use_ansi_colors? "\033[33m": "", use_ansi_colors? "\033[0m": "",
-				test->displayName, test->id);
+				test->displayName, test->id,
+				c_skipped, c_default);
 		ctxt->skipped++;
 		return true;
 	}
@@ -59,20 +68,20 @@ bool xtsRunTest(const xtsTestPtr test, xtsContextPtr ctxt)
 				xmlGenericError(xmlGenericErrorContext,
 					"%s%03d %s (#%s): %sFAILED%s: expected %d used memory blocks, got %d\n",
 					SINGLE_TEST_PREAMBLE, ctxt->total, test->displayName, test->id,
-					use_ansi_colors? "\033[31m": "", use_ansi_colors? "\033[0m": "",
+					c_failed, c_default,
 					test->expectedMemoryDelta, xmlMemBlocks() - mem_blocks);
 			return false;
 		}
 		if (ctxt->verbosity >= XTS_VERBOSITY_TEST)
 			xmlGenericError(xmlGenericErrorContext, "%s%03d %s (#%s): %sOK%s\n",
 				SINGLE_TEST_PREAMBLE, ctxt->total, test->displayName, test->id,
-				use_ansi_colors? "\033[32m": "", use_ansi_colors? "\033[0m": "");
+				c_succeeded, c_default);
 		ctxt->passed++;
 	} else {
 		if (ctxt->verbosity >= XTS_VERBOSITY_TEST)
 			xmlGenericError(xmlGenericErrorContext, "%s%03d %s (#%s): %sFAILED%s: %s\n",
 				SINGLE_TEST_PREAMBLE, ctxt->total, test->displayName, test->id,
-				use_ansi_colors? "\033[31m": "", use_ansi_colors? "\033[0m": "",
+				c_failed, c_default,
 				ctxt->error? ctxt->error: UNKNOWN_ERROR_MESSAGE);
 	}
 	if (ctxt->error && ctxt->error_malloced)
@@ -113,7 +122,7 @@ bool xtsRunFixture(const xtsFixturePtr fixture, xtsContextPtr ctxt)
 			xmlHashFree(ctxt->env, NULL);
 			if (ctxt->verbosity >= XTS_VERBOSITY_FIXTURE)
 				xmlGenericError(xmlGenericErrorContext, "Fixture.setup() %sFAILED%s: %s\n",
-					use_ansi_colors? "\033[31m": "", use_ansi_colors? "\033[0m": "",
+					c_failed, c_default,
 					ctxt->error? ctxt->error: UNKNOWN_ERROR_MESSAGE);
 			return false;
 		}
@@ -421,6 +430,18 @@ void xtsDisplayUsage(char *prog_name)
 	printf("\t-s LIST: skip/include various tests\n");
 }
 
+void _setupColors(void)
+{
+	if (use_ansi_colors)
+	{
+		c_default = COLOR_LIGHTGRAY;
+		c_skipped = COLOR_BROWN;
+		c_failed = COLOR_RED;
+		c_succeeded = COLOR_GREEN;
+	} else
+		c_default = c_skipped = c_failed = c_succeeded = "";
+}
+
 int xtsInit(int argc, char** argv, xtsContextPtr ctxt, xtsFixturePtr *suite)
 {
 	int c;
@@ -456,6 +477,7 @@ int xtsInit(int argc, char** argv, xtsContextPtr ctxt, xtsFixturePtr *suite)
 			XPL_FREE(error);
 			return 1;
 		}
+	_setupColors();
 	return 0;
 }
 
