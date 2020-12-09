@@ -5,7 +5,7 @@
 #include <libxpl/xplwrappers.h>
 #include "commands/SetOutputDocument.h"
 
-xmlNodePtr checkNodelist(xmlNodePtr src, int *elCount)
+static xmlNodePtr _checkNodelist(xmlNodePtr src, int *elCount)
 {
 	xmlNodePtr ret = NULL;
 
@@ -38,7 +38,7 @@ void xplCmdSetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "this command can only be called from prologue or epilogue"), true, true);
 		goto done;
 	}
-	content = checkNodelist(commandInfo->element->children, &element_count);
+	content = _checkNodelist(commandInfo->element->children, &element_count);
 	if (!element_count)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no root node found"), true, true);
