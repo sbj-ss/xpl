@@ -12,7 +12,7 @@ typedef enum {
 	EDGE_ERROR = -1
 } EdgeType;
 
-EdgeType edgeTypeFromString(xmlChar *s)
+static EdgeType _edgeTypeFromString(xmlChar *s)
 {
 	if (!xmlStrcasecmp(s, BAD_CAST "copy"))
 		return EDGE_COPY;
@@ -25,7 +25,7 @@ EdgeType edgeTypeFromString(xmlChar *s)
 	return EDGE_ERROR;
 }
 
-xmlNodePtr cloneNodeSet(xmlNodeSetPtr set, xmlNodePtr parent, xmlNodePtr *tail)
+static xmlNodePtr _cloneNodeSet(xmlNodeSetPtr set, xmlNodePtr parent, xmlNodePtr *tail)
 {
 	size_t i;
 	xmlNodePtr ret = NULL, cur, tail_int = NULL;
@@ -46,7 +46,7 @@ xmlNodePtr cloneNodeSet(xmlNodeSetPtr set, xmlNodePtr parent, xmlNodePtr *tail)
 	return ret;
 }
 
-xmlChar* flattenTextSet(xmlNodeSetPtr set)
+static xmlChar* _flattenTextSet(xmlNodeSetPtr set)
 {
 	xmlChar *ret = NULL, *txt;
 	xmlNodePtr cur, tmp;
@@ -103,7 +103,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (type_attr)
 	{
-		if ((type = edgeTypeFromString(type_attr)) == EDGE_ERROR)
+		if ((type = _edgeTypeFromString(type_attr)) == EDGE_ERROR)
 		{
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid type argument: \"%s\"", type_attr), true, true);
 			goto done;
@@ -163,7 +163,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
 					goto done;
 				}
-				source_text = flattenTextSet(src->nodesetval);
+				source_text = _flattenTextSet(src->nodesetval);
 				break;
 			case XPATH_BOOLEAN:
 			case XPATH_NUMBER:
@@ -175,7 +175,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				goto done;
 			}
 		} else
-			source_list = cloneNodeSet(src->nodesetval, commandInfo->element, NULL);
+			source_list = _cloneNodeSet(src->nodesetval, commandInfo->element, NULL);
 	} else {
 		if (type == EDGE_ATTRIBUTE)
 		{
