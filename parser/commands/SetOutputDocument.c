@@ -5,10 +5,6 @@
 #include <libxpl/xplwrappers.h>
 #include "commands/SetOutputDocument.h"
 
-void xplCmdSetOutputDocumentPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 xmlNodePtr checkNodelist(xmlNodePtr src, int *elCount)
 {
 	xmlNodePtr ret = NULL;
@@ -75,4 +71,4 @@ done:
 	;
 }
 
-xplCommand xplSetOutputDocumentCommand = { xplCmdSetOutputDocumentPrologue, xplCmdSetOutputDocumentEpilogue };
+xplCommand xplSetOutputDocumentCommand = { NULL, xplCmdSetOutputDocumentEpilogue };

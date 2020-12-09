@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdGetDBPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplGetDBCommand;

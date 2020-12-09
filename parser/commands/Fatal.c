@@ -2,14 +2,6 @@
 #include <libxpl/xpltree.h>
 #include "commands/Fatal.h"
 
-xplCommand xplFatalCommand =
-{
-	.prologue = xplCmdFatalPrologue,
-	.epilogue = xplCmdFatalEpilogue,
-	.flags = 0,
-	.params_stencil = NULL
-};
-
 static xmlNodePtr _onlyFirstChildElement(xmlNodePtr parent)
 {
 	xmlNodePtr cur, tmp;
@@ -39,10 +31,13 @@ static xmlNodePtr _onlyFirstChildElement(xmlNodePtr parent)
 	return xmlNewDocNode(parent->doc, NULL, BAD_CAST "error", BAD_CAST "fatal command called");
 }
 
-void xplCmdFatalPrologue(xplCommandInfoPtr commandInfo)
+xplCommand xplFatalCommand =
 {
-	UNUSED_PARAM(commandInfo);
-}
+	.prologue = NULL,
+	.epilogue = xplCmdFatalEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
 
 void xplCmdFatalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

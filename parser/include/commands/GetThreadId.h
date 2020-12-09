@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdGetThreadIdPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetThreadIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplGetThreadIdCommand;

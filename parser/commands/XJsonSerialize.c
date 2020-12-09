@@ -6,10 +6,6 @@
 
 #define XJSON_SCHEMA_URI BAD_CAST "http://www.ibm.com/xmlns/prod/2009/jsonx"
 
-void xplCmdXJsonSerializePrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 static bool _checkJsonNs(xmlNsPtr ns, xmlNsPtr *cached_ns)
 {
 	if (!ns)
@@ -269,4 +265,4 @@ done:
 	if (ctxt.buf) rbFreeBuf(ctxt.buf);
 }
 
-xplCommand xplXJsonSerializeCommand = { xplCmdXJsonSerializePrologue, xplCmdXJsonSerializeEpilogue };
+xplCommand xplXJsonSerializeCommand = { NULL, xplCmdXJsonSerializeEpilogue };

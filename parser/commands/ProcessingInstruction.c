@@ -2,10 +2,6 @@
 #include <libxpl/xpltree.h>
 #include "commands/ProcessingInstruction.h"
 
-void xplCmdProcessingInstructionPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdProcessingInstructionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define NAME_ATTR (BAD_CAST "name")
@@ -39,4 +35,4 @@ done:
 
 }
 
-xplCommand xplProcessingInstructionCommand = { xplCmdProcessingInstructionPrologue, xplCmdProcessingInstructionEpilogue };
+xplCommand xplProcessingInstructionCommand = { NULL, xplCmdProcessingInstructionEpilogue };

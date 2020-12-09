@@ -4,10 +4,6 @@
 #include <libxpl/xplsession.h>
 #include "commands/Restart.h"
 
-void xplCmdRestartPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdRestartEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	if (!xplSessionGetSaMode(commandInfo->document->session))
@@ -20,4 +16,4 @@ void xplCmdRestartEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xprShutdownApp();
 }
 
-xplCommand xplRestartCommand = { xplCmdRestartPrologue, xplCmdRestartEpilogue };
+xplCommand xplRestartCommand = { NULL, xplCmdRestartEpilogue };

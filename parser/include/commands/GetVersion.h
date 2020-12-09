@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdGetVersionPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetVersionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplGetVersionCommand;

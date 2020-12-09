@@ -3,10 +3,6 @@
 #include <libxpl/xpltree.h>
 #include "commands/SetResponse.h"
 
-void xplCmdSetResponsePrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdSetResponseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xmlChar *response;
@@ -21,4 +17,4 @@ void xplCmdSetResponseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resul
 	ASSIGN_RESULT(NULL, false, true);
 }
 
-xplCommand xplSetResponseCommand = { xplCmdSetResponsePrologue, xplCmdSetResponseEpilogue };
+xplCommand xplSetResponseCommand = { NULL, xplCmdSetResponseEpilogue };

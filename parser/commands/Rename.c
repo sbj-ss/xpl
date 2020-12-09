@@ -2,10 +2,6 @@
 #include <libxpl/xplmessages.h>
 #include "commands/Rename.h"
 
-void xplCmdRenamePrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define SELECT_ATTR (BAD_CAST "select")
@@ -77,4 +73,4 @@ done:
 		xmlXPathFreeObject(sel);
 }
 
-xplCommand xplRenameCommand = { xplCmdRenamePrologue, xplCmdRenameEpilogue };
+xplCommand xplRenameCommand = { NULL, xplCmdRenameEpilogue };

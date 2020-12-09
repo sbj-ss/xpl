@@ -22,7 +22,7 @@ static const xplCmdGetDBParams params_stencil =
 
 xplCommand xplGetDBCommand =
 {
-	.prologue = xplCmdGetDBPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetDBEpilogue,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdGetDBParams),
@@ -49,11 +49,6 @@ xplCommand xplGetDBCommand =
 		}
 	}
 };
-
-void xplCmdGetDBPrologue(xplCommandInfoPtr commandInfo)
-{
-
-}
 
 void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

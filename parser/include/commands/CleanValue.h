@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdCleanValuePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdCleanValueEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplCleanValueCommand;

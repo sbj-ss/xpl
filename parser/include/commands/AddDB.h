@@ -8,7 +8,6 @@
 #include <libxpl/xplcommand.h>
 
 void xplCmdAddDBPrologue(xplCommandInfoPtr commandInfo);
-void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplAddDBCommand;
 

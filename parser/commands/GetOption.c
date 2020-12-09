@@ -25,7 +25,7 @@ static const xplCmdGetOptionParams params_stencil =
 
 xplCommand xplGetOptionCommand =
 {
-	.prologue = xplCmdGetOptionPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetOptionEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -56,11 +56,6 @@ xplCommand xplGetOptionCommand =
 		}
 	}
 };
-
-void xplCmdGetOptionPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

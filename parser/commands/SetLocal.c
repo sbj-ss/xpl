@@ -3,6 +3,14 @@
 #include <libxpl/xpltree.h>
 #include "commands/SetLocal.h"
 
+xplCommand xplSetLocalCommand = {
+	.prologue = xplCmdSetLocalPrologue,
+	.epilogue = xplCmdSetLocalEpilogue,
+	.initializer = NULL,
+	.finalizer = NULL,
+	.flags = XPL_CMD_FLAG_CONTENT_SAFE
+};
+
 void xplCmdSetLocalPrologue(xplCommandInfoPtr commandInfo)
 {
 	xplParamsPtr old_params = commandInfo->document->environment;
@@ -36,11 +44,3 @@ void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
 	}
 }
-
-xplCommand xplSetLocalCommand = { 
-	.prologue = xplCmdSetLocalPrologue, 
-	.epilogue = xplCmdSetLocalEpilogue,
-	.initializer = NULL,
-	.finalizer = NULL,
-	.flags = XPL_CMD_FLAG_CONTENT_SAFE
-};

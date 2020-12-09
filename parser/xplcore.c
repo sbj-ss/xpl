@@ -830,7 +830,8 @@ void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr res
 			cmdInfo.xpath_ctxt = doc->xpath_ctxt;
 			if (!(error = xplFillCommandInfo(cmd, &cmdInfo, true)))
 			{
-				cmd->prologue(&cmdInfo);
+				if (cmd->prologue)
+					cmd->prologue(&cmdInfo);
 				/* element could be removed (:with) */
 				if (!(element->type & XPL_NODE_DELETION_MASK))
 					xplNodeListApply(doc, cmdInfo.element->children, result);

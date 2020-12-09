@@ -17,7 +17,7 @@ static const xplCmdNamespaceParams params_stencil =
 
 xplCommand xplNamespaceCommand =
 {
-	.prologue = xplCmdNamespacePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdNamespaceEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE | XPL_CMD_FLAG_REQUIRE_CONTENT,
 	.params_stencil = &params_stencil,
@@ -38,11 +38,6 @@ xplCommand xplNamespaceCommand =
 		}
 	}
 };
-
-void xplCmdNamespacePrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdNamespaceEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

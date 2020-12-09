@@ -16,7 +16,7 @@ static const xplCmdAssertParams params_stencil =
 
 xplCommand xplAssertCommand =
 {
-	.prologue = xplCmdAssertPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdAssertEpilogue,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdAssertParams),
@@ -31,11 +31,6 @@ xplCommand xplAssertCommand =
 		}
 	}
 };
-
-void xplCmdAssertPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

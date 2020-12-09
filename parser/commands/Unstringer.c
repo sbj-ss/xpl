@@ -6,10 +6,6 @@
 #include <libxpl/xpltree.h>
 #include "commands/Unstringer.h"
 
-void xplCmdUnstringerPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 typedef struct _UnstringerContext
 {
 	xmlChar* delimiter;
@@ -342,4 +338,4 @@ done:
 		xmlXPathFreeObject(sel);
 }
 
-xplCommand xplUnstringerCommand = { xplCmdUnstringerPrologue, xplCmdUnstringerEpilogue };
+xplCommand xplUnstringerCommand = { NULL, xplCmdUnstringerEpilogue };

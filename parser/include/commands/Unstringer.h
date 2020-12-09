@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdUnstringerPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplUnstringerCommand;

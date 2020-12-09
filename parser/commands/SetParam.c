@@ -7,10 +7,6 @@
 #define SP_MODE_ADD 1
 #define SP_MODE_REPLACE 2
 
-void xplCmdSetParamPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define NAME_ATTR (BAD_CAST "name")
@@ -87,4 +83,4 @@ done:
 	if (mode_attr) XPL_FREE(mode_attr);
 }
 
-xplCommand xplSetParamCommand = {xplCmdSetParamPrologue, xplCmdSetParamEpilogue };
+xplCommand xplSetParamCommand = { NULL, xplCmdSetParamEpilogue };

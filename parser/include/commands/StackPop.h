@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdStackPopPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdStackPopEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplStackPopCommand;

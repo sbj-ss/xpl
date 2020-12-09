@@ -14,7 +14,7 @@ static const xplCmdGetProcessingStatusParams params_stencil =
 
 xplCommand xplGetProcessingStatusCommand =
 {
-	.prologue = xplCmdGetProcessingStatusPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetProcessingStatusEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -30,11 +30,6 @@ xplCommand xplGetProcessingStatusCommand =
 		}
 	}
 };
-
-void xplCmdGetProcessingStatusPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdGetProcessingStatusEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdChangeDBPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdChangeDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplChangeDBCommand;

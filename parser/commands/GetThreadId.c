@@ -3,16 +3,11 @@
 
 xplCommand xplGetThreadIdCommand =
 {
-	.prologue = xplCmdGetThreadIdPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetThreadIdEpilogue,
 	.flags = 0,
 	.params_stencil = NULL
 };
-
-void xplCmdGetThreadIdPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdGetThreadIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

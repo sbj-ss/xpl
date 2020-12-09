@@ -4,16 +4,11 @@
 
 xplCommand xplGetElapsedTimeCommand =
 {
-	.prologue = xplCmdGetElapsedTimePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetElapsedTimeEpilogue,
 	.flags = 0,
 	.params_stencil = NULL
 };
-
-void xplCmdGetElapsedTimePrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdGetElapsedTimeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

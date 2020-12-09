@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdGetAttributesPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplGetAttributesCommand;

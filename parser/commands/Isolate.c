@@ -24,7 +24,7 @@ static const xplCmdIsolateParams params_stencil =
 
 xplCommand xplIsolateCommand =
 {
-	.prologue = xplCmdIsolatePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdIsolateEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -88,11 +88,6 @@ static xplDocumentPtr _createChildDoc(xplDocumentPtr doc, xmlNodePtr carrier, bo
 	return ret;
 }
 
-void xplCmdIsolatePrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
-
 void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdIsolateParamsPtr params = (xplCmdIsolateParamsPtr) commandInfo->params;
@@ -142,10 +137,10 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			*/
 			content = xplCloneNodeList(child->document->children->children, commandInfo->element, commandInfo->element->doc);
 			xplDownshiftNodeNsDef(content, commandInfo->element->nsDef);
+			ASSIGN_RESULT(content, false, true);
 		} else
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "error \"%s\" processing child document", xplErrorToString(status)), true, true);
 		xplDocumentFree(child);
 		xplParamsFree(env);
-		ASSIGN_RESULT(content, false, true);
 	}
 }

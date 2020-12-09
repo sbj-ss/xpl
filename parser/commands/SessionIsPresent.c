@@ -4,10 +4,6 @@
 #include <libxpl/xplstring.h>
 #include "commands/SessionIsPresent.h"
 
-void xplCmdSessionIsPresentPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdSessionIsPresentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define NAME_ATTR (BAD_CAST "name")
@@ -39,4 +35,4 @@ done:
 	if (name_attr) XPL_FREE(name_attr);
 }
 
-xplCommand xplSessionIsPresentCommand = { xplCmdSessionIsPresentPrologue, xplCmdSessionIsPresentEpilogue };
+xplCommand xplSessionIsPresentCommand = { NULL, xplCmdSessionIsPresentEpilogue };

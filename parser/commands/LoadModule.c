@@ -15,7 +15,7 @@ static const xplCmdLoadModuleParams params_stencil =
 
 xplCommand xplLoadModuleCommand =
 {
-	.prologue = xplCmdLoadModulePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdLoadModuleEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -35,11 +35,6 @@ xplCommand xplLoadModuleCommand =
 		}
 	}
 };
-
-void xplCmdLoadModulePrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdLoadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

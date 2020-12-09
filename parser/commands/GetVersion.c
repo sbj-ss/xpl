@@ -57,7 +57,7 @@ static const xplCmdGetVersionParams params_stencil =
 
 xplCommand xplGetVersionCommand =
 {
-	.prologue = xplCmdGetVersionPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetVersionEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -182,7 +182,7 @@ static versionGetter version_getters[] =
 
 static xmlNodePtr _listLibraryVersions(xmlDocPtr doc, xplQName tagname)
 {
-	xmlNodePtr ret = NULL, tail, cur;
+	xmlNodePtr ret = NULL, tail = NULL, cur;
 	static const ssize_t getter_count = sizeof(version_getters) / sizeof(version_getters[0]);
 	ssize_t i;
 
@@ -226,11 +226,6 @@ static xmlNodePtr _getXplVersion(xmlDocPtr doc, xplCmdGetVersionPart part)
 	ret = xmlNewDocText(doc, NULL);
 	ret->content = ver;
 	return ret;
-}
-
-void xplCmdGetVersionPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdGetVersionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)

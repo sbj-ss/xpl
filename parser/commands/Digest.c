@@ -61,7 +61,7 @@ static xmlChar* _getMethod(xplCommandInfoPtr info, const xmlChar* raw_value, voi
 
 xplCommand xplDigestCommand =
 {
-	.prologue = xplCmdDigestPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdDigestEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -83,11 +83,6 @@ xplCommand xplDigestCommand =
 		}
 	}
 };
-
-void xplCmdDigestPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdDigestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

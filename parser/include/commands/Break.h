@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdBreakPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplBreakCommand;

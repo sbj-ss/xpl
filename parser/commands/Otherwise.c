@@ -3,10 +3,6 @@
 #include <libxpl/xpltree.h>
 #include "commands/Otherwise.h"
 
-void xplCmdOtherwisePrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdOtherwiseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REPEAT_ATTR (BAD_CAST "repeat")
@@ -27,4 +23,4 @@ void xplCmdOtherwiseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplAppendList(commandInfo->element, brk);
 }
 
-xplCommand xplOtherwiseCommand = { xplCmdOtherwisePrologue, xplCmdOtherwiseEpilogue };
+xplCommand xplOtherwiseCommand = { NULL, xplCmdOtherwiseEpilogue };

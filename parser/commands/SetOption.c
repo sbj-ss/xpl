@@ -4,10 +4,6 @@
 #include <libxpl/xplsession.h>
 #include "commands/SetOption.h"
 
-void xplCmdSetOptionPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdSetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define NAME_ATTR (BAD_CAST "name")
@@ -56,4 +52,4 @@ done:
 	if (value_attr) XPL_FREE(value_attr);
 }
 
-xplCommand xplSetOptionCommand = { xplCmdSetOptionPrologue, xplCmdSetOptionEpilogue };
+xplCommand xplSetOptionCommand = { NULL, xplCmdSetOptionEpilogue };

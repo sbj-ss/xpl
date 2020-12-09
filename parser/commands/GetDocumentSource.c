@@ -14,7 +14,7 @@ static const xplCmdGetDocumentSourceParams params_stencil =
 
 xplCommand xplGetDocumentSourceCommand =
 {
-	.prologue = xplCmdGetDocumentSourcePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetDocumentSourceEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -30,11 +30,6 @@ xplCommand xplGetDocumentSourceCommand =
 		}
 	}
 };
-
-void xplCmdGetDocumentSourcePrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdGetDocumentSourceEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

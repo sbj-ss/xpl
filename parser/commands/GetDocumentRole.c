@@ -4,16 +4,11 @@
 
 xplCommand xplGetDocumentRoleCommand =
 {
-	.prologue = xplCmdGetDocumentRolePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetDocumentRoleEpilogue,
 	.flags = 0,
 	.params_stencil = NULL
 };
-
-void xplCmdGetDocumentRolePrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdGetDocumentRoleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

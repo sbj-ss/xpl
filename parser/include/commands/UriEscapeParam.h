@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdUriEscapeParamPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplUriEscapeParamCommand;

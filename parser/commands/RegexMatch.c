@@ -4,10 +4,6 @@
 #include "commands/RegexMatch.h"
 #include <oniguruma.h>
 
-void xplCmdRegexMatchPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REGEX_ATTR (BAD_CAST "regex")
@@ -72,5 +68,5 @@ done:
 		onig_region_free(region, 1);
 }
 
-xplCommand xplRegexMatchCommand = { xplCmdRegexMatchPrologue, xplCmdRegexMatchEpilogue };
+xplCommand xplRegexMatchCommand = { NULL, xplCmdRegexMatchEpilogue };
 

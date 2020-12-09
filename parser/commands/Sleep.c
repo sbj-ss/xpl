@@ -3,10 +3,6 @@
 #include <libxpl/xplmessages.h>
 #include "commands/Sleep.h"
 
-void xplCmdSleepPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdSleepEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define DELAY_ATTR (BAD_CAST "delay")
@@ -23,7 +19,7 @@ void xplCmdSleepEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	if (!delay_attr && !until_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "neyther delay nor until specified"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "neither delay nor until specified"), true, true);
 		goto done;
 	}
 	if (delay_attr)
@@ -46,4 +42,4 @@ done:
 		XPL_FREE(until_attr);
 }
 
-xplCommand xplSleepCommand = { xplCmdSleepPrologue, xplCmdSleepEpilogue };
+xplCommand xplSleepCommand = { NULL, xplCmdSleepEpilogue };

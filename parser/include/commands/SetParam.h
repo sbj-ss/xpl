@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdSetParamPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplSetParamCommand;

@@ -4,10 +4,6 @@
 #include <libxpl/xploptions.h>
 #include "commands/Stringer.h"
 
-void xplCmdStringerPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define SELECT_ATTR (BAD_CAST "select")
@@ -161,4 +157,4 @@ done:
 		xmlHashFree(unique_hash, NULL);
 }
 
-xplCommand xplStringerCommand = { xplCmdStringerPrologue, xplCmdStringerEpilogue };
+xplCommand xplStringerCommand = { NULL, xplCmdStringerEpilogue };

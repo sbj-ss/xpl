@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdParseXmlPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplParseXmlCommand;

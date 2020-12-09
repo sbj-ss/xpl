@@ -6,10 +6,6 @@
 #include "commands/RegexSplit.h"
 #include <oniguruma.h>
 
-void xplCmdRegexSplitPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define SELECT_ATTR (BAD_CAST "select")
@@ -226,4 +222,4 @@ done:
 		xmlXPathFreeObject(sel);
 }
 
-xplCommand xplRegexSplitCommand = { xplCmdRegexSplitPrologue, xplCmdRegexSplitEpilogue };
+xplCommand xplRegexSplitCommand = { NULL, xplCmdRegexSplitEpilogue };

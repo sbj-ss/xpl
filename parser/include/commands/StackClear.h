@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdStackClearPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdStackClearEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplStackClearCommand;

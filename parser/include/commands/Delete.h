@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdDeletePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplDeleteCommand;

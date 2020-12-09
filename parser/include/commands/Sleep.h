@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdSleepPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSleepEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplSleepCommand;

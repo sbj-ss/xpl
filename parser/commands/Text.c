@@ -2,11 +2,6 @@
 #include <libxpl/xpltree.h>
 #include "commands/Text.h"
 
-void xplCmdTextPrologue(xplCommandInfoPtr commandInfo)
-{
-	commandInfo->document->indent_spinlock++;
-}
-
 void xplCmdTextEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REPEAT_ATTR (BAD_CAST "repeat")
@@ -28,7 +23,7 @@ void xplCmdTextEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 }
 
 xplCommand xplTextCommand = {
-	.prologue = xplCmdTextPrologue, 
+	.prologue = NULL,
 	.epilogue = xplCmdTextEpilogue,
 	.initializer = NULL,
 	.finalizer = NULL,

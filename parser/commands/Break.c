@@ -38,7 +38,7 @@ static const xplCmdBreakParams params_stencil =
 
 xplCommand xplBreakCommand =
 {
-	.prologue = xplCmdBreakPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdBreakEpilogue,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdBreakParams),
@@ -53,11 +53,6 @@ xplCommand xplBreakCommand =
 		}
 	}
 };
-
-void xplCmdBreakPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

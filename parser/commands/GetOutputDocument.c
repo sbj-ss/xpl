@@ -17,7 +17,7 @@ static const xplCmdGetOutputDocumentParams params_stencil =
 
 xplCommand xplGetOutputDocumentCommand =
 {
-	.prologue = xplCmdGetOutputDocumentPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetOutputDocumentEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -36,11 +36,6 @@ xplCommand xplGetOutputDocumentCommand =
 		}
 	}
 };
-
-void xplCmdGetOutputDocumentPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdGetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

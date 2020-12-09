@@ -3,16 +3,11 @@
 
 xplCommand xplErrorCommand =
 {
-	.prologue = xplCmdErrorPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdErrorEpilogue,
 	.flags = 0,
 	.params_stencil = NULL
 };
-
-void xplCmdErrorPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdErrorEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

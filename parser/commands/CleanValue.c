@@ -32,7 +32,7 @@ static xplCmdParamDictValue behavior_values[] =
 
 xplCommand xplCleanValueCommand =
 {
-	.prologue = xplCmdCleanValuePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdCleanValueEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -53,11 +53,6 @@ xplCommand xplCleanValueCommand =
 		}
 	}
 };
-
-void xplCmdCleanValuePrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdCleanValueEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

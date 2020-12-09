@@ -5,10 +5,6 @@
 #include <libxpl/xplstring.h>
 #include "commands/SessionRemoveObject.h"
 
-void xplCmdSessionRemoveObjectPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdSessionRemoveObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define NAME_ATTR (BAD_CAST "name")
@@ -36,4 +32,4 @@ done:
 	if (name_attr) XPL_FREE(name_attr);
 }
 
-xplCommand xplSessionRemoveObjectCommand = { xplCmdSessionRemoveObjectPrologue, xplCmdSessionRemoveObjectEpilogue };
+xplCommand xplSessionRemoveObjectCommand = { NULL, xplCmdSessionRemoveObjectEpilogue };

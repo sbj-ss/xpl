@@ -2,16 +2,12 @@
 
 xplCommand xplCrashCommand =
 {
-	.prologue = xplCmdCrashPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdCrashEpilogue,
 	.flags = 0,
 	.params_stencil = NULL
 };
 
-void xplCmdCrashPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdCrashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

@@ -6,10 +6,6 @@
 
 /* TODO review and probably rework getting rid of XPR_FS_ stuff */
 
-void xplCmdFileOpPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 typedef enum 
 {
 	FILE_OP_UNKNOWN,
@@ -591,5 +587,4 @@ done:
 	if (fs_filemask) XPL_FREE(fs_filemask);
 }
 
-xplCommand xplFileOpCommand = { xplCmdFileOpPrologue, xplCmdFileOpEpilogue };
-
+xplCommand xplFileOpCommand = { NULL, xplCmdFileOpEpilogue };

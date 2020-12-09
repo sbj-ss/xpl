@@ -4,10 +4,6 @@
 #include <libxpl/xpltree.h>
 #include "commands/Test.h"
 
-void xplCmdTestPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 static xmlNodePtr createBreak(xplCommandInfoPtr commandInfo, xmlNodePtr error, xmlChar *point)
 {
 	xmlNsPtr xpl_ns;
@@ -93,5 +89,5 @@ done:
 	if (txt) XPL_FREE(txt);
 }
 
-xplCommand xplTestCommand = { xplCmdTestPrologue, xplCmdTestEpilogue };
+xplCommand xplTestCommand = { NULL, xplCmdTestEpilogue };
 

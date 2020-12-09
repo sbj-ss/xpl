@@ -5,7 +5,7 @@
 
 /* A short note for those wanting to replace children with error node inside prologue:
  * 1. the error node must replace the command and not reside inside it
- * 2. doube error processing is an error, too
+ * 2. double error processing is an error, too
  */
 void xplCmdForEachPrologue(xplCommandInfoPtr commandInfo)
 {

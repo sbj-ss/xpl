@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdRemoveDBPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplRemoveDBCommand;

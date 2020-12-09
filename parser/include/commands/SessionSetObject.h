@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdSessionSetObjectPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSessionSetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplSessionSetObjectCommand;

@@ -3,10 +3,6 @@
 #include <libxpl/xpltree.h>
 #include "commands/ParseXml.h"
 
-void xplCmdParseXmlPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REPEAT_ATTR (BAD_CAST "repeat")
@@ -48,4 +44,4 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 }
 
-xplCommand xplParseXmlCommand = { xplCmdParseXmlPrologue, xplCmdParseXmlEpilogue };
+xplCommand xplParseXmlCommand = { NULL, xplCmdParseXmlEpilogue };

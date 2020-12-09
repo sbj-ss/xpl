@@ -2,10 +2,6 @@
 #include <libxpl/xplmessages.h>
 #include "commands/ValueOf.h"
 
-void xplCmdValueOfPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdValueOfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define SELECT_ATTR (BAD_CAST "select")
@@ -39,4 +35,4 @@ void xplCmdValueOfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	XPL_FREE(select_attr);
 }
 
-xplCommand xplValueOfCommand = { xplCmdValueOfPrologue, xplCmdValueOfEpilogue };
+xplCommand xplValueOfCommand = { NULL, xplCmdValueOfEpilogue };

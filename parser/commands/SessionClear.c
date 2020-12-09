@@ -2,10 +2,6 @@
 #include <libxpl/xplsession.h>
 #include "commands/SessionClear.h"
 
-void xplCmdSessionClearPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdSessionClearEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	if (!commandInfo->document->main->session)
@@ -14,4 +10,4 @@ void xplCmdSessionClearEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	ASSIGN_RESULT(NULL, false, true);
 }
 
-xplCommand xplSessionClearCommand = { xplCmdSessionClearPrologue, xplCmdSessionClearEpilogue };
+xplCommand xplSessionClearCommand = { NULL, xplCmdSessionClearEpilogue };

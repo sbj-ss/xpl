@@ -4,10 +4,6 @@
 #include <libxpl/xpltree.h>
 #include "commands/Serialize.h"
 
-void xplCmdSerializePrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define SELECT_ATTR (BAD_CAST "select")
@@ -41,4 +37,4 @@ done:
 	if (obj) xmlXPathFreeObject(obj);
 }
 
-xplCommand xplSerializeCommand = { xplCmdSerializePrologue, xplCmdSerializeEpilogue };
+xplCommand xplSerializeCommand = { NULL, xplCmdSerializeEpilogue };

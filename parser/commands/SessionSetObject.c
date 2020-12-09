@@ -5,10 +5,6 @@
 #include <libxpl/xplstring.h>
 #include "commands/SessionSetObject.h"
 
-void xplCmdSessionSetObjectPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdSessionSetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define NAME_ATTR BAD_CAST "name"
@@ -39,4 +35,4 @@ done:
 	ASSIGN_RESULT(NULL, false, true);
 }
 
-xplCommand xplSessionSetObjectCommand = { xplCmdSessionSetObjectPrologue, xplCmdSessionSetObjectEpilogue };
+xplCommand xplSessionSetObjectCommand = { NULL, xplCmdSessionSetObjectEpilogue };

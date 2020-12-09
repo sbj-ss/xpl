@@ -3,10 +3,6 @@
 #include <libxpl/xpltree.h>
 #include "commands/UriEncode.h"
 
-void xplCmdUriEncodePrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xmlChar *content = NULL, *uri;
@@ -36,4 +32,4 @@ void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 #endif
 }
 
-xplCommand xplUriEncodeCommand = { xplCmdUriEncodePrologue, xplCmdUriEncodeEpilogue };
+xplCommand xplUriEncodeCommand = { NULL, xplCmdUriEncodeEpilogue };

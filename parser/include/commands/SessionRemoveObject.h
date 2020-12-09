@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdSessionRemoveObjectPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSessionRemoveObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplSessionRemoveObjectCommand;

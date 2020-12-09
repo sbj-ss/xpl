@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdUnloadModulePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdUnloadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplUnloadModuleCommand;

@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdSetSaModePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplSetSaModeCommand;

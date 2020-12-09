@@ -1,10 +1,6 @@
 #include <libxpl/xplcore.h>
 #include "commands/StackIsEmpty.h"
 
-void xplCmdStackIsEmptyPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdStackIsEmptyEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xmlNodePtr ret;
@@ -18,4 +14,4 @@ void xplCmdStackIsEmptyEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	ASSIGN_RESULT(ret, false, true);
 }
 
-xplCommand xplStackIsEmptyCommand = { xplCmdStackIsEmptyPrologue, xplCmdStackIsEmptyEpilogue };
+xplCommand xplStackIsEmptyCommand = { NULL, xplCmdStackIsEmptyEpilogue };

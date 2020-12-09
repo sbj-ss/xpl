@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdSerializePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplSerializeCommand;

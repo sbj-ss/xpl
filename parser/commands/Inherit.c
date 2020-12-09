@@ -20,7 +20,7 @@ static const xplCmdInheritParams params_stencil =
 
 xplCommand xplInheritCommand =
 {
-	.prologue = xplCmdInheritPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdInheritEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -47,11 +47,6 @@ xplCommand xplInheritCommand =
 static inline xplMacroPtr _macroLookup(xmlNodePtr node, xplQName name)
 {
 	return xplMacroLookup(node, name.ns? name.ns->href: NULL, name.ncname);
-}
-
-void xplCmdInheritPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)

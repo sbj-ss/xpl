@@ -29,10 +29,6 @@ struct _xmlSaveCtxt {
 };
 typedef struct _xmlSaveCtxt *xmlSaveCtxtPtr;
 
-void xplCmdSavePrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define FILE_ATTR (BAD_CAST "file")
@@ -203,4 +199,4 @@ done:
 		xmlXPathFreeObject(sel);
 }
 
-xplCommand xplSaveCommand = { xplCmdSavePrologue, xplCmdSaveEpilogue };
+xplCommand xplSaveCommand = { NULL, xplCmdSaveEpilogue };

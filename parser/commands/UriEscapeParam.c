@@ -4,10 +4,6 @@
 #include "commands/UriEscapeParam.h"
 #include "libxml/uri.h"
 
-void xplCmdUriEscapeParamPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define ENCODING_ATTR (BAD_CAST "encoding")
@@ -53,4 +49,4 @@ void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 		ASSIGN_RESULT(NULL, false, true);
 }
 
-xplCommand xplUriEscapeParamCommand = { xplCmdUriEscapeParamPrologue, xplCmdUriEscapeParamEpilogue };
+xplCommand xplUriEscapeParamCommand = { NULL, xplCmdUriEscapeParamEpilogue };

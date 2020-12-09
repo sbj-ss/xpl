@@ -4,10 +4,6 @@
 #include <libxpl/xplsession.h>
 #include "commands/Shutdown.h"
 
-void xplCmdShutdownPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdShutdownEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	if (xplSessionGetSaMode(commandInfo->document->session))
@@ -16,4 +12,4 @@ void xplCmdShutdownEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 }
 
-xplCommand xplShutdownCommand = { xplCmdShutdownPrologue, xplCmdShutdownEpilogue };
+xplCommand xplShutdownCommand = { NULL, xplCmdShutdownEpilogue };

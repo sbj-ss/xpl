@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdSessionIsPresentPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSessionIsPresentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplSessionIsPresentCommand;

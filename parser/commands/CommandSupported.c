@@ -19,7 +19,7 @@ static const xplCmdCommandSupportedParams params_stencil =
 
 xplCommand xplCommandSupportedCommand =
 {
-	.prologue = xplCmdCommandSupportedPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdCommandSupportedEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -46,11 +46,6 @@ xplCommand xplCommandSupportedCommand =
 		}
 	}
 };
-
-void xplCmdCommandSupportedPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 static const xplQName empty_qname = { NULL, NULL };
 

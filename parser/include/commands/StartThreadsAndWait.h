@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdStartThreadsAndWaitPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdStartThreadsAndWaitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplStartThreadsAndWaitCommand;

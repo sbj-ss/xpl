@@ -3,16 +3,11 @@
 #include "commands/DebugBreak.h"
 
 xplCommand xplDebugBreakCommand = {
-	.prologue = xplCmdDebugBreakPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdDebugBreakEpilogue,
 	.flags = 0,
 	.params_stencil = NULL
 };
-
-void xplCmdDebugBreakPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdDebugBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

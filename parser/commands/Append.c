@@ -79,7 +79,7 @@ static xmlChar* destination_aliases[] = { BAD_CAST "select", NULL };
 
 xplCommand xplAppendCommand =
 {
-	.prologue = xplCmdAppendPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdAppendEpilogue,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdAppendParams),
@@ -107,11 +107,6 @@ xplCommand xplAppendCommand =
 		}
 	}
 };
-
-void xplCmdAppendPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

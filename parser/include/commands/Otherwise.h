@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdOtherwisePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdOtherwiseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplOtherwiseCommand;

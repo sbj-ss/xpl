@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdConvertToDefinePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplConvertToDefineCommand;

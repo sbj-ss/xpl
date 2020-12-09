@@ -33,7 +33,7 @@ static const xplCmdGetParamParams params_stencil =
 
 xplCommand xplGetParamCommand =
 {
-	.prologue = xplCmdGetParamPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetParamEpilogue,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdGetParamParams),
@@ -82,10 +82,6 @@ xplCommand xplGetParamCommand =
 		}
 	}
 };
-
-void xplCmdGetParamPrologue(xplCommandInfoPtr commandInfo)
-{
-}
 
 static const xplQName default_qname = { NULL, BAD_CAST "param" };
 static const xplQName empty_qname = { NULL, NULL };

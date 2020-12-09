@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdRegexMatchPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplRegexMatchCommand;

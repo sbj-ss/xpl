@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdListMacrosPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplListMacrosCommand;

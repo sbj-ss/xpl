@@ -672,10 +672,6 @@ static bool ProcessInclude(xplCommandInfoPtr commandInfo, xmlNodePtr *ret)
 	return true;
 }
 
-void xplCmdIncludePrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xmlNodePtr ret, error;
@@ -694,4 +690,4 @@ void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 }
 
-xplCommand xplIncludeCommand = { xplCmdIncludePrologue, xplCmdIncludeEpilogue };
+xplCommand xplIncludeCommand = { NULL, xplCmdIncludeEpilogue };

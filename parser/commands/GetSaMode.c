@@ -4,16 +4,11 @@
 
 xplCommand xplGetSaModeCommand =
 {
-	.prologue = xplCmdGetSaModePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetSaModeEpilogue,
 	.flags = 0,
 	.params_stencil = NULL
 };
-
-void xplCmdGetSaModePrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdGetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

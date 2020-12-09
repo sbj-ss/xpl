@@ -43,7 +43,7 @@ static const xplCmdAttributeParams params_stencil =
 
 xplCommand xplAttributeCommand =
 {
-	.prologue = xplCmdAttributePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdAttributeEpilogue,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdAttributeParams),
@@ -72,11 +72,6 @@ xplCommand xplAttributeCommand =
 		}
 	}
 };
-
-void xplCmdAttributePrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

@@ -23,7 +23,7 @@ static xmlChar* _getSeverity(xplCommandInfoPtr info, const xmlChar *raw_value, i
 
 xplCommand xplDebugPrintCommand =
 {
-	.prologue = xplCmdDebugPrintPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdDebugPrintEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -41,11 +41,6 @@ xplCommand xplDebugPrintCommand =
 		}
 	}
 };
-
-void xplCmdDebugPrintPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdDebugPrintEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

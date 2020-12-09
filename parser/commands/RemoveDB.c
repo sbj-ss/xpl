@@ -16,7 +16,7 @@ static const xplCmdRemoveDBParams params_stencil =
 
 xplCommand xplRemoveDBCommand =
 {
-	.prologue = xplCmdRemoveDBPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdRemoveDBEpilogue,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdRemoveDBParams),
@@ -36,11 +36,6 @@ xplCommand xplRemoveDBCommand =
 		}
 	}
 };
-
-void xplCmdRemoveDBPrologue(xplCommandInfoPtr commandInfo)
-{
-
-}
 
 void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

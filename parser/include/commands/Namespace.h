@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdNamespacePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdNamespaceEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplNamespaceCommand;

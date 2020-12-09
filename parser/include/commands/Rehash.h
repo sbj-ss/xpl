@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdRehashPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdRehashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplRehashCommand;

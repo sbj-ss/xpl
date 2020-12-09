@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdSessionClearPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSessionClearEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplSessionClearCommand;

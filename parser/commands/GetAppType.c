@@ -3,16 +3,11 @@
 
 xplCommand xplGetAppTypeCommand =
 {
-	.prologue = xplCmdGetAppTypePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetAppTypeEpilogue,
 	.flags = 0,
 	.params_stencil = NULL
 };
-
-void xplCmdGetAppTypePrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdGetAppTypeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

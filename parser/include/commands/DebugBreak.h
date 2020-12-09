@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdDebugBreakPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdDebugBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplDebugBreakCommand;

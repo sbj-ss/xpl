@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdShutdownPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdShutdownEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplShutdownCommand;

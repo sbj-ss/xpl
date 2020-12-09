@@ -1,10 +1,6 @@
 #include <libxpl/xplcore.h>
 #include "commands/WaitForThreads.h"
 
-void xplCmdWaitForThreadsPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdWaitForThreadsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	if (commandInfo->document->threads)
@@ -12,4 +8,4 @@ void xplCmdWaitForThreadsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	ASSIGN_RESULT(NULL, false, true);
 }
 
-xplCommand xplWaitForThreadsCommand = { xplCmdWaitForThreadsPrologue, xplCmdWaitForThreadsEpilogue };
+xplCommand xplWaitForThreadsCommand = { NULL, xplCmdWaitForThreadsEpilogue };

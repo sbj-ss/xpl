@@ -16,7 +16,7 @@ static const xplCmdFileExistsParams params_stencil =
 
 xplCommand xplFileExistsCommand =
 {
-	.prologue = xplCmdFileExistsPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdFileExistsEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -35,11 +35,6 @@ xplCommand xplFileExistsCommand =
 		}
 	}
 };
-
-void xplCmdFileExistsPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdFileExistsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

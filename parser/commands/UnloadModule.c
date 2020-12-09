@@ -2,10 +2,6 @@
 #include <libxpl/xplmessages.h>
 #include "commands/UnloadModule.h"
 
-void xplCmdUnloadModulePrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdUnloadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define NAME_ATTR (BAD_CAST "name")
@@ -27,4 +23,4 @@ done:
 	if (name_attr) XPL_FREE(name_attr);
 }
 
-xplCommand xplUnloadModuleCommand = { xplCmdUnloadModulePrologue, xplCmdUnloadModuleEpilogue };
+xplCommand xplUnloadModuleCommand = { NULL, xplCmdUnloadModuleEpilogue };

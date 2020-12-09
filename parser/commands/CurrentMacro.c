@@ -20,7 +20,7 @@ static const xplCmdCurrentMacroParams params_stencil =
 
 xplCommand xplCurrentMacroCommand =
 {
-	.prologue = xplCmdCurrentMacroPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdCurrentMacroEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -43,11 +43,6 @@ xplCommand xplCurrentMacroCommand =
 		}
 	}
 };
-
-void xplCmdCurrentMacroPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdCurrentMacroEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

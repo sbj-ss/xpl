@@ -13,7 +13,7 @@ static const xplCmdChooseParams params_stencil =
 
 xplCommand xplChooseCommand =
 {
-	.prologue = xplCmdChoosePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdChooseEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -28,11 +28,6 @@ xplCommand xplChooseCommand =
 		}
 	}
 };
-
-void xplCmdChoosePrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdChooseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

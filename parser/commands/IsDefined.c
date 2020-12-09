@@ -17,7 +17,7 @@ static const xplCmdIsDefinedParams params_stencil =
 
 xplCommand xplIsDefinedCommand =
 {
-	.prologue = xplCmdIsDefinedPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdIsDefinedEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -38,11 +38,6 @@ xplCommand xplIsDefinedCommand =
 		}
 	}
 };
-
-void xplCmdIsDefinedPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 // TODO warning if at evaluates into multiple nodes
 // TODO error if at evaluates into non-elements

@@ -2,10 +2,6 @@
 #include <libxpl/xplsession.h>
 #include "commands/SessionGetId.h"
 
-void xplCmdSessionGetIdPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdSessionGetIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xmlNodePtr ret;
@@ -19,4 +15,4 @@ void xplCmdSessionGetIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	ASSIGN_RESULT(ret, false, true);
 }
 
-xplCommand xplSessionGetIdCommand = { xplCmdSessionGetIdPrologue, xplCmdSessionGetIdEpilogue };
+xplCommand xplSessionGetIdCommand = { NULL, xplCmdSessionGetIdEpilogue };

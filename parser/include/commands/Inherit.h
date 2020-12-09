@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdInheritPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplInheritCommand;

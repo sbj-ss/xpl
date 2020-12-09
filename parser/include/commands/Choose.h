@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdChoosePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdChooseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplChooseCommand;

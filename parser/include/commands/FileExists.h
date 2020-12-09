@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdFileExistsPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdFileExistsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplFileExistsCommand;

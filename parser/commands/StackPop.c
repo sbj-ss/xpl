@@ -1,10 +1,6 @@
 #include <libxpl/xplcore.h>
 #include "commands/StackPop.h"
 
-void xplCmdStackPopPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdStackPopEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define REPEAT_ATTR (BAD_CAST "repeat")
@@ -19,4 +15,4 @@ void xplCmdStackPopEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		XPL_FREE(repeat_attr);
 }
 
-xplCommand xplStackPopCommand = { xplCmdStackPopPrologue, xplCmdStackPopEpilogue };
+xplCommand xplStackPopCommand = { NULL, xplCmdStackPopEpilogue };

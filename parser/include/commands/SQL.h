@@ -12,7 +12,6 @@
 extern "C" {
 #endif
 
-void xplCmdSqlPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplSqlCommand;

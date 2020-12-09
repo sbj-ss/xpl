@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdGetAppTypePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdGetAppTypeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplGetAppTypeCommand;

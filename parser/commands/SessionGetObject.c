@@ -6,10 +6,6 @@
 #include <libxpl/xpltree.h>
 #include "commands/SessionGetObject.h"
 
-void xplCmdSessionGetObjectPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define NAME_ATTR (BAD_CAST "name")
@@ -98,4 +94,4 @@ done:
 		xmlXPathFreeObject(sel);
 }
 
-xplCommand xplSessionGetObjectCommand = { xplCmdSessionGetObjectPrologue, xplCmdSessionGetObjectEpilogue };
+xplCommand xplSessionGetObjectCommand = { NULL, xplCmdSessionGetObjectEpilogue };

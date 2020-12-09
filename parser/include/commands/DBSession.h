@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdDBSessionPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdDBSessionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplDBSessionCommand;

@@ -77,10 +77,6 @@ xmlChar* flattenTextSet(xmlNodeSetPtr set)
 	return ret;
 }
 
-void xplCmdEdgePrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define NAME_ATTR (BAD_CAST "name")
@@ -290,4 +286,4 @@ done:
 		xmlXPathFreeNodeSet(dst_nodes);
 }
 
-xplCommand xplEdgeCommand = { xplCmdEdgePrologue, xplCmdEdgeEpilogue };
+xplCommand xplEdgeCommand = { NULL, xplCmdEdgeEpilogue };

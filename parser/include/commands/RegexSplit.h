@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdRegexSplitPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplRegexSplitCommand;

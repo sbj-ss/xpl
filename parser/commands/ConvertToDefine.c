@@ -26,7 +26,7 @@ static xmlChar* _getDefaultExpand(xplCommandInfoPtr info, const xmlChar *raw_val
 
 xplCommand xplConvertToDefineCommand =
 {
-	.prologue = xplCmdConvertToDefinePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdConvertToDefineEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -48,11 +48,6 @@ xplCommand xplConvertToDefineCommand =
 		}
 	}
 };
-
-void xplCmdConvertToDefinePrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

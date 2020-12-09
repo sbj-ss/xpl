@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdEdgePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplEdgeCommand;

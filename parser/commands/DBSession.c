@@ -13,7 +13,7 @@ static const xplCmdDBSessionParams params_stencil =
 
 xplCommand xplDBSessionCommand =
 {
-	.prologue = xplCmdDBSessionPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdDBSessionEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -28,11 +28,6 @@ xplCommand xplDBSessionCommand =
 		}
 	}
 };
-
-void xplCmdDBSessionPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
-}
 
 #define REPEAT_ATTR (BAD_CAST "repeat")
 void xplCmdDBSessionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)

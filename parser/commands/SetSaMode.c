@@ -17,7 +17,7 @@ static const xplCmdSetSaModeParams params_stencil =
 
 xplCommand xplSetSaModeCommand =
 {
-	.prologue = xplCmdSetSaModePrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdSetSaModeEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -36,10 +36,6 @@ xplCommand xplSetSaModeCommand =
 		}
 	}
 };
-
-void xplCmdSetSaModePrologue(xplCommandInfoPtr commandInfo)
-{
-}
 
 void xplCmdSetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

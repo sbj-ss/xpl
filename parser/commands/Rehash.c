@@ -2,10 +2,6 @@
 #include <libxpl/xplmessages.h>
 #include "commands/Rehash.h"
 
-void xplCmdRehashPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdRehashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	if (!xplSessionGetSaMode(commandInfo->document->session))
@@ -19,4 +15,4 @@ void xplCmdRehashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ASSIGN_RESULT(NULL, false, true);
 }
 
-xplCommand xplRehashCommand = { xplCmdRehashPrologue, xplCmdRehashEpilogue };
+xplCommand xplRehashCommand = { NULL, xplCmdRehashEpilogue };

@@ -22,7 +22,7 @@ static const xplCmdGetAttributesParams params_stencil =
 
 xplCommand xplGetAttributesCommand =
 {
-	.prologue = xplCmdGetAttributesPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdGetAttributesEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
@@ -97,11 +97,6 @@ static xmlNodePtr _wrapAttributes(xmlAttrPtr prop, xplQName tagname, bool show_t
 		prop = prop->next;
 	}
 	return ret;
-}
-
-void xplCmdGetAttributesPrologue(xplCommandInfoPtr commandInfo)
-{
-	UNUSED_PARAM(commandInfo);
 }
 
 void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)

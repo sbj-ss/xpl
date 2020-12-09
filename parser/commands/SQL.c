@@ -553,7 +553,7 @@ static const xplCmdSqlParams params_stencil =
 
 xplCommand xplSqlCommand =
 {
-	.prologue = xplCmdSqlPrologue,
+	.prologue = NULL,
 	.epilogue = xplCmdSqlEpilogue,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdSqlParams),
@@ -596,10 +596,6 @@ xplCommand xplSqlCommand =
 		}
 	}
 };
-
-void xplCmdSqlPrologue(xplCommandInfoPtr commandInfo)
-{
-}
 
 void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

@@ -3,10 +3,6 @@
 #include <libxpl/xpltree.h>
 #include "commands/Return.h"
 
-void xplCmdReturnPrologue(xplCommandInfoPtr commandInfo)
-{
-}
-
 void xplCmdReturnEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 /* TODO repeat */
@@ -20,4 +16,4 @@ void xplCmdReturnEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	ASSIGN_RESULT(NULL, false, true);
 }
 
-xplCommand xplReturnCommand = { xplCmdReturnPrologue, xplCmdReturnEpilogue };
+xplCommand xplReturnCommand = { NULL, xplCmdReturnEpilogue };

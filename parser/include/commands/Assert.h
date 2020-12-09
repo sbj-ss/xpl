@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdAssertPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplAssertCommand;

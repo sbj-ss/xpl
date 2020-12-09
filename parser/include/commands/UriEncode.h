@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdUriEncodePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplUriEncodeCommand;

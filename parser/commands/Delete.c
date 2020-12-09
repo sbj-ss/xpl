@@ -181,4 +181,4 @@ done:
 	}
 }
 
-xplCommand xplDeleteCommand = { xplCmdDeletePrologue, xplCmdDeleteEpilogue };
+xplCommand xplDeleteCommand = { NULL, xplCmdDeleteEpilogue };

@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdRenamePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplRenameCommand;

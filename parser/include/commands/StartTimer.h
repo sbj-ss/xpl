@@ -7,7 +7,6 @@
 
 #include <libxpl/xplcommand.h>
 
-void xplCmdStartTimerPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdStartTimerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 extern xplCommand xplStartTimerCommand;
