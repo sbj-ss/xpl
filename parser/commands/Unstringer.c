@@ -26,13 +26,13 @@ typedef struct _UnstringerContext
 } UnstringerContext;
 typedef UnstringerContext *UnstringerContextPtr;
 
-xmlChar *getEnd(xmlChar *str)
+static xmlChar *_getEnd(xmlChar *str)
 {
 	while (*str) str++;
 	return str;
 }
 
-xmlChar *getNextMulti(xmlChar *str, xmlChar *delim, size_t *delimLen)
+static xmlChar *_getNextMulti(xmlChar *str, xmlChar *delim, size_t *delimLen)
 {
 	xmlChar *ret = NULL;
 	const xmlChar *cur;
@@ -56,7 +56,7 @@ xmlChar *getNextMulti(xmlChar *str, xmlChar *delim, size_t *delimLen)
 	return ret;
 }
 
-xmlNodePtr splitBySingle(UnstringerContextPtr ctxt)
+static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 {
 	xmlNodePtr ret, cur, tail;
 	xmlChar *start;
@@ -84,7 +84,7 @@ xmlNodePtr splitBySingle(UnstringerContextPtr ctxt)
 		if (delim_len)
 		{
 			if (ctxt->multi_delimiter)
-				cur_end = getNextMulti(start, ctxt->delimiter, &multi_delim_len);
+				cur_end = _getNextMulti(start, ctxt->delimiter, &multi_delim_len);
 			else
 				cur_end = BAD_CAST xmlStrstr(start, ctxt->delimiter);
 			if (cur_end)
@@ -128,7 +128,7 @@ xmlNodePtr splitBySingle(UnstringerContextPtr ctxt)
 					cur = xmlNewDocNode(ctxt->doc, ctxt->ns, ctxt->tag_name, start); 
 					APPEND_NODE();
 				} 
-				start = getEnd(start);
+				start = _getEnd(start);
 			}
 		} else {
 			cur_end = start + xstrGetOffsetToNextUTF8Char(start);
@@ -148,7 +148,7 @@ xmlNodePtr splitBySingle(UnstringerContextPtr ctxt)
 #undef APPEND_NODE
 }
 
-xmlNodePtr splitByCouple(UnstringerContextPtr ctxt)
+static xmlNodePtr _splitByCouple(UnstringerContextPtr ctxt)
 {
 	/* ToDo */
 	return NULL;
@@ -290,9 +290,9 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 					if (!ctxt.input_str)
 						continue;
 					if (ctxt.start_delimiter && ctxt.end_delimiter)
-						out = splitByCouple(&ctxt);
+						out = _splitByCouple(&ctxt);
 					else
-						out = splitBySingle(&ctxt);
+						out = _splitBySingle(&ctxt);
 					if (!ret)
 						ret = out;
 					else
@@ -304,9 +304,9 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		} else if (sel->type == XPATH_STRING) {
 			ctxt.input_str = sel->stringval;
 			if (ctxt.start_delimiter && ctxt.end_delimiter)
-				ret = splitByCouple(&ctxt);
+				ret = _splitByCouple(&ctxt);
 			else
-				ret = splitBySingle(&ctxt);	
+				ret = _splitBySingle(&ctxt);
 		} else {
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression \"%s\" evaluated to neither nodeset nor string value", select_attr), true, true);
 			goto done;
