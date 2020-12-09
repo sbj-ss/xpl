@@ -4,7 +4,7 @@
 #include <libxpl/xpltree.h>
 #include "commands/Replicate.h"
 
-xmlNodePtr replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
+static xmlNodePtr _replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
 {
 	xmlNodePtr cur, tail, ret = NULL;
 	int i;
@@ -56,7 +56,7 @@ void xplCmdReplicatePrologue(xplCommandInfoPtr commandInfo)
 	{
 		old_children = xplDetachContent(commandInfo->element);
 		if (before_count > 1)
-			new_children = replicateNodes(old_children, before_count, commandInfo->element);
+			new_children = _replicateNodes(old_children, before_count, commandInfo->element);
 		xplDocDeferNodeListDeletion(commandInfo->document, old_children);
 		xplSetChildren(commandInfo->element, new_children);
 	}
@@ -95,7 +95,7 @@ void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		goto done;
 	}
 	if (after_count > 1)
-		ret = replicateNodes(commandInfo->element->children, after_count, commandInfo->element->parent);
+		ret = _replicateNodes(commandInfo->element->children, after_count, commandInfo->element->parent);
 	else if (after_count == 1) {
 		ret = xplDetachContent(commandInfo->element);
 		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
