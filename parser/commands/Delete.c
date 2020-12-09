@@ -46,9 +46,6 @@ void dumpNode(xmlNodePtr cur, int indent)
 }
 #endif
 
-void xplCmdDeletePrologue(xplCommandInfoPtr commandInfo)
-{
-}
 
 /* Необходимо наконец навести порядок с пилением сука, на котором сидит команда.
  * Возможные гадости включают в себя:
