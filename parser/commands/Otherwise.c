@@ -20,6 +20,7 @@ xplCommand xplOtherwiseCommand =
 	.epilogue = xplCmdOtherwiseEpilogue,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdOtherwiseParams),
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.parameters = {
 		{
 			.name = BAD_CAST "repeat",
