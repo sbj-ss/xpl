@@ -6,12 +6,39 @@
 
 void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdRegexMatchParams
+{
+	xmlChar *regex;
+} xplCmdRegexMatchParams, *xplCmdRegexMatchParamsPtr;
+
+static const xplCmdRegexMatchParams params_stencil =
+{
+	.regex = NULL
+};
+
+xplCommand xplRegexMatchCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdRegexMatchEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdRegexMatchParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "regex",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.required = true,
+			.value_stencil = &params_stencil.regex
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define REGEX_ATTR (BAD_CAST "regex")
-
-	xmlChar *regex_attr = NULL;
-	xmlChar *content = NULL, *content_end;
+	xplCmdRegexMatchParamsPtr params = (xplCmdRegexMatchParamsPtr) commandInfo->params;
+	xmlChar *content_end;
 	regex_t *regex = NULL;
 	OnigErrorInfo err_info;
 	OnigRegion *region = NULL;
@@ -20,20 +47,8 @@ void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	xmlNodePtr ret;
 	int ret_code;
 
-	regex_attr = xmlGetNoNsProp(commandInfo->element, REGEX_ATTR);
-	if (!regex_attr)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "regex attribute is missing"), true, true);
-		return;
-	}
-	if (!xplCheckNodeListForText(commandInfo->element->children))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
-		goto done;
-	}
-	content = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, true);
 	/* ToDo: maybe some options controlled by XPL programmer? */
-	if ((ret_code = onig_new(&regex, regex_attr, regex_attr + xmlStrlen(regex_attr),
+	if ((ret_code = onig_new(&regex, params->regex, params->regex + xmlStrlen(params->regex),
 		ONIG_OPTION_NONE, ONIG_ENCODING_UTF8, ONIG_SYNTAX_PERL_NG, &err_info)) != ONIG_NORMAL)
 	{
 		if (!onig_error_code_to_str(err_str, ret_code))
@@ -47,28 +62,21 @@ void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "Oniguruma cannot create search region"), true, true);
 		goto done;
 	}
-	content_end = content + xmlStrlen(content);
+	content_end = commandInfo->content + xmlStrlen(commandInfo->content);
 #ifdef _REGEX_MATCH_FULL_STRING_ONLY
-	match = (onig_match(regex, content, content_end, content, region, 0) != ONIG_MISMATCH);
+	match = (onig_match(regex, commandInfo->content, content_end, commandInfo->content, region, 0) != ONIG_MISMATCH);
 #else
-	match = (onig_search(regex, content, content_end, content, content_end, region, 0) != ONIG_MISMATCH);
+	match = (onig_search(regex, commandInfo->content, content_end, commandInfo->content, content_end, region, 0) != ONIG_MISMATCH);
 #endif
 	ret = xmlNewDocText(commandInfo->element->doc, NULL);
 	if (match)
-		ret->content = BAD_CAST XPL_STRDUP((char*) BAD_CAST "true");
+		ret->content = BAD_CAST XPL_STRDUP("true");
 	else
-		ret->content = BAD_CAST XPL_STRDUP((char*) BAD_CAST "false");
+		ret->content = BAD_CAST XPL_STRDUP("false");
 	ASSIGN_RESULT(ret, false, true);
 done:
-	if (regex_attr)
-		XPL_FREE(regex_attr);
-	if (content)
-		XPL_FREE(content);
 	if (regex)
 		onig_free(regex);
 	if (region)
 		onig_region_free(region, 1);
 }
-
-xplCommand xplRegexMatchCommand = { NULL, xplCmdRegexMatchEpilogue };
-
