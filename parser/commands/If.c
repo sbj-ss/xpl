@@ -6,43 +6,58 @@
 void xplCmdIfPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdIfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdIfParams
+{
+	xmlChar *test;
+	bool repeat;
+} xplCmdIfParams, *xplCmdIfParamsPtr;
+
+static const xplCmdIfParams params_stencil =
+{
+	.test = NULL,
+	.repeat = false
+};
+
+xplCommand xplIfCommand =
+{
+	.prologue = xplCmdIfPrologue,
+	.epilogue = xplCmdIfEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE | XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdIfParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "test",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.test
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdIfPrologue(xplCommandInfoPtr commandInfo)
 {
-#define TEST_ATTR (BAD_CAST "test")
-	xmlChar *test_attr;
+	xplCmdIfParamsPtr params = (xplCmdIfParamsPtr) commandInfo->params;
 	xmlNsPtr xplns;
 	xmlNodePtr test_el;
 
-	test_attr = xmlGetNoNsProp(commandInfo->element, TEST_ATTR);
-	if (test_attr && *test_attr)
+	if (params->test)
 	{
 		if (!(xplns = commandInfo->document->root_xpl_ns))
-			xplns = xmlSearchNsByHref(commandInfo->element->doc, commandInfo->element, cfgXplNsUri);
-		if (!xplns)
-		{
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-			goto done; /* this shouldn't ever happen */
-		}
-		test_el = xmlNewDocNode(commandInfo->element->doc, xplns, BAD_CAST "test", test_attr);
+			xplns = commandInfo->element->ns;
+		test_el = xmlNewDocNode(commandInfo->element->doc, xplns, BAD_CAST "test", params->test);
 		xplPrependList(commandInfo->element->children, test_el);
 	}
-done:
-	if (test_attr) XPL_FREE(test_attr);
 }
 
 void xplCmdIfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define REPEAT_ATTR (BAD_CAST "repeat")
-	bool repeat;
-	xmlNodePtr error;
+	xplCmdIfParamsPtr params = (xplCmdIfParamsPtr) commandInfo->params;
 	
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		return;
-	}
-	ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
+	ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
 }
-
-xplCommand xplIfCommand = { xplCmdIfPrologue, xplCmdIfEpilogue };
-
