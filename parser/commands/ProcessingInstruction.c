@@ -4,37 +4,42 @@
 
 void xplCmdProcessingInstructionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdProsessingInstructionParams
+{
+	xmlChar *name;
+} xplCmdProcessingInstructionParams, *xplCmdProcessingInstructionParamsPtr;
+
+static const xplCmdProcessingInstructionParams params_stencil =
+{
+	.name = NULL
+};
+
+xplCommand xplProcessingInstructionCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdProcessingInstructionEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE | XPL_CMD_FLAG_REQUIRE_CONTENT,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdProcessingInstructionParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.required = true,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdProcessingInstructionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR (BAD_CAST "name")
-	xmlChar *name_attr = NULL;
-	xmlChar *txt;
+	xplCmdProcessingInstructionParamsPtr params = (xplCmdProcessingInstructionParamsPtr) commandInfo->params;
 	xmlNodePtr ret;
 
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	if (!name_attr)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name attribute"), true, true);
-		goto done;
-	}
-	if (!xplCheckNodeListForText(commandInfo->element->children))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
-		goto done;
-	}
-	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
-	if (!txt)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing content"), true, true);
-		goto done;
-	}
-	ret = xmlNewDocPI(commandInfo->element->doc, name_attr, NULL);
-	ret->content = txt;
+	ret = xmlNewDocPI(commandInfo->element->doc, params->name, NULL);
+	ret->content = commandInfo->content;
+	commandInfo->content = NULL;
 	ASSIGN_RESULT(ret, false, true);
-done:
-	if (name_attr)
-		XPL_FREE(name_attr);
-
 }
-
-xplCommand xplProcessingInstructionCommand = { NULL, xplCmdProcessingInstructionEpilogue };
