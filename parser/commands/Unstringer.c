@@ -62,7 +62,7 @@ static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 	xmlChar *start;
 	xmlChar *cur_end = NULL;
 	size_t delim_len;
-	size_t multi_delim_len;
+	size_t multi_delim_len = 0;
 	xmlChar tmp;
 	char marker;
 
