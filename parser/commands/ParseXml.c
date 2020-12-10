@@ -5,33 +5,42 @@
 
 void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdParseXmlParams
+{
+	bool repeat;
+} xplCmdParseXmlParams, *xplCmdParseXmlParamsPtr;
+
+static const xplCmdParseXmlParams params_stencil =
+{
+	.repeat = true
+};
+
+xplCommand xplParseXmlCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdParseXmlEpilogue,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdParseXmlParams),
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
+	.parameters = {
+		{
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define REPEAT_ATTR (BAD_CAST "repeat")
-	bool repeat;
-	xmlChar *txt = NULL;
+	xplCmdParseXmlParamsPtr params = (xplCmdParseXmlParamsPtr) commandInfo->params;
 	xmlDocPtr doc = NULL;
 	xmlChar *parse_error;
-	xmlNodePtr ret, error;
+	xmlNodePtr ret;
 
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		return;
-	}
-	if (!xplCheckNodeListForText(commandInfo->element->children))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
-		return;
-	}
-	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
-	if (!txt)
-	{
-		ASSIGN_RESULT(NULL, false, true);
-		return;
-	}
-	doc = xmlParseMemory((const char*) txt, xmlStrlen(txt));
-	XPL_FREE(txt);
+	doc = xmlParseMemory((const char*) commandInfo->content, xmlStrlen(commandInfo->content));
 	if (!doc)
 	{
 		parse_error = xstrGetLastLibxmlError();
@@ -42,8 +51,6 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ret = xplDetachContent((xmlNodePtr) doc);
 		xmlSetTreeDoc(ret, commandInfo->element->doc);
 		xmlFreeDoc(doc);
-		ASSIGN_RESULT(ret, repeat, true);
+		ASSIGN_RESULT(ret, params->repeat, true);
 	}
 }
-
-xplCommand xplParseXmlCommand = { NULL, xplCmdParseXmlEpilogue };
