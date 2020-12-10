@@ -11,7 +11,7 @@ typedef enum _WithMode
 	WITH_MODE_APPEND
 } WithMode;
 
-WithMode withModeFromString(xmlChar *s)
+static WithMode _withModeFromString(xmlChar *s)
 {
 	if (!s || !*s)
 		return WITH_MODE_REPLACE;
@@ -29,7 +29,7 @@ typedef enum _NaosCheckResult
 	NAOS_CHECK_RESULT_ANCESTOR_DELETED
 } NaosCheckResult;
 
-bool checkNAOS(xmlNodePtr cmd, xmlNodePtr test)
+static bool _checkNAOS(xmlNodePtr cmd, xmlNodePtr test)
 {
 	while (cmd != (xmlNodePtr) cmd->doc)
 	{
@@ -65,7 +65,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	}
 	id_attr = xmlGetNoNsProp(commandInfo->element, ID_ATTR);
 	mode_attr = xmlGetNoNsProp(commandInfo->element, MODE_ATTR);
-	mode = withModeFromString(mode_attr);
+	mode = _withModeFromString(mode_attr);
 	if (mode == WITH_MODE_UNKNOWN)
 	{
 		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid mode attribute \"%s\"", mode_attr);
@@ -109,7 +109,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 					}
 					if ((cur->type != XML_ELEMENT_NODE))
 						continue;
-					naos_check_result = cfgFoolproofDestructiveCommands? checkNAOS(commandInfo->element, cur): NAOS_CHECK_RESULT_OK;
+					naos_check_result = cfgFoolproofDestructiveCommands? _checkNAOS(commandInfo->element, cur): NAOS_CHECK_RESULT_OK;
 					if (naos_check_result == NAOS_CHECK_RESULT_IS_ANCESTOR)
 					{
 						if (cfgWarnOnAncestorModificationAttempt)
