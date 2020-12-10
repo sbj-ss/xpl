@@ -2,7 +2,9 @@
 #include <libxpl/xplmacro.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/ReplaceIfUndefined.h"
+
+void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo);
+void xplCmdReplaceIfUndefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo)
 {

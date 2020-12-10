@@ -2,7 +2,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsession.h>
 #include <libxpl/xpltree.h>
-#include "commands/AddDB.h"
+
+void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo);
 
 typedef struct _xplCmdAddDBParams
 {

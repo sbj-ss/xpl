@@ -1,4 +1,6 @@
-#include "commands/Crash.h"
+#include <libxpl/xplcommand.h>
+
+void xplCmdCrashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 xplCommand xplCrashCommand =
 {
@@ -7,7 +9,6 @@ xplCommand xplCrashCommand =
 	.flags = 0,
 	.params_stencil = NULL
 };
-
 
 void xplCmdCrashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

@@ -2,7 +2,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
-#include "commands/Test.h"
+
+void xplCmdTestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 static xmlNodePtr createBreak(xplCommandInfoPtr commandInfo, xmlNodePtr error, xmlChar *point)
 {

@@ -1,7 +1,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/GetOutputDocument.h"
+
+void xplCmdGetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdGetOutputDocumentParams
 {

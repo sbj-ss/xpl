@@ -1,5 +1,6 @@
 #include <libxpl/xplcore.h>
-#include "commands/StartThreadsAndWait.h"
+
+void xplCmdStartThreadsAndWaitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 #define REPEAT_ATTR (BAD_CAST "repeat")
 void xplCmdStartThreadsAndWaitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)

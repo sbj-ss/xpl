@@ -1,7 +1,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/Attribute.h"
+
+void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 static void _assignAttribute(xmlNodePtr dst, xplQNamePtr qname, xmlChar *value, bool allowReplace)
 {

@@ -1,5 +1,6 @@
 #include <libxpl/xplcore.h>
-#include "commands/StackPop.h"
+
+void xplCmdStackPopEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdStackPopEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

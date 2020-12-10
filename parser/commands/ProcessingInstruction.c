@@ -1,6 +1,8 @@
+#include <libxpl/xplcommand.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/ProcessingInstruction.h"
+
+void xplCmdProcessingInstructionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdProcessingInstructionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

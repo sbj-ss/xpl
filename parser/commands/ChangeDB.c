@@ -2,7 +2,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsession.h>
 #include <libxpl/xpltree.h>
-#include "commands/ChangeDB.h"
+
+void xplCmdChangeDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdChangeDBParams
 {

@@ -1,5 +1,7 @@
+#include <libxpl/xplcommand.h>
 #include <libxpl/xpltree.h>
-#include "commands/DBSession.h"
+
+void xplCmdDBSessionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdDBSessionParams
 {

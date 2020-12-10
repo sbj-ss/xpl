@@ -1,6 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xpltree.h>
-#include "commands/Container.h"
+
+void xplCmdContainerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdContainerParams
 {

@@ -2,7 +2,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsession.h>
 #include <libxpl/xpltree.h>
-#include "commands/GetDB.h"
+
+void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdGetDBParams
 {

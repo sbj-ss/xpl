@@ -2,7 +2,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
-#include "commands/Edge.h"
+
+void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef enum {
 	EDGE_COPY,

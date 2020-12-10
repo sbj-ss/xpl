@@ -1,5 +1,6 @@
 #include <libxpl/xplcommand.h>
-#include "commands/ModuleLoaded.h"
+
+void xplCmdModuleLoadedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdModuleLoadedParams
 {

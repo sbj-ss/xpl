@@ -2,7 +2,9 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
-#include "commands/With.h"
+
+void xplCmdWithPrologue(xplCommandInfoPtr commandInfo);
+void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef enum _WithMode 
 {

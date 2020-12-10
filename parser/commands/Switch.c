@@ -1,7 +1,9 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/Switch.h"
+
+void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo);
+void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo)
 {

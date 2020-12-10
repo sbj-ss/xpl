@@ -1,6 +1,8 @@
 #include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplcommand.h>
 #include <libxpl/xplmessages.h>
-#include "commands/DebugBreak.h"
+
+void xplCmdDebugBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 xplCommand xplDebugBreakCommand = {
 	.prologue = NULL,

@@ -1,6 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include "commands/ValueOf.h"
+
+void xplCmdValueOfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdValueOfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

@@ -3,7 +3,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsession.h>
 #include <libxpl/xplstring.h>
-#include "commands/SessionSetObject.h"
+
+void xplCmdSessionSetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdSessionSetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

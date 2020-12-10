@@ -1,6 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include "commands/Rehash.h"
+
+void xplCmdRehashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdRehashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

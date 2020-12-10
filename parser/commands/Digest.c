@@ -2,12 +2,13 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
-#include "commands/Digest.h"
 #include "openssl/md4.h"
 #include "openssl/md5.h"
 #include "openssl/ripemd.h"
 #include "openssl/sha.h"
 #include "openssl/whrlpool.h"
+
+void xplCmdDigestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef unsigned char* (*xplCmdDigestFunc)(const unsigned char *d, size_t n, unsigned char *md);
 

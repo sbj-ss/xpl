@@ -1,10 +1,11 @@
-#include <string.h>
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
-#include "commands/Unstringer.h"
+#include <string.h>
+
+void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _UnstringerContext
 {

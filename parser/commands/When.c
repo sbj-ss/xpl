@@ -1,7 +1,9 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
-#include "commands/When.h"
+
+void xplCmdWhenPrologue(xplCommandInfoPtr commandInfo);
+void xplCmdWhenEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdWhenPrologue(xplCommandInfoPtr commandInfo)
 {

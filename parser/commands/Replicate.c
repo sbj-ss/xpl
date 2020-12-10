@@ -2,7 +2,9 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/Replicate.h"
+
+void xplCmdReplicatePrologue(xplCommandInfoPtr commandInfo);
+void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 static xmlNodePtr _replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
 {

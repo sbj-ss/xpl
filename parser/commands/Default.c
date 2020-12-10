@@ -2,7 +2,9 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
-#include "commands/Default.h"
+
+void xplCmdDefaultPrologue(xplCommandInfoPtr commandInfo);
+void xplCmdDefaultEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdDefaultParams
 {

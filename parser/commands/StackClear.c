@@ -1,5 +1,6 @@
 #include <libxpl/xplcore.h>
-#include "commands/StackClear.h"
+
+void xplCmdStackClearEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdStackClearEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

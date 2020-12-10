@@ -5,7 +5,8 @@
 #include <libxpl/xploptions.h>
 #include <libxpl/xplsave.h>
 #include <libxpl/xpltree.h>
-#include "commands/Save.h"
+
+void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 /* TODO: do we still need to dig into libxml2 guts? */
 

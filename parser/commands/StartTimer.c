@@ -1,6 +1,7 @@
 #include <sys/time.h>
 #include <libxpl/xplcore.h>
-#include "commands/StartTimer.h"
+
+void xplCmdStartTimerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdStartTimerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

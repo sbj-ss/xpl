@@ -1,8 +1,10 @@
-#include <string.h>
+#include <libxpl/xplcommand.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/RegexMatch.h"
+#include <string.h>
 #include <oniguruma.h>
+
+void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

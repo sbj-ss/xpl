@@ -1,7 +1,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/Append.h"
+
+void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef enum _AppendPosition
 {

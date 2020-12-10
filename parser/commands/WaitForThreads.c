@@ -1,5 +1,6 @@
 #include <libxpl/xplcore.h>
-#include "commands/WaitForThreads.h"
+
+void xplCmdWaitForThreadsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdWaitForThreadsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

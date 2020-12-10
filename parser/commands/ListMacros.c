@@ -1,7 +1,9 @@
+#include <libxpl/xplcommand.h>
 #include <libxpl/xplmacro.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/ListMacros.h"
+
+void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdListMacrosParams
 {

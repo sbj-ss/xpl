@@ -4,7 +4,9 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
-#include "commands/SuppressMacros.h"
+
+void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo);
+void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 static void fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target, xmlNodeSetPtr nodeset)
 {

@@ -1,8 +1,10 @@
+#include <libxpl/xplcommand.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
-#include "commands/UriEscapeParam.h"
-#include "libxml/uri.h"
+#include <libxml/uri.h>
+
+void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

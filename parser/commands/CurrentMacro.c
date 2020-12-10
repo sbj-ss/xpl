@@ -2,7 +2,8 @@
 #include <libxpl/xplmacro.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/CurrentMacro.h"
+
+void xplCmdCurrentMacroEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdCurrentMacroParams
 {

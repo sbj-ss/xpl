@@ -1,6 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xpltree.h>
-#include "commands/Fatal.h"
+
+void xplCmdFatalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 static xmlNodePtr _onlyFirstChildElement(xmlNodePtr parent)
 {

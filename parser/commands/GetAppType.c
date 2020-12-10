@@ -1,5 +1,6 @@
 #include <libxpl/xplcore.h>
-#include "commands/GetAppType.h"
+
+void xplCmdGetAppTypeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 xplCommand xplGetAppTypeCommand =
 {

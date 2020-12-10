@@ -2,7 +2,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplsession.h>
 #include <libxpl/xplstring.h>
-#include "commands/SessionIsPresent.h"
+
+void xplCmdSessionIsPresentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdSessionIsPresentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

@@ -1,7 +1,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/IsDefined.h"
+
+void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdIsDefinedParams
 {

@@ -3,7 +3,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/GetVersion.h"
+
+void xplCmdGetVersionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 #if defined(__GNUC__) & !defined(__MINGW32__)
 	#include <gnu/libc-version.h>

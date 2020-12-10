@@ -1,6 +1,7 @@
 #include <libxpl/xplcore.h>
-#include "commands/GetElapsedTime.h"
 #include <time.h>
+
+void xplCmdGetElapsedTimeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 xplCommand xplGetElapsedTimeCommand =
 {

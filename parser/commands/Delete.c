@@ -2,7 +2,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
-#include "commands/Delete.h"
+
+void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 #if 0
 

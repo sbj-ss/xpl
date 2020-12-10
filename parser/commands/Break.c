@@ -2,7 +2,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
-#include "commands/Break.h"
+
+void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 static bool checkForAncestor(xmlNodeSetPtr set, xmlNodePtr ancestor)
 {

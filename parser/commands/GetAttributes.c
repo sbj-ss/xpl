@@ -2,7 +2,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/GetAttributes.h"
+
+void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdGetAttributesParams
 {

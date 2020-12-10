@@ -1,7 +1,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
-#include "commands/Otherwise.h"
+
+void xplCmdOtherwiseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdOtherwiseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

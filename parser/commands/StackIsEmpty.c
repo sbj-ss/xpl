@@ -1,5 +1,6 @@
 #include <libxpl/xplcore.h>
-#include "commands/StackIsEmpty.h"
+
+void xplCmdStackIsEmptyEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdStackIsEmptyEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

@@ -1,5 +1,7 @@
+#include <libxpl/xplcommand.h>
 #include <libxpl/xpltree.h>
-#include "commands/Choose.h"
+
+void xplCmdChooseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdChooseParams
 {

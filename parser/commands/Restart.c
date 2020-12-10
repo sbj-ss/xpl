@@ -2,7 +2,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsession.h>
-#include "commands/Restart.h"
+
+void xplCmdRestartEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdRestartEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

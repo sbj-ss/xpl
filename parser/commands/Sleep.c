@@ -1,7 +1,9 @@
-#include <stdio.h>
 #include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplcommand.h>
 #include <libxpl/xplmessages.h>
-#include "commands/Sleep.h"
+#include <stdio.h>
+
+void xplCmdSleepEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdSleepEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

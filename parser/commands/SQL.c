@@ -6,7 +6,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
-#include "commands/SQL.h"
+
+void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 #define DEFAULT_RESPONSE_TAG_NAME (BAD_CAST "Row")
 #define DEFAULT_COLUMN_NAME (BAD_CAST "Col")

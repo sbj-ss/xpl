@@ -2,6 +2,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplutils.h>
+
 #include "commands/FileOp.h"
 
 /* TODO review and probably rework getting rid of XPR_FS_ stuff */

@@ -2,7 +2,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsave.h>
 #include <libxpl/xpltree.h>
-#include "commands/Serialize.h"
+
+void xplCmdSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

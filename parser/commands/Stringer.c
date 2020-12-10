@@ -2,7 +2,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
-#include "commands/Stringer.h"
+
+void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

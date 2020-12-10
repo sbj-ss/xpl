@@ -1,7 +1,9 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/ForEach.h"
+
+void xplCmdForEachPrologue(xplCommandInfoPtr commandInfo);
+void xplCmdForEachEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 /* A short note for those wanting to replace children with error node inside prologue:
  * 1. the error node must replace the command and not reside inside it

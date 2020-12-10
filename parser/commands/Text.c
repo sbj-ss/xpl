@@ -1,6 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xpltree.h>
-#include "commands/Text.h"
+
+void xplCmdTextEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdTextEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

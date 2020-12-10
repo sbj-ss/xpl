@@ -4,7 +4,8 @@
 #include <libxpl/xplparams.h>
 #include <libxpl/xplsession.h>
 #include <libxpl/xpltree.h>
-#include "commands/Isolate.h"
+
+void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdIsolateParams
 {

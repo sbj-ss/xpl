@@ -1,5 +1,7 @@
+#include <libxpl/xplcommand.h>
 #include <libxpl/xplmessages.h>
-#include "commands/Error.h"
+
+void xplCmdErrorEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 xplCommand xplErrorCommand =
 {

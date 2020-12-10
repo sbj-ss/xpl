@@ -1,6 +1,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xpltree.h>
-#include "commands/Comment.h"
+
+void xplCmdCommentPrologue(xplCommandInfoPtr commandInfo);
+void xplCmdCommentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 xplCommand xplCommentCommand =
 {

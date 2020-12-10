@@ -1,5 +1,7 @@
+#include <libxpl/xplcommand.h>
 #include <libxpl/xpltree.h>
-#include "commands/CommandSupported.h"
+
+void xplCmdCommandSupportedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdCommandSupportedParams
 {

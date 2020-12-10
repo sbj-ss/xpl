@@ -2,7 +2,9 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
-#include "commands/If.h"
+
+void xplCmdIfPrologue(xplCommandInfoPtr commandInfo);
+void xplCmdIfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdIfPrologue(xplCommandInfoPtr commandInfo)
 {

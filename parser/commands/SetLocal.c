@@ -1,7 +1,9 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplparams.h>
 #include <libxpl/xpltree.h>
-#include "commands/SetLocal.h"
+
+void xplCmdSetLocalPrologue(xplCommandInfoPtr commandInfo);
+void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 xplCommand xplSetLocalCommand = {
 	.prologue = xplCmdSetLocalPrologue,

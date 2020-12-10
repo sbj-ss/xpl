@@ -1,6 +1,3 @@
-#include <sys/stat.h>
-#include <string.h>
-#include <unistd.h>
 #include <libxpl/abstraction/xef.h>
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplcore.h>
@@ -8,7 +5,11 @@
 #include <libxpl/xplsave.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
-#include "commands/Include.h"
+#include <sys/stat.h>
+#include <string.h>
+#include <unistd.h>
+
+void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 #define SELECT_ATTR (BAD_CAST "select")
 #define SOURCE_ATTR (BAD_CAST "source")

@@ -3,7 +3,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
 #include <libxpl/xplwrappers.h>
-#include "commands/SetOutputDocument.h"
+
+void xplCmdSetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 static xmlNodePtr _checkNodelist(xmlNodePtr src, int *elCount)
 {

@@ -3,7 +3,8 @@
 #include <libxpl/xploptions.h>
 #include <libxpl/xplparams.h>
 #include <libxpl/xpltree.h>
-#include "commands/GetParam.h"
+
+void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdGetParamParams
 {

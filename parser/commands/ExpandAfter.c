@@ -1,6 +1,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xpltree.h>
-#include "commands/ExpandAfter.h"
+
+void xplCmdExpandAfterPrologue(xplCommandInfoPtr commandInfo);
+void xplCmdExpandAfterEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 xplCommand xplExpandAfterCommand =
 {

@@ -1,6 +1,9 @@
+#include <libxpl/xplcommand.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/CommentNode.h"
+
+void xplCmdCommentNodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
+
 
 xplCommand xplCommentNodeCommand =
 {

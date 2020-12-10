@@ -1,7 +1,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmacro.h>
 #include <libxpl/xplmessages.h>
-#include "commands/ConvertToDefine.h"
+
+void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdConvertToDefineParams
 {

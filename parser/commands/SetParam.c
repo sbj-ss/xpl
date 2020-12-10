@@ -2,7 +2,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplparams.h>
 #include <libxpl/xpltree.h>
-#include "commands/SetParam.h"
+
+void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 #define SP_MODE_ADD 1
 #define SP_MODE_REPLACE 2

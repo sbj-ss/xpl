@@ -1,7 +1,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsession.h>
-#include "commands/SetSaMode.h"
+
+void xplCmdSetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdSetSaModeParams
 {

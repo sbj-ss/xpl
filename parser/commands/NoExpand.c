@@ -1,6 +1,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xpltree.h>
-#include "commands/NoExpand.h"
+
+void xplCmdNoExpandPrologue(xplCommandInfoPtr commandInfo);
+void xplCmdNoExpandEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 xplCommand xplNoExpandCommand =
 {

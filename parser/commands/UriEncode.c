@@ -1,7 +1,9 @@
+#include <libxpl/xplcommand.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
-#include "commands/UriEncode.h"
+
+void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

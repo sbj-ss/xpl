@@ -2,7 +2,9 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
-#include "commands/Case.h"
+
+void xplCmdCasePrologue(xplCommandInfoPtr commandInfo);
+void xplCmdCaseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef enum _xplCmdCaseComparison
 {

@@ -1,5 +1,6 @@
 #include <libxpl/xplcore.h>
-#include "commands/StackPush.h"
+
+void xplCmdStackPushEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdStackPushEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

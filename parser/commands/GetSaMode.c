@@ -1,6 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplsession.h>
-#include "commands/GetSaMode.h"
+
+void xplCmdGetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 xplCommand xplGetSaModeCommand =
 {

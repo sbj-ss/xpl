@@ -1,7 +1,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/SetResponse.h"
+
+void xplCmdSetResponseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdSetResponseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

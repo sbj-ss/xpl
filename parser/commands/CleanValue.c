@@ -1,7 +1,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplparams.h>
 #include <libxpl/xpltree.h>
-#include "commands/CleanValue.h"
+
+void xplCmdCleanValueEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef enum _xplCmdCleanBehavior
 {

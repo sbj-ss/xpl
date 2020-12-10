@@ -1,10 +1,11 @@
-#include <string.h>
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
-#include "commands/RegexSplit.h"
+#include <string.h>
 #include <oniguruma.h>
+
+void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

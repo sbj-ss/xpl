@@ -1,6 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include "commands/Rename.h"
+
+void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

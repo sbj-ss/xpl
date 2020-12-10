@@ -1,7 +1,8 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
-#include "commands/Return.h"
+
+void xplCmdReturnEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdReturnEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

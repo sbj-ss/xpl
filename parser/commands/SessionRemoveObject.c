@@ -3,7 +3,8 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplsession.h>
 #include <libxpl/xplstring.h>
-#include "commands/SessionRemoveObject.h"
+
+void xplCmdSessionRemoveObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 void xplCmdSessionRemoveObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {

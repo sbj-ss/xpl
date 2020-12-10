@@ -1,6 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplwrappers.h>
-#include "commands/GetDocumentRole.h"
+
+void xplCmdGetDocumentRoleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 xplCommand xplGetDocumentRoleCommand =
 {
