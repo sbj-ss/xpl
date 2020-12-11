@@ -6,28 +6,45 @@
 void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdReplaceIfUndefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdReplaceIfUndefinedParams
+{
+	xplQName name;
+} xplCmdReplaceIfUndefinedParams, *xplCmdReplaceIfUndefinedParamsPtr;
+
+static const xplCmdReplaceIfUndefinedParams params_stencil =
+{
+	.name = { NULL, NULL }
+};
+
+xplCommand xplReplaceIfUndefinedCommand = {
+	.prologue = xplCmdReplaceIfUndefinedPrologue,
+	.epilogue = xplCmdReplaceIfUndefinedEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdReplaceIfUndefinedParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_QNAME,
+			.required = true,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo)
 {
-#define NAME_ATTR (BAD_CAST "name")
+	xplCmdReplaceIfUndefinedParamsPtr params = (xplCmdReplaceIfUndefinedParamsPtr) commandInfo->params;
+	xmlChar *href = params->name.ns? params->name.ns->href: NULL;
 
-	xmlChar *name_attr = NULL;
-	xmlChar *tagname;
-	xmlNsPtr ns = NULL;
-
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	if (!name_attr)
-	{
-		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name attribute");
-		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
-		return;
-	}
-	EXTRACT_NS_AND_TAGNAME(name_attr, ns, tagname, commandInfo->element);
-	if (xplMacroLookup(commandInfo->element->parent, ns? ns->href: NULL, tagname))
+	if (xplMacroLookup(commandInfo->element->parent, href, params->name.ncname))
 	{
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
-		commandInfo->prologue_error = xmlNewDocNode(commandInfo->element->doc, ns, tagname, NULL);
+		/* use prologue_error as a buffer for the macro trigger node */
+		commandInfo->prologue_error = xmlNewDocNode(commandInfo->element->doc, params->name.ns, params->name.ncname, NULL);
 	}
-	XPL_FREE(name_attr);
 }
 
 void xplCmdReplaceIfUndefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
@@ -37,12 +54,3 @@ void xplCmdReplaceIfUndefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPt
 	else
 		ASSIGN_RESULT(xplDetachContent(commandInfo->element), false, true);
 }
-
-xplCommand xplReplaceIfUndefinedCommand = { 
-	.prologue = xplCmdReplaceIfUndefinedPrologue, 
-	.epilogue = xplCmdReplaceIfUndefinedEpilogue,
-	.initializer = NULL,
-	.finalizer = NULL,
-	.flags = 0
-};
-
