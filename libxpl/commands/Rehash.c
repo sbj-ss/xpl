@@ -3,6 +3,14 @@
 
 void xplCmdRehashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+xplCommand xplRehashCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdRehashEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
+
 void xplCmdRehashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	if (!xplSessionGetSaMode(commandInfo->document->session))
@@ -15,5 +23,3 @@ void xplCmdRehashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplLockThreads(false);
 	ASSIGN_RESULT(NULL, false, true);
 }
-
-xplCommand xplRehashCommand = { NULL, xplCmdRehashEpilogue };
