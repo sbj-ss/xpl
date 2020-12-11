@@ -3,10 +3,10 @@
 #* (c) НИЛ ИТС, Подковырин, 2006-2020     *
 #******************************************
 
-INCLUDE = -I./include -I../parser/include -I ../civetweb/include -I/usr/include/libxml2
+INCLUDE = -I./include -I../libxpl/include -I ../civetweb/include -I/usr/include/libxml2
 LIBS = -lxml2 -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -ldl -lpthread -lcivetweb
 WARNINGS = -Wall -Werror
-CFLAGS = -L../parser -L../civetweb $(WARNINGS)
+CFLAGS = -L../libxpl -L../civetweb $(WARNINGS)
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -fstack-protector
 endif

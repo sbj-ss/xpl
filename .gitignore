@@ -34,9 +34,9 @@
 /test_anything
 /test_stuff
 # executables
-/cmdline/cmdline
+/libxpl/tests/Runner
+/xpl/xpl
 /xplweb/xplweb
-/parser/tests/Runner
 /xts/Runner
 # build directories
 **/build/

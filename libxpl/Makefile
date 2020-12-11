@@ -5,7 +5,8 @@
 
 INCLUDE = -I./include -I./tests/include -I../xts/include -I/usr/include/libxml2
 LIBS = -lxml2 -lxpl -lonig -ltidy -lcrypto -lidn -lodbc
-WARNINGS = -Wall -Werror
+WARNINGS = -Wall -Wmissing-prototypes -Wshadow -Werror
+# -Wextra 
 FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_DB_ODBC
 CFLAGS = -fpic -D_IN_DLL $(FEATURES) $(WARNINGS)
 ifeq ($(DEBUG), 1)

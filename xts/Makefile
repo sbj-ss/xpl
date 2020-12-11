@@ -3,7 +3,7 @@
 #* (c) НИЛ ИТС, Подковырин, 2006-2020     *
 #******************************************
 
-INCLUDE = -I./include -I/usr/include/libxml2 -I ../parser/include
+INCLUDE = -I./include -I/usr/include/libxml2 -I ../libxpl/include
 LIB = -L.
 LIBS = -lxml2 -lxts
 WARNINGS = -Wall -Werror
