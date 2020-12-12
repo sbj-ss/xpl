@@ -5,6 +5,14 @@
 
 void xplCmdRestartEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+xplCommand xplRestartCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdRestartEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
+
 void xplCmdRestartEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	if (!xplSessionGetSaMode(commandInfo->document->session))
@@ -16,5 +24,3 @@ void xplCmdRestartEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xprSpawnProcessCopy();
 	xprShutdownApp();
 }
-
-xplCommand xplRestartCommand = { NULL, xplCmdRestartEpilogue };
