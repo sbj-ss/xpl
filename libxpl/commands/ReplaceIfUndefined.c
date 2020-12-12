@@ -37,7 +37,7 @@ xplCommand xplReplaceIfUndefinedCommand = {
 void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo)
 {
 	xplCmdReplaceIfUndefinedParamsPtr params = (xplCmdReplaceIfUndefinedParamsPtr) commandInfo->params;
-	xmlChar *href = params->name.ns? params->name.ns->href: NULL;
+	const xmlChar *href = params->name.ns? params->name.ns->href: NULL;
 
 	if (xplMacroLookup(commandInfo->element->parent, href, params->name.ncname))
 	{
