@@ -3,7 +3,7 @@
 #include <libxpl/xplsession.h>
 #include <libxpl/xpltree.h>
 
-void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo);
+void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdAddDBParams
 {
