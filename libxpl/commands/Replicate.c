@@ -6,6 +6,46 @@
 void xplCmdReplicatePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdReplicateParams
+{
+	int before_count;
+	int after_count;
+	bool repeat;
+} xplCmdReplicateParams, *xplCmdReplicateParamsPtr;
+
+static const xplCmdReplicateParams params_stencil =
+{
+	.before_count = 1,
+	.after_count = 1,
+	.repeat = false
+};
+
+xplCommand xplReplicateCommand =
+{
+	.prologue = xplCmdReplicatePrologue,
+	.epilogue = xplCmdReplicateEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE | XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdReplicateParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "beforecount",
+			.type = XPL_CMD_PARAM_TYPE_INT,
+			.value_stencil = &params_stencil.before_count
+		}, {
+			.name = BAD_CAST "aftercount",
+			.type = XPL_CMD_PARAM_TYPE_INT,
+			.value_stencil = &params_stencil.after_count
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 static xmlNodePtr _replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
 {
 	xmlNodePtr cur, tail, ret = NULL;
@@ -16,18 +56,10 @@ static xmlNodePtr _replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
 	for (i = 0; i < count; i++)
 	{
 		cur = xplCloneNodeList(src, parent, src->doc);
-#ifdef _DEBUG
-		if (!cur)
-		{
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-			xprDebugBreak();
-		}
-#endif
 		if (!ret) 
 		{
 			ret = tail = cur;
-		}
-		else {
+		} else {
 			tail->next = cur;
 			cur->prev = tail;
 		}
@@ -38,75 +70,30 @@ static xmlNodePtr _replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
 
 void xplCmdReplicatePrologue(xplCommandInfoPtr commandInfo)
 {
-#define BEFORE_COUNT_ATTR (BAD_CAST "beforecount")
-
-	xmlChar *before_count_attr = NULL;
-	int before_count = 1;
+	xplCmdReplicateParamsPtr params = (xplCmdReplicateParamsPtr) commandInfo->params;
 	xmlNodePtr old_children, new_children = NULL;
 
-	before_count_attr = xmlGetNoNsProp(commandInfo->element, BEFORE_COUNT_ATTR);
-	if (before_count_attr)
-	{
-		if (sscanf((const char*) before_count_attr, "%d", &before_count) != 1)
-		{
-			commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "beforecount (%s) is not a number", before_count_attr);
-			xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
-			goto done;
-		}
-	}
-	if (before_count != 1)
+	if (params->before_count != 1)
 	{
 		old_children = xplDetachContent(commandInfo->element);
-		if (before_count > 1)
-			new_children = _replicateNodes(old_children, before_count, commandInfo->element);
+		if (params->before_count > 1)
+			new_children = _replicateNodes(old_children, params->before_count, commandInfo->element);
 		xplDocDeferNodeListDeletion(commandInfo->document, old_children);
 		xplSetChildren(commandInfo->element, new_children);
 	}
-done:
-	if (before_count_attr) XPL_FREE(before_count_attr);
 }
 
 void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define AFTER_COUNT_ATTR (BAD_CAST "aftercount")
-#define REPEAT_ATTR (BAD_CAST "repeat")
+	xplCmdReplicateParamsPtr params = (xplCmdReplicateParamsPtr) commandInfo->params;
+	xmlNodePtr ret = NULL;
 
-	xmlChar *after_count_attr = NULL;
-	int after_count = 1;
-	bool repeat;
-	xmlNodePtr ret = NULL, error;
-
-	if (commandInfo->prologue_error)
-	{
-		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
-		goto done;
-	}
-
-	after_count_attr = xmlGetNoNsProp(commandInfo->element, AFTER_COUNT_ATTR);
-	if (after_count_attr)
-	{
-		if (sscanf((const char*) after_count_attr, "%d", &after_count) != 1)
-		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "aftercount (%s) is not a number", after_count_attr), true, true);
-			goto done;
-		}
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if (after_count > 1)
-		ret = _replicateNodes(commandInfo->element->children, after_count, commandInfo->element->parent);
-	else if (after_count == 1) {
+	if (params->after_count > 1)
+		ret = _replicateNodes(commandInfo->element->children, params->after_count, commandInfo->element->parent);
+	else if (params->after_count == 1) {
 		ret = xplDetachContent(commandInfo->element);
 		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
 	} else
 		ret = NULL;
-	ASSIGN_RESULT(ret, repeat, true);	
-done:
-	if (after_count_attr)
-		XPL_FREE(after_count_attr);
+	ASSIGN_RESULT(ret, params->repeat, true);
 }
-
-xplCommand xplReplicateCommand = { xplCmdReplicatePrologue, xplCmdReplicateEpilogue };
