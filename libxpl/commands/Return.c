@@ -4,6 +4,14 @@
 
 void xplCmdReturnEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+xplCommand xplReturnCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdReturnEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
+
 void xplCmdReturnEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 /* TODO repeat */
@@ -16,5 +24,3 @@ void xplCmdReturnEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplDeleteNeighbours(commandInfo->element, commandInfo->document->current_macro->caller, true);
 	ASSIGN_RESULT(NULL, false, true);
 }
-
-xplCommand xplReturnCommand = { NULL, xplCmdReturnEpilogue };
