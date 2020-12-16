@@ -7,18 +7,57 @@
 
 void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdSessionGetObjectParams
+{
+	xmlChar *name;
+	xmlChar *select;
+	bool repeat;
+	bool thread_local;
+} xplCmdSessionGetObjectParams, *xplCmdSessionGetObjectParamsPtr;
+
+static const xplCmdSessionGetObjectParams params_stencil =
+{
+	.name = NULL,
+	.select = NULL,
+	.repeat = true,
+	.thread_local = false
+};
+
+xplCommand xplSessionGetObjectCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdSessionGetObjectEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdSessionGetObjectParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = BAD_CAST "select",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.select
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = BAD_CAST "threadlocal",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.thread_local
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR (BAD_CAST "name")
-#define SELECT_ATTR (BAD_CAST "select")
-#define REPEAT_ATTR (BAD_CAST "repeat")
-#define THREADLOCAL_ATTR (BAD_CAST "threadlocal")
-	xmlChar *name_attr = NULL;
-	xmlChar *select_attr = NULL;
-	bool repeat;
-	bool threadlocal;
+	xplCmdSessionGetObjectParamsPtr params = (xplCmdSessionGetObjectParamsPtr) commandInfo->params;
 	xmlXPathObjectPtr sel = NULL;
-	xmlNodePtr obj, head = NULL, tail, cur, error;
+	xmlNodePtr obj, head, tail, cur;
 	size_t i;
 
 	if (!commandInfo->document->main->session)
@@ -26,33 +65,21 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
+	if (!params->name) // TODO select?..
 	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	if (!name_attr)
-	{
-		cur = xplSessionGetAllObjects(commandInfo->document->main->session);
-		cur = xplCloneNodeList(cur, commandInfo->element->parent, commandInfo->element->doc);
-		ASSIGN_RESULT(cur, repeat, true);
+		obj = xplSessionGetAllObjects(commandInfo->document->main->session);
+		obj = xplCloneNodeList(obj, commandInfo->element->parent, commandInfo->element->doc);
+		ASSIGN_RESULT(obj, params->repeat, true);
 		return;
 	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, THREADLOCAL_ATTR, &threadlocal, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if (threadlocal)
-		name_attr = xstrAppendThreadIdToString(name_attr, xprGetCurrentThreadId());
-	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
-	obj = xplSessionGetObject(commandInfo->document->main->session, name_attr);
+	if (params->thread_local)
+		params->name = xstrAppendThreadIdToString(params->name, xprGetCurrentThreadId());
+	obj = xplSessionGetObject(commandInfo->document->main->session, params->name);
 	if (obj)
 	{
-		if (select_attr)
+		if (params->select)
 		{
-			sel = xplSelectNodes(commandInfo, obj, select_attr);
+			sel = xplSelectNodes(commandInfo, obj, params->select); // note: we can't delegate this to params handling due to the different base
 			if (sel)
 			{
 				head = tail = NULL;
@@ -60,39 +87,31 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 				{
 					for (i = 0; i < (size_t) sel->nodesetval->nodeNr; i++)
 					{
+						cur = xplCloneNode(sel->nodesetval->nodeTab[i], commandInfo->element->parent, commandInfo->element->doc);
 						if (head)
 						{
-							cur = xplCloneNode(sel->nodesetval->nodeTab[i], commandInfo->element->parent, commandInfo->element->doc);
 							tail->next = cur;
 							cur->prev = tail;
 							tail = cur;
-						} else {
-							head = tail = xplCloneNode(sel->nodesetval->nodeTab[i], commandInfo->element->parent, commandInfo->element->doc);
-						}
+						} else
+							head = tail = cur;
 					}
 				} else if (sel->type != XPATH_UNDEFINED) {
 					head = xmlNewDocText(commandInfo->element->doc, NULL);
 					head->content = xmlXPathCastToString(sel);
-					repeat = false;
+					params->repeat = false;
 				} else {
-					head = xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expresssion (%s) evaluated to undef", select_attr);
-					repeat = true;
+					head = xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expresssion (%s) evaluated to undef", params->select);
+					params->repeat = true;
 				}
+				xmlXPathFreeObject(sel);
 			} else {
-				head = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr);
-				repeat = true;
+				head = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", params->select);
+				params->repeat = true;
 			}
 		} else 
 			head = xplCloneNodeList(obj->children, commandInfo->element->parent, commandInfo->element->doc);
-	}
-	ASSIGN_RESULT(head, repeat, true);
-done:
-	if (name_attr)
-		XPL_FREE(name_attr);
-	if (select_attr)
-		XPL_FREE(select_attr);
-	if (sel)
-		xmlXPathFreeObject(sel);
+	} else
+		head = NULL;
+	ASSIGN_RESULT(head, params->repeat && head, true);
 }
-
-xplCommand xplSessionGetObjectCommand = { NULL, xplCmdSessionGetObjectEpilogue };
