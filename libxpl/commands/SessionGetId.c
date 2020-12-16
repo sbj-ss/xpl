@@ -3,6 +3,14 @@
 
 void xplCmdSessionGetIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+xplCommand xplSessionGetIdCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdSessionGetIdEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
+
 void xplCmdSessionGetIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xmlNodePtr ret;
@@ -15,5 +23,3 @@ void xplCmdSessionGetIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 		ret = NULL;
 	ASSIGN_RESULT(ret, false, true);
 }
-
-xplCommand xplSessionGetIdCommand = { NULL, xplCmdSessionGetIdEpilogue };
