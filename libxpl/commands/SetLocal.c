@@ -5,18 +5,38 @@
 void xplCmdSetLocalPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdSetLocalParams
+{
+	bool repeat;
+} xplCmdSetLocalParams, *xplCmdSetLocalParamsPtr;
+
+static const xplCmdSetLocalParams params_stencil =
+{
+	.repeat = false
+};
+
 xplCommand xplSetLocalCommand = {
 	.prologue = xplCmdSetLocalPrologue,
 	.epilogue = xplCmdSetLocalEpilogue,
-	.initializer = NULL,
-	.finalizer = NULL,
-	.flags = XPL_CMD_FLAG_CONTENT_SAFE
+	.flags = XPL_CMD_FLAG_CONTENT_SAFE | XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdSetLocalParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = NULL
+		}
+	}
 };
 
 void xplCmdSetLocalPrologue(xplCommandInfoPtr commandInfo)
 {
 	xplParamsPtr old_params = commandInfo->document->environment;
 	xplParamsPtr tmp_params = NULL;
+
 	if (old_params)
 	{
 		tmp_params = xplParamsCopy(old_params);
@@ -27,10 +47,8 @@ void xplCmdSetLocalPrologue(xplCommandInfoPtr commandInfo)
 
 void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define REPEAT_ATTR BAD_CAST("repeat")
+	xplCmdSetLocalParamsPtr params = (xplCmdSetLocalParamsPtr) commandInfo->params;
 	xplParamsPtr old_params, tmp_params;
-	bool repeat;
-	xmlNodePtr error;
 	
 	tmp_params = commandInfo->document->environment;
 	if (tmp_params)
@@ -39,10 +57,6 @@ void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	commandInfo->document->environment = old_params;
 	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
 		ASSIGN_RESULT(NULL, false, false);
-	else {
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
-			ASSIGN_RESULT(error, true, true);
-		else
-			ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
-	}
+	else
+		ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
 }
