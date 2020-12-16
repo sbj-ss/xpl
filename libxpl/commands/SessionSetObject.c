@@ -6,34 +6,54 @@
 
 void xplCmdSessionSetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdSessionSetObjectParams
+{
+	xmlChar *name;
+	bool thread_local;
+} xplCmdSessionSetObjectParams, *xplCmdSessionSetObjectParamsPtr;
+
+static const xplCmdSessionSetObjectParams params_stencil =
+{
+	.name = NULL,
+	.thread_local = false
+};
+
+xplCommand xplSessionSetObjectCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdSessionSetObjectEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdSessionSetObjectParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.required = true,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = BAD_CAST "threadlocal",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.thread_local
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdSessionSetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR BAD_CAST "name"
-#define THREADLOCAL_ATTR (BAD_CAST "threadlocal")
-	xmlChar *name_attr = NULL;
-	bool threadlocal;
-	xmlNodePtr error;
+	xplCmdSessionSetObjectParamsPtr params = (xplCmdSessionSetObjectParamsPtr) commandInfo->params;
 
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	if (!name_attr || !*name_attr)
+	if (!*params->name)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "name attribute not specified or empty"), true, true);
-		goto done;
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "name attribute is empty"), true, true);
+		return;
 	}
 	if (!commandInfo->document->main->session)
 		commandInfo->document->main->session = xplSessionCreateWithAutoId();
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, THREADLOCAL_ATTR, &threadlocal, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if (threadlocal)
-		name_attr = xstrAppendThreadIdToString(name_attr, xprGetCurrentThreadId());
-	xplSessionSetObject(commandInfo->document->main->session, commandInfo->element, name_attr);
-done:
-	if (name_attr)
-		XPL_FREE(name_attr);
+	if (params->thread_local)
+		params->name = xstrAppendThreadIdToString(params->name, xprGetCurrentThreadId());
+	xplSessionSetObject(commandInfo->document->main->session, commandInfo->element, params->name);
 	ASSIGN_RESULT(NULL, false, true);
 }
-
-xplCommand xplSessionSetObjectCommand = { NULL, xplCmdSessionSetObjectEpilogue };
