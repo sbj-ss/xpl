@@ -103,9 +103,9 @@ commands/Return.c\
 commands/Save.c\
 commands/Serialize.c\
 commands/SessionClear.c\
+commands/SessionContainsObject.c\
 commands/SessionGetId.c\
 commands/SessionGetObject.c\
-commands/SessionIsPresent.c\
 commands/SessionRemoveObject.c\
 commands/SessionSetObject.c\
 commands/SetLocal.c\

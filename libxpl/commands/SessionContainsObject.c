@@ -14,7 +14,7 @@ typedef struct _xplCmdSessionContainsObjectParams
 static const xplCmdSessionContainsObjectParams params_stencil =
 {
 	.name = NULL,
-	.repeat = false
+	.thread_local = false
 };
 
 xplCommand xplSessionContainsObjectCommand =
