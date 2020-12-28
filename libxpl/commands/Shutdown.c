@@ -5,6 +5,14 @@
 
 void xplCmdShutdownEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+xplCommand xplShutdownCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdShutdownEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
+
 void xplCmdShutdownEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	if (xplSessionGetSaMode(commandInfo->document->session))
@@ -12,5 +20,3 @@ void xplCmdShutdownEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	else
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 }
-
-xplCommand xplShutdownCommand = { NULL, xplCmdShutdownEpilogue };
