@@ -117,7 +117,8 @@ typedef void (*xplParamsScanner)(void *payload, void *data, XML_HCBNC xmlChar *n
 
 XPLPUBFUN xplParamsPtr XPLCALL
 	xplParamsCreate(void);
-XPLPUBFUN int XPLCALL xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xplParamsPtr ret);
+XPLPUBFUN int XPLCALL
+	xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xplParamsPtr ret);
 XPLPUBFUN xplParamsPtr XPLCALL
 	xplParamsCopy(xplParamsPtr params);
 XPLPUBFUN xplParamValuesPtr XPLCALL
