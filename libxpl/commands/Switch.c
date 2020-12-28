@@ -5,52 +5,60 @@
 void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdSwitchParams
+{
+	xmlXPathObjectPtr key;
+	bool repeat;
+} xplCmdSwitchParams, *xplCmdSwitchParamsPtr;
+
+static const xplCmdSwitchParams params_stencil =
+{
+	.key = NULL,
+	.repeat = false
+};
+
+xplCommand xplSwitchCommand = {
+	.prologue = xplCmdSwitchPrologue,
+	.epilogue = xplCmdSwitchEpilogue,
+	.flags = XPL_CMD_FLAG_CONTENT_SAFE | XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE | XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdSwitchParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "key",
+			.type = XPL_CMD_PARAM_TYPE_XPATH,
+			.required = true,
+			.extra.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_ANY,
+			.value_stencil = &params_stencil.key
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = NULL
+		}
+	}
+};
+
+
 void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo)
 {
-#define KEY_ATTR (BAD_CAST "key")
-	xmlChar *key_attr;
-	xmlXPathObjectPtr nodes = NULL;
-	if ((key_attr = xmlGetNoNsProp(commandInfo->element, KEY_ATTR)))
-	{
-		nodes = xplSelectNodes(commandInfo, commandInfo->element, key_attr);
-		if (!nodes)
-			commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid key XPath expression \"%s\"", key_attr);
-		XPL_FREE(key_attr);
-	} else 
-		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "missing key attribute");
-	if (commandInfo->prologue_error)
-		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
-	else
-		commandInfo->element->content = (xmlChar*) nodes;
+	xplCmdSwitchParamsPtr params = (xplCmdSwitchParamsPtr) commandInfo->params;
+
+	commandInfo->element->content = (xmlChar*) params->key;
 }
 
 void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define REPEAT_ATTR (BAD_CAST "repeat")
-	bool repeat;
+	xplCmdSwitchParamsPtr params = (xplCmdSwitchParamsPtr) commandInfo->params;
 	xmlXPathObjectPtr nodes = (xmlXPathObjectPtr) commandInfo->element->content;
-	xmlNodePtr error;
 
 	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
 	{
 		if (nodes->nodesetval)
 			nodes->nodesetval->nodeNr = 0;
-		xmlXPathFreeObject(nodes);
 		ASSIGN_RESULT(NULL, false, false);
-	} else if (nodes) {
-		xmlXPathFreeObject(nodes);
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
-			ASSIGN_RESULT(error, true, true);
-		else
-			ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
-	} else
-		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
+	} else if (nodes)
+		ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+	xmlXPathFreeObject(nodes);
 }
-
-xplCommand xplSwitchCommand = { 
-	.prologue = xplCmdSwitchPrologue, 
-	.epilogue = xplCmdSwitchEpilogue,
-	.initializer = NULL,
-	.finalizer = NULL,
-	.flags = XPL_CMD_FLAG_CONTENT_SAFE
-};
