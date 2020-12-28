@@ -2,6 +2,14 @@
 
 void xplCmdStackIsEmptyEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+xplCommand xplStackIsEmptyCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdStackIsEmptyEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
+
 void xplCmdStackIsEmptyEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xmlNodePtr ret;
@@ -14,5 +22,3 @@ void xplCmdStackIsEmptyEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	ret = xmlNewDocText(commandInfo->document->document, ret_value);
 	ASSIGN_RESULT(ret, false, true);
 }
-
-xplCommand xplStackIsEmptyCommand = { NULL, xplCmdStackIsEmptyEpilogue };
