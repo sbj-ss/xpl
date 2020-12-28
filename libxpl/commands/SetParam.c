@@ -5,83 +5,99 @@
 
 void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
-#define SP_MODE_ADD 1
-#define SP_MODE_REPLACE 2
+typedef enum _xplCmdSetParamMode
+{
+	SET_PARAM_MODE_ADD,
+	SET_PARAM_MODE_REPLACE
+} xplCmdSetParamMode;
+
+typedef struct _xplCmdSetParamParams
+{
+	xmlChar *name;
+	xplCmdSetParamMode mode;
+} xplCmdSetParamParams, *xplCmdSetParamParamsPtr;
+
+static const xplCmdSetParamParams params_stencil =
+{
+	.name = NULL,
+	.mode = SET_PARAM_MODE_REPLACE
+};
+
+xplCmdParamDictValue mode_dict[] =
+{
+	{ .name = BAD_CAST "add", .value = SET_PARAM_MODE_ADD },
+	{ .name = BAD_CAST "replace", .value = SET_PARAM_MODE_REPLACE },
+	{ .name = NULL }
+};
+
+xplCommand xplSetParamCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdSetParamEpilogue,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdSetParamParams),
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.required = true,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = BAD_CAST "mode",
+			.type = XPL_CMD_PARAM_TYPE_DICT,
+			.extra.dict_values = mode_dict,
+			.value_stencil = &params_stencil.mode
+		}, {
+			.name = NULL
+		}
+	}
+};
 
 void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR (BAD_CAST "name")
-#define MODE_ATTR (BAD_CAST "mode")
-	xmlChar *name_attr = NULL;
-	xmlChar *mode_attr = NULL;
-	int mode = SP_MODE_REPLACE;
-	xmlChar *txt;
+	xplCmdSetParamParamsPtr params = (xplCmdSetParamParamsPtr) commandInfo->params;
 	xplParamResult res;
 	xmlNodePtr err_node = NULL;
 
 	ASSIGN_RESULT(NULL, false, true);
 	if (!commandInfo->document->environment)
-		goto done;
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	if (!name_attr)
+		return;
+	switch (params->mode)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name attribute"), true, true);
-		goto done;
-	}
-	mode_attr = xmlGetNoNsProp(commandInfo->element, MODE_ATTR);
-	if (mode_attr)
-	{
-		if (!xmlStrcasecmp(mode_attr, BAD_CAST "add"))
-			mode = SP_MODE_ADD;
-		else if (!xmlStrcasecmp(mode_attr, BAD_CAST "replace"))
-			mode = SP_MODE_REPLACE;
-		else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown mode: \"%s\"", mode_attr), true, true);
-			goto done;
-		}
-	}
-	if (!xplCheckNodeListForText(commandInfo->element->children))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
-		goto done;
-	}
-	txt = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, true);
-	switch (mode)
-	{
-		case SP_MODE_ADD: res = xplParamAddValue(commandInfo->document->environment, name_attr, txt, XPL_PARAM_TYPE_USERDATA); break;
-		case SP_MODE_REPLACE: res = xplParamReplaceValue(commandInfo->document->environment, name_attr, txt, XPL_PARAM_TYPE_USERDATA); break;		
+		case SET_PARAM_MODE_ADD:
+			res = xplParamAddValue(commandInfo->document->environment, params->name, commandInfo->content, XPL_PARAM_TYPE_USERDATA);
+			break;
+		case SET_PARAM_MODE_REPLACE:
+			res = xplParamReplaceValue(commandInfo->document->environment, params->name, commandInfo->content, XPL_PARAM_TYPE_USERDATA);
+			break;
+		default:
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
+			return;
 	}
 	switch (res)
 	{
-	case XPL_PARAM_RES_OK:
-		break;
-	case XPL_PARAM_RES_OUT_OF_MEMORY:
-		err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "out of memory");
-		break;
-	case XPL_PARAM_RES_INVALID_INPUT:
-		err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "internal interpreter error, possibly out of memory");
-		break;
-	case XPL_PARAM_RES_TYPE_CLASH:
-		err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter with the same name (%s), but of another type already exists", name_attr);
-		break;
-	case XPL_PARAM_RES_READ_ONLY:
-		err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter \"%s\" is read-only", name_attr);
-		break;
-	case XPL_PARAM_RES_INTERNAL_ERROR:
-		err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "internal hash error, possibly out of memory");
-		break;
-	default:
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "internal error");
+		case XPL_PARAM_RES_OK:
+			break;
+		case XPL_PARAM_RES_OUT_OF_MEMORY:
+			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "out of memory");
+			break;
+		case XPL_PARAM_RES_INVALID_INPUT:
+			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "internal interpreter error, possibly out of memory");
+			break;
+		case XPL_PARAM_RES_TYPE_CLASH:
+			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter with the same name (%s), but of another type already exists", params->name);
+			break;
+		case XPL_PARAM_RES_READ_ONLY:
+			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter \"%s\" is read-only", params->name);
+			break;
+		case XPL_PARAM_RES_INTERNAL_ERROR:
+			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "internal hash error, possibly out of memory");
+			break;
+		default:
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
+			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "internal error");
 	}
 	if (err_node)
-	{
-		XPL_FREE(txt);
 		ASSIGN_RESULT(err_node, true, true);
-	}
-done:
-	if (name_attr) XPL_FREE(name_attr);
-	if (mode_attr) XPL_FREE(mode_attr);
 }
-
-xplCommand xplSetParamCommand = { NULL, xplCmdSetParamEpilogue };
