@@ -1288,6 +1288,7 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 	/* We'll have to create all wrappers right now as certain commands expect them.
 	   Set "prologue-main-epilogue" links (Cartesian product).
 	 */
+	// TODO don't create all docs immediately (main may be overridden)
 	prologue_file = xplMapDocWrapper(relativePath, XPL_DOC_ROLE_PROLOGUE);
 	main_file = xplMapDocWrapper(relativePath, XPL_DOC_ROLE_MAIN);
 	if (main_file)
