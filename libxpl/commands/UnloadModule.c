@@ -3,25 +3,41 @@
 
 void xplCmdUnloadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdUnloadModuleParams
+{
+	xmlChar *name;
+} xplCmdUnloadModuleParams, *xplCmdUnloadModuleParamsPtr;
+
+static const xplCmdUnloadModuleParams params_stencil =
+{
+	.name = NULL
+};
+
+xplCommand xplUnloadModuleCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdUnloadModuleEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdUnloadModuleParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.required = true,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdUnloadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR (BAD_CAST "name")
+	xplCmdUnloadModuleParamsPtr params = (xplCmdUnloadModuleParamsPtr) commandInfo->params;
 
-	xmlChar *name_attr;
-	xmlNodePtr ret = NULL;
-
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	if (!name_attr)
-	{
-		ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "no module name specified");
-		goto done;
-	}
 	xplLockThreads(true);
-	xplUnloadModule(name_attr);
+	xplUnloadModule(params->name); // TODO check if loaded
 	xplLockThreads(false);
-done:
-	ASSIGN_RESULT(ret, true, true);
-	if (name_attr) XPL_FREE(name_attr);
+	ASSIGN_RESULT(NULL, false, true);
 }
-
-xplCommand xplUnloadModuleCommand = { NULL, xplCmdUnloadModuleEpilogue };
