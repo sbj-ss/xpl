@@ -5,20 +5,23 @@
 
 void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+xplCommand xplUriEncodeCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdUriEncodeEpilogue,
+	.flags = XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
+	.params_stencil = NULL
+};
+
 void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xmlChar *content = NULL, *uri;
+	xmlChar *uri;
 	xmlNodePtr ret;
 
-	if (!xplCheckNodeListForText(commandInfo->element->children))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "element content is non-text"), true, true);
-		return;
-	}
 #ifdef _USE_LIBIDN
-	if ((content = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1)))
+	if (commandInfo->content)
 	{
-		uri = xstrEncodeUriIdn(content);
+		uri = xstrEncodeUriIdn(commandInfo->content);
 		if (uri)
 		{
 			ret = xmlNewDocText(commandInfo->element->doc, NULL);
@@ -26,12 +29,9 @@ void xplCmdUriEncodeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		} else
 			ret = NULL;
 		ASSIGN_RESULT(ret, false, true);
-		XPL_FREE(content);
 	} else
 		ASSIGN_RESULT(NULL, false, true);
 #else
 	ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "Interpreter is compiled without IDN support"), true, true);
 #endif
 }
-
-xplCommand xplUriEncodeCommand = { NULL, xplCmdUriEncodeEpilogue };
