@@ -6,24 +6,43 @@
 
 void xplCmdSetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
-static xmlNodePtr _checkNodelist(xmlNodePtr src, int *elCount)
+xplCommand xplSetOutputDocumentCommand =
 {
-	xmlNodePtr ret = NULL;
+	.prologue = NULL,
+	.epilogue = xplCmdSetOutputDocumentEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
 
-	while (src)
+typedef enum _ChildNodeCount {
+	CNC_ZERO,
+	CNC_ONE,
+	CNC_MANY
+} ChildNodeCount;
+
+static xmlNodePtr _checkChildNodes(xmlNodePtr src, ChildNodeCount *elCount)
+{
+	xmlNodePtr ret = NULL, cur = src->children;
+
+	if (!cur)
 	{
-		if (src->type == XML_ELEMENT_NODE)
+		*elCount = CNC_ZERO;
+		return NULL;
+	}
+	while (cur)
+	{
+		if (cur->type == XML_ELEMENT_NODE)
 		{
 			if (ret)
 			{
-				*elCount = 2;
+				*elCount = CNC_MANY;
 				return NULL;
 			} else
-				ret = src;
+				ret = cur;
 		}
-		src = src->next;
+		cur = cur->next;
 	}
-	*elCount = (ret? 1: 0);
+	*elCount = CNC_ONE;
 	return ret;
 }
 
@@ -31,26 +50,27 @@ void xplCmdSetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 {
 	xplDocumentPtr xpl_doc;
 	xmlDocPtr xml_doc = NULL;
-	int element_count;
+	ChildNodeCount element_count;
 	xmlNodePtr content;
 
+	// TODO перебрать это всё
 	if ((commandInfo->document->role != XPL_DOC_ROLE_EPILOGUE) && (commandInfo->document->role != XPL_DOC_ROLE_PROLOGUE))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "this command can only be called from prologue or epilogue"), true, true);
-		goto done;
+		return;
 	}
-	content = _checkNodelist(commandInfo->element->children, &element_count);
-	if (!element_count)
+	content = _checkChildNodes(commandInfo->element, &element_count);
+	if (element_count == CNC_ZERO)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no root node found"), true, true);
-		goto done;
+		return;
 	}
-	if (element_count > 1)
+	if (element_count == CNC_MANY)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "multiple root nodes found"), true, true);
-		goto done;
+		return;
 	}
-	content = xplCloneNode(content, NULL, NULL);
+	content = xplCloneNode(content, NULL, NULL); // TODO так нельзя
 	xpl_doc = commandInfo->document->main;
 	if (!xpl_doc)
 	{
@@ -59,7 +79,6 @@ void xplCmdSetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 		xpl_doc->prologue = commandInfo->document->prologue;
 		xpl_doc->epilogue = commandInfo->document->epilogue;
 		commandInfo->document->main = xpl_doc;
-		xml_doc = xpl_doc->document;
 	}
 	if ((xml_doc = xpl_doc->document))
 		xmlFreeDoc(xml_doc);
@@ -68,8 +87,4 @@ void xplCmdSetOutputDocumentEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr
 	xpl_doc->document = xml_doc = xmlNewDoc(BAD_CAST "1.0");
 	xplSetChildren((xmlNodePtr) xml_doc, content);
 	ASSIGN_RESULT(NULL, false, true);
-done:
-	;
 }
-
-xplCommand xplSetOutputDocumentCommand = { NULL, xplCmdSetOutputDocumentEpilogue };
