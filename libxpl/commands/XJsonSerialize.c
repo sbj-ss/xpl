@@ -6,6 +6,52 @@
 
 void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdXJsonSerializeParams
+{
+	bool force_quotes;
+	bool strict_tag_names;
+	bool value_type_check;
+	bool single_quotes;
+} xplCmdXJsonSerializeParams, *xplCmdXJsonSerializeParamsPtr;
+
+static const xplCmdXJsonSerializeParams params_stencil =
+{
+	.force_quotes = false,
+	.strict_tag_names = false,
+	.value_type_check = false,
+	.single_quotes = false
+};
+
+xplCommand xplXJsonSerializeCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdXJsonSerializeEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdXJsonSerializeParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "forcequotes",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.force_quotes
+		}, {
+			.name = BAD_CAST "stricttagnames",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.strict_tag_names
+		}, {
+			.name = BAD_CAST "valuetypecheck",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.value_type_check
+		}, {
+			.name = BAD_CAST "singlequotes",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.single_quotes
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 #define XJSON_SCHEMA_URI BAD_CAST "http://www.ibm.com/xmlns/prod/2009/jsonx"
 
 static bool _checkJsonNs(xmlNsPtr ns, xmlNsPtr *cached_ns)
@@ -38,11 +84,8 @@ typedef enum _xjsonContainerType {
 
 typedef struct _xjsonSerializeCtxt {
 	xmlNodePtr command_element;
+	xplCmdXJsonSerializeParamsPtr params;
 	rbBufPtr buf;
-	bool force_quotes;
-	bool strict_tag_names;
-	bool value_type_check;
-	bool single_quotes;
 	/* will be changed by serializer */
 	xmlNsPtr ns;
 	xjsonContainerType container_type;
@@ -86,9 +129,9 @@ static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 
 	if (!xplCheckNodeListForText(cur->children))
 		return xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s\" has non-text nodes inside", cur->name);
-	if ((type == XJA_STRING) || (ctxt->force_quotes && (type != XJA_NULL)))
+	if ((type == XJA_STRING) || (ctxt->params->force_quotes && (type != XJA_NULL)))
 	{
-		if (rbAddDataToBuf(ctxt->buf, ctxt->single_quotes? "'": "\"", 1) != RB_RESULT_OK)
+		if (rbAddDataToBuf(ctxt->buf, ctxt->params->single_quotes? "'": "\"", 1) != RB_RESULT_OK)
 			return _createMemoryError(ctxt);
 	}
 	content = xmlNodeListGetString(cur->doc, cur->children, 1);
@@ -97,21 +140,21 @@ static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	case XJA_STRING:
 		break;
 	case XJA_NUMBER:
-		if (ctxt->value_type_check && !xstrIsNumber(content))
+		if (ctxt->params->value_type_check && !xstrIsNumber(content))
 		{
 			ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s\" content \"%s\" is non-numeric", cur->name, content);
 			goto done;
 		}
 		break;
 	case XJA_BOOLEAN:
-		if (ctxt->value_type_check && xmlStrcmp(content, BAD_CAST "false") && xmlStrcmp(content, BAD_CAST "true"))
+		if (ctxt->params->value_type_check && xmlStrcmp(content, BAD_CAST "false") && xmlStrcmp(content, BAD_CAST "true"))
 		{
 			ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s\" content \"%s\" is non-boolean", cur->name, content);
 			goto done;
 		}
 		break;
 	case XJA_NULL:
-		if (ctxt->value_type_check && content && *content)
+		if (ctxt->params->value_type_check && content && *content)
 		{
 			ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s\" content \"%s\" is non-empty", cur->name, content);
 			goto done;
@@ -125,9 +168,9 @@ static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 		ret = _createMemoryError(ctxt);
 		goto done;
 	}
-	if ((type == XJA_STRING) || (ctxt->force_quotes && (type != XJA_NULL)))
+	if ((type == XJA_STRING) || (ctxt->params->force_quotes && (type != XJA_NULL)))
 	{
-		if (rbAddDataToBuf(ctxt->buf, ctxt->single_quotes? "'": "\"", 1) != RB_RESULT_OK)
+		if (rbAddDataToBuf(ctxt->buf, ctxt->params->single_quotes? "'": "\"", 1) != RB_RESULT_OK)
 			return _createMemoryError(ctxt);
 	}
 done:
@@ -142,7 +185,7 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 
 	if (!cur->ns || !_checkJsonNs(cur->ns, &(ctxt->ns)))
 	{
-		if (ctxt->strict_tag_names)
+		if (ctxt->params->strict_tag_names)
 			return xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s:%s\" is not in XJSON namespace", cur->ns? cur->ns->prefix: NULL, cur->name);
 		return NULL;
 	}
@@ -190,7 +233,7 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 		ret = _xjsonSerializeAtom(cur, ctxt, XJA_BOOLEAN);
 	else if (!xmlStrcmp(cur->name, BAD_CAST "null")) 
 		ret = _xjsonSerializeAtom(cur, ctxt, XJA_NULL);
-	else if (ctxt->strict_tag_names)
+	else if (ctxt->params->strict_tag_names)
 		ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "unknown tag name: \"%s\"", cur->name);
 done:
 	if (name) XPL_FREE(name);
@@ -211,39 +254,14 @@ static xmlNodePtr _xjsonSerializeNodeList(xmlNodePtr first, xjsonSerializeCtxtPt
 
 void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define FORCE_QUOTES_ATTR (BAD_CAST "forcequotes")
-#define STRICT_TAG_NAMES_ATTR (BAD_CAST "stricttagnames")
-#define VALUE_TYPE_CHECK_ATTR (BAD_CAST "valuetypecheck")
-#define SINGLE_QUOTES_ATTR (BAD_CAST "singlequotes")
 	xjsonSerializeCtxt ctxt;
 	xmlNodePtr error = NULL, ret;
 
-	ctxt.buf = NULL;
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, FORCE_QUOTES_ATTR, &ctxt.force_quotes, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, STRICT_TAG_NAMES_ATTR, &ctxt.strict_tag_names, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, VALUE_TYPE_CHECK_ATTR, &ctxt.value_type_check, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-	if ((error = xplDecodeCmdBoolParam(commandInfo->element, SINGLE_QUOTES_ATTR, &ctxt.single_quotes, false)))
-	{
-		ASSIGN_RESULT(error, true, true);
-		goto done;
-	}
-
+	ctxt.params = (xplCmdXJsonSerializeParamsPtr) commandInfo->params;
 	ctxt.buf = rbCreateBufParams(1024, RB_GROW_DOUBLE, 2);
 	if (!ctxt.buf)
 	{
-		/* no memory for anything, xplCreateErrorNode() will likely fail, too */
+		/* no memory for anything, xplCreateErrorNode() will likely fail, too */ // TODO
 		ASSIGN_RESULT(NULL, false, true);
 		goto done;
 	}
@@ -266,5 +284,3 @@ void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 done:
 	if (ctxt.buf) rbFreeBuf(ctxt.buf);
 }
-
-xplCommand xplXJsonSerializeCommand = { NULL, xplCmdXJsonSerializeEpilogue };
