@@ -152,7 +152,7 @@ endif
 ifeq ($(THREADING_SUPPORT), 1)
 CFLAGS += -D_THREADING_SUPPORT
 COMMANDS +=\
-commands/StartThreadAndWait.c\
+commands/StartThreadsAndWait.c\
 commands/WaitForThreads.c
 endif
 
