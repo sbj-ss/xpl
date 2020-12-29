@@ -6,49 +6,74 @@
 
 void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdUriEscapeParamParams
+{
+	xmlChar *encoding;
+} xplCmdUriEscapeParamParams, *xplCmdUriEscapeParamParamsPtr;
+
+static const xplCmdUriEscapeParamParams params_stencil =
+{
+	.encoding = BAD_CAST "utf-8"
+};
+
+xplCommand xplUriEscapeParamCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdUriEscapeParamEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdUriEscapeParamParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "encoding",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.encoding
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define ENCODING_ATTR (BAD_CAST "encoding")
-	xmlChar *content, *param = NULL;
-	xmlChar *encoding_attr;
+	xplCmdUriEscapeParamParamsPtr params = (xplCmdUriEscapeParamParamsPtr) commandInfo->params;
+	xmlChar *param = NULL;
 	xmlNodePtr ret;
 
-	if (!xplCheckNodeListForText(commandInfo->element->children))
+	if (!commandInfo->content)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "element content is non-text"), true, true);
+		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
-	if ((content = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1)))
+	if (xmlStrcasecmp(params->encoding, BAD_CAST "utf-8"))
 	{
-		encoding_attr = xmlGetNoNsProp(commandInfo->element, ENCODING_ATTR);
-		if (encoding_attr)
+		if (xstrIconvString(
+			(char*) params->encoding,
+			"utf-8",
+			(char*) commandInfo->content,
+			(char*) commandInfo->content + xmlStrlen(commandInfo->content),
+			(char**) &param,
+			NULL
+		) == -1)
 		{
-			if (xmlStrcasecmp(encoding_attr, BAD_CAST "utf-8"))
-			{
-				if (xstrIconvString((char*) encoding_attr, "utf-8", (char*) content, (char*) content + xmlStrlen(content), (char**) &param, NULL) == -1)
-				{
-					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot convert parameter value \"%s\" to encoding \"%s\"", content, encoding_attr), true, true);
-					XPL_FREE(content);
-					XPL_FREE(encoding_attr);
-					return;
-				}
-				XPL_FREE(content);
-			} else
-				param = content;
-			XPL_FREE(encoding_attr);
-		} else
-			param = content;
-		if (param)
-		{
-			ret = xmlNewDocText(commandInfo->element->doc, NULL);
-			/* ToDo: there will be problems with utf-16 */
-			ret->content = xmlURIEscapeStr(param, NULL);
-			XPL_FREE(param);
-		} else
-			ret = NULL;
-		ASSIGN_RESULT(ret, false, true);
+			ASSIGN_RESULT(xplCreateErrorNode(
+				commandInfo->element,
+				BAD_CAST "cannot convert parameter value \"%s\" to encoding \"%s\"",
+				commandInfo->content,
+				params->encoding
+			), true, true);
+			return;
+		}
 	} else
-		ASSIGN_RESULT(NULL, false, true);
+		param = commandInfo->content;
+	if (param)
+	{
+		ret = xmlNewDocText(commandInfo->element->doc, NULL);
+		/* ToDo: there will be problems with utf-16 */
+		ret->content = xmlURIEscapeStr(param, NULL);
+		if (param != commandInfo->content)
+			XPL_FREE(param);
+	} else
+		ret = NULL;
+	ASSIGN_RESULT(ret, false, true);
 }
-
-xplCommand xplUriEscapeParamCommand = { NULL, xplCmdUriEscapeParamEpilogue };
