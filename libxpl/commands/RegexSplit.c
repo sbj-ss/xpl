@@ -78,16 +78,6 @@ xplCommand xplRegexSplitCommand =
 
 void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define SELECT_ATTR (BAD_CAST "select")
-#define REGEX_ATTR (BAD_CAST "regex")
-#define DELIMITER_ATTR (BAD_CAST "delimiter")
-#define REPEAT_ATTR (BAD_CAST "repeat")
-#define TAGNAME_ATTR (BAD_CAST "tagname")
-#define DELIMITERTAGNAME_ATTR (BAD_CAST "delimitertagname")
-#define KEEPDELIMITER_ATTR (BAD_CAST "keepdelimiter")
-#define KEEPEMPTYTAGS_ATTR (BAD_CAST "keepemptytags")
-#define UNIQUE_ATTR (BAD_CAST "unique")
-
 #define APPEND() \
 	{\
 		if (!ret)\
