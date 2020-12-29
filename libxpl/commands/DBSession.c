@@ -31,7 +31,6 @@ xplCommand xplDBSessionCommand =
 	}
 };
 
-#define REPEAT_ATTR (BAD_CAST "repeat")
 void xplCmdDBSessionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdDBSessionParamsPtr params = (xplCmdDBSessionParamsPtr) commandInfo->params;
