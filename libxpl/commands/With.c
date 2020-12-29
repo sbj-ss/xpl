@@ -171,7 +171,7 @@ done:
 
 void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	ASSIGN_RESULT(commandInfo->prologue_error, (commandInfo->prologue_error)? true: false, true);
+	ASSIGN_RESULT(commandInfo->prologue_error, !!commandInfo->prologue_error, true);
 }
 
 xplCommand xplWithCommand = 

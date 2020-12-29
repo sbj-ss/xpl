@@ -219,7 +219,7 @@ static bool xplInitLogger()
 			xplDisplayMessage(xplMsgWarning, BAD_CAST "cannot open log file \"%s\" for writing", cfgLogFileName);
 		XPL_FREE(log_file_full_name);
 		XPL_FREE(executable_path);
-		return log_file? true: false;
+		return !!log_file;
 	} else
 		return true;
 }

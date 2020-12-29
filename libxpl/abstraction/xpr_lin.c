@@ -87,7 +87,7 @@ bool xprCheckFilePresence(const xmlChar *path)
 	stat_ret = stat((char*) path, &st);
 	XPL_FREE(internal_path);
 	/* in EACCES etc error cases file isn't available anyway */
-	return stat_ret == 0? true: false;
+	return !stat_ret;
 }
 
 bool xprEnsurePathExistence(const xmlChar *path)
@@ -143,43 +143,42 @@ xmlChar* xprGetProgramPath(void)
 
 bool xprMutexInit(XPR_MUTEX *m)
 {
-	return pthread_mutex_init(m, NULL) == 0? true: false;
+	return !pthread_mutex_init(m, NULL);
 }
 
 bool xprMutexAcquire(XPR_MUTEX *m)
 {
-	return pthread_mutex_lock(m) == 0? true: false;
+	return !pthread_mutex_lock(m);
 }
 
 bool xprMutexRelease(XPR_MUTEX *m)
 {
-	return pthread_mutex_unlock(m) == 0? true: false;
+	return !pthread_mutex_unlock(m);
 }
 
 bool xprMutexCleanup(XPR_MUTEX *m)
 {
-	int ret = pthread_mutex_destroy(m);
-	return ret == 0? true: false;
+	return !pthread_mutex_destroy(m);
 }
 
 bool xprSemaphoreInit(XPR_SEMAPHORE *s, int initial_value)
 {
-	return sem_init(s, 0, initial_value) == 0? true: false;
+	return !sem_init(s, 0, initial_value);
 }
 
 bool xprSemaphoreAcquire(XPR_SEMAPHORE *s)
 {
-	return sem_wait(s) == 0? true: false;
+	return !sem_wait(s);
 }
 
 bool xprSemaphoreRelease(XPR_SEMAPHORE *s)
 {
-	return sem_post(s) == 0? true: false;
+	return !sem_post(s);
 }
 
 bool xprSemaphoreCleanup(XPR_SEMAPHORE *s)
 {
-	return sem_destroy(s) == 0? true: false;
+	return !sem_destroy(s);
 }
 
 void xprInterlockedDecrement(volatile int *value)

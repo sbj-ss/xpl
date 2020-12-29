@@ -404,7 +404,7 @@ void xprDebugBreak(void)
 
 bool xprIsDebuggerPresent(void)
 {
-	return IsDebuggerPresent()? true: false;
+	return !!IsDebuggerPresent();
 }
 
 void _invalid_crt_param_handler(

@@ -12,7 +12,7 @@ bool xplInitCommands()
 {
 	xplCleanupCommands();
 	commands = xmlHashCreate(128);
-	return commands? true: false;
+	return !!commands;
 }
 
 static xplModuleCmdResult _registerCommandParams(xplCommandPtr cmd, xmlChar **error)
@@ -140,7 +140,7 @@ bool xplCommandSupported(const xmlChar* name)
 			return true;
 	if (!commands)
 		return false;
-	return xmlHashLookup(commands, name)? true: false;
+	return !!xmlHashLookup(commands, name);
 }
 
 typedef struct _CommandListScannerContext
@@ -676,18 +676,7 @@ void xplUnloadModule(const xmlChar *name)
 
 bool xplIsModuleLoaded(const xmlChar *name)
 {
-	bool ret;
-	if (!loaded_modules)
-		return false;
-	if (!xprMutexAcquire(&module_locker))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return false;
-	}
-	ret = xmlHashLookup(loaded_modules, name)? true: false;
-	if (!xprMutexRelease(&module_locker))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	return ret;
+	return loaded_modules && xmlHashLookup(loaded_modules, name);
 }
 
 typedef struct _LoadedModulesCountScannerCtxt

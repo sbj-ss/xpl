@@ -575,7 +575,7 @@ bool xefDbHasRecordset(xefDbContextPtr ctxt)
 {
 	if (!ctxt)
 		return false;
-	return ctxt->rs? true: false;
+	return !!ctxt->rs;
 }
 
 bool xefDbGetStreamType(xefDbContextPtr ctxt)
@@ -1050,7 +1050,7 @@ bool xefDbNextRowset(xefDbContextPtr ctxt)
 	if (!_xefDbLocateNextNonemptyRecordset(ctxt, true))
 		return false;
 	_xefDbRefreshContext(ctxt);
-	return ctxt->rs? true: false;
+	return !!ctxt->rs;
 }
 
 void xefDbEnumRows(xefDbContextPtr ctxt, xefDbGetRowCallback cb)

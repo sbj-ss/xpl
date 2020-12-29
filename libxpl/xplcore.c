@@ -819,7 +819,7 @@ void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr res
 	if (doc->expand && !xmlStrcmp(element->name, BAD_CAST "define"))
 	{ 
 		error = xplAddMacro(doc, element, element->parent, false, XPL_MACRO_EXPAND_NO_DEFAULT, true);
-		ASSIGN_RESULT(error, error? true: false, true);
+		ASSIGN_RESULT(error, !!error, true);
 	} else {
 		cmd = xplGetCommand(element);
 		if (cmd)
