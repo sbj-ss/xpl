@@ -5,6 +5,36 @@
 
 void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+typedef struct _xplCmdDeleteParams
+{
+	xmlXPathObjectPtr select;
+} xplCmdDeleteParams, *xplCmdDeleteParamsPtr;
+
+static const xplCmdDeleteParams params_stencil =
+{
+	.select = NULL
+};
+
+xplCommand xplDeleteCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdDeleteEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdDeleteParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "select",
+			.type = XPL_CMD_PARAM_TYPE_XPATH,
+			.required = true,
+			.extra.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
+			.value_stencil = &params_stencil.select
+		}, {
+			.name = NULL
+		}
+	}
+};
+
 #if 0
 
 inline void printIndent(int indent)
@@ -71,112 +101,84 @@ void dumpNode(xmlNodePtr cur, int indent)
 void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define SELECT_ATTR (BAD_CAST "select")
-	xmlChar *select_attr = NULL;
-	xmlXPathObjectPtr dest_list = NULL;
+	xplCmdDeleteParamsPtr params = (xplCmdDeleteParamsPtr) commandInfo->params;
+	xmlNodeSetPtr nodes;
+	xmlNodePtr cur;
 	size_t i, j;
 	bool double_pass_mode;
 	rbBufPtr deleted_buf = NULL;
 	
-	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
-	if (!select_attr || !*select_attr)
+	if ((nodes = params->select->nodesetval))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select attribute is missing or empty"), true, true);
-		goto done;
-	}
-	dest_list = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
-	if (dest_list)
-	{
-		if (dest_list->type == XPATH_NODESET)
+		double_pass_mode = cfgFoolproofDestructiveCommands
+			&& (nodes->nodeNr > MAX_ELEMENTS_FOR_RELATIONSHIP_SCAN)
+			&& !commandInfo->document->iterator_spinlock;
+		if (!double_pass_mode)
 		{
-			if (dest_list->nodesetval)
+			if (cfgFoolproofDestructiveCommands)
 			{
-				double_pass_mode = cfgFoolproofDestructiveCommands
-					&& (dest_list->nodesetval->nodeNr > MAX_ELEMENTS_FOR_RELATIONSHIP_SCAN)
-					&& !commandInfo->document->iterator_spinlock;
-				if (!double_pass_mode)
-				{
-					if (cfgFoolproofDestructiveCommands)
+				for (i = 0; i < (size_t) nodes->nodeNr; i++)
+					for (j = i + 1; j < (size_t) nodes->nodeNr; j++)
+						if (xplIsAncestor(nodes->nodeTab[j], nodes->nodeTab[i]))
+							nodes->nodeTab[j] = NULL;
+			}
+		} else
+			deleted_buf = rbCreateBufParams((size_t) sizeof(xmlNodePtr)*params->select->nodesetval->nodeNr, RB_GROW_FIXED, 0);
+		for (i = 0; i < (size_t) nodes->nodeNr; i++)
+		{
+			cur = nodes->nodeTab[i];
+			if (!cur)
+				continue; /* already removed with its parent */
+			if ((int) cur->type & XPL_NODE_DELETION_MASK)
+			{
+				if (cfgWarnOnDeletedNodeReference)
+					xplDisplayMessage(xplMsgWarning,
+						BAD_CAST "node \"%s\" (line %d) post-mortem access attempt (file \"%s\", line %d)",
+						cur->name,
+						cur->line,
+						commandInfo->document->document->URL,
+						commandInfo->element->line);
+				continue;
+			}
+			switch (cur->type)
+			{
+				case XML_ELEMENT_NODE:
+					if (xplIsAncestor(commandInfo->element, cur) || (commandInfo->element == cur)) /* self/parent deletion request */
 					{
-						for (i = 0; i < (size_t) dest_list->nodesetval->nodeNr; i++)
-							for (j = i + 1; j < (size_t) dest_list->nodesetval->nodeNr; j++)
-								if (xplIsAncestor(dest_list->nodesetval->nodeTab[j], dest_list->nodesetval->nodeTab[i]))
-									dest_list->nodesetval->nodeTab[j] = 0;
-					}
-				} else
-					deleted_buf = rbCreateBufParams((size_t) sizeof(xmlNodePtr)*dest_list->nodesetval->nodeNr, RB_GROW_FIXED, 0);
-				for (i = 0; i < (size_t) dest_list->nodesetval->nodeNr; i++)
-				{
-					xmlNodePtr cur = dest_list->nodesetval->nodeTab[i];
-					if (!cur)
-						continue; /* already removed with its parent */
-					if ((int) cur->type & XPL_NODE_DELETION_MASK)
-					{
-						if (cfgWarnOnDeletedNodeReference)
-							xplDisplayMessage(xplMsgWarning, 
-								BAD_CAST "node \"%s\" (line %d) post-mortem access attempt (file \"%s\", line %d)", 
-								cur->name, 
-								cur->line,
-								commandInfo->document->document->URL, 
-								commandInfo->element->line);
-						continue;
-					}
-					switch (cur->type)
-					{
-						case XML_ELEMENT_NODE:
-							if (xplIsAncestor(commandInfo->element, cur) || (commandInfo->element == cur)) /* self/parent deletion request */
-							{
-								if (commandInfo->document->iterator_spinlock) /* mark for deletion at the end of processing */
-									xplDocDeferNodeDeletion(commandInfo->document, cur);								
-								xplMarkAncestorAxisForDeletion(commandInfo->element, cur);								
-							} else {
-								if (double_pass_mode)
-									xplDeferNodeDeletion(deleted_buf, cur);
-								else
-									xplDocDeferNodeDeletion(commandInfo->document, cur);								
-							}
-							break;
-						case XML_TEXT_NODE:
-						case XML_CDATA_SECTION_NODE:
-						case XML_COMMENT_NODE:
-						case XML_PI_NODE:
-							if (double_pass_mode)
-								xplDeferNodeDeletion(deleted_buf, cur);
-							else
-								xplDocDeferNodeDeletion(commandInfo->document, cur);
-							break;
-						case XML_ATTRIBUTE_NODE:
-							/* attribures can't have child nodes */
-							xplUnlinkProp((xmlAttrPtr) cur);
+						if (commandInfo->document->iterator_spinlock) /* mark for deletion at the end of processing */
 							xplDocDeferNodeDeletion(commandInfo->document, cur);
-							break;
-						default:
-							/* ToDo: what else?.. we can't touch DTDs anyway */
-							break;						
-					} /* switch */
-				} /* for: first pass */
-				if (double_pass_mode)
-				{
-					xplDeleteDeferredNodes(deleted_buf);
-					rbFreeBuf(deleted_buf);
-				}
-			} /* if nodesetval is present */
-		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) evaluated to scalar or undefined", select_attr), true, true);
-			goto done;
+						xplMarkAncestorAxisForDeletion(commandInfo->element, cur);
+					} else {
+						if (double_pass_mode)
+							xplDeferNodeDeletion(deleted_buf, cur);
+						else
+							xplDocDeferNodeDeletion(commandInfo->document, cur);
+					}
+					break;
+				case XML_TEXT_NODE:
+				case XML_CDATA_SECTION_NODE:
+				case XML_COMMENT_NODE:
+				case XML_PI_NODE:
+					if (double_pass_mode)
+						xplDeferNodeDeletion(deleted_buf, cur);
+					else
+						xplDocDeferNodeDeletion(commandInfo->document, cur);
+					break;
+				case XML_ATTRIBUTE_NODE:
+					/* attributes can't have child nodes */
+					xplUnlinkProp((xmlAttrPtr) cur);
+					xplDocDeferNodeDeletion(commandInfo->document, cur);
+					break;
+				default:
+					/* ToDo: what else?.. we can't touch DTDs anyway */
+					break;
+			} /* switch */
+		} /* for: first pass */
+		if (double_pass_mode)
+		{
+			xplDeleteDeferredNodes(deleted_buf);
+			rbFreeBuf(deleted_buf);
 		}
-	} else {
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", select_attr), true, true);
-		goto done;
-	}
+	} /* if nodesetval is present */
 	ASSIGN_RESULT(NULL, false, true);
-done:
-	if (select_attr) XPL_FREE(select_attr);
-	if (dest_list) 
-	{
-		if (dest_list->nodesetval)
-			dest_list->nodesetval->nodeNr = 0;
-		xmlXPathFreeObject(dest_list);
-	}
 }
-
-xplCommand xplDeleteCommand = { NULL, xplCmdDeleteEpilogue };
