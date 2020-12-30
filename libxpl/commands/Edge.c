@@ -13,18 +13,63 @@ typedef enum {
 	EDGE_ERROR = -1
 } EdgeType;
 
-static EdgeType _edgeTypeFromString(xmlChar *s)
+typedef struct _xplCmdEdgeParams
 {
-	if (!xmlStrcasecmp(s, BAD_CAST "copy"))
-		return EDGE_COPY;
-	else if (!xmlStrcasecmp(s, BAD_CAST "replace"))
-		return EDGE_REPLACE;
-	else if (!xmlStrcasecmp(s, BAD_CAST "element"))
-		return EDGE_ELEMENT;
-	else if (!xmlStrcasecmp(s, BAD_CAST "attribute"))
-		return EDGE_ATTRIBUTE;
-	return EDGE_ERROR;
-}
+	xplQName name;
+	EdgeType type;
+	xmlXPathObjectPtr source;
+	xmlXPathObjectPtr destination;
+} xplCmdEdgeParams, *xplCmdEdgeParamsPtr;
+
+static const xplCmdEdgeParams params_stencil =
+{
+	.name = { NULL, NULL },
+	.type = EDGE_COPY,
+	.source = NULL,
+	.destination = NULL
+};
+
+static xplCmdParamDictValue type_values[] =
+{
+	{ .name = BAD_CAST "copy", .value = EDGE_COPY },
+	{ .name = BAD_CAST "replace", .value = EDGE_REPLACE },
+	{ .name = BAD_CAST "element", .value = EDGE_ELEMENT },
+	{ .name = BAD_CAST "attribute", .value = EDGE_ATTRIBUTE },
+	{ .name = NULL }
+};
+
+xplCommand xplEdgeCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdEdgeEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdEdgeParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "name",
+			.type = XPL_CMD_PARAM_TYPE_QNAME,
+			.value_stencil = &params_stencil.name
+		}, {
+			.name = BAD_CAST "type",
+			.type = XPL_CMD_PARAM_TYPE_DICT,
+			.extra.dict_values = type_values,
+			.value_stencil = &params_stencil.type
+		}, {
+			.name = BAD_CAST "source",
+			.type = XPL_CMD_PARAM_TYPE_XPATH,
+			.extra.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_ANY,
+			.value_stencil = &params_stencil.source
+		}, {
+			.name = BAD_CAST "destination",
+			.type = XPL_CMD_PARAM_TYPE_XPATH,
+			.extra.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
+			.value_stencil = &params_stencil.destination
+		}, {
+			.name = NULL
+		}
+	}
+};
 
 static xmlNodePtr _cloneNodeSet(xmlNodeSetPtr set, xmlNodePtr parent, xmlNodePtr *tail)
 {
@@ -80,105 +125,58 @@ static xmlChar* _flattenTextSet(xmlNodeSetPtr set)
 
 void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define NAME_ATTR (BAD_CAST "name")
-#define TYPE_ATTR (BAD_CAST "type")
-#define SOURCE_ATTR (BAD_CAST "source")
-#define DESTINATION_ATTR (BAD_CAST "destination")
-	xmlChar *name_attr = NULL;
-	xmlChar *type_attr = NULL;
-	xmlChar *source_attr = NULL;
-	xmlChar *destination_attr = NULL;
-	EdgeType type = EDGE_COPY;
-	xmlXPathObjectPtr src = NULL, dst = NULL;
+	xplCmdEdgeParamsPtr params = (xplCmdEdgeParamsPtr) commandInfo->params;
 	xmlNodeSetPtr dst_nodes = NULL;
 	xmlNodePtr source_list = NULL, cur, el;
-	xmlChar *source_text= NULL;
-	xmlNsPtr ns = NULL, cur_ns;
-	xmlChar *tagname;
+	xmlChar *source_text = NULL;
+	xmlNsPtr cur_ns;
 	size_t i;
 
-	name_attr = xmlGetNoNsProp(commandInfo->element, NAME_ATTR);
-	type_attr = xmlGetNoNsProp(commandInfo->element, TYPE_ATTR);
-	source_attr = xmlGetNoNsProp(commandInfo->element, SOURCE_ATTR);
-	destination_attr = xmlGetNoNsProp(commandInfo->element, DESTINATION_ATTR);
-
-	if (type_attr)
-	{
-		if ((type = _edgeTypeFromString(type_attr)) == EDGE_ERROR)
-		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid type argument: \"%s\"", type_attr), true, true);
-			goto done;
-		}
-	}
 	/* validity checks */
-	if (((type == EDGE_ELEMENT) || (type == EDGE_ATTRIBUTE))) 
+	if (params->type == EDGE_ELEMENT || params->type == EDGE_ATTRIBUTE)
 	{
-		if (!name_attr)
+		if (!params->name.ncname)
 		{
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name argument"), true, true);
 			goto done;
 		}
-		EXTRACT_NS_AND_TAGNAME(name_attr, ns, tagname, commandInfo->element);
-		if (xmlValidateName(tagname, 0)) 
-		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid name argument: \"%s\"", name_attr), true, true);
-			goto done;
-		}
-	} else {
-		if (name_attr)
-		{
+	} else if (params->name.ncname)	{
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "using name argument for this operation type makes no sense"), true, true);
 			goto done;
-		}
-		/* it's better to allow source and destination to be missing simultaneously */
-		/* we'll have a simple container this way */
-#if 0
-		if (!source_attr && !destination_attr)
-		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo, BAD_CAST "at least source or destination must be specified for this operation type"), true, true);
-			goto done;
-		}
-#endif
 	}
 	/* obtain source data taking into account they can be text only */
-	if (source_attr)
+	if (params->source)
 	{
-		src = xplSelectNodes(commandInfo, commandInfo->element, source_attr);
-		if (!src)
+		if (params->type == EDGE_ATTRIBUTE)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath source expression \"%s\"", source_attr), true, true);
-			goto done;
-		}
-		if (type == EDGE_ATTRIBUTE) 
-		{
-			switch (src->type)
+			switch (params->source->type)
 			{
-			case XPATH_NODESET:
-				if (!src->nodesetval)
-				{
-					ASSIGN_RESULT(NULL, false, true);
+				case XPATH_NODESET:
+					if (!params->source->nodesetval)
+					{
+						ASSIGN_RESULT(NULL, false, true);
+						goto done;
+					}
+					if (!xplCheckNodeSetForText(params->source->nodesetval))
+					{
+						ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
+						goto done;
+					}
+					source_text = _flattenTextSet(params->source->nodesetval);
+					break;
+				case XPATH_BOOLEAN:
+				case XPATH_NUMBER:
+				case XPATH_STRING:
+					source_text = xmlXPathCastToString(params->source);
+					break;
+				default:
+					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "source XPath expression \"%s\" evaluated to an invalid result", params->source->user), true, true);
 					goto done;
-				}
-				if (!xplCheckNodeSetForText(src->nodesetval))
-				{
-					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
-					goto done;
-				}
-				source_text = _flattenTextSet(src->nodesetval);
-				break;
-			case XPATH_BOOLEAN:
-			case XPATH_NUMBER:
-			case XPATH_STRING:
-				source_text = xmlXPathCastToString(src);
-				break;
-			default:
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "source XPath expression \"%s\" evaluated to an invalid result", source_attr), true, true);
-				goto done;
 			}
 		} else
-			source_list = _cloneNodeSet(src->nodesetval, commandInfo->element, NULL);
+			source_list = _cloneNodeSet(params->source->nodesetval, commandInfo->element, NULL); // TODO do we really need a copy?
 	} else {
-		if (type == EDGE_ATTRIBUTE)
+		if (params->type == EDGE_ATTRIBUTE)
 		{
 			if (!xplCheckNodeListForText(commandInfo->element->children))
 			{
@@ -195,96 +193,62 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			source_list = commandInfo->element->children;
 	}
 	/* determine destination(s) */
-	if (destination_attr)
-	{
-		dst = xplSelectNodes(commandInfo, commandInfo->element, destination_attr);
-		if (!dst)
-		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath destination expression \"%s\"", destination_attr), true, true);
-			goto done;
-		}
-		if (dst->type != XPATH_NODESET)
-		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "destination XPath expression \"%s\" evaluated to non-nodeset value", destination_attr), true, true);
-			goto done;
-		}
-		dst_nodes = dst->nodesetval;
-	} else
+	if (params->destination)
+		dst_nodes = params->destination->nodesetval;
+	else
 		dst_nodes = xmlXPathNodeSetCreate(commandInfo->element->parent);
 	/* execute the requested operation */
 	for (i = 0; i < (size_t) dst_nodes->nodeNr; i++)
 	{
 		cur = dst_nodes->nodeTab[i];
-		switch (type)
+		switch (params->type)
 		{
-		case EDGE_COPY:
-			if (cur->type == XML_ELEMENT_NODE)
-				xplAppendChildren(cur, xplCloneNodeList(source_list, cur, cur->doc));
-			break;
-		case EDGE_REPLACE:
-			if (!xplIsAncestor(commandInfo->element, cur))
-				xplDocDeferNodeDeletion(commandInfo->document, xplReplaceWithList(cur, xplCloneNodeList(source_list, cur, cur->doc)));
-			else if (cfgWarnOnAncestorModificationAttempt)
-			{
-				if (cur->ns)
-					xplDisplayMessage(xplMsgWarning, BAD_CAST "ancestor/self node \"%s:%s\" modification attempt denied (file \"%s\", line %d)", 
-					cur->ns->prefix, cur->name, commandInfo->document->document->URL, commandInfo->element->line);
-				else
-					xplDisplayMessage(xplMsgWarning, BAD_CAST "ancestor/self node \"%s\" modification attempt denied (file \"%s\", line %d)", 
-					cur->name, commandInfo->document->document->URL, commandInfo->element->line);
-			}
-			break;
-		case EDGE_ELEMENT:
-			if (cur->type == XML_ELEMENT_NODE)
-			{
-				cur_ns = ns? xplGetResultingNs(cur, commandInfo->element, BAD_CAST ns->prefix): NULL;
-				el = xmlNewDocNode(cur->doc, cur_ns, tagname, NULL);
-				xplAppendChildren(cur, el);
-				xplSetChildren(el, xplCloneNodeList(source_list, el, el->doc));
-			}
-			break;
-		case EDGE_ATTRIBUTE:
-			if (cur->type == XML_ELEMENT_NODE)
-			{
-				cur_ns = ns? xplGetResultingNs(cur, commandInfo->element, BAD_CAST ns->prefix): NULL;
-				if (cur_ns)
-					xmlNewNsProp(cur, cur_ns, tagname, source_text);
-				else
-					xmlNewProp(cur, tagname, source_text);
-			}
-			break;
-		default:
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
+			case EDGE_COPY:
+				if (cur->type == XML_ELEMENT_NODE)
+					xplAppendChildren(cur, xplCloneNodeList(source_list, cur, cur->doc));
+				break;
+			case EDGE_REPLACE:
+				if (!xplIsAncestor(commandInfo->element, cur))
+					xplDocDeferNodeDeletion(commandInfo->document, xplReplaceWithList(cur, xplCloneNodeList(source_list, cur, cur->doc)));
+				else if (cfgWarnOnAncestorModificationAttempt)
+				{
+					if (cur->ns)
+						xplDisplayMessage(xplMsgWarning, BAD_CAST "ancestor/self node \"%s:%s\" modification attempt denied (file \"%s\", line %d)",
+						cur->ns->prefix, cur->name, commandInfo->document->document->URL, commandInfo->element->line);
+					else
+						xplDisplayMessage(xplMsgWarning, BAD_CAST "ancestor/self node \"%s\" modification attempt denied (file \"%s\", line %d)",
+						cur->name, commandInfo->document->document->URL, commandInfo->element->line);
+				}
+				break;
+			case EDGE_ELEMENT:
+				if (cur->type == XML_ELEMENT_NODE)
+				{
+					cur_ns = params->name.ns? xplGetResultingNs(cur, commandInfo->element, BAD_CAST params->name.ns->prefix): NULL;
+					el = xmlNewDocNode(cur->doc, cur_ns, params->name.ncname, NULL);
+					xplAppendChildren(cur, el);
+					xplSetChildren(el, xplCloneNodeList(source_list, el, el->doc));
+				} // TODO warn otherwise
+				break;
+			case EDGE_ATTRIBUTE:
+				if (cur->type == XML_ELEMENT_NODE)
+				{
+					cur_ns = params->name.ns? xplGetResultingNs(cur, commandInfo->element, BAD_CAST params->name.ns->prefix): NULL;
+					if (cur_ns)
+						xmlNewNsProp(cur, cur_ns, params->name.ncname, source_text);
+					else
+						xmlNewProp(cur, params->name.ncname, source_text);
+				} // TODO warn otherwise
+				break;
+			default:
+				DISPLAY_INTERNAL_ERROR_MESSAGE();
 		}
 	}
 	ASSIGN_RESULT(NULL, false, true);
 done:
-	if (name_attr)
-		XPL_FREE(name_attr);
-	if (type_attr)
-		XPL_FREE(type_attr);
-	if (source_attr)
-		XPL_FREE(source_attr);
-	if (destination_attr)
-		XPL_FREE(destination_attr);
-	if (src) 
-	{	
-		if (src->nodesetval)
-			src->nodesetval->nodeNr = 0;
-		xmlXPathFreeObject(src);
-		if (source_list)
-			xmlFreeNodeList(source_list);
-	}
+	if (source_list && source_list != commandInfo->element->children)
+		xmlFreeNodeList(source_list);
 	if (source_text)
 		XPL_FREE(source_text);
-	if (dst) 
-	{
-		if (dst->nodesetval)
-			dst->nodesetval->nodeNr = 0;
-		xmlXPathFreeObject(dst);
-	}
-	else if (dst_nodes)
+	if (dst_nodes)
 		xmlXPathFreeNodeSet(dst_nodes);
 }
-
-xplCommand xplEdgeCommand = { NULL, xplCmdEdgeEpilogue };
