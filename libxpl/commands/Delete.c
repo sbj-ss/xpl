@@ -100,7 +100,6 @@ void dumpNode(xmlNodePtr cur, int indent)
 
 void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define SELECT_ATTR (BAD_CAST "select")
 	xplCmdDeleteParamsPtr params = (xplCmdDeleteParamsPtr) commandInfo->params;
 	xmlNodeSetPtr nodes;
 	xmlNodePtr cur;
