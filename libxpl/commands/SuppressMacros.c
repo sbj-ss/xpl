@@ -8,7 +8,47 @@
 void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
-static void fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target, xmlNodeSetPtr nodeset)
+typedef struct _xplCmdSuppressMacrosParams
+{
+	xmlXPathObjectPtr select;
+	xmlChar *list;
+	bool repeat;
+} xplCmdSuppressMacrosParams, *xplCmdSuppressMacrosParamsPtr;
+
+static const xplCmdSuppressMacrosParams params_stencil =
+{
+	.select = NULL,
+	.list = NULL,
+	.repeat = false
+};
+
+xplCommand xplSuppressMacrosCommand = {
+	.prologue = xplCmdSuppressMacrosPrologue,
+	.epilogue = xplCmdSuppressMacrosEpilogue,
+	.flags = XPL_CMD_FLAG_CONTENT_SAFE | XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE | XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdSuppressMacrosParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "select",
+			.type = XPL_CMD_PARAM_TYPE_XPATH,
+			.extra.xpath_type = XPL_CMD_PARAM_XPATH_TYPE_NODESET,
+			.value_stencil = &params_stencil.select
+		}, {
+			.name = BAD_CAST "list",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.list
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = NULL
+		}
+	}
+};
+
+static void _fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target, xmlNodeSetPtr nodeset)
 {
 	xplMacroPtr macro;
 	xmlNodePtr cur;
@@ -26,7 +66,7 @@ static void fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target, 
 	} /* for */
 }
 
-static void fillMacroHashFromList(xmlNodePtr source, xmlHashTablePtr target, xmlChar *list)
+static void _fillMacroHashFromList(xmlNodePtr source, xmlHashTablePtr target, xmlChar *list)
 {
 	xmlChar *prev, *cur, *tagname;
 	void *macro;
@@ -59,88 +99,48 @@ static void fillMacroHashFromList(xmlNodePtr source, xmlHashTablePtr target, xml
 	}
 }
 
-static void switchMacro(void *payload, void *data, XML_HCBNC xmlChar *name)
+static void _switchMacro(void *payload, void *data, XML_HCBNC xmlChar *name)
 {
+	UNUSED_PARAM(name);
 	((xplMacroPtr) payload)->disabled_spin += (int) (ptrdiff_t) data;
 }
 
 void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo)
 {
-#define SELECT_ATTR (BAD_CAST "select")
-#define LIST_ATTR (BAD_CAST "list")
-
-	xmlChar *select_attr = NULL;
-	xmlChar *list_attr = NULL;
-	xmlXPathObjectPtr sel = NULL;
+	xplCmdSuppressMacrosParamsPtr params = (xplCmdSuppressMacrosParamsPtr) commandInfo->params;
 	xmlHashTablePtr macros = NULL;
 
-	select_attr = xmlGetNoNsProp(commandInfo->element, SELECT_ATTR);
-	list_attr = xmlGetNoNsProp(commandInfo->element, LIST_ATTR);
-	if (select_attr || list_attr)
+	if (params->select || params->list)
 	{
-		if (select_attr)
+		if (params->select && params->select->nodesetval)
 		{
-			sel = xplSelectNodes(commandInfo, commandInfo->element, select_attr);
-			if (!sel)
-			{
-				xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
-				xplSetChildren(commandInfo->element, xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr));
-				goto done;
-			}
-			if (sel->type != XPATH_NODESET)
-			{
-				xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
-				xplSetChildren(commandInfo->element, xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression \"%s\" evaluated to non-nodeset value", select_attr));
-				goto done;
-			}
-			if (sel->nodesetval)
-			{
 				macros = xmlHashCreate(16);
-				fillMacroHashFromNodeset(commandInfo->element, macros, sel->nodesetval);
-			}
-		} 
-		if (list_attr)
+				_fillMacroHashFromNodeset(commandInfo->element, macros, params->select->nodesetval);
+		}
+		if (params->list)
 		{
 			if (!macros)
 				macros = xmlHashCreate(16);
-			fillMacroHashFromList(commandInfo->element, macros, list_attr);
+			_fillMacroHashFromList(commandInfo->element, macros, params->list);
 		}
-		xmlHashScan(macros, switchMacro, (void*) 1);
+		xmlHashScan(macros, _switchMacro, (void*) 1);
 	}
 	commandInfo->prologue_state = macros;
-done:
-	if (sel) xmlXPathFreeObject(sel);
-	if (select_attr) XPL_FREE(select_attr);
-	if (list_attr) XPL_FREE(list_attr);
 }
 
 void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define REPEAT_ATTR BAD_CAST("repeat")
+	xplCmdSuppressMacrosParamsPtr params = (xplCmdSuppressMacrosParamsPtr) commandInfo->params;
 	xmlHashTablePtr macros;
-	bool repeat;
-	xmlNodePtr error;
 
 	macros = (xmlHashTablePtr) commandInfo->prologue_state;
 	if (macros)
 	{
-		xmlHashScan(macros, switchMacro, (void*) -1);
+		xmlHashScan(macros, _switchMacro, (void*) -1);
 		xmlHashFree(macros, NULL);
 	}
 	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
 		ASSIGN_RESULT(NULL, false, false);
-	else {
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, false)))
-			ASSIGN_RESULT(error, true, true);
-		else
-			ASSIGN_RESULT(xplDetachContent(commandInfo->element), repeat, true);
-	}
+	else
+		ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
 }
-
-xplCommand xplSuppressMacrosCommand = { 
-	.prologue = xplCmdSuppressMacrosPrologue, 
-	.epilogue = xplCmdSuppressMacrosEpilogue,
-	.initializer = NULL,
-	.finalizer = NULL,
-	.flags = XPL_CMD_FLAG_CONTENT_SAFE
-};
