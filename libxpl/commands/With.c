@@ -166,5 +166,6 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 
 void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
+	UNUSED_PARAM(commandInfo);
 	ASSIGN_RESULT(NULL, false, true);
 }
