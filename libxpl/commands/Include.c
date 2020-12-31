@@ -11,6 +11,14 @@
 
 void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
+xplCommand xplIncludeCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdIncludeEpilogue,
+	.flags = 0,
+	.params_stencil = NULL
+};
+
 #define SELECT_ATTR (BAD_CAST "select")
 #define SOURCE_ATTR (BAD_CAST "source")
 #define FILE_ATTR (BAD_CAST "file")
@@ -179,7 +187,8 @@ static void fetchFileContent(IncludeContextPtr ctxt)
 {
 	int fd;
 	struct stat stat;
-	size_t file_size, num_read;
+	size_t file_size;
+	ssize_t num_read;
 	char* file_content;
 	
 	fd = xprSOpen(ctxt->uri, O_BINARY | O_RDONLY, 0, 0);
@@ -200,7 +209,7 @@ static void fetchFileContent(IncludeContextPtr ctxt)
 	ctxt->content_size = file_size;
 	while (file_size > 0)
 	{
-		if ((num_read = read(fd, file_content, (unsigned int)(file_size > 0x10000? 0x10000: file_size))) == -1)
+		if ((num_read = read(fd, file_content, file_size > 0x10000? 0x10000: file_size)) == -1)
 		{
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot read from file \"%s\"", ctxt->uri);
 			ctxt->content = NULL;
@@ -690,5 +699,3 @@ void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(ret, true, true);
 	}
 }
-
-xplCommand xplIncludeCommand = { NULL, xplCmdIncludeEpilogue };
