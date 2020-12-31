@@ -199,7 +199,7 @@ static bool _TdsFragmentRowScanner(xefDbRowPtr row, void *payload)
 {
 	xmlNodePtr row_el = NULL, tail = NULL, col;
 	xplTdsFragmentRowContextPtr ctxt = (xplTdsFragmentRowContextPtr) payload;
-	size_t i;
+	ssize_t i;
 
 	if (!ctxt->xml_desc)
 		ctxt->xml_desc = _createXmlRowDesc(row, ctxt->parent, ctxt->default_column_name);
