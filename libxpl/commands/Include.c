@@ -11,27 +11,6 @@
 
 void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
-xplCommand xplIncludeCommand =
-{
-	.prologue = NULL,
-	.epilogue = xplCmdIncludeEpilogue,
-	.flags = 0,
-	.params_stencil = NULL
-};
-
-#define SELECT_ATTR (BAD_CAST "select")
-#define SOURCE_ATTR (BAD_CAST "source")
-#define FILE_ATTR (BAD_CAST "file")
-#define URI_ATTR (BAD_CAST "uri")
-#define REPEAT_ATTR (BAD_CAST "repeat")
-#define RESPONSE_TAG_NAME_ATTR (BAD_CAST "responsetagname")
-#define ENCODING_ATTR (BAD_CAST "encoding")
-#define ABS_PATH_ATTR (BAD_CAST "abspath")
-#define INPUT_FORMAT_ATTR (BAD_CAST "inputformat")
-#define OUTPUT_FORMAT_ATTR (BAD_CAST "outputformat")
-#define POSTDATA_ATTR (BAD_CAST "postdata")
-#define REMOVE_SOURCE_ATTR (BAD_CAST "removesource")
-
 typedef enum 
 {
 	INPUT_FORMAT_XML,
@@ -44,8 +23,112 @@ typedef enum
 	OUTPUT_FORMAT_XML,
 	OUTPUT_FORMAT_TEXT,
 	OUTPUT_FORMAT_BASE64,
-	OUTPUT_FORMAT_HEX
+	OUTPUT_FORMAT_HEX,
+	OUTPUT_FORMAT_UNSPECIFIED
 } OutputFormat;
+
+typedef struct _xplCmdIncludeParams
+{
+	xmlChar *select; // we can't make use of built-in XPath management here
+	xmlChar *uri;
+	bool repeat;
+	xplQName response_tag_name;
+	xmlChar *encoding;
+	bool abs_path;
+	InputFormat input_format;
+	OutputFormat output_format;
+	xmlChar *post_data;
+	bool remove_source;
+} xplCmdIncludeParams, *xplCmdIncludeParamsPtr;
+
+static const xplCmdIncludeParams params_stencil =
+{
+	.select = NULL,
+	.uri = NULL,
+	.repeat = true,
+	.response_tag_name = { NULL, NULL },
+	.encoding = BAD_CAST "utf-8",
+	.abs_path = false,
+	.input_format = INPUT_FORMAT_XML,
+	.output_format = OUTPUT_FORMAT_UNSPECIFIED,
+	.post_data = NULL,
+	.remove_source = false
+};
+
+static xmlChar* select_aliases[] = { BAD_CAST "source", NULL };
+static xmlChar* uri_aliases[] = { BAD_CAST "file", NULL };
+
+static xplCmdParamDictValue input_format_dict[] = {
+	{ .name = BAD_CAST "xml", .value = INPUT_FORMAT_XML },
+	{ .name = BAD_CAST "html", .value = INPUT_FORMAT_HTML },
+	{ .name = BAD_CAST "raw", .value = INPUT_FORMAT_RAW },
+	{ .name = NULL }
+};
+static xplCmdParamDictValue output_format_dict[] = {
+	{ .name = BAD_CAST "xml", .value = OUTPUT_FORMAT_XML },
+	{ .name = BAD_CAST "text", .value = OUTPUT_FORMAT_TEXT },
+	{ .name = BAD_CAST "base64", .value = OUTPUT_FORMAT_BASE64 },
+	{ .name = BAD_CAST "hex", .value = OUTPUT_FORMAT_HEX },
+	{ .name = NULL }
+};
+
+xplCommand xplIncludeCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdIncludeEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdIncludeParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "select",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.aliases = select_aliases,
+			.value_stencil = &params_stencil.select
+		}, {
+			.name = BAD_CAST "uri",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.aliases = uri_aliases,
+			.value_stencil = &params_stencil.uri
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = BAD_CAST "responsetagname",
+			.type = XPL_CMD_PARAM_TYPE_QNAME,
+			.value_stencil = &params_stencil.response_tag_name
+		}, {
+			.name = BAD_CAST "encoding",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.encoding,
+		}, {
+			.name = BAD_CAST "abspath",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.abs_path
+		}, {
+			.name = BAD_CAST "inputformat",
+			.type = XPL_CMD_PARAM_TYPE_DICT,
+			.extra.dict_values = input_format_dict,
+			.value_stencil = &params_stencil.input_format
+		}, {
+			.name = BAD_CAST "outputformat",
+			.type = XPL_CMD_PARAM_TYPE_DICT,
+			.extra.dict_values = output_format_dict,
+			.value_stencil = &params_stencil.output_format
+		}, {
+			.name = BAD_CAST "postdata",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.post_data
+		}, {
+			.name = BAD_CAST "removesource",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.remove_source
+		}, {
+			.name = NULL
+		}
+	}
+};
 
 typedef enum 
 {
@@ -56,15 +139,12 @@ typedef enum
 
 typedef struct _IncludeContext
 {
+	xplCmdIncludeParamsPtr params;
 	xmlNodePtr command_element;
 	xplDocumentPtr doc;
-	xmlChar *encoding_str;
 	int encoding;
 	bool needs_recoding;
-	InputFormat input_format;
-	OutputFormat output_format;
 	/* input source info */
-	xmlChar *uri;
 	InputSource input_source;
 	/* temps */
 	xmlNodePtr src_node;
@@ -79,108 +159,69 @@ static void initIncludeContext(IncludeContextPtr ctxt, const xplCommandInfoPtr c
 	memset(ctxt, 0, sizeof(IncludeContext));
 	ctxt->command_element = commandInfo->element;
 	ctxt->doc = commandInfo->document;
+	ctxt->params = (xplCmdIncludeParamsPtr) commandInfo->params;
 }
 
 static void clearIncludeContext(IncludeContextPtr ctxt)
 {
-	if (ctxt->encoding_str) 
-		XPL_FREE(ctxt->encoding_str);
-	if (ctxt->uri) 
-		XPL_FREE(ctxt->uri);
 	if ((ctxt->input_source != INPUT_SOURCE_LOCAL) && ctxt->src_node)
 		xmlFreeDoc((xmlDocPtr) ctxt->src_node);
 	if (ctxt->content)
 		XPL_FREE(ctxt->content);
 }
 
+typedef void (*CtxtStep)(IncludeContextPtr ctxt);
+
 static void getSourceStep(IncludeContextPtr ctxt)
 {
-	xmlChar *uri_attr = xmlGetNoNsProp(ctxt->command_element, URI_ATTR);
-	xmlChar *file_attr = xmlGetNoNsProp(ctxt->command_element, FILE_ATTR);
-	bool abspath;
+	xmlChar *uri = ctxt->params->uri;
 
-	if (uri_attr && file_attr)
+	if (!uri)
 	{
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "file and uri can't be specified simultaneously");
-		XPL_FREE(uri_attr);
-		XPL_FREE(file_attr);
-	} else if (file_attr) {
-		ctxt->error = xplDecodeCmdBoolParam(ctxt->command_element, ABS_PATH_ATTR, &abspath, false);
-		if (ctxt->error)
-			return;
-		if (abspath)
-			ctxt->uri = file_attr;
-		else {
-			ctxt->uri = xplFullFilename(file_attr, ctxt->doc->app_path);
-			XPL_FREE(file_attr);
-		}
+		ctxt->input_source = INPUT_SOURCE_LOCAL;
+		return;
+	}
+	if (xmlStrstr(uri, BAD_CAST "file:///") == uri)
+	{
+		ctxt->params->uri = BAD_CAST XPL_STRDUP((char*) uri + 8);
 		ctxt->input_source = INPUT_SOURCE_FILE;
-	} else if (uri_attr) {
-		if (xmlStrstr(uri_attr, BAD_CAST "file:///") == uri_attr)
-		{
-			ctxt->uri = BAD_CAST XPL_STRDUP((char*) file_attr + 8);
-			ctxt->input_source = INPUT_SOURCE_FILE;
-			XPL_FREE(uri_attr);
-		} else if ((xmlStrstr(uri_attr, BAD_CAST "ftp://") == uri_attr) || (xmlStrstr(uri_attr, BAD_CAST "http://") == uri_attr)) {
-			ctxt->uri = uri_attr;
-			ctxt->input_source = INPUT_SOURCE_XTP;
-		} else {
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "invalid uri: \"%s\"", uri_attr);
-			XPL_FREE(uri_attr);
-		}
-	} else
-		ctxt->input_source = INPUT_SOURCE_LOCAL;	
+		XPL_FREE(uri);
+	} else if (
+		(xmlStrstr(uri, BAD_CAST "ftp://") == uri) ||
+		(xmlStrstr(uri, BAD_CAST "http://") == uri) ||
+		(xmlStrstr(uri, BAD_CAST "https://") == uri)
+	)
+		ctxt->input_source = INPUT_SOURCE_XTP;
+	else
+		ctxt->input_source = INPUT_SOURCE_FILE;
+
+	if (ctxt->params->abs_path)
+	{
+		ctxt->params->uri = xplFullFilename(uri, ctxt->doc->app_path);
+		XPL_FREE(uri);
+	}
 }
 
 static void getFormatsStep(IncludeContextPtr ctxt)
 {
-	xmlChar *input_format_attr = xmlGetNoNsProp(ctxt->command_element, INPUT_FORMAT_ATTR);
-	xmlChar *output_format_attr = xmlGetNoNsProp(ctxt->command_element, OUTPUT_FORMAT_ATTR);
-
-	if (!input_format_attr || !xmlStrcasecmp(input_format_attr, BAD_CAST "xml"))
+	if (ctxt->params->output_format == OUTPUT_FORMAT_UNSPECIFIED)
 	{
-		ctxt->input_format = INPUT_FORMAT_XML;
-		ctxt->output_format = OUTPUT_FORMAT_XML;
-	} else if (!xmlStrcasecmp(input_format_attr, BAD_CAST "html")) {
-		ctxt->input_format = INPUT_FORMAT_HTML;
-		ctxt->output_format = OUTPUT_FORMAT_XML;
-	} else if (!xmlStrcasecmp(input_format_attr, BAD_CAST "raw")) {
-		ctxt->input_format = INPUT_FORMAT_RAW;
-		ctxt->output_format = OUTPUT_FORMAT_TEXT;
-	} else { /* error */
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "invalid input format value: \"%s\"", input_format_attr);
-		goto done;
+		if (ctxt->params->input_format == INPUT_FORMAT_RAW)
+			ctxt->params->output_format = OUTPUT_FORMAT_TEXT;
+		else
+			ctxt->params->output_format = OUTPUT_FORMAT_XML;
 	}
-
-	if (!output_format_attr)
-		(void) 0;
-	else if (!xmlStrcasecmp(output_format_attr, BAD_CAST "text"))
-		ctxt->output_format = OUTPUT_FORMAT_TEXT;
-	else if (!xmlStrcasecmp(output_format_attr, BAD_CAST "xml"))
-		ctxt->output_format = OUTPUT_FORMAT_XML;
-	else if (!xmlStrcasecmp(output_format_attr, BAD_CAST "hex"))
-		ctxt->output_format = OUTPUT_FORMAT_HEX;
-	else if (!xmlStrcasecmp(output_format_attr, BAD_CAST "base64") || !xmlStrcasecmp(output_format_attr, BAD_CAST "binarybase64")) 
-		ctxt->output_format = OUTPUT_FORMAT_BASE64;
-	else { 
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "invalid output format value: \"%s\"", output_format_attr);
-		goto done;
-	}
-
 	/* sanity checks */
-	if ((ctxt->input_format == INPUT_FORMAT_RAW) && (ctxt->output_format == OUTPUT_FORMAT_XML))
+	if ((ctxt->params->input_format == INPUT_FORMAT_RAW) && (ctxt->params->output_format == OUTPUT_FORMAT_XML))
 	{
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot create XML output from raw input");
-		goto done;
+		return;
 	}
-	if ((ctxt->input_source == INPUT_SOURCE_LOCAL) && (ctxt->input_format != INPUT_FORMAT_XML))
+	if ((ctxt->input_source == INPUT_SOURCE_LOCAL) && (ctxt->params->input_format != INPUT_FORMAT_XML))
 	{
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "input format for local inclusion must be xml");
-		goto done;
+		return;
 	}
-done:
-	if (input_format_attr) XPL_FREE(input_format_attr);
-	if (output_format_attr) XPL_FREE(output_format_attr);
 }
 
 static void fetchFileContent(IncludeContextPtr ctxt)
@@ -191,10 +232,10 @@ static void fetchFileContent(IncludeContextPtr ctxt)
 	ssize_t num_read;
 	char* file_content;
 	
-	fd = xprSOpen(ctxt->uri, O_BINARY | O_RDONLY, 0, 0);
+	fd = xprSOpen(ctxt->params->uri, O_BINARY | O_RDONLY, 0, 0);
 	if (fd == -1)
 	{
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot open file \"%s\"", ctxt->uri);
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot open file \"%s\"", ctxt->params->uri);
 		return;
 	}
 	fstat(fd, &stat); /* TODO where's stat64? */
@@ -211,7 +252,7 @@ static void fetchFileContent(IncludeContextPtr ctxt)
 	{
 		if ((num_read = read(fd, file_content, file_size > 0x10000? 0x10000: file_size)) == -1)
 		{
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot read from file \"%s\"", ctxt->uri);
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot read from file \"%s\"", ctxt->params->uri);
 			ctxt->content = NULL;
 			ctxt->content_size = 0;
 			XPL_FREE(file_content);
@@ -312,41 +353,39 @@ static int fastDetectEncoding(char* content, size_t size)
 
 static void updateCtxtEncoding(IncludeContextPtr ctxt)
 {
-	xmlChar *encoding_attr = xmlGetNoNsProp(ctxt->command_element, ENCODING_ATTR);
-	if (!encoding_attr || !xmlStrcasecmp(encoding_attr, BAD_CAST "utf-8"))
+	if (!ctxt->params->encoding || !xmlStrcasecmp(ctxt->params->encoding, BAD_CAST "utf-8"))
 	{
 		ctxt->needs_recoding = false;
-		ctxt->encoding_str = encoding_attr;
-		return;
-	} else if (xmlStrcasecmp(encoding_attr, BAD_CAST "auto")) { /* non-utf8 encoding specified */
-		ctxt->needs_recoding = true;
-		ctxt->encoding_str = encoding_attr;
 		return;
 	}
-	XPL_FREE(encoding_attr); // was "auto"
+	if (xmlStrcasecmp(ctxt->params->encoding, BAD_CAST "auto")) { /* non-utf8 encoding specified */
+		ctxt->needs_recoding = true;
+		return;
+	}
+	XPL_FREE(ctxt->params->encoding); // was "auto"
 	/* run detection */
 	ctxt->encoding = fastDetectEncoding((char*) ctxt->content, ctxt->content_size);
 	switch (ctxt->encoding) // TODO array
 	{
 	case XSTR_ENC_1251:
-		ctxt->encoding_str = BAD_CAST XPL_STRDUP("CP1251");
+		ctxt->params->encoding = BAD_CAST XPL_STRDUP("CP1251");
 		break;
 	case XSTR_ENC_UTF8: 
-	case XSTR_ENC_UNKNOWN:
-		ctxt->encoding_str = BAD_CAST XPL_STRDUP("utf-8");
+	case XSTR_ENC_UNKNOWN: // TODO warn
+		ctxt->params->encoding = BAD_CAST XPL_STRDUP("utf-8");
 		ctxt->encoding = XSTR_ENC_UTF8;
 		break;
 	case XSTR_ENC_UTF16LE: 
-		ctxt->encoding_str = BAD_CAST XPL_STRDUP("utf-16le");
+		ctxt->params->encoding = BAD_CAST XPL_STRDUP("utf-16le");
 		break;
 	case XSTR_ENC_UTF16BE: 
-		ctxt->encoding_str = BAD_CAST XPL_STRDUP("utf-16be");
+		ctxt->params->encoding = BAD_CAST XPL_STRDUP("utf-16be");
 		break;
 	case XSTR_ENC_866: 
-		ctxt->encoding_str = BAD_CAST XPL_STRDUP("cp866");
+		ctxt->params->encoding = BAD_CAST XPL_STRDUP("cp866");
 		break;
 	case XSTR_ENC_KOI8: 
-		ctxt->encoding_str = BAD_CAST XPL_STRDUP("KOI8-R");
+		ctxt->params->encoding = BAD_CAST XPL_STRDUP("KOI8-R");
 		break;
 	default: 
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -366,14 +405,14 @@ static void recodeStep(IncludeContextPtr ctxt)
 		return;
 	if (xstrIconvString(
 		"utf-8",
-		(const char*) ctxt->encoding_str,
+		(const char*) ctxt->params->encoding,
 		(const char*) ctxt->content,
 		(const char*) ctxt->content + ctxt->content_size,
 		(char**) &recoded_content,
 		&recoded_size
 	) == -1)
 	{
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "error converting data from encoding \"%s\"", ctxt->encoding_str);
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "error converting data from encoding \"%s\"", ctxt->params->encoding);
 		return;
 	}
 	XPL_FREE(ctxt->content);
@@ -408,7 +447,7 @@ static void cleanStep(IncludeContextPtr ctxt)
 #ifdef _XEF_HAS_HTML_CLEANER
 	xefCleanHtmlParams params;
 #endif
-	if ((ctxt->input_format == INPUT_FORMAT_RAW) && (ctxt->output_format == OUTPUT_FORMAT_TEXT))
+	if ((ctxt->params->input_format == INPUT_FORMAT_RAW) && (ctxt->params->output_format == OUTPUT_FORMAT_TEXT))
 	{
 		if (!checkForNonprintable(ctxt->content, ctxt->content_size))
 		{
@@ -424,7 +463,7 @@ static void cleanStep(IncludeContextPtr ctxt)
 		return;
 	}
 
-	if (ctxt->input_format != INPUT_FORMAT_HTML)
+	if (ctxt->params->input_format != INPUT_FORMAT_HTML)
 		return;
 #ifdef _XEF_HAS_HTML_CLEANER
 	params.document = ctxt->content;
@@ -447,12 +486,14 @@ static void buildDocumentStep(IncludeContextPtr ctxt)
 {
 	xmlChar *error_txt;
 
-	switch(ctxt->input_format)
+	switch(ctxt->params->input_format)
 	{
 	case INPUT_FORMAT_XML:
 	case INPUT_FORMAT_HTML:
-		if ((ctxt->input_source != INPUT_SOURCE_LOCAL) && 
-			(xmlHasProp(ctxt->command_element, SELECT_ATTR) || (ctxt->output_format == OUTPUT_FORMAT_XML))) 
+		if (
+			ctxt->input_source != INPUT_SOURCE_LOCAL &&
+			(ctxt->params->select || ctxt->params->output_format == OUTPUT_FORMAT_XML)
+		)
 		{ /* we need a document somewhere on the way, let's build it */
 			if (ctxt->content_size > INT_MAX) // TODO do we need this limitation?
 			{
@@ -478,26 +519,19 @@ static void buildDocumentStep(IncludeContextPtr ctxt)
 
 static void selectNodesStep(IncludeContextPtr ctxt)
 {
-	xmlChar *select_attr;
-	xmlChar *response_tag_name_attr;
 	xmlXPathObjectPtr sel;
 	xmlNodePtr cur, head = NULL, tail, sibling, prnt;
-	bool remove_source;
 	size_t i;
 
 	/* check select attribute */
-	select_attr = xmlGetNoNsProp(ctxt->command_element, SELECT_ATTR);
-	if (!select_attr)
-		select_attr = xmlGetNoNsProp(ctxt->command_element, SOURCE_ATTR);
-	if (select_attr && (ctxt->input_format == INPUT_FORMAT_RAW)) 
+	if (ctxt->params->select && ctxt->params->input_format == INPUT_FORMAT_RAW)
 	{
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot select nodes from non-structured source");
-		XPL_FREE(select_attr);
 		return;
 	}
-	if (ctxt->input_format == INPUT_FORMAT_RAW)
+	if (ctxt->params->input_format == INPUT_FORMAT_RAW)
 		return;
-	if (!select_attr) /* return the input document/command content */
+	if (!ctxt->params->select) /* return the input document/command content */
 	{
 		if (ctxt->input_source == INPUT_SOURCE_LOCAL)
 			ctxt->ret = xplDetachContent(ctxt->command_element);
@@ -514,26 +548,22 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 			}
 			xmlSetTreeDoc(ctxt->ret, ctxt->command_element->doc);
 		}
-		response_tag_name_attr = xmlGetNoNsProp(ctxt->command_element, RESPONSE_TAG_NAME_ATTR);
-		if (response_tag_name_attr)
+		if (ctxt->params->response_tag_name.ncname)
 		{
 			cur = ctxt->ret;
 			while (cur)
 			{
 				if (cur->type == XML_ELEMENT_NODE)
-					xmlNodeSetName(cur, response_tag_name_attr);
+				{
+					xmlNodeSetName(cur, ctxt->params->response_tag_name.ncname);
+					cur->ns = ctxt->params->response_tag_name.ns;
+				}
 				cur = cur->next;
 			}
-			XPL_FREE(response_tag_name_attr);
 		}
 		return;
 	}
 	/* select nodes */
-	if ((ctxt->error = xplDecodeCmdBoolParam(ctxt->command_element, REMOVE_SOURCE_ATTR, &remove_source, false)))
-	{
-		XPL_FREE(select_attr);
-		return;
-	}
 	if (ctxt->input_source == INPUT_SOURCE_LOCAL)
 		cur = ctxt->src_node;
 	else {
@@ -541,7 +571,7 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 		while (cur && (cur->type != XML_ELEMENT_NODE)) /* skip comments */
 			cur = cur->next;
 	}
-	sel = xplSelectNodesWithCtxt(ctxt->doc->xpath_ctxt, cur, select_attr);
+	sel = xplSelectNodesWithCtxt(ctxt->doc->xpath_ctxt, cur, ctxt->params->select);
 	if (sel)
 	{
 		if (sel->type == XPATH_NODESET)
@@ -549,21 +579,23 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 			if (sel->nodesetval)
 			{
 				/* There could be some speedups for OUTPUT_FORMAT_TEXT, but they would mess the code up completely. */
-				response_tag_name_attr = xmlGetNoNsProp(ctxt->command_element, RESPONSE_TAG_NAME_ATTR);
 				for (i = 0; i < (size_t) sel->nodesetval->nodeNr; i++)
 				{
 					sibling = sel->nodesetval->nodeTab[i];
 					prnt = sibling->parent;
 					sibling->parent = NULL;
 					cur = xplCloneAsNodeChild(sibling, ctxt->command_element);
-					if (response_tag_name_attr && (cur->type == XML_ELEMENT_NODE))
-						xmlNodeSetName(cur, response_tag_name_attr);
+					if (ctxt->params->response_tag_name.ncname && (cur->type == XML_ELEMENT_NODE))
+					{
+						xmlNodeSetName(cur, ctxt->params->response_tag_name.ncname);
+						cur->ns = ctxt->params->response_tag_name.ns;
+					}
 					sibling->parent = prnt;
 					if (!head)
 						head = tail = cur;
 					else
 						tail = xmlAddNextSibling(tail, cur);
-					if (remove_source) /* "move" instead of copy */
+					if (ctxt->params->remove_source) /* "move" instead of copy */
 					{
 						xmlUnlinkNode(sibling);
 						if (ctxt->input_source == INPUT_SOURCE_LOCAL)
@@ -573,19 +605,16 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 						sel->nodesetval->nodeTab[i] = 0;
 					}
 				}
-				if (response_tag_name_attr)
-					XPL_FREE(response_tag_name_attr);
 			}
 		} else if (sel->type != XPATH_UNDEFINED) 
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "select XPath expression \"%s\" evaluated to non-nodeset value", select_attr);
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "select XPath expression \"%s\" evaluated to non-nodeset value", ctxt->params->select);
 		else 
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "select XPath expression \"%s\" evaluated to undef", select_attr);
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "select XPath expression \"%s\" evaluated to undef", ctxt->params->select);
 	} else
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "invalid select XPath expression \"%s\"", select_attr);
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "invalid select XPath expression \"%s\"", ctxt->params->select);
 	ctxt->ret = head;
 	if (sel)
 		xmlXPathFreeObject(sel);
-	XPL_FREE(select_attr);
 }
 
 static void computeRetStep(IncludeContextPtr ctxt)
@@ -593,7 +622,7 @@ static void computeRetStep(IncludeContextPtr ctxt)
 	size_t encoded_size;
 	xmlChar *encoded_content;
 
-	if ((ctxt->input_format != INPUT_FORMAT_RAW) && (ctxt->output_format != OUTPUT_FORMAT_XML) && ctxt->ret)
+	if (ctxt->params->input_format != INPUT_FORMAT_RAW && ctxt->params->output_format != OUTPUT_FORMAT_XML && ctxt->ret)
 	{
 		/* we have a node list and need an optionally encoded string. */
 		if (ctxt->content)
@@ -602,7 +631,7 @@ static void computeRetStep(IncludeContextPtr ctxt)
 		ctxt->content_size = xmlStrlen(ctxt->content);
 		xmlFreeNodeList(ctxt->ret);
 	}
-	switch (ctxt->output_format)
+	switch (ctxt->params->output_format)
 	{
 	case OUTPUT_FORMAT_XML:
 		/* nothing to do here */
@@ -646,11 +675,9 @@ static void computeRetStep(IncludeContextPtr ctxt)
 	ctxt->content = NULL;
 }
 
-typedef void (*CtxtStep)(IncludeContextPtr ctxt);
-
-static bool ProcessInclude(xplCommandInfoPtr commandInfo, xmlNodePtr *ret)
+void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	CtxtStep steps[] = 
+	static const CtxtStep steps[] =
 	{
 		getSourceStep,
 		getFormatsStep,
@@ -661,7 +688,7 @@ static bool ProcessInclude(xplCommandInfoPtr commandInfo, xmlNodePtr *ret)
 		selectNodesStep,
 		computeRetStep
 	};
-	const int step_count = sizeof(steps) / sizeof(steps[0]);
+	static const int step_count = sizeof(steps) / sizeof(steps[0]);
 	int i;
 	IncludeContext ctxt;
 
@@ -673,29 +700,10 @@ static bool ProcessInclude(xplCommandInfoPtr commandInfo, xmlNodePtr *ret)
 		if (ctxt.error)
 		{
 			clearIncludeContext(&ctxt);
-			*ret = ctxt.error;
-			return false;
+			ASSIGN_RESULT(ctxt.error, true, true);
+			return;
 		}
 	}
-	*ret = ctxt.ret;
 	clearIncludeContext(&ctxt);
-	return true;
-}
-
-void xplCmdIncludeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
-{
-	xmlNodePtr ret, error;
-	bool repeat;
-
-	if (ProcessInclude(commandInfo, &ret)) /* ok */
-	{
-		if ((error = xplDecodeCmdBoolParam(commandInfo->element, REPEAT_ATTR, &repeat, true)))
-		{
-			ASSIGN_RESULT(error, true, true);
-		} else {
-			ASSIGN_RESULT(ret, repeat, true);
-		}
-	} else {
-		ASSIGN_RESULT(ret, true, true);
-	}
+	ASSIGN_RESULT(ctxt.ret, ctxt.params->repeat, true);
 }
