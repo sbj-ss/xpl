@@ -244,6 +244,7 @@ static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 static xmlNodePtr _splitByCouple(UnstringerContextPtr ctxt)
 {
 	/* ToDo */
+	UNUSED_PARAM(ctxt);
 	return NULL;
 }
 
@@ -251,7 +252,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 {
 	xmlXPathObjectPtr sel = NULL;
 	UnstringerContext ctxt;
-	size_t i;
+	ssize_t i;
 	xmlNodePtr ret = NULL, tail = NULL, out, cur;
 
 	memset(&ctxt, 0, sizeof(UnstringerContext));
