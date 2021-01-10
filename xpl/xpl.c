@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
 		start_params.config_file_name = conf_file;
 
 	/* start XPL engine */
-	if (!xplStartEngine((const xplStartParamsPtr) &xplDefaultStartParams, argc, (const char**) argv, &error_text))
+	if (!xplStartEngine((const xplStartParamsPtr) &start_params, argc, (const char**) argv, &error_text))
 	{
 		printf("Error starting XPL engine: %s\n", error_text);
 		if (error_text)
@@ -178,6 +178,7 @@ int main(int argc, char* argv[])
 		xplParamAddValue(env, BAD_CAST "HelperFunction", BAD_CAST XPL_STRDUP("Load"), XPL_PARAM_TYPE_USERDATA);
 		err_code = xplProcessFile(app_path, HELPER_FILE, env, session, &doc);
 		xplDocumentFree(doc);
+		// TODO clear env
 		if (err_code != XPL_ERR_NO_ERROR)
 		{
 			fprintf(stderr, "error: %s returned an error \"%s\" parsing session and/or parameters files\n", HELPER_FILE, xplErrorToString(err_code));
