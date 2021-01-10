@@ -20,6 +20,6 @@ xpl: xpl.o
 	gcc $(CFLAGS) -o $@ $< $(LIBS)
 	
 clean:
-	rm *.o cmdline || /bin/true
+	rm *.o xpl || /bin/true
 	
 all: xpl
