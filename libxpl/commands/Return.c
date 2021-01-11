@@ -15,6 +15,7 @@ xplCommand xplReturnCommand =
 void xplCmdReturnEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 /* TODO repeat */
+/* TODO id */
 	if (!commandInfo->document->current_macro)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "this command can only be called within macro definition"), true, true);
