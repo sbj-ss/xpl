@@ -8,7 +8,7 @@ xplCommand xplExpandAfterCommand =
 {
 	.prologue = xplCmdExpandAfterPrologue,
 	.epilogue = xplCmdExpandAfterEpilogue,
-	.flags = XPL_CMD_FLAG_CONTENT_SAFE,
+	.flags = XPL_CMD_FLAG_CONTENT_SAFE | XPL_CMD_FLAG_ALWAYS_EXPAND,
 	.params_stencil = NULL
 };
 
