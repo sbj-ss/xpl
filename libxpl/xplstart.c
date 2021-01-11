@@ -51,7 +51,7 @@ void xplCleanupMemory(void)
 	xmlMemSetup(free, malloc, realloc, strdup);
 }
 
-static bool startXpr(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error)
+static bool _startXpr(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error)
 {
 	UNUSED_PARAM(argc);
 	UNUSED_PARAM(argv);
@@ -71,12 +71,12 @@ static bool startXpr(const xplStartParamsPtr params, int argc, const char **argv
 	return true;
 }
 
-static void stopXpr(void)
+static void _stopXpr(void)
 {
 	xprShutdown(xprGetActiveSubsystems());
 }
 
-static bool startXml(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error)
+static bool _startXml(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error)
 {
 	UNUSED_PARAM(params);
 	UNUSED_PARAM(argc);
@@ -88,12 +88,12 @@ static bool startXml(const xplStartParamsPtr params, int argc, const char **argv
 	return true;
 }
 
-static void stopXml(void)
+static void _stopXml(void)
 {
 	xmlCleanupParser();
 }
 
-static bool startXef(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error)
+static bool _startXef(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error)
 {
 	xefStartupParams xef_params;
 
@@ -115,12 +115,12 @@ static bool startXef(const xplStartParamsPtr params, int argc, const char **argv
 	return true;
 }
 
-static void stopXef(void)
+static void _stopXef(void)
 {
 	xefShutdown();
 }
 
-static bool startXpl(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error)
+static bool _startXpl(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error)
 {
 	xmlChar* conf_path;
 	char *fn_pos;
@@ -153,7 +153,7 @@ static bool startXpl(const xplStartParamsPtr params, int argc, const char **argv
 	return true;
 }
 
-static void stopXpl(void)
+static void _stopXpl(void)
 {
 	xplDoneParser();
 }
@@ -166,10 +166,10 @@ typedef struct _StartStopStep
 
 static StartStopStep start_stop_steps[] =
 {
-	{ startXpr, stopXpr },
-	{ startXml, stopXml },
-	{ startXef, stopXef },
-	{ startXpl, stopXpl }
+	{ _startXpr, _stopXpr },
+	{ _startXml, _stopXml },
+	{ _startXef, _stopXef },
+	{ _startXpl, _stopXpl }
 };
 #define START_STOP_STEP_COUNT (sizeof(start_stop_steps) / sizeof(start_stop_steps[0]))
 
