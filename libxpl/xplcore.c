@@ -250,6 +250,13 @@ xmlChar* xplDocByRoleGetter(xplCommandInfoPtr info, const xmlChar *raw_value, vo
 }
 
 /* common document initialization part */
+
+static void _xpathDummyError(void *data, xmlErrorPtr error)
+{
+	UNUSED_PARAM(data);
+	UNUSED_PARAM(error);
+}
+
 xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xplSessionPtr aSession)
 {
 	size_t path_len;
@@ -293,6 +300,7 @@ xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xpl
 		xplDocumentFree(doc);
 		return NULL;
 	}
+	doc->xpath_ctxt->error = _xpathDummyError;
 	doc->deleted_nodes = rbCreateBufParams(32, RB_GROW_DOUBLE, 2);
 	if (!doc->deleted_nodes)
 	{
