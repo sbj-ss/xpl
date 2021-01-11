@@ -43,7 +43,9 @@ void xplCmdGetDocumentFilenameEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 	xmlNodePtr ret;
 	xmlChar *fn;
 
-	if (!params->document->filename)
+	if (!params->document)
+		fn = commandInfo->document->filename + xmlStrlen(xplGetDocRoot());
+	else if (!params->document->filename)
 		fn = BAD_CAST "<unknown>";
 	else
 		fn = params->document->filename + xmlStrlen(xplGetDocRoot());
