@@ -97,7 +97,7 @@ void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
 	{
 		switch (msgType)
 		{
-			case xplMsgDebug: color = 0x06; break;
+			case xplMsgDebug: color = 0x06; break; // TODO define these codes in XPR
 			case xplMsgInfo: color = XPR_DEFAULT_CONSOLE_COLOR; break;
 			case xplMsgWarning: color = 0x0B; break;
 			case xplMsgError: color = 0x0E; break;
@@ -108,7 +108,7 @@ void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
 	}
 	xmlGenericError(xmlGenericErrorContext, "[%s] %s: %s\n", now, what, encoded_msg);
 	if (cfgUseConsoleColors)
-		xprSetConsoleColor(XPR_DEFAULT_CONSOLE_COLOR);
+		xprResetConsoleColor();
 	(void) xprMutexRelease(&console_interlock);
 	if (encoded_msg != encoding_msg)
 		XPL_FREE(encoded_msg);

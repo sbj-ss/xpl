@@ -101,6 +101,8 @@ XPLPUBFUN void XPLCALL
 
 XPLPUBFUN void XPLCALL
 	xprSetConsoleColor(int color);
+XPLPUBFUN void XPLCALL
+	xprResetConsoleColor(void);
 
 XPLPUBFUN int XPLCALL
 	xprGetPid(void);

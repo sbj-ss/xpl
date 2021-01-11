@@ -241,6 +241,11 @@ void xprSetConsoleColor(int color)
 		xmlGenericError(xmlGenericErrorContext, "\e[3%dm", color);
 }
 
+void xprResetConsoleColor()
+{
+	xmlGenericError(xmlGenericErrorContext, "\e[0m");
+}
+
 void xprDebugBreak(void)
 {
 	raise(SIGTRAP);
