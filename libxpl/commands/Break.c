@@ -41,6 +41,7 @@ xplCommand xplBreakCommand =
 {
 	.prologue = NULL,
 	.epilogue = xplCmdBreakEpilogue,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdBreakParams),
 	.parameters = {
