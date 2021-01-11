@@ -787,7 +787,7 @@ xmlNodePtr xplLoadedModulesToNodeList(const xplQName tagname, xmlNodePtr parent)
 	return ctxt.first;
 }
 
-xmlNodePtr xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, bool *value, bool defaultValue)
+xmlNodePtr xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, bool *value, bool defaultValue) // TODO remove
 {
 	xmlChar *attr = xmlGetNoNsProp(cmd, name);
 	int dec_value;
