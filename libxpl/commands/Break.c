@@ -60,8 +60,8 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdBreakParamsPtr cmd_params = (xplCmdBreakParamsPtr) commandInfo->params;
 	xmlChar number_buf[32];
-	bool do_ascend = true;
-	bool do_climb = false;
+	bool delete_tail = true;
+	bool ascend = false;
 	xmlChar *upper_point;
 	xmlNodePtr upper_break;
 
@@ -70,14 +70,14 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		switch (cmd_params->point->type)
 		{
 			case XPATH_BOOLEAN:
-				do_ascend = cmd_params->point->boolval;
+				delete_tail = cmd_params->point->boolval;
 				break;
 			case XPATH_STRING:
-				do_ascend = (cmd_params->point->stringval && *cmd_params->point->stringval);
+				delete_tail = (cmd_params->point->stringval && *cmd_params->point->stringval);
 				break;
 			case XPATH_NUMBER:
-				do_climb = (cmd_params->point->floatval > 1.0);
-				if (do_climb)
+				ascend = (cmd_params->point->floatval > 1.0);
+				if (ascend)
 				{
 					snprintf((char*) number_buf, sizeof(number_buf) - 1, "%d", (int) (cmd_params->point->floatval - .5));
 					number_buf[sizeof(number_buf) - 1] = 0;
@@ -86,26 +86,26 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				break;
 			case XPATH_NODESET:
 				if (cmd_params->point->nodesetval && cmd_params->point->nodesetval->nodeNr)
-					do_climb = !_checkForAncestor(cmd_params->point->nodesetval, commandInfo->element->parent);
+					ascend = !_checkForAncestor(cmd_params->point->nodesetval, commandInfo->element->parent);
 				else
-					do_climb = true;
+					ascend = true;
 				upper_point = (xmlChar*) cmd_params->point->user;
 				break;
 			default:
 				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "point XPath expression \"%s\" evaluated to invalid type", cmd_params->point->user), true, true);
 				return;
 		}
-		if (do_climb)
+		if (ascend)
 		{
 			if (commandInfo->element->parent->parent &&
 				commandInfo->element->parent->parent->type == XML_ELEMENT_NODE)
 			{
 				upper_break = _createBreak(commandInfo, upper_point);
 				xmlAddNextSibling(commandInfo->element->parent, upper_break);
-			}
+			} // TODO warning
 		}
 	}
-	if (do_ascend)
+	if (delete_tail)
 	{
 		xplDocDeferNodeListDeletion(commandInfo->document, commandInfo->element->next);
 		commandInfo->element->next = NULL;
