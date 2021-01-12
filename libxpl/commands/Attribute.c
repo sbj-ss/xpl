@@ -4,28 +4,6 @@
 
 void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
-static void _assignAttribute(xmlNodePtr dst, xplQNamePtr qname, xmlChar *value, bool allowReplace)
-{
-	xmlAttrPtr prev;
-
-	if (qname->ns)
-		prev = xmlHasNsProp(dst, qname->ncname, qname->ns->href);
-	else
-		prev = xmlHasProp(dst, qname->ncname);
-	if (prev)
-	{
-		if (!allowReplace)
-			return;
-		xmlFreeNodeList(prev->children);
-		xplSetChildren((xmlNodePtr) prev, xmlNewDocText(dst->doc, value));
-	} else {
-		if (qname->ns)
-			xmlNewNsProp(dst, qname->ns, qname->ncname, value);
-		else
-			xmlNewProp(dst, qname->ncname, value);
-	}
-}
-
 typedef struct _xplCmdAttributeParams
 {
 	xplQName qname;
@@ -73,6 +51,28 @@ xplCommand xplAttributeCommand =
 		}
 	}
 };
+
+static void _assignAttribute(xmlNodePtr dst, xplQNamePtr qname, xmlChar *value, bool allowReplace)
+{
+	xmlAttrPtr prev;
+
+	if (qname->ns)
+		prev = xmlHasNsProp(dst, qname->ncname, qname->ns->href);
+	else
+		prev = xmlHasProp(dst, qname->ncname);
+	if (prev)
+	{
+		if (!allowReplace)
+			return;
+		xmlFreeNodeList(prev->children);
+		xplSetChildren((xmlNodePtr) prev, xmlNewDocText(dst->doc, value));
+	} else {
+		if (qname->ns)
+			xmlNewNsProp(dst, qname->ns, qname->ncname, value);
+		else
+			xmlNewProp(dst, qname->ncname, value);
+	}
+}
 
 void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
