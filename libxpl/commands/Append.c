@@ -12,47 +12,6 @@ typedef enum _AppendPosition
 	POS_LAST
 } AppendPosition;
 
-static void _doAppend(xmlNodePtr src, xmlNodePtr dst, AppendPosition mode)
-{
-	switch (mode)
-	{
-		case POS_BEFORE: 
-			xplPrependList(dst, src);
-			break;
-		case POS_AFTER:
-			xplAppendList(dst, src);
-			break;
-		case POS_FIRST:
-			if (dst->children)
-				xplPrependList(dst->children, src);
-			else {
-				dst->children = src;
-				dst->last = xplFindTail(src);
-				while (src)
-				{
-					src->parent = dst;
-					src = src->next;
-				}
-			}
-			break;
-		case POS_LAST:
-			if (dst->children)
-				xplAppendList(dst->last?dst->last:xplFindTail(dst->children), src);
-			else {
-				dst->children = src;
-				dst->last = xplFindTail(src);
-				while (src)
-				{
-					src->parent = dst;
-					src = src->next;
-				}
-			}
-			break;
-		default:
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-	}
-}
-
 typedef struct _xplCmdAppendParams
 {
 	xmlXPathObjectPtr source;
@@ -108,6 +67,47 @@ xplCommand xplAppendCommand =
 		}
 	}
 };
+
+static void _doAppend(xmlNodePtr src, xmlNodePtr dst, AppendPosition mode)
+{
+	switch (mode)
+	{
+		case POS_BEFORE:
+			xplPrependList(dst, src);
+			break;
+		case POS_AFTER:
+			xplAppendList(dst, src);
+			break;
+		case POS_FIRST:
+			if (dst->children)
+				xplPrependList(dst->children, src);
+			else {
+				dst->children = src;
+				dst->last = xplFindTail(src);
+				while (src)
+				{
+					src->parent = dst;
+					src = src->next;
+				}
+			}
+			break;
+		case POS_LAST:
+			if (dst->children)
+				xplAppendList(dst->last?dst->last:xplFindTail(dst->children), src);
+			else {
+				dst->children = src;
+				dst->last = xplFindTail(src);
+				while (src)
+				{
+					src->parent = dst;
+					src = src->next;
+				}
+			}
+			break;
+		default:
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
+	}
+}
 
 void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
