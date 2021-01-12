@@ -79,7 +79,7 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				do_climb = (cmd_params->point->floatval > 1.0);
 				if (do_climb)
 				{
-					snprintf((char*) number_buf, sizeof(number_buf) - 1, "%d", (int) cmd_params->point->floatval - 1);
+					snprintf((char*) number_buf, sizeof(number_buf) - 1, "%d", (int) (cmd_params->point->floatval - .5));
 					number_buf[sizeof(number_buf) - 1] = 0;
 					upper_point = number_buf;
 				}
