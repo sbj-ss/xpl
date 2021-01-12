@@ -133,10 +133,10 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			cur_dst = cmd_params->destination->nodesetval->nodeTab[i];
 			if ((cmd_params->position > POS_AFTER) && (cur_dst->type != XML_ELEMENT_NODE))
-				/* don't assign content to non-elements */
+				/* don't assign content to non-elements */ // TODO warning
 				continue;
 			if (cur_dst->type == XML_ATTRIBUTE_NODE)
-				/* can't add elements to attributes */
+				/* can't add elements to attributes */ // TODO warning
 				continue;
 			parent = PARENT(cur_dst);
 			if (!cmd_params->source) /* add own content */
