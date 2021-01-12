@@ -34,7 +34,7 @@ xplCommand xplBreakCommand =
 	}
 };
 
-static bool checkForAncestor(xmlNodeSetPtr set, xmlNodePtr ancestor)
+static bool _checkForAncestor(xmlNodeSetPtr set, xmlNodePtr ancestor)
 {
 	size_t i;
 
@@ -44,7 +44,7 @@ static bool checkForAncestor(xmlNodeSetPtr set, xmlNodePtr ancestor)
 	return false;
 }
 
-static xmlNodePtr createBreak(xplCommandInfoPtr commandInfo, xmlChar *where)
+static xmlNodePtr _createBreak(xplCommandInfoPtr commandInfo, xmlChar *where)
 {
 	xmlNodePtr ret;
 	xmlNsPtr xpl_ns;
@@ -86,7 +86,7 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				break;
 			case XPATH_NODESET:
 				if (cmd_params->point->nodesetval && cmd_params->point->nodesetval->nodeNr)
-					do_climb = !checkForAncestor(cmd_params->point->nodesetval, commandInfo->element->parent);
+					do_climb = !_checkForAncestor(cmd_params->point->nodesetval, commandInfo->element->parent);
 				else
 					do_climb = true;
 				upper_point = (xmlChar*) cmd_params->point->user;
@@ -100,7 +100,7 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			if (commandInfo->element->parent->parent &&
 				commandInfo->element->parent->parent->type == XML_ELEMENT_NODE)
 			{
-				upper_break = createBreak(commandInfo, upper_point);
+				upper_break = _createBreak(commandInfo, upper_point);
 				xmlAddNextSibling(commandInfo->element->parent, upper_break);
 			}
 		}
