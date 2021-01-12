@@ -5,28 +5,6 @@
 
 void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
-static bool checkForAncestor(xmlNodeSetPtr set, xmlNodePtr ancestor)
-{
-	size_t i;
-
-	for (i = 0; i < (size_t) set->nodeNr; i++)
-		if (set->nodeTab[i] == ancestor)
-			return true;
-	return false;
-}
-
-static xmlNodePtr createBreak(xplCommandInfoPtr commandInfo, xmlChar *where)
-{
-	xmlNodePtr ret;
-	xmlNsPtr xpl_ns;
-
-	if (!(xpl_ns = commandInfo->document->root_xpl_ns))
-		xpl_ns = xmlSearchNsByHref(commandInfo->element->doc, commandInfo->element, cfgXplNsUri);
-	ret = xmlNewDocNode(commandInfo->element->doc, xpl_ns, BAD_CAST "break", NULL);
-	xmlNewProp(ret, BAD_CAST "point", where);
-	return ret;
-}
-
 typedef struct _xplCmdBreakParams
 {
 	xmlXPathObjectPtr point;
@@ -55,6 +33,28 @@ xplCommand xplBreakCommand =
 		}
 	}
 };
+
+static bool checkForAncestor(xmlNodeSetPtr set, xmlNodePtr ancestor)
+{
+	size_t i;
+
+	for (i = 0; i < (size_t) set->nodeNr; i++)
+		if (set->nodeTab[i] == ancestor)
+			return true;
+	return false;
+}
+
+static xmlNodePtr createBreak(xplCommandInfoPtr commandInfo, xmlChar *where)
+{
+	xmlNodePtr ret;
+	xmlNsPtr xpl_ns;
+
+	if (!(xpl_ns = commandInfo->document->root_xpl_ns))
+		xpl_ns = xmlSearchNsByHref(commandInfo->element->doc, commandInfo->element, cfgXplNsUri);
+	ret = xmlNewDocNode(commandInfo->element->doc, xpl_ns, BAD_CAST "break", NULL);
+	xmlNewProp(ret, BAD_CAST "point", where);
+	return ret;
+}
 
 void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
