@@ -12,7 +12,7 @@ for f in $(\
 	| sed -Ee 's/^[a-z]/\u&/; s/-([a-z])/\u\1/g; s/$/.xpl/' \
 ); do
 	if [ ! -f $d/../bootstrap/$f ]; then
-		echo "$f is missing!"
+		echo "$f is missing!" 1>&2
 		((missing++))
 	fi
 done
