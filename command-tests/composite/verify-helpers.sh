@@ -3,11 +3,11 @@
 missing=0;
 
 for f in $(\
-	grep -Eo '<xpl:[^ />]+' Helpers.xpl\
+	grep -Eo '<xpl:[^ />]+' "$(dirname $0)/Helpers.xpl"\
 	| sort \
 	| uniq \
 	| cut -c 6- \
-	| grep -vF "$(cat bootstrap-exclude.txt)" \
+	| grep -vF "$(cat $(dirname $0)/bootstrap-exclude.txt)" \
 	| sed -Ee 's/^[a-z]/\u&/; s/-([a-z])/\u\1/g; s/$/.xpl/' \
 ); do
 	if [ ! -f ../bootstrap/$f ]; then
