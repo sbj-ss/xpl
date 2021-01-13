@@ -1,5 +1,6 @@
 #include <getopt.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <libxml/xmlsave.h>
 #include <libxpl/xplcore.h>
 #include <libxpl/xplsave.h>
@@ -146,8 +147,8 @@ int main(int argc, char* argv[])
 	xplInitMemory(xplDefaultDebugAllocation, xplDefaultUseTcmalloc);
 	parseCommandLine(argc, argv);
 
-	/* locate config */
-	app_path = xprGetProgramPath();
+	/* TODO: ideally we want app_path = dirname(input_file) but we need working path c14n for this */
+	app_path = BAD_CAST getcwd(NULL, 0);
 	memcpy(&start_params, &xplDefaultStartParams, sizeof(xplStartParams));
 	if (conf_file)
 		start_params.config_file_name = conf_file;
@@ -224,7 +225,7 @@ cleanup:
 		xplParamsFree(env);
 	xplShutdownEngine();
 	if (app_path)
-		XPL_FREE(app_path);
+		free(app_path);
 #ifdef _LEAK_DETECTION
 	printf("Starting memory dump...\n");
 	xmlMemDisplay(stdout);
