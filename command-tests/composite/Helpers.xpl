@@ -89,7 +89,7 @@
     <xpl:debug-print severity="info">Total: <ProcessedCount/>, passed: <PassedCount/>, failed: <FailedCount/></xpl:debug-print>
   </xpl:define>
 
-  <MustSucceed name="SanityCheck">
+  <MustSucceed name="sanity-check">
     <Input/>
     <Expected/>
   </MustSucceed>
