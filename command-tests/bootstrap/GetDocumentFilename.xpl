@@ -4,5 +4,8 @@
   :get-document-filename command 
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl">
-  <xpl:get-document-filename/>
+  <!-- we can't use the current version output with abs path -->
+  <xpl:attribute name="dummy" destination="/dev/null">
+    <xpl:get-document-filename/>
+  </xpl:attribute>
 </Root>

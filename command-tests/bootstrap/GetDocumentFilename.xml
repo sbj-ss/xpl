@@ -3,4 +3,4 @@
   XPL bootstrap test suite
   :get-document-filename command 
 -->
-<Root xmlns:xpl="urn:x-xpl:xpl">/home/ss/polaris/command-tests/bootstrap/GetDocumentFilename.xpl</Root>
+<Root xmlns:xpl="urn:x-xpl:xpl"/>
