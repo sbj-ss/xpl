@@ -52,3 +52,5 @@ mt.dep
 /ToDo.txt
 # debug memory dumps
 **/.memdump
+# test output
+/command-tests/composite/*_out.xml
