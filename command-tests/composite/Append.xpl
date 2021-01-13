@@ -320,4 +320,6 @@
       <xpl:append select="../DoesNotMatter" source="count(../Whatever)"/>
     </Input>
   </MustFail>
+
+  <Summary/>
 </Root>

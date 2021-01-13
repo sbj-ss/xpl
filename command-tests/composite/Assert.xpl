@@ -69,4 +69,6 @@
       <xpl:assert>zz()</xpl:assert>
     </Input>
   </MustFail>
+
+  <Summary/>
 </Root>
