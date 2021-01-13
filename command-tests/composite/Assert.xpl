@@ -66,7 +66,7 @@
 
   <MustFail name="error/invalid-xpath">
     <Input>
-      <xpl:assert>zz()</xpl:assert>
+      <xpl:assert>#1</xpl:assert>
     </Input>
   </MustFail>
 
