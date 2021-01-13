@@ -18,6 +18,7 @@ done
 
 if [ $missing -gt 0 ]; then
 	echo "$missing test(s) missing!"
+	exit 1
 else
 	echo "All bootstrap tests present."
 fi
