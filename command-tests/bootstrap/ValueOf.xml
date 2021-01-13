@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  XPL bootstrap test suite
+  :value-of command 
+-->
+<Root xmlns:xpl="urn:x-xpl:xpl">
+  <Calc>4</Calc>
+  <Nodes>1</Nodes>
+</Root>

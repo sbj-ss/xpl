@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  XPL bootstrap test suite
+  :choose, :when, :test, :otherwise commands
+-->
+<Root xmlns:xpl="urn:x-xpl:xpl">
+  <OK/>
+  <OK/>
+</Root>

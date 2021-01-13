@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  XPL bootstrap test suite
+  :serialize command 
+-->
+<Root xmlns:xpl="urn:x-xpl:xpl">&lt;A attr="value"&gt;&lt;B/&gt;&lt;/A&gt;</Root>

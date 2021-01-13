@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  XPL bootstrap test suite
+  :nclude command 
+-->
+<Root xmlns:xpl="urn:x-xpl:xpl">
+  <Local attr="a">a</Local>
+  <External>
+    <IncludedExternally/>
+  </External>
+</Root>
