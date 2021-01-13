@@ -7,60 +7,47 @@
   <xpl:define name="MustSucceed" id="MustSucceed">
     <xpl:debug-print severity="info">  Running <xpl:content select="@name"/>...</xpl:debug-print>
 
-    <xpl:define name="error">
-      <!-- TODO we need a way to report an error outside (e.g. exit code) -->
-      <xpl:debug-print severity="error">   Error: <xpl:content/></xpl:debug-print>
-      <xpl:append destination="ancestor::MustSucceed[1]" position="first">
-        <Processed>
-          <xpl:attribute name="name"><xpl:content select="@name"/></xpl:attribute>
-          <Succeeded>false</Succeeded>
-          <Error><xpl:content/></Error>
-          <xpl:no-expand>
-            <xpl:content select="Input" id="MustSucceed"/>
-          </xpl:no-expand>
-        </Processed>
-      </xpl:append>
-      <xpl:break point="ancestor::MustSucceed[1]"/>
-    </xpl:define>
-
-    <xpl:define name="ProcessedInput" expand="true">
-      <xpl:content select="Input/node()" id="MustSucceed"/>
-    </xpl:define>
-
-    <xpl:define name="Result" expand="true">
-      <xpl:value-of>
-        <xpl:attribute name="select">
-          '<xpl:serialize><ProcessedInput/></xpl:serialize>' =
-          '<xpl:serialize><xpl:content select="Expected/node()" id="MustSucceed"/></xpl:serialize>'
-        </xpl:attribute>
-      </xpl:value-of>
-    </xpl:define>
-
-    <xpl:choose>
-      <xpl:when>
-        <xpl:test><Result/>()</xpl:test>
-        <xpl:debug-print severity="info">    Passed</xpl:debug-print>
-      </xpl:when>
-      <xpl:otherwise>
-        <xpl:debug-print severity="error">   Failed</xpl:debug-print>
-      </xpl:otherwise>
-    </xpl:choose>
-
     <Processed>
       <xpl:attribute name="name"><xpl:content select="@name"/></xpl:attribute>
-      <Succeeded>
-        <Result/>
-      </Succeeded>
       <xpl:no-expand>
         <xpl:content select="Input"/>
       </xpl:no-expand>
       <Output>
-        <ProcessedInput/>
+        <xpl:content select="Input/node()"/>
       </Output>
-      <xpl:if>
-        <xpl:test>not(<Result/>())</xpl:test>
-        <xpl:content select="Expected"/>
-      </xpl:if>
+
+      <xpl:define name="HasError" expand="true">
+        <xpl:value-of select="count(preceding::Output[1]//error)"/>
+      </xpl:define>
+
+      <xpl:define name="Match" expand="true">
+        <xpl:value-of>
+          <xpl:attribute name="select">
+            '<xpl:serialize><xpl:include select="preceding::Output[1]/node()"/></xpl:serialize>' =
+            '<xpl:serialize><xpl:content select="Expected/node()" id="MustSucceed"/></xpl:serialize>'
+          </xpl:attribute>
+        </xpl:value-of>
+      </xpl:define>
+
+      <xpl:choose>
+        <xpl:when>
+          <xpl:test><HasError/></xpl:test>
+          <Succeeded>false</Succeeded>
+          <xpl:debug-print severity="error">   Error: <xpl:include select="preceding::Output[1]//error/text()"/></xpl:debug-print>
+        </xpl:when>
+        <xpl:when>
+          <xpl:test>not(<Match/>())</xpl:test>
+          <Succeeded>false</Succeeded>
+          <xpl:debug-print severity="error">   Failed</xpl:debug-print>
+          <xpl:no-expand>
+            <xpl:content select="Expected"/>
+          </xpl:no-expand>
+        </xpl:when>
+        <xpl:otherwise>
+          <Succeeded>true</Succeeded>
+          <xpl:debug-print severity="info">    Passed</xpl:debug-print>
+        </xpl:otherwise>
+      </xpl:choose>
     </Processed>
   </xpl:define>
 
@@ -69,11 +56,9 @@
 
     <Processed>
       <xpl:attribute name="name"><xpl:content select="@name"/></xpl:attribute>
-      <Input>
-        <xpl:no-expand>
-          <xpl:content select="Input"/>
-        </xpl:no-expand>
-      </Input>
+      <xpl:no-expand>
+        <xpl:content select="Input"/>
+      </xpl:no-expand>
       <Output>
         <xpl:content select="Input/node()"/>
       </Output>
@@ -89,6 +74,19 @@
         </xpl:otherwise>
       </xpl:choose>
     </Processed>   
+  </xpl:define>
+
+  <xpl:define name="Summary">
+    <xpl:define name="ProcessedCount" expand="true">
+      <xpl:value-of select="count(ancestor::Summary[1]/preceding-sibling::Processed)"/>
+    </xpl:define>
+    <xpl:define name="PassedCount" expand="true">
+      <xpl:value-of select="count(ancestor::Summary[1]/preceding-sibling::Processed[Succeeded='true'])"/>
+    </xpl:define>
+    <xpl:define name="FailedCount" expand="true">
+      <xpl:value-of select="count(ancestor::Summary[1]/preceding-sibling::Processed[Succeeded='false'])"/>
+    </xpl:define>
+    <xpl:debug-print severity="info">Total: <ProcessedCount/>, passed: <PassedCount/>, failed: <FailedCount/></xpl:debug-print>
   </xpl:define>
 
   <MustSucceed name="SanityCheck">
