@@ -2,12 +2,13 @@
 
 processed=0
 failed=0
+d=$(dirname $0)
 
-for f in *.xpl; do
+for f in $d/*.xpl; do
 	echo "Running ${f}..."
-	LD_LIBRARY_PATH=../../libxpl ../../xpl/xpl -i $f -o /tmp/${f%.*}.xml
+	LD_LIBRARY_PATH=$d/../../libxpl $d/../../xpl/xpl -i $f -o /tmp/$(basename ${f%.*}.xml)
 	((processed++))
-	if ! diff ${f%.*}.xml /tmp/${f%.*}.xml; then
+	if ! diff ${f%.*}.xml /tmp/$(basename ${f%.*}.xml); then
 		((failed++))
 	fi
 done
