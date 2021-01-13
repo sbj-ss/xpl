@@ -1,16 +1,17 @@
 #!/bin/bash
 
 missing=0;
+d=$(dirname $0);
 
 for f in $(\
-	grep -Eo '<xpl:[^ />]+' "$(dirname $0)/Helpers.xpl"\
+	grep -Eo '<xpl:[^ />]+' "$d/Helpers.xpl"\
 	| sort \
 	| uniq \
 	| cut -c 6- \
-	| grep -vF "$(cat $(dirname $0)/bootstrap-exclude.txt)" \
+	| grep -vF "$(cat $d/bootstrap-exclude.txt)" \
 	| sed -Ee 's/^[a-z]/\u&/; s/-([a-z])/\u\1/g; s/$/.xpl/' \
 ); do
-	if [ ! -f ../bootstrap/$f ]; then
+	if [ ! -f $d/../bootstrap/$f ]; then
 		echo "$f is missing!"
 		((missing++))
 	fi
