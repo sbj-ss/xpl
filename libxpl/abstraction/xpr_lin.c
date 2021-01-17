@@ -231,6 +231,18 @@ bool xprParseCommandLine(void)
 	return true;
 }
 
+void xprSpawnProcessCopy(void)
+{
+	// TODO
+}
+
+void xprWaitForThreads(XPR_THREAD_HANDLE *handles, int count)
+{
+	UNUSED_PARAM(handles);
+	UNUSED_PARAM(count);
+	// TODO
+}
+
 void xprSetConsoleColor(int color)
 {
 	// TODO check terminal type
