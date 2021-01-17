@@ -8,7 +8,8 @@ LIBS = -lxml2 -lxpl -lonig -lcrypto -ltidy -lidn -lodbc
 WARNINGS = -Wall -Werror
 CFLAGS = -L../libxpl $(WARNINGS)
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -fstack-protector
+CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=undefined -fno-sanitize-recover -fstack-protector
+# -fsanitize=address 
 endif
 
 .DEFAULT_GOAL = all
