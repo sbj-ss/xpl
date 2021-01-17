@@ -3,6 +3,7 @@
 	<name>libxpl</name>
 	<comment></comment>
 	<projects>
+		<project>xts</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
