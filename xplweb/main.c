@@ -116,10 +116,6 @@ int main(int argc, char* argv[])
 	xprSleep(1000);
 	free_system_info();
 	mg_exit_library();
-#ifdef _LEAK_DETECTION
-	printf("Starting memory dump...\n");
-	xmlMemDisplay(stdout);
-#endif
 	xplCleanupMemory();
 	return (EXIT_SUCCESS);
 }

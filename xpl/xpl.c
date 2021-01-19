@@ -189,7 +189,7 @@ int main(int argc, char* argv[])
 	}
 
 	/* process real document */
-	LEAK_DETECTION_START
+	LEAK_DETECTION_START();
 	err_code = xplProcessFile(app_path, in_file, env, session, &doc);
 	if ((err_code >= XPL_ERR_NO_ERROR) && doc)
 		saveXmlDocToFile(doc->document, out_file, encoding, XML_SAVE_FORMAT);
@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
 	if (doc)
 		xplDocumentFree(doc);
 	xmlResetLastError(); 
-	LEAK_DETECTION_STOP
+	LEAK_DETECTION_STOP_AND_REPORT();
 
 	/* save session if requested.
 	 * use the helper file again */
@@ -226,10 +226,6 @@ cleanup:
 	xplShutdownEngine();
 	if (app_path)
 		free(app_path);
-#ifdef _LEAK_DETECTION
-	printf("Starting memory dump...\n");
-	xmlMemDisplay(stdout);
-#endif
 	xplCleanupMemory();
 	return ret_code;
 }

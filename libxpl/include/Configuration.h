@@ -95,16 +95,28 @@
 
 #ifdef _LEAK_DETECTION
 	#define LEAK_DETECTION_PREPARE int __ld_start;
-	#define LEAK_DETECTION_START  __ld_start = xmlMemBlocks(); printf("Leak detection start: %d\n", __ld_start);
-	#define LEAK_DETECTION_STOP   printf("Leak detection end: %d (%d)\n", xmlMemBlocks(), __ld_start - xmlMemBlocks());
+	#define LEAK_DETECTION_START() \
+		do { \
+			__ld_start = xmlMemBlocks(); \
+			printf("Leak detection start: %d\n", __ld_start); \
+		} while(0)
+	#define LEAK_DETECTION_STOP_AND_REPORT() \
+		do { \
+			printf("Leak detection end: %d (%d)\n", xmlMemBlocks(), __ld_start - xmlMemBlocks()); \
+			if (__ld_start - xmlMemBlocks()) \
+			{ \
+				printf("Starting memory dump...\n"); \
+				xmlMemDisplay(stdout); \
+			} \
+		} while(0)
 	#define XPL_MALLOC(size) xmlMallocLoc((size), __FILE__, __LINE__)
 	#define XPL_REALLOC(ptr, size) xmlReallocLoc((ptr), (size), __FILE__, __LINE__)
 	#define XPL_STRDUP_NO_CHECK(str) xmlMemStrdupLoc((const char*) (str), __FILE__, __LINE__)
 	#define XPL_FREE(ptr) xmlFree((ptr))
 #else
 	#define LEAK_DETECTION_PREPARE
-	#define LEAK_DETECTION_START
-	#define LEAK_DETECTION_STOP
+	#define LEAK_DETECTION_START()
+	#define LEAK_DETECTION_STOP_AND_REPORT()
 	#define XPL_MALLOC(size) malloc((size))
 	#define XPL_REALLOC(ptr, size) realloc((ptr), (size))
 	#define XPL_STRDUP_NO_CHECK(str) strdup((str))

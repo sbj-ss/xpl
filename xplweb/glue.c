@@ -268,7 +268,7 @@ int serveXpl(struct mg_connection *conn, void *user_data)
 	xplError ret;
 	int http_code;
 
-	LEAK_DETECTION_START
+	LEAK_DETECTION_START();
 	request_info = mg_get_request_info(conn);
 	/* session */
 	cookies = mg_get_header(conn, "Cookie");
@@ -354,7 +354,7 @@ done:
 	if (params)
 		xplParamsFree(params);
 	xmlResetLastError();
-	LEAK_DETECTION_STOP
+	LEAK_DETECTION_STOP_AND_REPORT();
 
 	return http_code;
 }
