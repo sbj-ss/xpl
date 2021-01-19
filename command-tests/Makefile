@@ -6,9 +6,9 @@ verify-helpers:
 	composite/verify-helpers.sh $(TAIL)
 
 bootstrap-tests:
-	cd bootstrap; ./run-tests.sh $(TAIL); cd ..
+	cd bootstrap && ./run-tests.sh $(TAIL)
 
 composite-tests:
-	cd composite; ./run-tests.sh $(TAIL); cd ..
+	cd composite && ./run-tests.sh $(TAIL)
 
 test: verify-helpers bootstrap-tests composite-tests
