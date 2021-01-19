@@ -863,7 +863,7 @@ void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr res
 			} else // don't expand, process children
 				xplNodeListApply(doc, element->children, result);
 		} else {
-			if (cfgWarnOnUnknownCommand)
+			if (cfgWarnOnUnknownCommand && doc->expand)
 				xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown command \"%s\" (file \"%s\", line %d)", element->name, element->doc->URL, element->line);
 			xplNodeListApply(doc, element->children, result);
 		}
