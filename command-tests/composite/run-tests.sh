@@ -6,7 +6,7 @@ errors=0
 failed_files=()
 
 for f in *.xpl; do
-	local_errors=$(LD_LIBRARY_PATH=../../libxpl ../../xpl/xpl -i $f -o ${f%.*}_out.xml 2>&1 | tee >(grep -i 'error:' | wc -l) 1>&2)
+	local_errors=$(LD_LIBRARY_PATH=../../libxpl:$LD_LIBRARY_PATH ../../xpl/xpl -i $f -o ${f%.*}_out.xml 2>&1 | tee >(grep -i 'error:' | wc -l) 1>&2)
 	((errors+=local_errors))
 	((processed++))
 	if [ $local_errors -gt 0 ]; then
