@@ -788,7 +788,7 @@ void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr mac
 		out = xplReplaceContentEntries(doc, macro->id, element, macro->content);
 		xplSetChildren(element, out);
 		xplNodeListApply(doc, element->children, result);
-		xplDownshiftNodeListNsDef(out, element->nsDef);
+		xplDownshiftNodeListNsDef(element->children, element->nsDef);
 		out = xplDetachContent(element);
 		if (!out) /* contents could be removed by :return */
 			out = macro->return_value;
