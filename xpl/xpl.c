@@ -227,5 +227,5 @@ cleanup:
 	if (app_path)
 		free(app_path);
 	xplCleanupMemory();
-	return ret_code;
+	return LEAK_DETECTION_RET_CODE(ret_code);
 }
