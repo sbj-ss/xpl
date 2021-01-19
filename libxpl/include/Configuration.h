@@ -94,22 +94,24 @@
 #endif
 
 #ifdef _LEAK_DETECTION
-	#define LEAK_DETECTION_PREPARE int __ld_start;
+	#define LEAK_DETECTION_PREPARE int __ld_start; bool __ld_leaked;
 	#define LEAK_DETECTION_START() \
 		do { \
 			__ld_start = xmlMemBlocks(); \
+			__ld_leaked = false; \
 			printf("Leak detection start: %d\n", __ld_start); \
 		} while(0)
 	#define LEAK_DETECTION_STOP_AND_REPORT() \
 		do { \
 			printf("Leak detection end: %d (%d)\n", xmlMemBlocks(), __ld_start - xmlMemBlocks()); \
+			__ld_leaked = !!(__ld_start - xmlMemBlocks()); \
 			if (__ld_start - xmlMemBlocks()) \
 			{ \
 				printf("Starting memory dump...\n"); \
 				xmlMemDisplay(stdout); \
 			} \
 		} while(0)
-	#define LEAK_DETECTION_RET_CODE(old) (__ld_start - xmlMemBlocks()? 5: (old))
+	#define LEAK_DETECTION_RET_CODE(old) (__ld_leaked? 5: (old))
 	#define XPL_MALLOC(size) xmlMallocLoc((size), __FILE__, __LINE__)
 	#define XPL_REALLOC(ptr, size) xmlReallocLoc((ptr), (size), __FILE__, __LINE__)
 	#define XPL_STRDUP_NO_CHECK(str) xmlMemStrdupLoc((const char*) (str), __FILE__, __LINE__)
