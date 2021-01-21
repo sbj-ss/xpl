@@ -280,7 +280,7 @@ static xmlChar* xplGetParamXPathValue(xplCommandInfoPtr info, xplCmdParamPtr par
 static xmlChar* xplGetParamQNameValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
 {
 	xplQNamePtr dst;
-	xmlChar *prefix, *error = NULL;
+	xmlChar *prefix = NULL, *error = NULL;
 
 	if (xmlValidateQName(*raw_value, 0))
 		return xplFormatMessage(BAD_CAST "invalid QName/NCName '%s'", *raw_value);
@@ -302,7 +302,8 @@ static xmlChar* xplGetParamQNameValue(xplCommandInfoPtr info, xplCmdParamPtr par
 				dst->ns = xmlNewNs(info->element->parent, dst->ns->href, dst->ns->prefix);
 		}
 	}
-	XPL_FREE(prefix);
+	if (prefix)
+		XPL_FREE(prefix);
 	return error;
 }
 
