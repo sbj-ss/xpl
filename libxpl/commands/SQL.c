@@ -81,7 +81,7 @@ xplCommand xplSqlCommand =
 		}
 	}
 };
-#define _XEF_HAS_DB
+
 #ifndef _XEF_HAS_DB
 void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
