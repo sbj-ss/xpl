@@ -634,6 +634,11 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplTdsDocRowContext doc_ctxt;
 
 	dbq_params.error = NULL;
+	if (cmd_params->as_attributes && cmd_params->show_nulls)
+	{
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "asattributes and shownulls can't be used simultaneously"), true, true);
+		return;
+	}
 	dbs = commandInfo->element->parent;
 	while (dbs)
 	{

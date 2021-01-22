@@ -177,6 +177,22 @@
     </Expected>
   </MustSucceed>
   
+  <MustSucceed name="pass/as-attributes-keep-nulls">
+    <Input>
+      <xpl:dbsession dbname="pg-xpl-test">
+        <xpl:sql asattributes="true" responsetagname="A" keepnulls="true">
+          SELECT *
+          FROM a;
+        </xpl:sql>
+      </xpl:dbsession>
+    </Input>
+    <Expected>
+      <A id="1" txt="abc" number="0"/>
+      <A id="2" txt="def" number=""/>
+      <A id="3" txt="" number="1"/>
+    </Expected>
+  </MustSucceed>
+    
   <MustSucceed name="pass/xml">
     <Input>
       <xpl:dbsession dbname="pg-xpl-test">
@@ -336,6 +352,16 @@
         </xpl:sql>
       </xpl:dbsession>
     </Input>
+  </MustFail>
+  
+  <MustFail name="fail/as-attributes-show-nulls">
+    <Input>
+      <xpl:dbsession dbname="pg-xpl-test">
+        <xpl:sql asattributes="true" shownulls="true">
+          SELECT NULL AS "Col";
+        </xpl:sql>
+      </xpl:dbsession>
+    </Input>  
   </MustFail>
   
   <xpl:db-garbage-collect/>
