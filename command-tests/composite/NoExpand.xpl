@@ -15,4 +15,6 @@
       <A/>
     </Expected>
   </MustSucceed>
+  
+  <Summary/>
 </Root>

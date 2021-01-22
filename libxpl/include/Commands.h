@@ -28,6 +28,7 @@ extern xplCommand xplDBSessionCommand;
 extern xplCommand xplDebugBreakCommand;
 extern xplCommand xplDebugPrintCommand;
 extern xplCommand xplDefaultCommand;
+extern xplCommand xplDefineCommand;
 extern xplCommand xplDeleteCommand;
 extern xplCommand xplDigestCommand;
 extern xplCommand xplEdgeCommand;
@@ -127,6 +128,10 @@ extern xplCommand xplShutdownCommand;
 
 #ifdef _FILEOP_SUPPORT
 extern xplCommand xplFileOpCommand;
+#endif
+
+#ifdef _DEBUG
+extern xplCommand xplDbGarbageCollectCommand;
 #endif
 
 #ifdef __cplusplus

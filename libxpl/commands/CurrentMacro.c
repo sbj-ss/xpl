@@ -48,6 +48,7 @@ xplCommand xplCurrentMacroCommand =
 void xplCmdCurrentMacroEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdCurrentMacroParamsPtr params = (xplCmdCurrentMacroParamsPtr) commandInfo->params;
+	xmlNodePtr ret;
 
 	if (!commandInfo->document->current_macro)
 	{
@@ -58,6 +59,9 @@ void xplCmdCurrentMacroEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	{
 		ASSIGN_RESULT(xplMacroToNode(commandInfo->document->current_macro, params->tagname, commandInfo->element), params->repeat, true);
 		xplDownshiftNodeNsDef(result->list, commandInfo->element->nsDef);
-	} else
-		ASSIGN_RESULT(xmlNewDocText(commandInfo->element->doc, commandInfo->document->current_macro->name), false, true);
+	} else {
+		ret = xmlNewDocText(commandInfo->element->doc, NULL);
+		ret->content = xplQNameToStr(commandInfo->document->current_macro->qname);
+		ASSIGN_RESULT(ret, false, true);
+	}
 }

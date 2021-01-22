@@ -279,32 +279,25 @@ static xmlChar* xplGetParamXPathValue(xplCommandInfoPtr info, xplCmdParamPtr par
 
 static xmlChar* xplGetParamQNameValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
 {
-	xplQNamePtr dst;
-	xmlChar *prefix = NULL, *error = NULL;
+	xplQNamePtr value;
 
-	if (xmlValidateQName(*raw_value, 0))
-		return xplFormatMessage(BAD_CAST "invalid QName/NCName '%s'", *raw_value);
-	dst = (xplQNamePtr) ((uintptr_t) info->params + param->value_offset);
-	dst->ncname = xmlSplitQName2(*raw_value, &prefix);
-	if (!dst->ncname) /* not a QName */
+	value = (xplQNamePtr) ((uintptr_t) info->params + param->value_offset);
+	switch(xplParseQName(*raw_value, info->element, value))
 	{
-		dst->ncname = *raw_value;
-		*raw_value = NULL;
-		dst->ns = NULL;
-	} else {
-		dst->ns = xmlSearchNs(info->element->doc, info->element->parent, prefix);
-		if (!dst->ns)
-		{
-			dst->ns = xmlSearchNs(info->element->doc, info->element, prefix);
-			if (!dst->ns)
-				error = xplFormatMessage(BAD_CAST "invalid namespace prefix '%s'", prefix);
-			else /* namespace is declared on the command element and it will be gone soon */
-				dst->ns = xmlNewNs(info->element->parent, dst->ns->href, dst->ns->prefix);
-		}
+		case XPL_PARSE_QNAME_OK:
+			break;
+		case XPL_PARSE_QNAME_INVALID_QNAME:
+			return xplFormatMessage(BAD_CAST "invalid QName/NCName '%s'", *raw_value);
+		case XPL_PARSE_QNAME_UNKNOWN_NS:
+			if (!param->extra.allow_unknown_namespaces)
+				return xplFormatMessage(BAD_CAST "'%s': unknown namespace", *raw_value);
+			break;
+		default:
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
 	}
-	if (prefix)
-		XPL_FREE(prefix);
-	return error;
+	if (value->ncname == *raw_value)
+		*raw_value = NULL;
+	return NULL;
 }
 
 static xmlChar* xplGetParamCustomIntValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
@@ -481,6 +474,7 @@ static void _paramClearValueScanner(void *payload, void *data, XML_HCBNC xmlChar
 			default_qname = (xplQNamePtr) param->value_stencil;
 			if (qname->ncname && qname->ncname != default_qname->ncname)
 				XPL_FREE(qname->ncname);
+			qname->ns = NULL;
 			break;
 		default:
 			break;

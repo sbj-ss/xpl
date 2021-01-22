@@ -28,6 +28,7 @@ xplCommand xplIsDefinedCommand =
 			.name = BAD_CAST "name",
 			.type = XPL_CMD_PARAM_TYPE_QNAME,
 			.required = true,
+			.extra.allow_unknown_namespaces = true,
 			.value_stencil = &params_stencil.name
 		}, {
 			.name = BAD_CAST "at",
@@ -41,12 +42,10 @@ xplCommand xplIsDefinedCommand =
 };
 
 // TODO warning if at evaluates into multiple nodes
-// TODO error if at evaluates into non-elements
 // TODO do we check right at selected elements?
 void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdIsDefinedParamsPtr params = (xplCmdIsDefinedParamsPtr) commandInfo->params;
-	xmlHashTablePtr macro_table;
 	xplMacroPtr macro = NULL;
 	const xmlChar* value;
 	xmlNodePtr ret;
@@ -58,15 +57,13 @@ void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			for (i = 0; i < (size_t) params->at->nodesetval->nodeNr; i++)
 			{
-				macro_table = (xmlHashTablePtr) params->at->nodesetval->nodeTab[i]->_private;
-				if (macro_table)
-					macro = (xplMacroPtr) xmlHashLookup2(macro_table, params->name.ncname, params->name.ns? params->name.ns->href: NULL);
+				macro = xplMacroLookupByQName(params->at->nodesetval->nodeTab[i], params->name);
 				if (macro && !macro->disabled_spin)
 					break;
 			}
 		}
 	} else
-		macro = xplMacroLookup(commandInfo->element->parent, params->name.ns? params->name.ns->href: NULL, params->name.ncname);
+		macro = xplMacroLookupByQName(commandInfo->element->parent, params->name);
 	if (macro && !macro->disabled_spin)
 		value = BAD_CAST "true";
 	else

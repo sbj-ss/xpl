@@ -59,6 +59,7 @@ commands/DBSession.c\
 commands/DebugBreak.c\
 commands/DebugPrint.c\
 commands/Default.c\
+commands/Define.c\
 commands/Delete.c\
 commands/Digest.c\
 commands/Edge.c\
@@ -164,6 +165,10 @@ endif
 ifeq ($(FILEOP_SUPPORT), 1)
 CFLAGS += -D_FILEOP_SUPPORT
 COMMANDS += commands/FileOp.c
+endif
+
+ifeq ($(DEBUG), 1)
+COMMANDS += commands/DbGarbageCollect.c
 endif
 
 SRC += $(COMMANDS)

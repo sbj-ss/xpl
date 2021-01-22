@@ -21,25 +21,23 @@ typedef struct _xplQName
 	xmlChar *ncname;
 } xplQName, *xplQNamePtr;
 
-#define EXTRACT_NS_AND_TAGNAME(src, ns, tagName, parent) do { \
-	tagName = BAD_CAST xmlStrchr((src), ':'); \
-	if (tagName) \
-	{ \
-		*tagName = 0; \
-		ns = xmlSearchNs((parent)->doc, (parent), (src)); \
-		*tagName++ = ':'; \
-	} else { \
-		tagName = BAD_CAST (src); \
-		ns = NULL; \
-	} \
-} while(0);
-
-#define EXTRACT_NS_AND_TAGNAME_TO_QNAME(src, qname, parent) EXTRACT_NS_AND_TAGNAME(src, qname.ns, qname.ncname, parent)
-#define EXTRACT_NS_AND_TAGNAME_TO_QNAME_PTR(src, qnameptr, parent) EXTRACT_NS_AND_TAGNAME(src, qname->ns, qname->ncname, parent)
-
 #define XPL_NODE_DELETION_REQUEST_FLAG ((xmlElementType) 0x0080UL)
 #define XPL_NODE_DELETION_DEFERRED_FLAG ((xmlElementType) 0x0100UL)
 #define XPL_NODE_DELETION_MASK (XPL_NODE_DELETION_DEFERRED_FLAG | XPL_NODE_DELETION_REQUEST_FLAG)
+
+typedef enum _xplParseQNameResult
+{
+	XPL_PARSE_QNAME_OK,
+	XPL_PARSE_QNAME_INVALID_QNAME,
+	XPL_PARSE_QNAME_UNKNOWN_NS
+} xplParseQNameResult;
+
+XPLPUBFUN xplParseQNameResult XPLCALL
+	xplParseQName(xmlChar *str, xmlNodePtr element, xplQNamePtr qname);
+XPLPUBFUN xmlChar* XPLCALL
+	xplQNameToStr(xplQName qname);
+XPLPUBFUN void XPLCALL
+	xplClearQName(xplQNamePtr qname);
 
 /* locates node list tail */
 XPLPUBFUN xmlNodePtr XPLCALL
@@ -147,6 +145,9 @@ XPLPUBFUN bool XPLCALL
 
 XPLPUBFUN xmlXPathObjectPtr XPLCALL
 	xplSelectNodesWithCtxt(xmlXPathContextPtr ctxt, xmlNodePtr src, xmlChar *expr);
+
+XPLPUBFUN xmlAttrPtr XPLCALL
+	xplCreateAttribute(xmlNodePtr dst, xplQName qname, xmlChar *value, bool allowReplace);
 
 #ifdef __cplusplus
 }

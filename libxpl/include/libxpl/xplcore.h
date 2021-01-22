@@ -121,14 +121,15 @@ XPLPUBFUN void XPLCALL
 	xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result);
 XPLPUBFUN void XPLCALL
 	xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr result);
-XPLPUBFUN xmlNodePtr XPLCALL 
+XPLPUBFUN xplMacroPtr XPLCALL
 	xplAddMacro(
 		xplDocumentPtr doc, 
-		xmlNodePtr macro, 
+		xmlNodePtr macro,
+		xplQName qname,
 		xmlNodePtr destination, 
-		bool fromNonCommand, 
-		xplMacroExpansionState defaultExpansionState,
-		bool defaultReplace
+		xplMacroExpansionState expansionState,
+		bool replace,
+		xmlChar *id
 	);
 
 XPLPUBFUN void XPLCALL

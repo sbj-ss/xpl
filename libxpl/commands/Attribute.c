@@ -52,28 +52,6 @@ xplCommand xplAttributeCommand =
 	}
 };
 
-static void _assignAttribute(xmlNodePtr dst, xplQNamePtr qname, xmlChar *value, bool allowReplace)
-{
-	xmlAttrPtr prev;
-
-	if (qname->ns)
-		prev = xmlHasNsProp(dst, qname->ncname, qname->ns->href);
-	else
-		prev = xmlHasProp(dst, qname->ncname);
-	if (prev)
-	{
-		if (!allowReplace)
-			return;
-		xmlFreeNodeList(prev->children);
-		xplSetChildren((xmlNodePtr) prev, xmlNewDocText(dst->doc, value));
-	} else {
-		if (qname->ns)
-			xmlNewNsProp(dst, qname->ns, qname->ncname, value);
-		else
-			xmlNewProp(dst, qname->ncname, value);
-	}
-}
-
 void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdAttributeParamsPtr cmd_params = (xplCmdAttributeParamsPtr) commandInfo->params;
@@ -81,7 +59,7 @@ void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlNodePtr cur;
 	size_t i;
 	
-	if (!commandInfo->content)
+	if (!commandInfo->content || !*commandInfo->content)
 	{
 		if (!cmd_params->force_blank)
 		{
@@ -98,9 +76,9 @@ void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			cur = cmd_params->destination->nodesetval->nodeTab[i];
 			if (cur->type == XML_ELEMENT_NODE)
-				_assignAttribute(cur, &cmd_params->qname, attr_value, cmd_params->replace);
+				(void) xplCreateAttribute(cur, cmd_params->qname, attr_value, cmd_params->replace);
 		}
 	} else if (commandInfo->element->parent) 
-		_assignAttribute(commandInfo->element->parent, &cmd_params->qname, attr_value, cmd_params->replace);
-		ASSIGN_RESULT(NULL, false, true);
+		(void) xplCreateAttribute(commandInfo->element->parent, cmd_params->qname, attr_value, cmd_params->replace);
+	ASSIGN_RESULT(NULL, false, true);
 }

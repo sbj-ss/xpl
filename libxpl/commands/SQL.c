@@ -11,16 +11,87 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 #define DEFAULT_RESPONSE_TAG_NAME (BAD_CAST "Row")
 #define DEFAULT_COLUMN_NAME (BAD_CAST "Col")
-#define NULL_ATTRIBUTE_NAME (BAD_CAST "isnull")
-#define DOC_START (BAD_CAST "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Root>")
-#define DOC_END (BAD_CAST "</Root>")
 
+typedef struct _xplCmdSqlParams
+{
+	bool as_attributes;
+	bool cleanup_stream;
+	xplQName default_column_name;
+	bool merge_table_as_xml;
+	bool repeat;
+	bool keep_nulls;
+	xmlChar *response_tag_name;
+	bool show_nulls;
+} xplCmdSqlParams, *xplCmdSqlParamsPtr;
+
+static const xplCmdSqlParams params_stencil =
+{
+	.as_attributes = false,
+	.cleanup_stream = false,
+	.default_column_name = { NULL, DEFAULT_COLUMN_NAME },
+	.keep_nulls = false,
+	.merge_table_as_xml = false,
+	.repeat = true,
+	.response_tag_name = DEFAULT_RESPONSE_TAG_NAME,
+	.show_nulls = false
+};
+
+xplCommand xplSqlCommand =
+{
+	.prologue = NULL,
+	.epilogue = xplCmdSqlEpilogue,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdSqlParams),
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE | XPL_CMD_FLAG_REQUIRE_CONTENT,
+	.parameters = {
+		{
+			.name = BAD_CAST "asattributes",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.as_attributes
+		}, {
+			.name = BAD_CAST "cleanupstream",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.cleanup_stream
+		}, {
+			.name = BAD_CAST "defaultcolumnname",
+			.type = XPL_CMD_PARAM_TYPE_QNAME,
+			.value_stencil = &params_stencil.default_column_name
+		}, {
+			.name = BAD_CAST "keepnulls",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.keep_nulls
+		}, {
+			.name = BAD_CAST "mergetableasxml",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.merge_table_as_xml
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = BAD_CAST "responsetagname",
+			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.value_stencil = &params_stencil.response_tag_name
+		}, {
+			.name = BAD_CAST "shownulls",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.show_nulls
+		}, {
+			.name = NULL
+		}
+	}
+};
+#define _XEF_HAS_DB
 #ifndef _XEF_HAS_DB
 void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "No database support is compiled in"), true, true);
 }
 #else
+
+#define NULL_ATTRIBUTE_NAME (BAD_CAST "isnull")
+#define DOC_START (BAD_CAST "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Root>")
+#define DOC_END (BAD_CAST "</Root>")
 
 typedef struct _xplSqlRowTagNames
 {
@@ -128,53 +199,52 @@ static xplSqlRowTagNamesPtr _createRowTagNames(xmlChar *list)
 
 typedef struct _xplSqlXmlRowDesc {
 	size_t count;
-	xmlChar **names;
-	xmlNsPtr *namespaces;
+	xplQName *qnames;
 } xplSqlXmlRowDesc, *xplSqlXmlRowDescPtr;
 
 static void _freeXmlRowDesc(xplSqlXmlRowDescPtr desc)
 {
+	size_t i;
+
 	if (!desc)
 		return;
-	if (desc->names)
-		XPL_FREE(desc->names);
-	if (desc->namespaces)
-		XPL_FREE(desc->namespaces);
+	if (desc->qnames)
+	{
+		for (i = 0; i < desc->count; i++)
+			xplClearQName(&desc->qnames[i]);
+		XPL_FREE(desc->qnames);
+	}
 	XPL_FREE(desc);
 }
 
-static xplSqlXmlRowDescPtr _createXmlRowDesc(xefDbRowPtr row, xmlNodePtr parent, xmlChar* defaultColumnName)
+static xplSqlXmlRowDescPtr _createXmlRowDesc(xefDbRowPtr row, xmlNodePtr parent, xplQName defaultColumnName, xmlNodePtr *error)
 {
 	size_t i;
-	xplSqlXmlRowDescPtr ret = (xplSqlXmlRowDescPtr) XPL_MALLOC(sizeof(xplSqlXmlRowDesc));
+	xplSqlXmlRowDescPtr ret;
 	xmlChar *field_name;
 
+	*error = NULL;
+	ret = (xplSqlXmlRowDescPtr) XPL_MALLOC(sizeof(xplSqlXmlRowDesc));
 	if (!ret)
 		return NULL;
-	ret->names = (xmlChar**) XPL_MALLOC(row->field_count * sizeof(xmlChar*));
-	if (!ret->names)
+	ret->qnames = (xplQName*) XPL_MALLOC(row->field_count * sizeof(xplQName));
+	if (!ret->qnames)
 	{
-		XPL_FREE(ret);
-		return NULL;
-	}
-	ret->namespaces = (xmlNsPtr*) XPL_MALLOC(row->field_count * sizeof(xmlNsPtr));
-	if (!ret->namespaces)
-	{
-		XPL_FREE(ret->names);
 		XPL_FREE(ret);
 		return NULL;
 	}
 	ret->count = row->field_count;
-	memset(ret->names, 0, ret->count * sizeof(xmlChar*));
-	memset(ret->namespaces, 0, ret->count * sizeof(xmlNsPtr*));
+	memset(ret->qnames, 0, ret->count * sizeof(xplQName));
 	for (i = 0; i < ret->count; i++)
 	{
 		field_name = row->fields[i].name;
-		if (field_name && *field_name)
+		if (!field_name || !*field_name)
+			ret->qnames[i] = defaultColumnName;
+		else if (xplParseQName(field_name, parent, &ret->qnames[i]) != XPL_PARSE_QNAME_OK)
 		{
-			EXTRACT_NS_AND_TAGNAME(field_name, ret->namespaces[i], ret->names[i], parent);
-		} else {
-			EXTRACT_NS_AND_TAGNAME(defaultColumnName, ret->namespaces[i], ret->names[i], parent);
+			*error = xplCreateErrorNode(parent, BAD_CAST "invalid field name '%s'", field_name);
+			_freeXmlRowDesc(ret);
+			return NULL;
 		}
 	}
 	return ret;
@@ -186,36 +256,52 @@ typedef struct _xplTdsFragmentRowContext
 	xmlNodePtr cur;
 	xmlNodePtr parent;
 	xplSqlXmlRowDescPtr xml_desc;
-	xmlNsPtr ns;
-	xmlChar *tagname;
-	xmlChar *default_column_name;
+	xplQName row_qname;
+	xplQName default_column_qname;
 	bool as_attributes;
 	bool keep_nulls;
 	bool show_nulls;
 	bool copy_data;
 } xplTdsFragmentRowContext, *xplTdsFragmentRowContextPtr;
 
+static void _appendErrorToRowContext(xplTdsFragmentRowContextPtr ctxt, xmlNodePtr error)
+{
+	if (!ctxt->first)
+		ctxt->first = error;
+	if (ctxt->cur)
+	{
+		ctxt->cur->next = error;
+		error->prev = ctxt->cur;
+	}
+	ctxt->cur = error;
+}
+
 static bool _TdsFragmentRowScanner(xefDbRowPtr row, void *payload)
 {
-	xmlNodePtr row_el = NULL, tail = NULL, col;
+	xmlNodePtr row_el = NULL, tail = NULL, col, error = NULL;
 	xplTdsFragmentRowContextPtr ctxt = (xplTdsFragmentRowContextPtr) payload;
 	ssize_t i;
 
 	if (!ctxt->xml_desc)
-		ctxt->xml_desc = _createXmlRowDesc(row, ctxt->parent, ctxt->default_column_name);
-	if (ctxt->tagname && *ctxt->tagname)
-		row_el = xmlNewDocNode(ctxt->parent->doc, ctxt->ns, ctxt->tagname, NULL);
+		ctxt->xml_desc = _createXmlRowDesc(row, ctxt->parent, ctxt->default_column_qname, &error);
+	if (error)
+	{
+		_appendErrorToRowContext(ctxt, error);
+		return false;
+	}
+	if (ctxt->row_qname.ncname && *(ctxt->row_qname.ncname))
+		row_el = xmlNewDocNode(ctxt->parent->doc, ctxt->row_qname.ns, ctxt->row_qname.ncname, NULL);
 	for (i = 0; i < row->field_count; i++)
 	{
 		if (row->fields[i].is_null && !ctxt->keep_nulls)
 			continue;
 		if (ctxt->as_attributes) 
-			col = (xmlNodePtr) xmlNewNsProp(row_el, ctxt->xml_desc->namespaces[i], ctxt->xml_desc->names[i], NULL);
+			col = (xmlNodePtr) xmlNewNsProp(row_el, ctxt->xml_desc->qnames[i].ns, ctxt->xml_desc->qnames[i].ncname, NULL);
 		else {
-			col = xmlNewDocNode(ctxt->parent->doc, ctxt->xml_desc->namespaces[i], ctxt->xml_desc->names[i], NULL);
+			col = xmlNewDocNode(ctxt->parent->doc, ctxt->xml_desc->qnames[i].ns, ctxt->xml_desc->qnames[i].ncname, NULL);
 			if (row->fields[i].is_null && ctxt->show_nulls)
 				xmlNewProp(col, NULL_ATTRIBUTE_NAME, BAD_CAST "true");
-			if (ctxt->tagname && *ctxt->tagname)
+			if (ctxt->row_qname.ncname && *(ctxt->row_qname.ncname))
 			{
 				col->parent = row_el;
 				if (row_el->last)
@@ -266,22 +352,26 @@ static xmlNodePtr _buildFragmentFromTds(
 	bool *repeat
 )
 {
-	xmlChar *error = NULL;
-	xmlNodePtr ret;
+	xmlChar *error = NULL, *name;
 
 	while (xefDbHasRecordset(db_ctxt))
 	{
 		if (tag_names && (tag_names->pos < tag_names->count))
 		{
-			EXTRACT_NS_AND_TAGNAME(tag_names->names[tag_names->pos], row_ctxt->ns, row_ctxt->tagname, row_ctxt->parent);
-			if (row_ctxt->as_attributes && !row_ctxt->tagname)
+			name = tag_names->names[tag_names->pos];
+			if (name && *name)
 			{
-				EXTRACT_NS_AND_TAGNAME(DEFAULT_RESPONSE_TAG_NAME, row_ctxt->ns, row_ctxt->tagname, row_ctxt->parent);
+				if (xplParseQName(name, row_ctxt->parent, &(row_ctxt->row_qname)) != XPL_PARSE_QNAME_OK)
+					return xplCreateErrorNode(row_ctxt->parent, BAD_CAST "invalid row name '%s'", name);
+			} else if (row_ctxt->as_attributes)
+				(void) xplParseQName(DEFAULT_RESPONSE_TAG_NAME, row_ctxt->parent, &row_ctxt->row_qname);
+			else {
+				row_ctxt->row_qname.ns = NULL;
+				row_ctxt->row_qname.ncname = NULL;
 			}
 			tag_names->pos++;
-		} else {
-			EXTRACT_NS_AND_TAGNAME(DEFAULT_RESPONSE_TAG_NAME, row_ctxt->ns, row_ctxt->tagname, row_ctxt->parent);
-		}
+		} else
+			(void) xplParseQName(DEFAULT_RESPONSE_TAG_NAME, row_ctxt->parent, &row_ctxt->row_qname);
 		xefDbEnumRows(db_ctxt, _TdsFragmentRowScanner, row_ctxt);
 		_freeXmlRowDesc(row_ctxt->xml_desc);
 		row_ctxt->xml_desc = NULL;
@@ -290,7 +380,7 @@ static xmlNodePtr _buildFragmentFromTds(
 			if (row_ctxt->first)
 				xmlFreeNodeList(row_ctxt->first);
 			*repeat = true;
-			ret = xplCreateErrorNode(row_ctxt->parent, error);
+			_appendErrorToRowContext(row_ctxt, xplCreateErrorNode(row_ctxt->parent, error));
 			goto done;
 		}
 		xefDbNextRowset(db_ctxt);
@@ -299,15 +389,16 @@ static xmlNodePtr _buildFragmentFromTds(
 			if (row_ctxt->first)
 				xmlFreeNodeList(row_ctxt->first);
 			*repeat = true;
-			ret = xplCreateErrorNode(row_ctxt->parent, error);
+			_appendErrorToRowContext(row_ctxt, xplCreateErrorNode(row_ctxt->parent, error));
 			goto done;
 		}
+		xplClearQName(&row_ctxt->row_qname);
 	}
-	ret = row_ctxt->first;
 done:
 	if (error)
 		XPL_FREE(error);
-	return ret;
+	xplClearQName(&row_ctxt->row_qname);
+	return row_ctxt->first;
 }
 
 static xmlNodePtr _buildDocFromMemory(xmlChar *src, size_t size, xmlNodePtr parent, bool *repeat)
@@ -528,76 +619,6 @@ static xmlNodePtr _buildDoc(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_
 	return ret;
 }
 
-typedef struct _xplCmdSqlParams
-{
-	bool as_attributes;
-	bool cleanup_stream;
-	xmlChar *default_column_name;
-	bool merge_table_as_xml;
-	bool repeat;
-	bool keep_nulls;
-	xmlChar *response_tag_name;
-	bool show_nulls;
-} xplCmdSqlParams, *xplCmdSqlParamsPtr;
-
-static const xplCmdSqlParams params_stencil =
-{
-	.as_attributes = false,
-	.cleanup_stream = false,
-	.default_column_name = DEFAULT_COLUMN_NAME,
-	.keep_nulls = false,
-	.merge_table_as_xml = false,
-	.repeat = true,
-	.response_tag_name = DEFAULT_RESPONSE_TAG_NAME,
-	.show_nulls = false
-};
-
-xplCommand xplSqlCommand =
-{
-	.prologue = NULL,
-	.epilogue = xplCmdSqlEpilogue,
-	.params_stencil = &params_stencil,
-	.stencil_size = sizeof(xplCmdSqlParams),
-	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE | XPL_CMD_FLAG_REQUIRE_CONTENT,
-	.parameters = {
-		{
-			.name = BAD_CAST "asattributes",
-			.type = XPL_CMD_PARAM_TYPE_BOOL,
-			.value_stencil = &params_stencil.as_attributes
-		}, {
-			.name = BAD_CAST "cleanupstream",
-			.type = XPL_CMD_PARAM_TYPE_BOOL,
-			.value_stencil = &params_stencil.cleanup_stream
-		}, {
-			.name = BAD_CAST "defaultcolumnname",
-			.type = XPL_CMD_PARAM_TYPE_STRING,
-			.value_stencil = &params_stencil.default_column_name
-		}, {
-			.name = BAD_CAST "keepnulls",
-			.type = XPL_CMD_PARAM_TYPE_BOOL,
-			.value_stencil = &params_stencil.keep_nulls
-		}, {
-			.name = BAD_CAST "mergetableasxml",
-			.type = XPL_CMD_PARAM_TYPE_BOOL,
-			.value_stencil = &params_stencil.merge_table_as_xml
-		}, {
-			.name = BAD_CAST "repeat",
-			.type = XPL_CMD_PARAM_TYPE_BOOL,
-			.value_stencil = &params_stencil.repeat
-		}, {
-			.name = BAD_CAST "responsetagname",
-			.type = XPL_CMD_PARAM_TYPE_STRING,
-			.value_stencil = &params_stencil.response_tag_name
-		}, {
-			.name = BAD_CAST "shownulls",
-			.type = XPL_CMD_PARAM_TYPE_BOOL,
-			.value_stencil = &params_stencil.show_nulls
-		}, {
-			.name = NULL
-		}
-	}
-};
-
 void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdSqlParamsPtr cmd_params = (xplCmdSqlParamsPtr) commandInfo->params;
@@ -612,6 +633,7 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplTdsFragmentRowContext frag_ctxt;
 	xplTdsDocRowContext doc_ctxt;
 
+	dbq_params.error = NULL;
 	dbs = commandInfo->element->parent;
 	while (dbs)
 	{
@@ -662,7 +684,7 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		frag_ctxt.show_nulls = cmd_params->show_nulls;
 		frag_ctxt.first = frag_ctxt.cur = NULL;
 		frag_ctxt.parent = commandInfo->element;
-		frag_ctxt.default_column_name = cmd_params->default_column_name? cmd_params->default_column_name: DEFAULT_COLUMN_NAME;
+		frag_ctxt.default_column_qname = cmd_params->default_column_name;
 		frag_ctxt.xml_desc = NULL;
 		ASSIGN_RESULT(_buildFragmentFromTds(db_ctxt, &frag_ctxt, row_tag_names, &cmd_params->repeat), cmd_params->repeat, true);
 	}

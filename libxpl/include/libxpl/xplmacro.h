@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <libxml/xmlstring.h>
 #include <libxml/tree.h>
+#include <libxpl/xplcommand.h>
 #include <libxpl/xpltree.h>
 
 #ifdef __cplusplus
@@ -21,8 +22,7 @@ typedef enum _xplMacroExpansionState
 	XPL_MACRO_EXPAND_UNKNOWN = -1, /* Only for xplMacroExpansionStateFromString() */
 	XPL_MACRO_EXPAND_ALWAYS = 0,
 	XPL_MACRO_EXPAND_ONCE,
-	XPL_MACRO_EXPANDED,
-	XPL_MACRO_EXPAND_NO_DEFAULT /* Can only be an input parameter */
+	XPL_MACRO_EXPANDED
 } xplMacroExpansionState;
 
 typedef struct _xplMacro
@@ -33,9 +33,8 @@ typedef struct _xplMacro
 	xplMacroExpansionState expansion_state;
 	xmlNodePtr node_original_content;
 	/* For list-macros */
-	xmlChar *name;
+	xplQName qname;
 	bool ns_is_duplicated;
-	xmlNsPtr ns;
 	xmlNodePtr parent;
 	int line;
 	int times_encountered;
@@ -46,11 +45,11 @@ typedef struct _xplMacro
 } xplMacro, *xplMacroPtr;
 
 XPLPUBFUN xplMacroExpansionState XPLCALL
-	xplMacroExpansionStateFromString(const xmlChar *state, bool allowNoDefault);
+	xplMacroExpansionStateFromString(const xmlChar *state);
+XPLPUBFUN xmlChar* XPLCALL
+	xplMacroExpansionStateGetter(xplCommandInfoPtr commandInfo, const xmlChar *expect, xplMacroExpansionState *result);
 XPLPUBFUN xplMacroPtr XPLCALL
 	xplMacroCreate(xmlChar *aId, xmlNodePtr aContent, xplMacroExpansionState expansionState);
-XMLPUBFUN void XMLCALL
-	xplMacroDeallocator(void *payload, XML_HCBNC xmlChar *name);
 XPLPUBFUN void XPLCALL
 	xplMacroFree(xplMacroPtr macro);
 XPLPUBFUN xplMacroPtr XPLCALL
@@ -58,7 +57,15 @@ XPLPUBFUN xplMacroPtr XPLCALL
 XPLPUBFUN void XPLCALL
 	xplMacroTableFree(xmlHashTablePtr macros);
 XPLPUBFUN xplMacroPtr XPLCALL
-	xplMacroLookup(xmlNodePtr element, const xmlChar *href, const xmlChar *name);
+	xplMacroGetFromHashByElement(xmlHashTablePtr hash, xmlNodePtr element);
+XPLPUBFUN xplMacroPtr XPLCALL
+	xplMacroGetFromHashByQName(xmlHashTablePtr hash, xplQName qname);
+XPLPUBFUN void XPLCALL
+	xplMacroAddToHash(xmlHashTablePtr hash, xplMacroPtr macro);
+XPLPUBFUN xplMacroPtr XPLCALL
+	xplMacroLookupByElement(xmlNodePtr carrier, xmlNodePtr element);
+XPLPUBFUN xplMacroPtr XPLCALL
+	xplMacroLookupByQName(xmlNodePtr carrier, xplQName qname);
 XPLPUBFUN xmlChar* XPLCALL
 	xplMacroTableToString(xmlNodePtr element, xmlChar* delimiter, bool unique);
 XPLPUBFUN xmlNodePtr XPLCALL

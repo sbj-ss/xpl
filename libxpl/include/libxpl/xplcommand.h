@@ -103,10 +103,11 @@ typedef struct _xplCmdParamPtrFunctions
 
 typedef union _xplCmdParamExtraDesc
 {
-	xplCmdParamDictValuePtr dict_values;/* (.name=NULL)-terminated */
-	xplCmdParamXPathType xpath_type;
-	xplCmdParamIntValueGetter int_getter;
-	xplCmdParamPtrFunctions ptr_fn;
+	xplCmdParamDictValuePtr dict_values;	/* XPL_CMD_PARAM_TYPE_DICT, (.name=NULL)-terminated */
+	xplCmdParamXPathType xpath_type;		/* XPL_CMD_PARAM_TYPE_XPATH */
+	bool allow_unknown_namespaces;			/* XPL_CMD_PARAM_TYPE_QNAME */
+	xplCmdParamIntValueGetter int_getter;	/* XPL_CMD_PARAM_TYPE_INT_CUSTOM_GETTER */
+	xplCmdParamPtrFunctions ptr_fn;			/* XPL_CMD_PARAM_TYPE_PTR_CUSTOM_GETTER */
 } xplCmdParamExtraDesc;
 
 typedef struct _xplCmdParam

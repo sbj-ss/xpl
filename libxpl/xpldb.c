@@ -42,12 +42,10 @@ xplDBListPtr xplDBListCreate(const xmlChar *connString)
 	return ret;
 }
 
-void xplDBListFree(xplDBListPtr cur)
+static void _dbListClear(xplDBListPtr cur)
 {
 	xplDBPtr cur_db, next_db;
 
-	if (!cur)
-		return;
 	cur_db = cur->first;
 	while (cur_db)
 	{
@@ -55,6 +53,14 @@ void xplDBListFree(xplDBListPtr cur)
 		xplDBFree(cur_db);
 		cur_db = next_db;
 	}
+	cur->first = cur->last = NULL;
+}
+
+void xplDBListFree(xplDBListPtr cur)
+{
+	if (!cur)
+		return;
+	_dbListClear(cur);
 	XPL_FREE(cur->conn_string);
 	if (!xprMutexCleanup(&cur->lock))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -304,6 +310,19 @@ static void checkDatabase(void *payload, void *data, XML_HCBNC xmlChar *name)
 void xplCheckDatabases()
 {
 	xmlHashScan(databases, checkDatabase, NULL);
+}
+
+static void _gcScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
+{
+	UNUSED_PARAM(data);
+	UNUSED_PARAM(name);
+	_dbListClear((xplDBListPtr) payload);
+}
+
+void xplDbGarbageCollect()
+{
+	if (databases)
+		xmlHashScan(databases, _gcScanner, NULL);
 }
 
 void xplCleanupDatabases()

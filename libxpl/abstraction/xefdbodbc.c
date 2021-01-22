@@ -373,7 +373,7 @@ static bool _xefDbNextRecord(xefDbContextPtr ctxt)
 }
 
 /* ================= row-level processing ================= */
-static void _xefDbClearRow(xefDbRowPtr row, bool clear_names)
+static void _xefDbClearRow(xefDbRowPtr row, bool clear_names, bool force_clear_values)
 {
 	int i;
 	xefDbFieldPtr field;
@@ -388,7 +388,7 @@ static void _xefDbClearRow(xefDbRowPtr row, bool clear_names)
 				XPL_FREE(field->name);
 				field->name = NULL;
 			}
-			if (field->value && field->needs_copy)
+			if (field->value && (field->needs_copy || force_clear_values))
 				XPL_FREE(field->value); /* otherwise the value is consumed into a text node */
 			field->value = NULL;
 		}
@@ -399,7 +399,7 @@ static void _xefDbFreeRow(xefDbRowPtr row)
 {
 	if (!row)
 		return;
-	_xefDbClearRow(row, true);
+	_xefDbClearRow(row, true, false);
 	XPL_FREE(row->fields);
 	XPL_FREE(row);
 }
@@ -508,7 +508,7 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->row is NULL", __FUNCTION__));
 		return;
 	}
-	_xefDbClearRow(ctxt->row, false);
+	_xefDbClearRow(ctxt->row, false, false);
 	for (i = 0; i < ctxt->col_count; i++)
 	{
 		field = &ctxt->row->fields[i];
@@ -566,7 +566,7 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 	}
 	return;
 error:
-	_xefDbClearRow(ctxt->row, false);
+	_xefDbClearRow(ctxt->row, false, true);
 }
 
 /* =============== XEF context =============== */
@@ -780,7 +780,10 @@ void xefDbEnumRows(xefDbContextPtr ctxt, xefDbGetRowCallback cb, void *user_data
 		if (ctxt->error)
 			return;
 		if (!cb(ctxt->row, user_data))
+		{
+			_xefDbClearRow(ctxt->row, false, true);
 			return; /* stop requested */
+		}
 	}
 }
 

@@ -45,11 +45,6 @@ xplCommand xplInheritCommand =
 	}
 };
 
-static inline xplMacroPtr _macroLookup(xmlNodePtr node, xplQName name)
-{
-	return xplMacroLookup(node, name.ns? name.ns->href: NULL, name.ncname);
-}
-
 void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdInheritParamsPtr params = (xplCmdInheritParamsPtr) commandInfo->params;
@@ -65,16 +60,14 @@ void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	if (params->name.ncname)
 		macro_name = params->name;
-	else {
-		macro_name.ncname = commandInfo->document->current_macro->name;
-		macro_name.ns = commandInfo->document->current_macro->ns;
-	}
-	macro = _macroLookup(commandInfo->element, macro_name);
+	else
+		macro_name = commandInfo->document->current_macro->qname;
+	macro = xplMacroLookupByQName(commandInfo->element, macro_name);
 	if (skip_current && macro)
 	{
 		caller = macro->caller;
 		original_content = macro->node_original_content;
-		macro = _macroLookup(macro->parent->parent, macro_name);
+		macro = xplMacroLookupByQName(macro->parent->parent, macro_name);
 	} else
 		caller = original_content = NULL;
 	if (!macro)
@@ -92,18 +85,10 @@ void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	{
 		if (((macro->expansion_state == XPL_MACRO_EXPAND_ALWAYS) || (macro->expansion_state == XPL_MACRO_EXPAND_ONCE)) && caller)
 		{
-			/* restore original content temporarily */
 			temp_children = caller->children;
-			caller->children = original_content;
-			while (original_content->next)
-				original_content = original_content->next;
-			caller->last = original_content;
+			xplSetChildren(caller, original_content);
 			ret = xplReplaceContentEntries(commandInfo->document, macro->id, caller, macro->content);
-			/* restore children */
-			caller->children = temp_children;
-			while (temp_children->next)
-				temp_children = temp_children->next;
-			caller->last = temp_children;
+			xplSetChildren(caller, temp_children); // TODO сюда попадает сама команда
 		} else
 			ret = xplCloneNodeList(macro->content, commandInfo->element->parent, commandInfo->element->doc);
 	} else

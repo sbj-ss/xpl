@@ -81,6 +81,8 @@ XPLPUBFUN void XPLCALL
 	xplCheckDatabases(void);
 
 XPLPUBFUN void XPLCALL
+	xplDbGarbageCollect(void);
+XPLPUBFUN void XPLCALL
 	xplCleanupDatabases(void);
 
 #ifdef __cplusplus

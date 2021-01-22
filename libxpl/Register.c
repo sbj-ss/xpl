@@ -31,6 +31,7 @@ static xplCommandSignature builtinCommands[] =
 	{ BAD_CAST "debug-break", &xplDebugBreakCommand, 0 },
 	{ BAD_CAST "debug-print", &xplDebugPrintCommand, 0 },
 	{ BAD_CAST "default", &xplDefaultCommand, 0 },
+	{ BAD_CAST "define", &xplDefineCommand, 0 },
 	{ BAD_CAST "delete", &xplDeleteCommand, 0 },
 	{ BAD_CAST "digest", &xplDigestCommand, 0 },
 	{ BAD_CAST "edge", &xplEdgeCommand, 0 },
@@ -128,6 +129,9 @@ static xplCommandSignature builtinCommands[] =
 #endif
 #ifdef _FILEOP_SUPPORT
 	{ BAD_CAST "file-op", &xplFileOpCommand, 0 },
+#endif
+#ifdef _DEBUG
+	{ BAD_CAST "db-garbage-collect", &xplDbGarbageCollectCommand, 0 },
 #endif
 };
 

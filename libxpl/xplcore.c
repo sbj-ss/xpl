@@ -551,14 +551,13 @@ void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, c
             } else if (!xmlStrcmp(c->name, BAD_CAST "define") /* these commands may have there own content */
 				|| !xmlStrcmp(c->name, BAD_CAST "for-each")
 				|| !xmlStrcmp(c->name, BAD_CAST "with")
-				|| !xmlStrcmp(c->name, BAD_CAST "do")) {
+				|| !xmlStrcmp(c->name, BAD_CAST "do")
+			)
 				getContentListInner(doc, c->children, false, id, list);
-			} else {
+			else
 				getContentListInner(doc, c->children, defContent, id, list);
-            }
-		} else {
+		} else
 			getContentListInner(doc, c->children, defContent, id, list);
-		}
 		c = c->next;
 	}
 }
@@ -669,26 +668,25 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 }
 
 /* node mode-based processing */
-static void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result);
-static void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result);
-static xplMacroPtr xplFindMacroForNode(xmlNodePtr element);
+static void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result);
+static void _xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result);
 
 void xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result)
 {
 	xplMacroPtr macro;
 	xmlHashTablePtr macros;
 	
-    if (doc->expand && (macro = xplFindMacroForNode(element)))
+    if (doc->expand && (macro = xplMacroLookupByElement(element->parent, element)))
 	{
 		macro->times_encountered++;
         if (!macro->disabled_spin)
-			xplMacroParserApply(doc, element, macro, result);     
+			_xplExecuteMacro(doc, element, macro, result);     
 		else
-			xplNodeListApply(doc, element->children, result); /* CopyParserApply */
+			xplNodeListApply(doc, element->children, result);
 	} else if (xplCheckNodeForXplNs(doc, element))
-        xplNameParserApply(doc, element, result);
+        _xplExecuteCommand(doc, element, result);
     else
-		xplNodeListApply(doc, element->children, result); /* CopyParserApply */
+		xplNodeListApply(doc, element->children, result);
 	if ((macros = (xmlHashTablePtr) element->_private))
 	{
 		xplMacroTableFree(macros);
@@ -751,7 +749,7 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr resu
 	ASSIGN_RESULT(NULL, false, false);
 }
 
-void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result)
+void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result)
 {
 	xmlNodePtr out, prev_caller;
 	xplMacroPtr prev_macro;
@@ -818,129 +816,77 @@ void xplMacroParserApply(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr mac
 	}
 }
 
-void xplNameParserApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result)
+void _xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result)
 {
 	xmlNodePtr error;
 	xplCommandPtr cmd;
 	xplCommandInfo cmdInfo;
 
-	if (!xmlStrcmp(element->name, BAD_CAST "define")) // TODO make :define a command
-	{ 
-		if (doc->expand)
-		{
-			error = xplAddMacro(doc, element, element->parent, false, XPL_MACRO_EXPAND_NO_DEFAULT, true);
-			ASSIGN_RESULT(error, !!error, true);
-		} else
-			xplNodeListApply(doc, element->children, result);
-	} else {
-		cmd = xplGetCommand(element);
-		if (cmd)
-		{
-			if (doc->expand || (cmd->flags & XPL_CMD_FLAG_ALWAYS_EXPAND))
-			{
-				memset(&cmdInfo, 0, sizeof(cmdInfo));
-				cmdInfo.element = element;
-				cmdInfo.document = doc;
-				cmdInfo.xpath_ctxt = doc->xpath_ctxt;
-				if (!(error = xplFillCommandInfo(cmd, &cmdInfo, true)))
-				{
-					if (cmd->prologue)
-						cmd->prologue(&cmdInfo);
-					/* element could be removed (:with) */
-					if (!(element->type & XPL_NODE_DELETION_MASK))
-						xplNodeListApply(doc, cmdInfo.element->children, result);
-					/* element could be removed by its children */
-					if ((!(element->type & XPL_NODE_DELETION_MASK)) || (cmd->flags & XPL_CMD_FLAG_CONTENT_SAFE))
-					{
-						if (!(error = xplFillCommandInfo(cmd, &cmdInfo, false)))
-							cmd->epilogue(&cmdInfo, result);
-						else
-							ASSIGN_RESULT(error, true, true);
-					}
-				} else
-					ASSIGN_RESULT(error, true, true);
-				xplClearCommandInfo(cmd, &cmdInfo);
-			} else // don't expand, process children
-				xplNodeListApply(doc, element->children, result);
-		} else {
-			if (cfgWarnOnUnknownCommand && doc->expand)
-				xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown command \"%s\" (file \"%s\", line %d)", element->name, element->doc->URL, element->line);
-			xplNodeListApply(doc, element->children, result);
-		}
+	cmd = xplGetCommand(element);
+	if (!cmd)
+	{
+		if (cfgWarnOnUnknownCommand && doc->expand)
+			xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown command \"%s\" (file \"%s\", line %d)", element->name, element->doc->URL, element->line);
+		xplNodeListApply(doc, element->children, result);
+		return;
 	}
+	if (!doc->expand && !(cmd->flags & XPL_CMD_FLAG_ALWAYS_EXPAND))
+	{
+		xplNodeListApply(doc, element->children, result);
+		return;
+	}
+	memset(&cmdInfo, 0, sizeof(cmdInfo));
+	cmdInfo.element = element;
+	cmdInfo.document = doc;
+	cmdInfo.xpath_ctxt = doc->xpath_ctxt;
+	if (!(error = xplFillCommandInfo(cmd, &cmdInfo, true)))
+	{
+		if (cmd->prologue)
+			cmd->prologue(&cmdInfo);
+		/* element could be removed (:with) */
+		if (!(element->type & XPL_NODE_DELETION_MASK))
+			xplNodeListApply(doc, cmdInfo.element->children, result);
+		/* element could be removed by its children */
+		if ((!(element->type & XPL_NODE_DELETION_MASK)) || (cmd->flags & XPL_CMD_FLAG_CONTENT_SAFE))
+		{
+			if (!(error = xplFillCommandInfo(cmd, &cmdInfo, false)))
+				cmd->epilogue(&cmdInfo, result);
+			else
+				ASSIGN_RESULT(error, true, true);
+		}
+	} else
+		ASSIGN_RESULT(error, true, true);
+	xplClearCommandInfo(cmd, &cmdInfo);
 }
 
-xplMacroPtr xplFindMacroForNode(xmlNodePtr element)
-{
-	return xplMacroLookup(element->parent, element->ns? element->ns->href: NULL, element->name);
-}
-
-xmlNodePtr xplAddMacro(
+xplMacroPtr xplAddMacro(
 	xplDocumentPtr doc, 
-	xmlNodePtr macro, 
+	xmlNodePtr macro,
+	xplQName qname,
 	xmlNodePtr destination, 
-	bool fromNonCommand, 
-	xplMacroExpansionState defaultExpansionState,
-	bool defaultReplace
+	xplMacroExpansionState expansionState,
+	bool replace,
+	xmlChar *id
 )
 {
 	xmlHashTablePtr macros; 
-	xmlChar *name_attr = NULL;
-	xmlChar *id_attr = NULL;
-	xmlChar *expand_attr = NULL;
-	xplMacroExpansionState expansion_state;
-	bool replace = true;
 	xplMacroPtr mb, prev_def = NULL, prev_macro;
-	xmlChar *tagname;
-	xmlNsPtr ns;
-	xmlNodePtr ret = NULL;
 	xplResult tmp_result;
+	xmlNsPtr ns;
 
-	if (fromNonCommand)
+	if (!replace || (replace && cfgWarnOnMacroRedefinition))
+		prev_def = xplMacroLookupByQName(macro->parent, qname);
+	if (replace && cfgWarnOnMacroRedefinition && prev_def)
 	{
-		tagname = name_attr = BAD_CAST XPL_STRDUP((char*) macro->name);
-		ns = macro->ns;
-	} else {
-		name_attr = xmlGetNoNsProp(macro, BAD_CAST "name");
-		if (!name_attr)
-			return xplCreateErrorNode(macro, BAD_CAST "missing name attribute");
-		EXTRACT_NS_AND_TAGNAME(name_attr, ns, tagname, macro)
+		if (qname.ns)
+			xplDisplayMessage(xplMsgWarning, BAD_CAST "macro \"%s:%s\" redefined, previous line: %d (file \"%s\", line %d)", qname.ns->prefix, qname.ncname, prev_def->line, doc->document->URL, macro->line);
+		else
+			xplDisplayMessage(xplMsgWarning, BAD_CAST "macro \"%s\" redefined, previous line: %d (file \"%s\", line %d)", qname.ncname, prev_def->line, doc->document->URL, macro->line);
 	}
-	if (xmlHasProp(macro, BAD_CAST "replace"))
-	{
-		if ((ret = xplDecodeCmdBoolParam(macro, BAD_CAST "replace", &replace, true)))
-		{
-			XPL_FREE(name_attr);
-			return ret;
-		}
-	} else
-		replace = defaultReplace;
-	if (replace && cfgWarnOnMacroRedefinition) /* debug check */
-	{
-		if ((prev_def = xplMacroLookup(macro->parent, ns? ns->href: NULL, tagname)))
-			xplDisplayMessage(xplMsgWarning, BAD_CAST "macro \"%s\" redefined, previous line: %d (file \"%s\", line %d)", name_attr, prev_def->line, doc->document->URL, macro->line);
-	}
-	if (!replace && xplMacroLookup(macro->parent, ns? ns->href: NULL, tagname))
-	{
-		XPL_FREE(name_attr);
+	if (!replace && prev_def)
 		return NULL;
-	}
-	id_attr = xmlGetNoNsProp(macro, BAD_CAST "id");
-	expand_attr = xmlGetNoNsProp(macro, BAD_CAST "expand");
-	if (expand_attr)
-	{
-		expansion_state = xplMacroExpansionStateFromString(expand_attr, false);
-		if (expansion_state == XPL_MACRO_EXPAND_UNKNOWN)
-		{
-			ret = xplCreateErrorNode(macro, BAD_CAST "invalid expand attribute: \"%s\"", expand_attr);
-			goto done;
-		}
-	} else if (defaultExpansionState != XPL_MACRO_EXPAND_NO_DEFAULT)
-		expansion_state = defaultExpansionState;
-	else
-		expansion_state = XPL_MACRO_EXPAND_ALWAYS;
-	mb = xplMacroCreate(id_attr, NULL, expansion_state);
-	if (expansion_state == XPL_MACRO_EXPANDED)
+	mb = xplMacroCreate(id, NULL, expansionState);
+	if (expansionState == XPL_MACRO_EXPANDED)
 	{
 		prev_macro = doc->current_macro;
 		doc->current_macro = mb;
@@ -961,28 +907,22 @@ xmlNodePtr xplAddMacro(
 		macros = xmlHashCreate(cfgInitialMacroTableSize);
 		destination->_private = macros;
 	}
-	/* node name is the 1st param */
-	if (xmlHashAddEntry2(macros, tagname, ns? ns->href: NULL, mb) == -1) /* уже есть */
-		xmlHashUpdateEntry2(macros, tagname, ns? ns->href: NULL, mb, xplMacroDeallocator);
-	mb->name = BAD_CAST XPL_STRDUP((char*) tagname);
-	mb->ns = ns;
+	mb->qname.ns = qname.ns;
+	mb->qname.ncname = BAD_CAST XPL_STRDUP((char*) qname.ncname);
 	ns = macro->nsDef;
 	while (ns)
 	{
-		if (mb->ns == ns)
+		if (mb->qname.ns == ns)
 		{
 			mb->ns_is_duplicated = true;
-			mb->ns = xmlCopyNamespace(ns);
+			mb->qname.ns = xmlCopyNamespace(ns);
 		}
 		ns = ns->next;
 	}
 	mb->line = macro->line;
 	mb->parent = destination;
-done:
-	if (name_attr) XPL_FREE(name_attr);
-	if (id_attr) XPL_FREE(id_attr);
-	if (expand_attr) XPL_FREE(expand_attr);
-	return ret;
+	xplMacroAddToHash(macros, mb);
+	return mb;
 }
 
 /* End of low-level doc traverse */

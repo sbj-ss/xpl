@@ -37,9 +37,8 @@ xplCommand xplReplaceIfUndefinedCommand = {
 void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo)
 {
 	xplCmdReplaceIfUndefinedParamsPtr params = (xplCmdReplaceIfUndefinedParamsPtr) commandInfo->params;
-	const xmlChar *href = params->name.ns? params->name.ns->href: NULL;
 
-	if (xplMacroLookup(commandInfo->element->parent, href, params->name.ncname))
+	if (xplMacroLookupByQName(commandInfo->element->parent, params->name))
 	{
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
 		/* use prologue_error as a buffer for the macro trigger node */

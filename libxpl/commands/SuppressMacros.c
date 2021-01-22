@@ -59,18 +59,38 @@ static void _fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target,
 		cur = nodeset->nodeTab[i];
 		if (cur->type == XML_ELEMENT_NODE)
 		{
-			macro = xplMacroLookup(source, cur->ns? cur->ns->href: NULL, cur->name);
+			macro = xplMacroLookupByElement(source, cur);
 			if (macro)
 				xmlHashAddEntry(target, cur->name, macro);
 		} /* element */
 	} /* for */
 }
 
-static void _fillMacroHashFromList(xmlNodePtr source, xmlHashTablePtr target, xmlChar *list)
+static xmlNodePtr _addMacroToHash(xmlChar *str, xmlHashTablePtr hash, xmlNodePtr source)
 {
-	xmlChar *prev, *cur, *tagname;
+	xplQName qname;
 	void *macro;
-	xmlNsPtr ns;
+
+	switch(xplParseQName(str, source, &qname))
+	{
+		case XPL_PARSE_QNAME_OK:
+			macro = xplMacroLookupByQName(source, qname);
+			if (macro)
+				xmlHashAddEntry(hash, str, macro);
+			xplClearQName(&qname);
+			break;
+		case XPL_PARSE_QNAME_UNKNOWN_NS:
+			break;
+		case XPL_PARSE_QNAME_INVALID_QNAME:
+			return xplCreateErrorNode(source, BAD_CAST "invalid qname '%s'", str);
+	}
+	return NULL;
+}
+
+static xmlNodePtr _fillMacroHashFromList(xmlNodePtr source, xmlHashTablePtr target, xmlChar *list)
+{
+	xmlChar *prev, *cur;
+	xmlNodePtr error;
 
 	prev = cur = list;
 	while (*cur)
@@ -80,10 +100,8 @@ static void _fillMacroHashFromList(xmlNodePtr source, xmlHashTablePtr target, xm
 			*cur = 0;
 			while(xmlIsBlank(*prev) && (prev < cur))
 				prev++;
-			EXTRACT_NS_AND_TAGNAME(prev, ns, tagname, source)
-			macro = xplMacroLookup(source, ns? ns->href: NULL, tagname);
-			if (macro)
-				xmlHashAddEntry(target, prev, macro);
+			if ((error = _addMacroToHash(prev, target, source)))
+				return error;
 			prev = ++cur;
 		} else
 			cur += xstrGetOffsetToNextUTF8Char(cur);
@@ -92,11 +110,10 @@ static void _fillMacroHashFromList(xmlNodePtr source, xmlHashTablePtr target, xm
 	{
 		while(xmlIsBlank(*prev) && *prev)
 			prev++;
-		EXTRACT_NS_AND_TAGNAME(prev, ns, tagname, source)
-		macro = xplMacroLookup(source, ns? ns->href: NULL, tagname);
-		if (macro)
-			xmlHashAddEntry(target, prev, macro);
+		if ((error = _addMacroToHash(prev, target, source)))
+			return error;
 	}
+	return NULL;
 }
 
 static void _switchMacro(void *payload, void *data, XML_HCBNC xmlChar *name)
@@ -109,6 +126,7 @@ void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo)
 {
 	xplCmdSuppressMacrosParamsPtr params = (xplCmdSuppressMacrosParamsPtr) commandInfo->params;
 	xmlHashTablePtr macros = NULL;
+	xmlNodePtr error;
 
 	if (params->select || params->list)
 	{
@@ -121,9 +139,16 @@ void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo)
 		{
 			if (!macros)
 				macros = xmlHashCreate(16);
-			_fillMacroHashFromList(commandInfo->element, macros, params->list);
+			if ((error = _fillMacroHashFromList(commandInfo->element, macros, params->list)))
+			{
+				xmlHashFree(macros, NULL);
+				macros = NULL;
+				xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
+				commandInfo->prologue_error = error;
+			}
 		}
-		xmlHashScan(macros, _switchMacro, (void*) 1);
+		if (macros)
+			xmlHashScan(macros, _switchMacro, (void*) 1);
 	}
 	commandInfo->prologue_state = macros;
 }
@@ -141,6 +166,8 @@ void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	}
 	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
 		ASSIGN_RESULT(NULL, false, false);
+	else if (commandInfo->prologue_error)
+		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
 	else
 		ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
 }

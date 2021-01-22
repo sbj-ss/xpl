@@ -6,6 +6,60 @@
 #include <sys/stat.h>
 #include <libxpl/abstraction/xpr.h>
 
+xplParseQNameResult xplParseQName(xmlChar *str, xmlNodePtr element, xplQName *qname)
+{
+	xmlChar *prefix;
+
+	if (xmlValidateQName(str, 0))
+		return XPL_PARSE_QNAME_INVALID_QNAME;
+	qname->ncname = xmlSplitQName2(str, &prefix);
+	if (!qname->ncname) /* not a QName */
+	{
+		qname->ncname = str;
+		qname->ns = NULL;
+	} else {
+		qname->ns = xmlSearchNs(element->doc, element, prefix);
+		XPL_FREE(prefix);
+		if (!qname->ns)
+		{
+			XPL_FREE(qname->ncname);
+			qname->ncname = NULL;
+			return XPL_PARSE_QNAME_UNKNOWN_NS;
+		}
+	}
+	return XPL_PARSE_QNAME_OK;
+}
+
+xmlChar* xplQNameToStr(xplQName qname)
+{
+	size_t prefix_len;
+	xmlChar *ret;
+
+	if (qname.ns)
+		prefix_len = xmlStrlen(qname.ns->prefix) + 1;
+	else
+		prefix_len = 0;
+	ret = (xmlChar*) XPL_MALLOC(prefix_len + xmlStrlen(qname.ncname) + 1);
+	if (qname.ns)
+	{
+		strcpy((char*) ret, (char*) qname.ns->prefix);
+		ret[prefix_len] = (xmlChar) ':';
+	}
+	strcpy((char*) ret + prefix_len, (char*) qname.ncname);
+	return ret;
+}
+
+void xplClearQName(xplQNamePtr qname)
+{
+	if (qname->ns && qname->ncname)
+	{
+		XPL_FREE(qname->ncname);
+		qname->ncname = NULL;
+	}
+	qname->ns = NULL;
+}
+
+
 xmlNodePtr xplFindTail(xmlNodePtr cur)
 {
 	if (!cur)
@@ -403,7 +457,7 @@ static xmlNsPtr newReconciliedNs(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns)
      */
     def = xmlSearchNsByHref(doc, tree, ns->href);
     if (def)
-        return(def);
+        return def;
 
     /*
      * Find a close prefix which is not already in use.
@@ -1315,4 +1369,29 @@ xmlXPathObjectPtr xplSelectNodesWithCtxt(xmlXPathContextPtr ctxt, xmlNodePtr src
     if (ctxt->namespaces)
 		XPL_FREE(ctxt->namespaces);
     return ret;
+}
+
+xmlAttrPtr xplCreateAttribute(xmlNodePtr dst, xplQName qname, xmlChar *value, bool allowReplace)
+{
+	xmlAttrPtr prev;
+	xmlNsPtr ns;
+
+	if (qname.ns)
+		prev = xmlHasNsProp(dst, qname.ncname, qname.ns->href);
+	else
+		prev = xmlHasProp(dst, qname.ncname);
+	if (prev)
+	{
+		if (!allowReplace)
+			return prev;
+		xmlFreeNodeList(prev->children);
+		xplSetChildren((xmlNodePtr) prev, xmlNewDocText(dst->doc, value));
+		return prev;
+	}
+	if (qname.ns)
+	{
+		ns = newReconciliedNs(dst->doc, dst, qname.ns);
+		return xmlNewNsProp(dst, ns, qname.ncname, value);
+	}
+	return xmlNewProp(dst, qname.ncname, value);
 }
