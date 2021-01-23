@@ -60,5 +60,4 @@ void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(NULL, false, false);
 	} else if (nodes)
 		ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
-	xmlXPathFreeObject(nodes);
 }
