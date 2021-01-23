@@ -254,6 +254,16 @@
     </Input>
   </MustFail>
   
+  <MustFail name="fail/unknown-dbname">
+    <Input>
+      <xpl:dbsession dbname="this db doesn't exist">
+        <xpl:sql>
+          SELECT 1 AS "Col";
+        </xpl:sql>
+      </xpl:dbsession>
+    </Input>
+  </MustFail>
+    
   <MustFail name="fail/bad-sql">
     <Input>
       <xpl:dbsession dbname="pg-xpl-test">
