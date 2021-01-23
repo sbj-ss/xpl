@@ -491,14 +491,23 @@ void xplClearCommandParams(xplCommandPtr command, void *values)
 void xplClearCommandInfo(xplCommandPtr command, xplCommandInfoPtr info)
 {
 	if (info->content)
+	{
 		XPL_FREE(info->content);
+		info->content = NULL;
+	}
 	if (info->params)
 	{
 		xplClearCommandParams(command, info->params);
 		XPL_FREE(info->params);
+		info->params = NULL;
 	}
 	if (info->required_params)
+	{
 		XPL_FREE(info->required_params);
+		info->required_params = NULL;
+	}
+	info->prologue_error = NULL;
+	info->prologue_state = NULL;
 }
 
 xmlXPathObjectPtr xplSelectNodes(xplCommandInfoPtr commandInfo, xmlNodePtr src, xmlChar *expr)
