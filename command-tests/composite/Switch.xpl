@@ -204,9 +204,9 @@
   
   <MustFail name="fail/bad-default-break">
     <Input>
-      <xpl:case key="1">
+      <xpl:switch key="1">
         <xpl:default break="eurt"/>
-      </xpl:case>
+      </xpl:switch>
     </Input>
   </MustFail>
   
@@ -220,7 +220,7 @@
   
   <MustFail name="fail/bare-case">
     <Input>
-      <xpl:case/>
+      <xpl:case key="1"/>
     </Input>
   </MustFail>
   
