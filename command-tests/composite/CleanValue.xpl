@@ -174,4 +174,6 @@
       <xpl:clean-value behavior="undefined"/>
     </Input>
   </MustFail>
+  
+  <Summary/>
 </Root>
