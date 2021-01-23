@@ -9,6 +9,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdIsolateParams
 {
+	bool repeat;
 	bool share_session;
 	bool inherit_macros;
 	bool parallel;
@@ -17,6 +18,7 @@ typedef struct _xplCmdIsolateParams
 
 static const xplCmdIsolateParams params_stencil =
 {
+	.repeat = false,
 	.share_session = false,
 	.inherit_macros = false,
 	.parallel = false,
@@ -31,6 +33,11 @@ xplCommand xplIsolateCommand =
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdIsolateParams),
 	.parameters = {
+		{
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.repeat
+		},
 		{
 			.name = BAD_CAST "sharesession",
 			.type = XPL_CMD_PARAM_TYPE_BOOL,
