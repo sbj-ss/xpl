@@ -27,6 +27,7 @@ xplCommand xplElementCommand =
 		{
 			.name = BAD_CAST "name",
 			.type = XPL_CMD_PARAM_TYPE_QNAME,
+			.required = true,
 			.value_stencil = &params_stencil.name
 		}, {
 			.name = BAD_CAST "repeat",
@@ -41,9 +42,28 @@ xplCommand xplElementCommand =
 void xplCmdElementEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdElementParamsPtr params = (xplCmdElementParamsPtr) commandInfo->params;
+	xmlNsPtr ns;
+	bool own_ns = false;
 	xmlNodePtr el;
 
+	if (params->name.ns)
+	{
+		 ns = commandInfo->element->nsDef;
+		 while (ns)
+		 {
+			 if (ns == params->name.ns)
+			 {
+				 params->name.ns = xmlCopyNamespace(ns);
+				 own_ns = true;
+				 break;
+			 }
+			 ns = ns->next;
+		 }
+	}
 	el = xmlNewDocNode(commandInfo->element->doc, params->name.ns, params->name.ncname, NULL);
+	if (own_ns)
+		el->nsDef = params->name.ns;
+	xplDownshiftNodeListNsDef(commandInfo->element->children, commandInfo->element->nsDef);
 	xplSetChildren(el, xplDetachContent(commandInfo->element));
 	ASSIGN_RESULT(el, params->repeat, true);
 }
