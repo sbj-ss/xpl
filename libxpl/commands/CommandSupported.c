@@ -1,4 +1,5 @@
 #include <libxpl/xplcommand.h>
+#include <libxpl/xplmessages.h>
 #include <libxpl/xpltree.h>
 
 void xplCmdCommandSupportedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
@@ -14,7 +15,7 @@ typedef struct _xplCmdCommandSupportedParams
 static const xplCmdCommandSupportedParams params_stencil =
 {
 	.name = NULL,
-	.tagname = { NULL, BAD_CAST "command" },
+	.tagname = { NULL, NULL },
 	.repeat = true,
 	.show_tags = false
 };
@@ -50,17 +51,30 @@ xplCommand xplCommandSupportedCommand =
 };
 
 static const xplQName empty_qname = { NULL, NULL };
+static const xplQName default_qname = { NULL, BAD_CAST "command" };
 
 void xplCmdCommandSupportedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdCommandSupportedParamsPtr params = (xplCmdCommandSupportedParamsPtr) commandInfo->params;
 	xmlChar *value;
+	xplQName tagname;
 	xmlNodePtr ret;
 
 	if (!params->name) /* all commands */
 	{
-		ASSIGN_RESULT(xplSupportedCommandsToList(commandInfo->element, params->show_tags? empty_qname: params->tagname), params->repeat, true);
+		if (params->show_tags && params->tagname.ncname)
+		{
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "tagname and showtags can't be used simultaneously"), true, true);
+			return;
+		}
+		tagname = params->show_tags? empty_qname: params->tagname.ncname? params->tagname: default_qname;
+		ASSIGN_RESULT(xplSupportedCommandsToList(commandInfo->element, tagname), params->repeat, true);
 	} else { /* specified command */
+		if (params->tagname.ncname || params->show_tags)
+		{
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "name can't be used together with tagname or showtags"), true, true);
+			return;
+		}
 		value = BAD_CAST (xplCommandSupported(params->name)? "true": "false");
 		ret = xmlNewDocText(commandInfo->element->doc, value);
 		ASSIGN_RESULT(ret, false, true);
