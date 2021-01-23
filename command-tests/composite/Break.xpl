@@ -5,7 +5,7 @@
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl" xmlns:ns-a="http://a.example.com">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
-
+ 
   <MustSucceed name="pass/simple">
     <Input>
       <A/>
@@ -67,7 +67,7 @@
       </Container>
     </Expected>
   </MustSucceed>
-  
+   
   <MustSucceed name="pass/nodeset">
     <Input>
       <Container>
@@ -75,15 +75,17 @@
         <xpl:break point="Container"/>
         <B/>
       </Container>
+      <C/>
     </Input>
     <Expected>
       <Container>
         <A/>
       </Container>
+      <C/>
     </Expected>
   </MustSucceed>
-  
-    <MustSucceed name="pass/nodeset-ascend">
+
+  <MustSucceed name="pass/nodeset-ascend">
     <Input>
       <Outer>
         <Inner>
@@ -93,6 +95,7 @@
         </Inner>
         <C/>
       </Outer>
+      <D/>
     </Input>
     <Expected>
       <Outer>
@@ -100,7 +103,9 @@
           <A/>
         </Inner>
       </Outer>
+      <D/>
     </Expected>
   </MustSucceed>
+
   <Summary/>
 </Root>
