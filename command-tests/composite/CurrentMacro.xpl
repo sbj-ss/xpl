@@ -24,12 +24,12 @@
         <xpl:content/>
       </xpl:define>
       <A>
-        <xpl:current-macro detailed="true"/>
+        <xpl:value-of select="count(./macro[@namespaceuri=''][@prefix=''][@name='A'])">
+          <xpl:current-macro detailed="true"/>
+        </xpl:value-of>
       </A>
     </Input>
-    <Expected>
-      <macro namespaceuri="" prefix="" name="A" line="23" parentname="Output" parentline="15" timesencountered="1" timescalled="1" disabledspin="0" expansionstate="expand always"/>    
-    </Expected>
+    <Expected>1</Expected>
   </MustSucceed>
 
   <MustSucceed name="pass/detailed-with-custom-name">
@@ -38,12 +38,12 @@
         <xpl:content/>
       </xpl:define>
       <ns-a:A>
-        <xpl:current-macro detailed="true" tagname="M"/>
+        <xpl:value-of select="count(./M[@prefix='ns-a'][@name='A'][@timesencountered=1][@expansionstate='awaiting expansion'])">
+          <xpl:current-macro detailed="true" tagname="M"/>
+        </xpl:value-of>
       </ns-a:A>
     </Input>
-    <Expected>
-      <M namespaceuri="http://a.example.com" prefix="ns-a" name="A" line="37" parentname="Output" parentline="15" timesencountered="1" timescalled="1" disabledspin="0" expansionstate="awaiting expansion"/>    
-    </Expected>
+    <Expected>1</Expected>
   </MustSucceed>
   
   <Summary/>

@@ -13,7 +13,9 @@
         <xpl:content select="Input"/>
       </xpl:no-expand>
       <Output>
-        <xpl:content select="Input/node()"/>
+        <xpl:isolate>
+          <xpl:content select="Input/node()"/>
+        </xpl:isolate>
       </Output>
 
       <xpl:define name="HasError" expand="true">
@@ -60,7 +62,9 @@
         <xpl:content select="Input"/>
       </xpl:no-expand>
       <Output>
-        <xpl:content select="Input/node()"/>
+        <xpl:isolate>
+          <xpl:content select="Input/node()"/>
+        </xpl:isolate>
       </Output>
       <xpl:choose>
         <xpl:when>
