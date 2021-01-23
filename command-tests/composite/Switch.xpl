@@ -5,7 +5,7 @@
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl" xmlns:ns-a="http://a.example.com">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
-<!--   
+
   <MustSucceed name="pass/switch-case">
     <Input>
       <xpl:switch key="2">
@@ -54,7 +54,7 @@
       <Right3/>
     </Expected>
   </MustSucceed>
--->  
+
   <MustSucceed name="pass/case-identity">
     <Input>
       <A attr="a"/>
@@ -83,7 +83,7 @@
       <Identity/>
     </Expected>
   </MustSucceed>  
-<!--   
+
   <MustSucceed name="pass/switch-repeat">
     <Input>
       <xpl:define name="A">
@@ -229,6 +229,6 @@
       <xpl:default/>
     </Input>
   </MustFail>
- -->
+ 
   <Summary/>
 </Root>
