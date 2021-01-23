@@ -53,7 +53,10 @@ void xplCmdWhenPrologue(xplCommandInfoPtr commandInfo)
 		test_el->children = xmlNewDocText(commandInfo->element->doc, NULL);
 		test_el->children->content = params->test;
 		params->test = NULL;
-		xplPrependList(commandInfo->element->children, test_el);
+		if (commandInfo->element->children)
+			xplPrependList(commandInfo->element->children, test_el);
+		else
+			xplSetChildren(commandInfo->element, test_el);
 	}
 }
 
