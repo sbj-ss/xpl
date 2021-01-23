@@ -34,14 +34,18 @@ xplCommand xplBreakCommand =
 	}
 };
 
-static bool _checkForAncestor(xmlNodeSetPtr set, xmlNodePtr ancestor)
+static bool _checkForParent(xplDocumentPtr doc, xmlNodePtr element, xmlChar *xpath)
 {
+	xmlXPathObjectPtr sel;
 	size_t i;
+	bool ret = false;
 
-	for (i = 0; i < (size_t) set->nodeNr; i++)
-		if (set->nodeTab[i] == ancestor)
-			return true;
-	return false;
+	sel = xplSelectNodesWithCtxt(doc->xpath_ctxt, element->parent->parent, xpath);
+	for (i = 0; i < (size_t) sel->nodesetval->nodeNr; i++)
+		if (sel->nodesetval->nodeTab[i] == element->parent)
+			ret = true;
+	xmlXPathFreeObject(sel);
+	return ret;
 }
 
 static xmlNodePtr _createBreak(xplCommandInfoPtr commandInfo, xmlChar *where)
@@ -85,8 +89,8 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				}
 				break;
 			case XPATH_NODESET:
-				if (cmd_params->point->nodesetval && cmd_params->point->nodesetval->nodeNr)
-					ascend = !_checkForAncestor(cmd_params->point->nodesetval, commandInfo->element->parent);
+				if (cmd_params->point->nodesetval)
+					ascend = !_checkForParent(commandInfo->document, commandInfo->element, cmd_params->point->user);
 				else
 					ascend = true;
 				upper_point = (xmlChar*) cmd_params->point->user;
