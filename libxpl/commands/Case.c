@@ -31,7 +31,8 @@ static const xplCmdCaseParams params_stencil =
 static xplCmdParamDictValue comparison_dict[] =
 {
 	{ BAD_CAST "equality", XPL_CMD_CASE_COMP_EQUALITY },
-	{ BAD_CAST "identity", XPL_CMD_CASE_COMP_IDENTITY }
+	{ BAD_CAST "identity", XPL_CMD_CASE_COMP_IDENTITY },
+	{ NULL }
 };
 
 xplCommand xplCaseCommand =
@@ -80,7 +81,8 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 	if (!xplCheckNodeForXplNs(commandInfo->document, parent) ||	xmlStrcmp(parent->name, BAD_CAST "switch"))
 	{
 		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "parent element must be a switch command");
-		goto done;
+		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
+		return;
 	}
 	parent_sel = (xmlXPathObjectPtr) parent->content;
 	if (xplCompareXPathSelections(params->key, parent_sel, params->comparison == XPL_CMD_CASE_COMP_EQUALITY))
@@ -92,9 +94,6 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 			parent->last = commandInfo->element;
 		}
 	} else
-		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
-done:
-	if (commandInfo->prologue_error)
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
 }
 
