@@ -32,6 +32,7 @@ int cfgUseWrappers;
 int cfgWarnOnAncestorModificationAttempt;
 int cfgWarnOnDeletedNodeReference;
 int cfgWarnOnExpandedMacroContent;
+int cfgWarnOnFatalErrorsInIsolatedDocuments;
 int cfgWarnOnInvalidXplNsUri;
 int cfgWarnOnMacroRedefinition;
 int cfgWarnOnMissingInheritBase;
@@ -216,6 +217,11 @@ xplConfigEntry configEntries[] =
 		.value_ptr = &cfgWarnOnExpandedMacroContent,
 		.name = BAD_CAST "WarnOnExpandedMacroContent",
 		.default_value = (void*) DEFAULT_WARN_ON_EXPANDED_MACRO_CONTENT
+	}, {
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnFatalErrorsInIsolatedDocuments,
+		.name = BAD_CAST "WarnOnFatalErrorsInIsolatedDocuments",
+		.default_value = DEFAULT_WARN_ON_FATAL_ERRORS_IN_ISOLATED_DOCUMENTS
 	}, {
 		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgWarnOnInvalidXplNsUri,

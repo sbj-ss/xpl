@@ -1,6 +1,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmacro.h>
 #include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
 #include <libxpl/xplparams.h>
 #include <libxpl/xplsession.h>
 #include <libxpl/xpltree.h>
@@ -136,13 +137,16 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		/* we don't need #else here - this was handled above */
 #endif
 	} else {
-		if ((status = xplDocumentApply(child)) == XPL_ERR_NO_ERROR)
+		status = xplDocumentApply(child);
+		if (status == XPL_ERR_NO_ERROR || status == XPL_ERR_FATAL_CALLED)
 		{
 			/* TODO don't clone when redundant namespace removal code is ready
 			content = detachContent(child->document->children);
 			xmlSetListDoc(content, commandInfo->element->doc);
 			irredundant...()
 			*/
+			if ((status == XPL_ERR_FATAL_CALLED) && cfgWarnOnFatalErrorsInIsolatedDocuments)
+				xplDisplayMessage(xplMsgWarning, BAD_CAST ":fatal called while processing child document");
 			content = xplCloneNodeList(child->document->children->children, commandInfo->element, commandInfo->element->doc);
 			xplDownshiftNodeNsDef(content, commandInfo->element->nsDef);
 			ASSIGN_RESULT(content, false, true);
