@@ -7,7 +7,8 @@ static xmlNodePtr _onlyFirstChildElement(xmlNodePtr parent)
 {
 	xmlNodePtr cur, tmp;
 
-	cur = xplDetachContent(parent);
+	cur = parent->children;
+	parent->children = parent->last = NULL;
 	/* remove all non-elements */
 	while (cur && cur->type != XML_ELEMENT_NODE)
 	{
@@ -26,6 +27,8 @@ static xmlNodePtr _onlyFirstChildElement(xmlNodePtr parent)
 			tmp->prev = NULL;
 			xmlFreeNodeList(tmp);
 		}
+		xplMakeNsSelfContainedTree(cur);
+		cur->parent = NULL;
 		return cur;
 	}
 	/* garbage inside, use predefined message */
