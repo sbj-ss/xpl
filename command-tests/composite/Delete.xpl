@@ -3,7 +3,7 @@
   XPL interpreter high-level test suite
   :delete command
 -->
-<Root xmlns:xpl="http://xpl-dev.org/xpl">
+<Root xmlns:xpl="urn:x-xpl:xpl">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
   
   <MustSucceed name="pass/delete-element">
