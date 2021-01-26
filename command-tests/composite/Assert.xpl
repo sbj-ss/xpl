@@ -29,7 +29,7 @@
 
   <MustSucceed name="pass/nodeset">
     <Input>
-      <xpl:assert>ancestor::MustSucceed</xpl:assert>
+      <xpl:assert>descendant-or-self::*[local-name()='assert']</xpl:assert>
     </Input>
     <Expected/>
   </MustSucceed>

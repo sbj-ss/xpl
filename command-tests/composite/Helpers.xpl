@@ -12,9 +12,12 @@
       <xpl:no-expand>
         <xpl:content select="Input"/>
       </xpl:no-expand>
+
       <Output>
         <xpl:isolate>
-          <xpl:content select="Input/node()"/>
+          <xpl:no-expand>
+            <xpl:content select="Input/node()"/>
+          </xpl:no-expand>
         </xpl:isolate>
       </Output>
 
@@ -25,7 +28,7 @@
       <xpl:define name="Match" expand="true">
         <xpl:value-of>
           <xpl:attribute name="select">
-            '<xpl:serialize><xpl:include select="preceding::Output[1]/node()"/></xpl:serialize>' =
+            '<xpl:serialize><xpl:include select="preceding::Output[1]/node()" repeat="false"/></xpl:serialize>' =
             '<xpl:serialize><xpl:content select="Expected/node()" id="MustSucceed"/></xpl:serialize>'
           </xpl:attribute>
         </xpl:value-of>

@@ -9,18 +9,20 @@
   <MustSucceed name="pass/no-expand-and-expand">
     <Input>
       <xpl:define name="A">
-        <ProcessedA/>
+        <ProcessedA>parent=<xpl:content select="local-name(parent::*)"/></ProcessedA>
       </xpl:define>
+      <xpl:append select="following::xpl:no-expand">
+        <xpl:element name="xpl:expand" repeat="false">
+          <xpl:element name="A" repeat="false"/>
+        </xpl:element>
+      </xpl:append>
       <xpl:no-expand>
         <A/>
-        <xpl:expand>
-          <A/>
-        </xpl:expand>
       </xpl:no-expand>
     </Input>
     <Expected>
       <A/>
-      <ProcessedA/>
+      <ProcessedA>parent=expand</ProcessedA>
     </Expected>
   </MustSucceed>
   
