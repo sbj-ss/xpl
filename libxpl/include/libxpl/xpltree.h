@@ -108,7 +108,7 @@ XPLPUBFUN xmlNodePtr XPLCALL
 	xplCloneNodeList(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc);
 
 /* ditto */
-XPLPUBFUN void XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplReplaceRedundantNamespaces(xmlNodePtr top);
 /* Translate parent's ns_list to cur before deleting its parent. Assume cur is already detached. */
 XPLPUBFUN void XPLCALL

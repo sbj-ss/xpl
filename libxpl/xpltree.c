@@ -1006,14 +1006,12 @@ bool xplMakeNsSelfContainedTree(xmlNodePtr top)
 			   it returns NULL if a namespace with the same prefix already exists
 			   OR there's no memory to allocate it. */
 			if ((new_ns = xmlNewNs(top, old_ns->href, old_ns->prefix)))
-			{
 				if (!_addNamespacesToNsPairs(&pairs, old_ns, new_ns)) // OOM
 				{
 					_clearNsPairs(&pairs, true);
 					top->nsDef = NULL;
 					return false;
 				}
-			}
 			old_ns = old_ns->next;
 		}
 		cur = cur->parent;
@@ -1025,10 +1023,48 @@ bool xplMakeNsSelfContainedTree(xmlNodePtr top)
 }
 
 /* now the opposite task - getting rid of duplicated definitions */
-
-void xplReplaceRedundantNamespaces(xmlNodePtr top)
+bool xplReplaceRedundantNamespaces(xmlNodePtr top)
 {
-	UNUSED_PARAM(top);
+	xplNsPairs pairs;
+	xmlNsPtr old_ns, new_ns, prev, next;
+
+	/* It's quite unlikely that new namespaces are created inside isolate'd documents -
+	   and they can't be created while a subtree resides within document session.
+	   So choosing between speed and full deduplication we favor speed. */
+	if (!_initNsPairs(&pairs, 16))
+		return false;
+	old_ns = top->nsDef;
+	while (old_ns)
+	{
+		if ((new_ns = xmlSearchNsByHref(top->doc, top->parent, old_ns->href)))
+			if (!_addNamespacesToNsPairs(&pairs, old_ns, new_ns))
+			{
+				_clearNsPairs(&pairs, false);
+				return false;
+			}
+		old_ns = old_ns->next;
+	}
+	if (pairs.count)
+		_relinkTreeNamespaces(&pairs, top);
+	/* O(n^2) here, can be optimized for heavy namespaces usage.
+	   Note that we can't remove nsDefs in the previous loop as it can fail in a halfway. */
+	prev = NULL;
+	while (old_ns)
+	{
+		next = old_ns->next;
+		if (_getPairedNs(&pairs, old_ns))
+		{
+			if (top->nsDef == old_ns)
+				top->nsDef = next;
+			if (prev)
+				prev->next = next;
+			xmlFreeNs(old_ns);
+		} else
+			prev = old_ns;
+		old_ns = old_ns->next;
+	}
+	_clearNsPairs(&pairs, false);
+	return true;
 }
 
 /* XPath extensions */
