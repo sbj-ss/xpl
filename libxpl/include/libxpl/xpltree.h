@@ -107,9 +107,6 @@ XPLPUBFUN xmlNodePtr XPLCALL
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplCloneNodeList(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc);
 
-/* translate cur's namespace list to its parent */
-XPLPUBFUN bool XPLCALL
-	xplUpshiftNodeNsDefs(xmlNodePtr cur);
 /* ditto */
 XPLPUBFUN void XPLCALL
 	xplReplaceRedundantNamespaces(xmlNodePtr top);
@@ -119,8 +116,8 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN void XPLCALL
 	xplDownshiftNodeListNsDef(xmlNodePtr cur, xmlNsPtr ns_list);
 
-/* Copy all higher namespace definitions to top */
-XPLPUBFUN void XPLCALL
+/* Copy all higher namespace definitions to top. Returns false on OOM */
+XPLPUBFUN bool XPLCALL
 	xplMakeNsSelfContainedTree(xmlNodePtr top);
   
 XPLPUBFUN void XPLCALL
