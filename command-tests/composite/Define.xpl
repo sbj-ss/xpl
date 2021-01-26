@@ -4,7 +4,7 @@
   :define command 
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl">
-  <xpl:include select="/Root/xpl:define" file="/home/ss/polaris/command-tests/composite/Helpers.xpl" abspath="true"/>
+  <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
 
   <MustSucceed name="pass/content">
     <Input>
