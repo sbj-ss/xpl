@@ -140,15 +140,15 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		status = xplDocumentApply(child);
 		if (status == XPL_ERR_NO_ERROR || status == XPL_ERR_FATAL_CALLED)
 		{
-			/* TODO don't clone when redundant namespace removal code is ready
-			content = detachContent(child->document->children);
-			xmlSetListDoc(content, commandInfo->element->doc);
-			irredundant...()
-			*/
 			if ((status == XPL_ERR_FATAL_CALLED) && cfgWarnOnFatalErrorsInIsolatedDocuments)
 				xplDisplayMessage(xplMsgWarning, BAD_CAST ":fatal called while processing child document");
-			content = xplCloneNodeList(child->document->children->children, commandInfo->element, commandInfo->element->doc);
-			xplDownshiftNodeNsDef(content, commandInfo->element->nsDef);
+			content = xplDetachContent((xmlNodePtr) child->document);
+			xmlSetListDoc(content, commandInfo->element->doc);
+			xplSetChildren(commandInfo->element, content);
+			xplReplaceRedundantNamespaces(content);
+			// TODO shift namespaces up
+			content = xplDetachContent(commandInfo->element->children);
+			xmlFreeNode(xplDetachContent(commandInfo->element)); // sub-document root
 			ASSIGN_RESULT(content, false, true);
 		} else
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "error \"%s\" processing child document", xplErrorToString(status)), true, true);
