@@ -90,10 +90,9 @@ void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (params->after_count > 1)
 		ret = _replicateNodes(commandInfo->element->children, params->after_count, commandInfo->element->parent);
-	else if (params->after_count == 1) {
+	else if (params->after_count == 1)
 		ret = xplDetachContent(commandInfo->element);
-		xplLiftNsDefs(commandInfo->element, NULL);
-	} else
+	else
 		ret = NULL;
 	ASSIGN_RESULT(ret, params->repeat, true);
 }

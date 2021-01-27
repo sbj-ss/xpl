@@ -726,7 +726,8 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr resu
 					NOOP(); /* if DELETION_DEFERRED is set contents will be deleted after processing */
 			} else if (result->has_list) {
 				if (result->list && result->repeat)
-						tail = result->list;
+					tail = result->list;
+				xplLiftNsDefs(c->parent, c, result->list);
 				xplReplaceWithList(c, result->list);
 				/* e.g. :delete removing itself */
 				c->type = (xmlElementType) ((int) c->type & ~XPL_NODE_DELETION_MASK);
@@ -789,7 +790,6 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 		out = xplReplaceContentEntries(doc, macro->id, element, macro->content);
 		xplSetChildren(element, out);
 		xplNodeListApply(doc, element->children, result);
-		xplLiftNsDefs(element, NULL);
 		out = xplDetachContent(element);
 		if (!out) /* contents could be removed by :return */
 			out = macro->return_value;
