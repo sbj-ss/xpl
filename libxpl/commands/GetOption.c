@@ -74,9 +74,7 @@ void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ret = xmlNewDocText(commandInfo->element->doc, NULL);
 		ret->content = xplGetOptionValue(params->name, params->show_passwords);
 		params->repeat = false;
-	} else {
+	} else
 		ret = xplOptionsToList(commandInfo->element, params->response_tag_name, params->show_tags, params->show_passwords);
-		xplLiftNsDefs(commandInfo->element);
-	}
 	ASSIGN_RESULT(ret, params->repeat, true);
 }

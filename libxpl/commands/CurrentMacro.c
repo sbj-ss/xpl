@@ -56,10 +56,8 @@ void xplCmdCurrentMacroEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 		return;
 	}
 	if (params->detailed)
-	{
 		ASSIGN_RESULT(xplMacroToNode(commandInfo->document->current_macro, params->tagname, commandInfo->element), params->repeat, true);
-		xplLiftNsDefs(commandInfo->element);
-	} else {
+	else {
 		ret = xmlNewDocText(commandInfo->element->doc, NULL);
 		ret->content = xplQNameToStr(commandInfo->document->current_macro->qname);
 		ASSIGN_RESULT(ret, false, true);
