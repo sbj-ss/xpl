@@ -84,6 +84,7 @@ void xplPushToDocStack(xplDocumentPtr doc, xmlNodePtr node)
 	xplMakeNsSelfContainedTree(new_parent);
 	xplSetChildren(node, NULL);
 	new_parent->prev = doc->stack;
+	new_parent->parent = NULL;
 	doc->stack = new_parent;
 }
 
