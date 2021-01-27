@@ -680,13 +680,16 @@ void xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result)
 	{
 		macro->times_encountered++;
         if (!macro->disabled_spin)
+        {
 			_xplExecuteMacro(doc, element, macro, result);     
-		else
-			xplNodeListApply(doc, element->children, result);
-	} else if (xplCheckNodeForXplNs(doc, element))
+			goto done;
+        }
+	}
+    if (xplCheckNodeForXplNs(doc, element))
         _xplExecuteCommand(doc, element, result);
     else
-		xplNodeListApply(doc, element->children, result);
+    	xplNodeListApply(doc, element->children, result);
+done:
 	if ((macros = (xmlHashTablePtr) element->_private))
 	{
 		xplMacroTableFree(macros);
