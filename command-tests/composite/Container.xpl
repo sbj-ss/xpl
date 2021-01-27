@@ -8,12 +8,16 @@
   
   <MustSucceed name="pass/simple">
     <Input>
-      <xpl:container>
-        <A/>
-      </xpl:container>
+      <Outer>
+        <xpl:container xmlns:ns-b="http://b.com">
+          <ns-b:A/>
+        </xpl:container>
+      </Outer>
     </Input>
     <Expected>
-      <A/>
+      <Outer xmlns:ns-b="http://b.com">
+        <ns-b:A/>
+      </Outer>
     </Expected>
   </MustSucceed>
   
