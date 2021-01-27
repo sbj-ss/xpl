@@ -73,7 +73,9 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		}
 		ret = xmlNewDocText(commandInfo->element->doc, db_list->conn_string);
 		cmd_params->repeat = false;
-	} else
+	} else {
 		ret = xplDatabasesToNodeList(commandInfo->element, cmd_params->response_tag_name, cmd_params->show_tags);
+		xplLiftNsDefs(commandInfo->element);
+	}
 	ASSIGN_RESULT(ret, cmd_params->repeat, true);
 }
