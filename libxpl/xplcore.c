@@ -546,9 +546,9 @@ void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, c
 							xmlXPathNodeSetAddUnique(list, c);
 						XPL_FREE(attr_id);
 					}
-                } else
+				} else
 					xmlXPathNodeSetAddUnique(list, c);
-            } else if (!xmlStrcmp(c->name, BAD_CAST "define") /* these commands may have there own content */
+			} else if (!xmlStrcmp(c->name, BAD_CAST "define") /* these commands may have there own content */
 				|| !xmlStrcmp(c->name, BAD_CAST "for-each")
 				|| !xmlStrcmp(c->name, BAD_CAST "with")
 				|| !xmlStrcmp(c->name, BAD_CAST "do")
