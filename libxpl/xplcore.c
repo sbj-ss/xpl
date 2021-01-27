@@ -89,16 +89,17 @@ void xplPushToDocStack(xplDocumentPtr doc, xmlNodePtr node)
 
 xmlNodePtr xplPopFromDocStack(xplDocumentPtr doc, xmlNodePtr parent)
 {
-	xmlNodePtr ret, tmp;
+	xmlNodePtr ret, carrier;
 
 	if (!doc || !doc->stack)
 		return NULL;
 	/* we have to clone due to possible namespace problems */
-	ret = xplCloneNodeList(doc->stack->children, parent, parent->doc);
-	tmp = doc->stack;
-	doc->stack = tmp->prev;
-	xmlUnlinkNode(tmp);
-	xmlFreeNode(tmp);
+	carrier = doc->stack;
+	doc->stack = carrier->prev;
+	carrier->prev = NULL;
+	ret = xplDetachContent(carrier);
+	xplLiftNsDefs(parent, carrier, ret);
+	xmlFreeNode(carrier);
 	return ret;
 }
 
