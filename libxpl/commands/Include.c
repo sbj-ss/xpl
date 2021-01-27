@@ -520,7 +520,7 @@ static void buildDocumentStep(IncludeContextPtr ctxt)
 static void selectNodesStep(IncludeContextPtr ctxt)
 {
 	xmlXPathObjectPtr sel;
-	xmlNodePtr cur, head = NULL, tail, sibling, prnt;
+	xmlNodePtr cur, head = NULL, tail, sibling;
 	size_t i;
 
 	/* check select attribute */
@@ -582,15 +582,12 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 				for (i = 0; i < (size_t) sel->nodesetval->nodeNr; i++)
 				{
 					sibling = sel->nodesetval->nodeTab[i];
-					prnt = sibling->parent;
-					sibling->parent = NULL;
 					cur = xplCloneAsNodeChild(sibling, ctxt->command_element);
 					if (ctxt->params->response_tag_name.ncname && (cur->type == XML_ELEMENT_NODE))
 					{
 						xmlNodeSetName(cur, ctxt->params->response_tag_name.ncname);
 						cur->ns = ctxt->params->response_tag_name.ns;
 					}
-					sibling->parent = prnt;
 					if (!head)
 						head = tail = cur;
 					else
