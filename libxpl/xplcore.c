@@ -93,7 +93,6 @@ xmlNodePtr xplPopFromDocStack(xplDocumentPtr doc, xmlNodePtr parent)
 
 	if (!doc || !doc->stack)
 		return NULL;
-	/* we have to clone due to possible namespace problems */
 	carrier = doc->stack;
 	doc->stack = carrier->prev;
 	carrier->prev = NULL;
