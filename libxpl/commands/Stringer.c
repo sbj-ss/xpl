@@ -88,8 +88,14 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		unique_hash = xmlHashCreate(16);
 
 	if (params->select)
+	{
+		if (!params->select->nodesetval)
+		{
+			ASSIGN_RESULT(NULL, false, true);
+			return;
+		}
 		cur = params->select->nodesetval->nodeTab[0];
-	else
+	} else
 		cur = commandInfo->element->children;
 
 	while (cur) /* unified cycle */
@@ -112,7 +118,8 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 						memcpy(ret_str_pos, params->start_delimiter, sd_len);
 						ret_str_pos += sd_len;
 					}
-					memcpy(ret_str_pos, cur_str, cur_len);
+					if (cur_str)
+						memcpy(ret_str_pos, cur_str, cur_len);
 					ret_str_pos += cur_len;
 					if (params->end_delimiter)
 					{
