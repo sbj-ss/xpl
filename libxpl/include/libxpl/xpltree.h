@@ -112,7 +112,7 @@ XPLPUBFUN bool XPLCALL
 	xplMakeNsSelfContainedTree(xmlNodePtr top);
 /* Translate top's nsDefs one level up removing redundant ones. Returns false on OOM */
 XPLPUBFUN bool XPLCALL
-	xplLiftNsDefs(xmlNodePtr top);
+	xplLiftNsDefs(xmlNodePtr top, xmlNodePtr parent);
   
 XPLPUBFUN void XPLCALL
 	xplRegisterXPathExtensions(xmlXPathContextPtr ctxt);

@@ -63,7 +63,7 @@ void xplCmdElementEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	el = xmlNewDocNode(commandInfo->element->doc, params->name.ns, params->name.ncname, NULL);
 	if (own_ns)
 		el->nsDef = params->name.ns;
-	xplLiftNsDefs(commandInfo->element);
+	xplLiftNsDefs(commandInfo->element, NULL);
 	xplSetChildren(el, xplDetachContent(commandInfo->element));
 	ASSIGN_RESULT(el, params->repeat, true);
 }

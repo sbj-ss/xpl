@@ -75,7 +75,7 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		cmd_params->repeat = false;
 	} else {
 		ret = xplDatabasesToNodeList(commandInfo->element, cmd_params->response_tag_name, cmd_params->show_tags);
-		xplLiftNsDefs(commandInfo->element);
+		xplLiftNsDefs(commandInfo->element, NULL);
 	}
 	ASSIGN_RESULT(ret, cmd_params->repeat, true);
 }

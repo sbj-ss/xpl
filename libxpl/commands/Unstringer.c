@@ -317,7 +317,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		} else
 			cur = cur->next;
 	}
-	xplLiftNsDefs(commandInfo->element);
+	xplLiftNsDefs(commandInfo->element, NULL);
 	ASSIGN_RESULT(ret, ctxt.params->repeat, true);
 
 	if (ctxt.unique_hash)

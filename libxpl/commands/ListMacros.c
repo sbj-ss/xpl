@@ -68,7 +68,7 @@ void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		ASSIGN_RESULT(ret, false, true);
 	} else {
 		ret = xplMacroTableToNodeList(commandInfo->element, params->tagname, params->unique, commandInfo->element);
-		xplLiftNsDefs(commandInfo->element);
+		xplLiftNsDefs(commandInfo->element, NULL);
 		ASSIGN_RESULT(ret, params->repeat, true);
 	}
 }

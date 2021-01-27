@@ -409,7 +409,7 @@ bool xplInitNamePointers()
 }
 
 #define MAX_PREFIX_SIZE 32
-static xmlChar*  _newNsPrefix(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns)
+static xmlChar* _newNsPrefix(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns)
 {
 	xmlNsPtr def;
 	xmlChar *prefix;
@@ -906,6 +906,21 @@ static void _removeMarkedNsDefs(xmlNodePtr top)
 	}
 }
 
+static void _appendNsDef(xmlNodePtr cur, xmlNsPtr ns)
+{
+	xmlNsPtr last_ns;
+
+	if (!cur->nsDef)
+	{
+		cur->nsDef = ns;
+		return;
+	}
+	last_ns = cur->nsDef;
+	while (last_ns->next)
+		last_ns = last_ns->next;
+	last_ns->next = ns;
+}
+
 #define INITIAL_NS_PAIRS_SIZE 16
 
 bool xplMakeNsSelfContainedTree(xmlNodePtr top)
@@ -942,10 +957,11 @@ bool xplMakeNsSelfContainedTree(xmlNodePtr top)
 	return true;
 }
 
-bool xplLiftNsDefs(xmlNodePtr top)
+bool xplLiftNsDefs(xmlNodePtr top, xmlNodePtr parent)
 {
 	xplNsPairs pairs;
-	xmlNsPtr old_ns, new_ns;
+	xmlNsPtr old_ns, new_ns, next;
+	xmlChar *new_prefix;
 
 	/* We suppose that adding explicit nsDefs to a command was done on purpose.
 	   So we translate them one level up without checking if they're actually
@@ -958,12 +974,14 @@ bool xplLiftNsDefs(xmlNodePtr top)
 		return true; /* no possible references to nsDefs - and top itself will be gone soon */
 	if (!_initNsPairs(&pairs, INITIAL_NS_PAIRS_SIZE))
 		return false;
+	if (!parent)
+		parent = top->parent;
 	old_ns = top->nsDef;
 	while (old_ns)
 	{
 		/* If this namespace is available somewhere else we'll have to relink children;
 		   otherwise we can just move the nsDef itself up. */
-		if ((new_ns = xmlSearchNsByHref(top->doc, top->parent, old_ns->href)))
+		if ((new_ns = xmlSearchNsByHref(top->doc, parent, old_ns->href)))
 		{
 			if (!_addNamespacesToNsPairs(&pairs, old_ns, new_ns))
 			{
@@ -976,14 +994,26 @@ bool xplLiftNsDefs(xmlNodePtr top)
 	}
 	if (pairs.count)
 		_relinkNodeListNamespaces(&pairs, top->children);
+	_clearNsPairs(&pairs, false);
 	_removeMarkedNsDefs(top);
 	/* now move the unique nsDefs */
 	old_ns = top->nsDef;
 	while (old_ns)
 	{
-		old_ns = old_ns->next;
+		next = old_ns->next;
+		if (xmlSearchNs(top->doc, parent, old_ns->prefix))
+		{
+			new_prefix = _newNsPrefix(top->doc, parent, old_ns);
+			xmlFree(BAD_CAST old_ns->prefix);
+			old_ns->prefix = new_prefix;
+		}
+		old_ns = next;
 	}
-	_clearNsPairs(&pairs, false);
+	if (top->nsDef)
+	{
+		_appendNsDef(parent, top->nsDef); /* lift the whole chain */
+		top->nsDef = NULL;
+	}
 	return true;
 }
 

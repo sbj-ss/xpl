@@ -42,8 +42,10 @@ void xplCmdContainerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplCmdContainerParamsPtr params = (xplCmdContainerParamsPtr) commandInfo->params;
 
 	if (params->return_content)
+	{
+		xplLiftNsDefs(commandInfo->element, NULL);
 		ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
-	else {
+	} else {
 		if (commandInfo->element->children)
 			xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element->children));
 		ASSIGN_RESULT(NULL, false, true);

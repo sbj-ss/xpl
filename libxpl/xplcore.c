@@ -789,7 +789,7 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 		out = xplReplaceContentEntries(doc, macro->id, element, macro->content);
 		xplSetChildren(element, out);
 		xplNodeListApply(doc, element->children, result);
-		xplLiftNsDefs(element);
+		xplLiftNsDefs(element, NULL);
 		out = xplDetachContent(element);
 		if (!out) /* contents could be removed by :return */
 			out = macro->return_value;

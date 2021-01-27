@@ -146,7 +146,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			xmlSetListDoc(content, commandInfo->element->doc);
 			xplSetChildren(commandInfo->element, content);
 			/* xplLiftNsDefs() removes duplicated nsDefs instead of lifting them */
-			xplLiftNsDefs(content);
+			xplLiftNsDefs(content, commandInfo->element->parent);
 			content = xplDetachContent(commandInfo->element->children);
 			xmlFreeNode(xplDetachContent(commandInfo->element)); // sub-document root
 			ASSIGN_RESULT(content, false, true);
