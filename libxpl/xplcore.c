@@ -727,7 +727,8 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr resu
 			} else if (result->has_list) {
 				if (result->list && result->repeat)
 					tail = result->list;
-				xplLiftNsDefs(c->parent, c, result->list);
+				if (c->nsDef)
+					xplLiftNsDefs(c->parent, c, result->list);
 				xplReplaceWithList(c, result->list);
 				/* e.g. :delete removing itself */
 				c->type = (xmlElementType) ((int) c->type & ~XPL_NODE_DELETION_MASK);
