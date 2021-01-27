@@ -45,6 +45,7 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplCmdRenameParamsPtr params = (xplCmdRenameParamsPtr) commandInfo->params;
 	size_t i;
 	xmlNodePtr cur;
+	xmlNsPtr ns_copy;
 
 	if (params->select->nodesetval)
 	{
@@ -54,7 +55,13 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			if ((cur->type == XML_ELEMENT_NODE) || (cur->type == XML_ATTRIBUTE_NODE))
 			{
 				xmlNodeSetName(cur, params->new_name.ncname);
-				cur->ns = params->new_name.ns;
+				if (xmlSearchNsByHref(cur->doc, cur, params->new_name.ns->href))
+					cur->ns = params->new_name.ns;
+				else {
+					ns_copy = xmlCopyNamespace(params->new_name.ns);
+					xplAppendNsDef(cur, ns_copy);
+					cur->ns = ns_copy;
+				}
 			}
 		}
 	}

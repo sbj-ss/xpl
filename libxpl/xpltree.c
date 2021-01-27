@@ -190,6 +190,21 @@ xmlNodePtr xplAppendChildren(xmlNodePtr el, xmlNodePtr list)
 	return el->last = _setListParent(el, list);
 }
 
+void xplAppendNsDef(xmlNodePtr cur, xmlNsPtr ns)
+{
+	xmlNsPtr last_ns;
+
+	if (!cur->nsDef)
+	{
+		cur->nsDef = ns;
+		return;
+	}
+	last_ns = cur->nsDef;
+	while (last_ns->next)
+		last_ns = last_ns->next;
+	last_ns->next = ns;
+}
+
 xmlNodePtr xplAppendList(xmlNodePtr el, xmlNodePtr list)
 {
 	xmlNodePtr tail;
@@ -906,21 +921,6 @@ static void _removeMarkedNsDefs(xmlNodePtr top)
 	}
 }
 
-static void _appendNsDef(xmlNodePtr cur, xmlNsPtr ns)
-{
-	xmlNsPtr last_ns;
-
-	if (!cur->nsDef)
-	{
-		cur->nsDef = ns;
-		return;
-	}
-	last_ns = cur->nsDef;
-	while (last_ns->next)
-		last_ns = last_ns->next;
-	last_ns->next = ns;
-}
-
 #define INITIAL_NS_PAIRS_SIZE 16
 
 bool xplMakeNsSelfContainedTree(xmlNodePtr top)
@@ -1006,7 +1006,7 @@ bool xplLiftNsDefs(xmlNodePtr parent, xmlNodePtr carrier, xmlNodePtr children)
 			}
 			old_ns = next;
 		}
-		_appendNsDef(parent, carrier->nsDef); /* lift the whole chain */
+		xplAppendNsDef(parent, carrier->nsDef); /* lift the whole chain */
 		carrier->nsDef = NULL;
 	}
 	return true;
