@@ -62,8 +62,8 @@ static void _fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target,
 			macro = xplMacroLookupByElement(source, cur);
 			if (macro)
 				xmlHashAddEntry(target, cur->name, macro);
-		} /* element */
-	} /* for */
+		}
+	}
 }
 
 static xmlNodePtr _addMacroToHash(xmlChar *str, xmlHashTablePtr hash, xmlNodePtr source)
@@ -132,8 +132,8 @@ void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo)
 	{
 		if (params->select && params->select->nodesetval)
 		{
-				macros = xmlHashCreate(16);
-				_fillMacroHashFromNodeset(commandInfo->element, macros, params->select->nodesetval);
+			macros = xmlHashCreate(16);
+			_fillMacroHashFromNodeset(commandInfo->element, macros, params->select->nodesetval);
 		}
 		if (params->list)
 		{
