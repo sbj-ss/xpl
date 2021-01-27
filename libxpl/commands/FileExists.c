@@ -26,6 +26,7 @@ xplCommand xplFileExistsCommand =
 		{
 			.name = BAD_CAST "file",
 			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.required = true,
 			.value_stencil = &params_stencil.file
 		}, {
 			.name = BAD_CAST "abspath",
@@ -54,5 +55,6 @@ void xplCmdFileExistsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	else
 		value = BAD_CAST "false";
 	ret = xmlNewDocText(commandInfo->document->document, value);
+	XPL_FREE(filename);
 	ASSIGN_RESULT(ret, false, true);
 }
