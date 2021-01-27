@@ -145,8 +145,8 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			content = xplDetachContent((xmlNodePtr) child->document);
 			xmlSetListDoc(content, commandInfo->element->doc);
 			xplSetChildren(commandInfo->element, content);
-			xplReplaceRedundantNamespaces(content);
-			// TODO shift namespaces up
+			/* xplLiftNsDefs() removes duplicated nsDefs instead of lifting them */
+			xplLiftNsDefs(content);
 			content = xplDetachContent(commandInfo->element->children);
 			xmlFreeNode(xplDetachContent(commandInfo->element)); // sub-document root
 			ASSIGN_RESULT(content, false, true);

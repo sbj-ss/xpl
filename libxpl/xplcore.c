@@ -786,7 +786,7 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 		out = xplReplaceContentEntries(doc, macro->id, element, macro->content);
 		xplSetChildren(element, out);
 		xplNodeListApply(doc, element->children, result);
-		xplDownshiftNodeListNsDef(element->children, element->nsDef);
+		xplLiftNsDefs(element);
 		out = xplDetachContent(element);
 		if (!out) /* contents could be removed by :return */
 			out = macro->return_value;
@@ -900,7 +900,8 @@ xplMacroPtr xplAddMacro(
 		mb->content = mb->return_value;
 		mb->return_value = NULL;
 	}
-	xplDownshiftNodeListNsDef(mb->content, macro->nsDef);
+	mb->ns_defs = macro->nsDef;
+	macro->nsDef = NULL;
 	macros = (xmlHashTablePtr) destination->_private;
 	if (!macros)
 	{

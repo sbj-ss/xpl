@@ -92,7 +92,7 @@ void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ret = _replicateNodes(commandInfo->element->children, params->after_count, commandInfo->element->parent);
 	else if (params->after_count == 1) {
 		ret = xplDetachContent(commandInfo->element);
-		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
+		xplLiftNsDefs(commandInfo->element);
 	} else
 		ret = NULL;
 	ASSIGN_RESULT(ret, params->repeat, true);

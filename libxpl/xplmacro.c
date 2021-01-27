@@ -49,6 +49,8 @@ void xplMacroFree(xplMacroPtr macro)
 		XPL_FREE(macro->id);
 	if (macro->content)
 		xmlFreeNodeList(macro->content);
+	if (macro->ns_defs)
+		xmlFreeNsList(macro->ns_defs);
 	if (macro->qname.ncname)
 		XPL_FREE(macro->qname.ncname);
 	if (macro->qname.ns && macro->ns_is_duplicated)

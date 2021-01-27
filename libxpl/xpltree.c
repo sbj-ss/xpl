@@ -790,83 +790,6 @@ xmlNodePtr xplCloneNodeList(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc)
 	return cloneNodeListInner(node, parent, doc, NULL);
 }
 
-static void _addNsDef(xmlNodePtr cur, xmlNsPtr def)
-{
-	xmlNsPtr old = cur->nsDef;
-
-	cur->nsDef = def;
-	if (old)
-		cur->nsDef->next = old;
-}
-
-void xplDownshiftNodeNsDef(xmlNodePtr cur, xmlNsPtr ns_list)
-{
-	xmlNsPtr ns_cur, ns_to_shift;
-	xmlAttrPtr prop;
-
-	if (!cur || !ns_list)
-		return;
-	ns_cur = ns_list;
-	if (cur->ns)
-	{
-		while (ns_cur)
-		{
-			if (ns_cur == cur->ns)
-			{
-				ns_to_shift = xmlSearchNs(cur->doc, cur, cur->ns->prefix);
-				if (ns_to_shift)
-					cur->ns = ns_to_shift;
-				else {
-					ns_to_shift = xmlCopyNamespace(cur->ns);
-					cur->ns = ns_to_shift;
-					_addNsDef(cur, ns_to_shift);
-				}
-				break;
-			}
-			ns_cur = ns_cur->next;
-		}
-	}
-	/* check all attributes */
-	prop = cur->properties;
-	while (prop)
-	{
-		if (prop->ns)
-		{
-			ns_cur = ns_list;
-			while (ns_cur)
-			{
-				if (prop->ns == ns_cur)
-				{
-					ns_to_shift = xmlSearchNs(cur->doc, cur, prop->ns->prefix);
-					if (ns_to_shift)
-						prop->ns = ns_to_shift;
-					else {
-						ns_to_shift = xmlCopyNamespace(prop->ns);
-						prop->ns = ns_to_shift;
-						_addNsDef(cur, ns_to_shift);
-					}
-					break;
-				}
-				ns_cur = ns_cur->next;
-			}
-		}
-		prop = prop->next;
-	}
-	if (cur->children)
-		xplDownshiftNodeListNsDef(cur->children, ns_list);
-}
-
-void xplDownshiftNodeListNsDef(xmlNodePtr cur, xmlNsPtr ns_list)
-{
-	if (!ns_list)
-		return;
-	while (cur)
-	{
-		xplDownshiftNodeNsDef(cur, ns_list);
-		cur = cur->next;
-	}
-}
-
 typedef struct _xplNsPair
 {
 	xmlNsPtr old_ns;
@@ -888,23 +811,7 @@ static bool _initNsPairs(xplNsPairsPtr pairs, size_t initialSize)
 		return false;
 	return true;
 }
-/*
-static xplNsPairsPtr _createNsPairs(size_t initialSize)
-{
-	xplNsPairsPtr ret;
 
-	assert(initialSize > 0);
-	ret = (xplNsPairsPtr) XPL_MALLOC(sizeof(xplNsPairs));
-	if (!ret)
-		return NULL;
-	if (!_initNsPairs(ret, initialSize))
-	{
-		XPL_FREE(ret);
-		return NULL;
-	}
-	return ret;
-}
-*/
 static void _clearNsPairs(xplNsPairsPtr pairs, bool clearNew)
 {
 	size_t i;
@@ -917,20 +824,14 @@ static void _clearNsPairs(xplNsPairsPtr pairs, bool clearNew)
 	pairs->namespaces = NULL;
 	pairs->count = pairs->size = 0;
 }
-/*
-static void _freeNsPairs(xplNsPairsPtr pairs)
-{
-	_clearNsPairs(pairs);
-	XPL_FREE(pairs);
-}
-*/
+
 static bool _addNamespacesToNsPairs(xplNsPairsPtr pairs, xmlNsPtr old, xmlNsPtr new)
 {
 	xplNsPairPtr new_namespaces;
 
 	if (pairs->count == pairs->size)
 	{
-		/* don't realloc as we may lose pointers in case of failure */
+		/* don't realloc as we can lose pointers in case of failure */
 		if (!(new_namespaces = (xplNsPairPtr) XPL_MALLOC(sizeof(xmlNsPtr) * pairs->size * 2)))
 			return false;
 		memcpy(new_namespaces, pairs->namespaces, sizeof(xmlNsPtr) * pairs->size);
@@ -943,12 +844,7 @@ static bool _addNamespacesToNsPairs(xplNsPairsPtr pairs, xmlNsPtr old, xmlNsPtr 
 	pairs->count++;
 	return true;
 }
-/*
-static bool _addNsPairToNsPairs(xplNsPairPtr pairs, xplNsPair pair)
-{
-	return _addNamespacesToNsPairs(pairs, pair.old_ns, pair.new_ns);
-}
-*/
+
 static xmlNsPtr _getPairedNs(xplNsPairsPtr pairs, xmlNsPtr ns)
 {
 	size_t i;
@@ -988,13 +884,37 @@ static void _relinkTreeNamespaces(xplNsPairsPtr pairs, xmlNodePtr cur)
 	_relinkNodeListNamespaces(pairs, cur->children);
 }
 
+static void _removeMarkedNsDefs(xmlNodePtr top)
+{
+	xmlNsPtr prev, cur, next;
+
+	prev = NULL;
+	cur = top->nsDef;
+	while (cur)
+	{
+		next = cur->next;
+		if (cur->_private)
+		{
+			if (top->nsDef == cur)
+				top->nsDef = next;
+			if (prev)
+				prev->next = next;
+			xmlFreeNs(cur);
+		} else
+			prev = cur;
+		cur = next;
+	}
+}
+
+#define INITIAL_NS_PAIRS_SIZE 16
+
 bool xplMakeNsSelfContainedTree(xmlNodePtr top)
 {
 	xplNsPairs pairs;
 	xmlNodePtr cur;
 	xmlNsPtr old_ns, new_ns;
 
-	if (!_initNsPairs(&pairs, 16))
+	if (!_initNsPairs(&pairs, INITIAL_NS_PAIRS_SIZE))
 		return false;
 	cur = top->parent;
 	while (cur->type == XML_ELEMENT_NODE)
@@ -1022,45 +942,45 @@ bool xplMakeNsSelfContainedTree(xmlNodePtr top)
 	return true;
 }
 
-/* now the opposite task - getting rid of duplicated definitions */
-bool xplReplaceRedundantNamespaces(xmlNodePtr top)
+bool xplLiftNsDefs(xmlNodePtr top)
 {
 	xplNsPairs pairs;
-	xmlNsPtr old_ns, new_ns, prev, next;
+	xmlNsPtr old_ns, new_ns;
 
-	/* It's quite unlikely that new namespaces are created inside isolate'd documents -
-	   and they can't be created while a subtree resides within document session.
-	   So choosing between speed and full deduplication we favor speed. */
-	if (!_initNsPairs(&pairs, 16))
+	/* We suppose that adding explicit nsDefs to a command was done on purpose.
+	   So we translate them one level up without checking if they're actually
+	   referenced by the command child nodes. */
+	if (!top->parent)
+		return false;
+	if (!top->nsDef)
+		return true; /* nothing to translate */
+	if (!top->children)
+		return true; /* no possible references to nsDefs - and top itself will be gone soon */
+	if (!_initNsPairs(&pairs, INITIAL_NS_PAIRS_SIZE))
 		return false;
 	old_ns = top->nsDef;
 	while (old_ns)
 	{
+		/* If this namespace is available somewhere else we'll have to relink children;
+		   otherwise we can just move the nsDef itself up. */
 		if ((new_ns = xmlSearchNsByHref(top->doc, top->parent, old_ns->href)))
+		{
 			if (!_addNamespacesToNsPairs(&pairs, old_ns, new_ns))
 			{
 				_clearNsPairs(&pairs, false);
 				return false;
 			}
+			old_ns->_private = (void*) old_ns; /* mark for deletion */
+		}
 		old_ns = old_ns->next;
 	}
 	if (pairs.count)
-		_relinkTreeNamespaces(&pairs, top);
-	/* O(n^2) here, can be optimized for heavy namespaces usage.
-	   Note that we can't remove nsDefs in the previous loop as it can fail in a halfway. */
-	prev = NULL;
+		_relinkNodeListNamespaces(&pairs, top->children);
+	_removeMarkedNsDefs(top);
+	/* now move the unique nsDefs */
+	old_ns = top->nsDef;
 	while (old_ns)
 	{
-		next = old_ns->next;
-		if (_getPairedNs(&pairs, old_ns))
-		{
-			if (top->nsDef == old_ns)
-				top->nsDef = next;
-			if (prev)
-				prev->next = next;
-			xmlFreeNs(old_ns);
-		} else
-			prev = old_ns;
 		old_ns = old_ns->next;
 	}
 	_clearNsPairs(&pairs, false);

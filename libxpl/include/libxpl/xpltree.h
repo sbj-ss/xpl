@@ -76,10 +76,6 @@ XPLPUBFUN xmlNodePtr XPLCALL
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplReplaceWithList(xmlNodePtr el, xmlNodePtr list);
 
-/* clone a node changing attributes into text nodes */
-XPLPUBFUN xmlNodePtr XPLCALL
-	xplCloneAsNodeChild(xmlNodePtr cur, xmlNodePtr parent);
-
 /* checks for text/CDATA/entity refs only */
 XPLPUBFUN bool XPLCALL
 	xplCheckNodeListForText(xmlNodePtr start);
@@ -98,27 +94,25 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN void XPLCALL
 	xplDeleteNeighbours(xmlNodePtr cur, xmlNodePtr boundary, bool markAncestorAxis);
 
-/* Copy nodes or node lists wrt their hierarchy.
-   parent is only used for namespace search and IS NOT assigned to new nodes */
+/* Initialize the copying mechanism internals */
 XPLPUBFUN bool XPLCALL
 	xplInitNamePointers(void);
+/* Copy nodes or node lists wrt their hierarchy.
+   parent is only used for namespace search and IS NOT assigned to new nodes */
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplCloneNode(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc);
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplCloneNodeList(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc);
-
-/* ditto */
-XPLPUBFUN bool XPLCALL
-	xplReplaceRedundantNamespaces(xmlNodePtr top);
-/* Translate parent's ns_list to cur before deleting its parent. Assume cur is already detached. */
-XPLPUBFUN void XPLCALL
-	xplDownshiftNodeNsDef(xmlNodePtr cur, xmlNsPtr ns_list);
-XPLPUBFUN void XPLCALL
-	xplDownshiftNodeListNsDef(xmlNodePtr cur, xmlNsPtr ns_list);
+/* clone a node changing attributes into text nodes */
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplCloneAsNodeChild(xmlNodePtr cur, xmlNodePtr parent);
 
 /* Copy all higher namespace definitions to top. Returns false on OOM */
 XPLPUBFUN bool XPLCALL
 	xplMakeNsSelfContainedTree(xmlNodePtr top);
+/* Translate top's nsDefs one level up removing redundant ones. Returns false on OOM */
+XPLPUBFUN bool XPLCALL
+	xplLiftNsDefs(xmlNodePtr top);
   
 XPLPUBFUN void XPLCALL
 	xplRegisterXPathExtensions(xmlXPathContextPtr ctxt);

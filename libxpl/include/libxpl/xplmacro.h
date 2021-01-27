@@ -29,6 +29,7 @@ typedef struct _xplMacro
 {
 	xmlChar* id;
 	xmlNodePtr content;
+	xmlNsPtr ns_defs;
 	int disabled_spin;
 	xplMacroExpansionState expansion_state;
 	xmlNodePtr node_original_content;

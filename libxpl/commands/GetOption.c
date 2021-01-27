@@ -76,7 +76,7 @@ void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		params->repeat = false;
 	} else {
 		ret = xplOptionsToList(commandInfo->element, params->response_tag_name, params->show_tags, params->show_passwords);
-		xplDownshiftNodeListNsDef(ret, commandInfo->element->nsDef);
+		xplLiftNsDefs(commandInfo->element);
 	}
 	ASSIGN_RESULT(ret, params->repeat, true);
 }
