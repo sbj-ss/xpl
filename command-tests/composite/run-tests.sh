@@ -8,7 +8,7 @@ failed_files=()
 for f in *.xpl; do
 	local_errors=$( \
 		( \
-			LD_LIBRARY_PATH=../../libxpl:$LD_LIBRARY_PATH ../../xpl/xpl -i $f -o ${f%.*}_out.xml 2>&1; \
+			LD_LIBRARY_PATH=../../libxpl:$LD_LIBRARY_PATH ../../xpl/xpl -i $f -o out/${f%.*}.xml 2>&1; \
 			echo $? > /tmp/xpl-test-result
 		) | tee >( \
 			grep -i 'error:' | wc -l \
@@ -28,7 +28,7 @@ echo "Processed: $processed, succeeded: $(($processed - $failed)), failed: $fail
 if [ $failed -gt 0 ]; then
 	echo "To check the details, see:"
 	for file in ${failed_files[@]}; do
-		echo "* ${file%.*}_out.xml"
+		echo "* out/${file%.*}.xml"
 	done
 	exit 1
 fi
