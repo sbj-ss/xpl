@@ -82,7 +82,7 @@ void xplCmdTestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				smth = (ct->stringval && *ct->stringval);
 				break;
 			default:
-				error = xplCreateErrorNode(commandInfo->element, BAD_CAST "unsupported XPath result type (expression is %s)", commandInfo->content);
+				error = xplCreateErrorNode(commandInfo->element, BAD_CAST "unsupported XPath result type (expression is '%s')", commandInfo->content);
 				ASSIGN_RESULT(_createBreak(commandInfo, error, NULL), true, true);
 				goto done;
 		}
@@ -95,7 +95,7 @@ void xplCmdTestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				xmlAddNextSibling(parent, _createBreak(commandInfo, NULL, NULL));
 		}
 	} else {
-		error = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath expression (%s)", commandInfo->content);
+		error = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath expression '%s'", commandInfo->content);
 		ASSIGN_RESULT(_createBreak(commandInfo, error, NULL), true, true);
 	}
 done:
