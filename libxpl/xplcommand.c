@@ -447,12 +447,13 @@ static void _paramClearValueScanner(void *payload, void *data, XML_HCBNC xmlChar
 	switch (param->type)
 	{
 		case XPL_CMD_PARAM_TYPE_STRING:
+		case XPL_CMD_PARAM_TYPE_NCNAME:
 		case XPL_CMD_PARAM_TYPE_PTR_CUSTOM_GETTER:
 			value = (char**) ((uintptr_t) data + param->value_offset);
 			default_value = (char**) param->value_stencil;
 			if (*value && *value != *default_value)
 			{
-				if (param->type == XPL_CMD_PARAM_TYPE_STRING)
+				if ((param->type == XPL_CMD_PARAM_TYPE_STRING) || (param->type == XPL_CMD_PARAM_TYPE_NCNAME))
 					XPL_FREE(*value);
 				else if (param->type == XPL_CMD_PARAM_TYPE_PTR_CUSTOM_GETTER && param->extra.ptr_fn.deallocator)
 					param->extra.ptr_fn.deallocator(*value);
