@@ -15,7 +15,7 @@ typedef struct _xplCmdListMacrosParams
 
 static const xplCmdListMacrosParams params_stencil =
 {
-	.tagname = { NULL, BAD_CAST "macro" },
+	.tagname = { NULL, NULL },
 	.repeat = true,
 	.delimiter = NULL,
 	.unique = false
@@ -51,9 +51,12 @@ xplCommand xplListMacrosCommand =
 	}
 };
 
+static xplQName default_tag_name = { NULL, BAD_CAST "macro" };
+
 void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdListMacrosParamsPtr params = (xplCmdListMacrosParamsPtr) commandInfo->params;
+	xplQName tag_name;
 	xmlNodePtr ret;
 
 	if (params->delimiter && params->tagname.ncname)
@@ -67,7 +70,8 @@ void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		ret->content = xplMacroTableToString(commandInfo->element, params->delimiter, params->unique);
 		ASSIGN_RESULT(ret, false, true);
 	} else {
-		ret = xplMacroTableToNodeList(commandInfo->element, params->tagname, params->unique, commandInfo->element);
+		tag_name = params->tagname.ncname? params->tagname: default_tag_name;
+		ret = xplMacroTableToNodeList(commandInfo->element, tag_name, params->unique, commandInfo->element);
 		ASSIGN_RESULT(ret, params->repeat, true);
 	}
 }

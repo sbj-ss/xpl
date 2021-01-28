@@ -143,18 +143,17 @@ static void _macroCountScanner(void *payload, void *data, XML_HCBNC xmlChar *nam
 	macroStringScannerCtxtPtr ctxt = (macroStringScannerCtxtPtr) data;
 	xplMacroPtr macro = (xplMacroPtr) payload;
 
-	if (!ctxt->unique_hash || !xplMacroGetFromHashByQName(ctxt->unique_hash, macro->qname))
+	if (ctxt->unique_hash && xplMacroGetFromHashByQName(ctxt->unique_hash, macro->qname))
+		return;
+	ctxt->count++;
+	ctxt->len += xmlStrlen(name);
+	if (macro->qname.ns)
 	{
-		ctxt->count++;
-		ctxt->len += xmlStrlen(name);
-		if (macro->qname.ns)
-		{
-			ctxt->len++; /* ":" */
-			ctxt->len += xmlStrlen(macro->qname.ns->prefix);
-		}
-		if (ctxt->unique_hash)
-			xplMacroAddToHash(ctxt->unique_hash, macro);
+		ctxt->len++; /* ":" */
+		ctxt->len += xmlStrlen(macro->qname.ns->prefix);
 	}
+	if (ctxt->unique_hash)
+		xplMacroAddToHash(ctxt->unique_hash, macro);
 }
 
 static void _macroStringScanner(void *payload, void *data, XML_HCBNC xmlChar *name)
@@ -163,28 +162,26 @@ static void _macroStringScanner(void *payload, void *data, XML_HCBNC xmlChar *na
 	xplMacroPtr macro = (xplMacroPtr) payload;
 	int len;
 
-	if (!ctxt->unique_hash || !xplMacroGetFromHashByQName(ctxt->unique_hash, macro->qname))
+	if (ctxt->unique_hash && xplMacroGetFromHashByQName(ctxt->unique_hash, macro->qname))
+		return;
+	if (macro->qname.ns)
 	{
-
-		if (macro->qname.ns)
-		{
-			len = xmlStrlen(macro->qname.ns->prefix);
-			memcpy(ctxt->cur, macro->qname.ns->prefix, len);
-			ctxt->cur += len;
-			*(ctxt->cur) = ':';
-			ctxt->cur++;
-		}
-		len = xmlStrlen(name);
-		memcpy(ctxt->cur, name, len);
+		len = xmlStrlen(macro->qname.ns->prefix);
+		memcpy(ctxt->cur, macro->qname.ns->prefix, len);
 		ctxt->cur += len;
-		if (ctxt->delimiter)
-		{
-			strcpy((char*) ctxt->cur, (char*) ctxt->delimiter);
-			ctxt->cur += ctxt->delimiter_len;
-		}
-		if (ctxt->unique_hash)
-			xplMacroAddToHash(ctxt->unique_hash, macro);
+		*(ctxt->cur) = ':';
+		ctxt->cur++;
 	}
+	len = xmlStrlen(name);
+	memcpy(ctxt->cur, name, len);
+	ctxt->cur += len;
+	if (ctxt->delimiter)
+	{
+		strcpy((char*) ctxt->cur, (char*) ctxt->delimiter);
+		ctxt->cur += ctxt->delimiter_len;
+	}
+	if (ctxt->unique_hash)
+		xplMacroAddToHash(ctxt->unique_hash, macro);
 }
 
 xmlChar* xplMacroTableToString(xmlNodePtr element, xmlChar* delimiter, bool unique)
@@ -300,17 +297,16 @@ static void _macroListScanner(void *payload, void *data, XML_HCBNC xmlChar *name
 	xmlNodePtr cur;
 
 	UNUSED_PARAM(name);
-	if (!ctxt->unique_hash || !xplMacroGetFromHashByQName(ctxt->unique_hash, macro->qname))
+	if (ctxt->unique_hash && xplMacroGetFromHashByQName(ctxt->unique_hash, macro->qname))
+		return;
+	cur = xplMacroToNode((xplMacroPtr) payload, ctxt->tagname, ctxt->parent);
+	if (ctxt->head)
 	{
-		cur = xplMacroToNode((xplMacroPtr) payload, ctxt->tagname, ctxt->parent);
-		if (ctxt->head)
-		{
-			ctxt->cur->next = cur;
-			cur->prev = ctxt->cur;
-		} else
-			ctxt->head = cur;
-		ctxt->cur = cur;
-	}
+		ctxt->cur->next = cur;
+		cur->prev = ctxt->cur;
+	} else
+		ctxt->head = cur;
+	ctxt->cur = cur;
 	if (ctxt->unique_hash)
 		xplMacroAddToHash(ctxt->unique_hash, macro);
 }
