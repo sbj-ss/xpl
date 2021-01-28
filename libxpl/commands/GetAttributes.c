@@ -16,7 +16,7 @@ typedef struct _xplCmdGetAttributesParams
 static const xplCmdGetAttributesParams params_stencil =
 {
 	.select = NULL,
-	.tagname = { NULL, BAD_CAST "attribute" },
+	.tagname = { NULL, NULL },
 	.show_tags = false,
 	.repeat = true
 };
@@ -54,7 +54,7 @@ xplCommand xplGetAttributesCommand =
 	}
 };
 
-static xmlNodePtr _wrapAttributes(xmlAttrPtr prop, xplQName tagname, bool show_tags)
+static xmlNodePtr _wrapAttributes(xmlAttrPtr prop, xplQName tagname)
 {
 	xmlNodePtr ret = NULL, tail, cur;
 	xmlChar *name;
@@ -63,14 +63,14 @@ static xmlNodePtr _wrapAttributes(xmlAttrPtr prop, xplQName tagname, bool show_t
 
 	while (prop)
 	{
-		if (show_tags)
+		if (!tagname.ncname)
 		{
 			cur = xmlNewDocNode(prop->doc, prop->ns, prop->name, NULL);
 			if (prop->ns)
 			{
 				ns = xmlSearchNsByHref(prop->doc, prop->parent->parent, prop->ns->href);
 				if (!ns)
-					cur->ns = xmlNewNs(cur, prop->ns->href, prop->ns->prefix);
+					cur->ns = cur->nsDef = xmlNewNs(cur, prop->ns->href, prop->ns->prefix);
 			}
 		} else {
 			cur = xmlNewDocNode(prop->doc, tagname.ns, tagname.ncname, NULL);
@@ -100,18 +100,34 @@ static xmlNodePtr _wrapAttributes(xmlAttrPtr prop, xplQName tagname, bool show_t
 	return ret;
 }
 
+static xplQName empty_qname = { NULL, NULL };
+static xplQName default_tag_name = { NULL, BAD_CAST "attribute" };
+
 void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdGetAttributesParamsPtr params = (xplCmdGetAttributesParamsPtr) commandInfo->params;
 	xmlNodePtr src = NULL;
+	xplQName tag_name;
+
+	if (params->tagname.ncname && params->show_tags)
+	{
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "showtags and tagname can't be used simultaneously"), true, true);
+		return;
+	}
 
 	if (params->select)
 	{
 		if (params->select->nodesetval)
 		{
 			if ((params->select->nodesetval->nodeNr == 1) && (params->select->nodesetval->nodeTab[0]->type == XML_ELEMENT_NODE))
+			{
 				src = params->select->nodesetval->nodeTab[0];
-			else if (!params->select->nodesetval->nodeNr) {
+				if (src->type != XML_ELEMENT_NODE)
+				{
+					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) evaluated to non-element node(s)"), true, true);
+					return;
+				}
+			} else if (!params->select->nodesetval->nodeNr) {
 				ASSIGN_RESULT(NULL, false, true);
 				return;
 			} else {
@@ -127,8 +143,9 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 		{
 			ASSIGN_RESULT(NULL, false, true);
 			return;
-		}
+		} // TODO warning if more elements follow
 	}
+	tag_name = params->show_tags? empty_qname: params->tagname.ncname? params->tagname: default_tag_name;
 
-	ASSIGN_RESULT(_wrapAttributes(src->properties, params->tagname, params->show_tags), params->repeat, true);
+	ASSIGN_RESULT(_wrapAttributes(src->properties, tag_name), params->repeat, true);
 }
