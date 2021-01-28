@@ -40,13 +40,19 @@ xplCommand xplSetSaModeCommand =
 
 void xplCmdSetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xplCmdSetSaModeParamsPtr cmd_params = (xplCmdSetSaModeParamsPtr) commandInfo->params;
+	xplCmdSetSaModeParamsPtr params = (xplCmdSetSaModeParamsPtr) commandInfo->params;
 
 	if (!commandInfo->document->session)
 		commandInfo->document->session = xplSessionCreateWithAutoId();
 
-	if (xplSessionSetSaMode(commandInfo->document->session, cmd_params->enable, cmd_params->password))
+	if (params->enable && !params->password)
+	{
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "password is required to enable the SA mode"), true, true);
+		return;
+	}
+
+	if (xplSessionSetSaMode(commandInfo->document->session, params->enable, params->password))
 		ASSIGN_RESULT(NULL, false, true);
 	else
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "the password is missing or incorrect"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "the password is incorrect"), true, true);
 }
