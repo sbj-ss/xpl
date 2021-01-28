@@ -428,10 +428,10 @@ xmlNodePtr xplFillCommandInfo(xplCommandPtr command, xplCommandInfoPtr info, boo
 			if (!xplCheckNodeListForText(info->element->children))
 				return xplCreateErrorNode(info->element, BAD_CAST "command content is non-text");
 			info->content = xmlNodeListGetString(info->element->doc, info->element->children, 1);
-			if (!info->content && (command->flags & XPL_CMD_FLAG_REQUIRE_CONTENT))
-				return xplCreateErrorNode(info->element, BAD_CAST "command content is empty");
 		} else
 			info->content = NULL;
+		if (!info->content && (command->flags & XPL_CMD_FLAG_REQUIRE_CONTENT))
+			return xplCreateErrorNode(info->element, BAD_CAST "command content is empty");
 	}
 	return NULL;
 }
