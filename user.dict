@@ -17,3 +17,6 @@ backend
 stringify
 namespaces
 params
+deduplication
+realloc
+relink
