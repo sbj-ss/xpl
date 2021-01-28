@@ -27,7 +27,6 @@ xplCommand xplNamespaceCommand =
 		{
 			.name = BAD_CAST "prefix",
 			.type = XPL_CMD_PARAM_TYPE_NCNAME,
-			.required = true,
 			.value_stencil = &params_stencil.prefix
 		}, {
 			.name = BAD_CAST "destination",
@@ -44,6 +43,7 @@ void xplCmdNamespaceEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdNamespaceParamsPtr params = (xplCmdNamespaceParamsPtr) commandInfo->params;
 	xmlNodeSetPtr nodeset;
+	xmlNsPtr ns;
 	size_t i;
 
 	if (params->destination && params->destination->nodesetval)
@@ -53,11 +53,15 @@ void xplCmdNamespaceEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			if (nodeset->nodeTab[i]->type != XML_ELEMENT_NODE)
 				continue;
-			xmlNewNs(nodeset->nodeTab[i], commandInfo->content, params->prefix);
+			ns = xmlNewNs(nodeset->nodeTab[i], commandInfo->content, params->prefix);
+			if (!params->prefix)
+				nodeset->nodeTab[i]->ns = ns;
 			/* ToDo: checks and warnings */
 		}
 	} else {
-		xmlNewNs(commandInfo->element->parent, commandInfo->content, params->prefix);
+		ns = xmlNewNs(commandInfo->element->parent, commandInfo->content, params->prefix);
+		if (!params->prefix)
+			commandInfo->element->parent->ns = ns;
 		/* ToDo: checks and warnings */
 	}
 	ASSIGN_RESULT(NULL, false, true);
