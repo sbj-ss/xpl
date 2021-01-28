@@ -474,6 +474,7 @@ static void _paramClearValueScanner(void *payload, void *data, XML_HCBNC xmlChar
 			default_qname = (xplQNamePtr) param->value_stencil;
 			if (qname->ncname && qname->ncname != default_qname->ncname)
 				XPL_FREE(qname->ncname);
+			qname->ncname = NULL;
 			qname->ns = NULL;
 			break;
 		default:
