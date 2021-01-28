@@ -71,21 +71,21 @@
 
 /* Feature control */
 /* Enable tests for two or more subsequent text nodes. Text nodes merging isn't ready for now. */
-#undef _DEBUG_COALESCING
+/* #undef _DEBUG_COALESCING */
 /* Enable :set-option, :rehash, :restart, :xx-db, :xx-sa-mode. Not now. */
-#undef _DYNACONF_SUPPORT
+/* #undef _DYNACONF_SUPPORT */
 /* Enable threading support */
-#undef _THREADING_SUPPORT
+/* #undef _THREADING_SUPPORT */
 /* Enable automatic restarts on crash. Session isn't saved for now so it's better to keep this off. */
-#undef _USE_PHOENIX_TECH
+/* #undef _USE_PHOENIX_TECH */
 /* Enable :crash (for PhoenixTech debugging) */
-#undef _USE_CRASH_COMMAND
+/* #undef _USE_CRASH_COMMAND */
 /* Enable :file-op. This command needs to be rewritten. */
-#undef _FILEOP_SUPPORT
+/* #undef _FILEOP_SUPPORT */
 
 /* Command-level behavior control */
 /* TODO control flag in :regex-match */
-#undef _REGEX_MATCH_FULL_STRING_ONLY
+/* #undef _REGEX_MATCH_FULL_STRING_ONLY */
 
 /* Enable allocated blocks checking for debugging memory leaks.
  * Should be disabled in production as it slows down the interpreter. */
