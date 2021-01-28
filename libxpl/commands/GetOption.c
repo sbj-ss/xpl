@@ -9,7 +9,7 @@ void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 typedef struct _xplCmdGetOptionParams
 {
 	xmlChar *name;
-	xplQName response_tag_name;
+	xplQName tag_name;
 	bool show_tags;
 	bool show_passwords;
 	bool repeat;
@@ -18,7 +18,7 @@ typedef struct _xplCmdGetOptionParams
 static const xplCmdGetOptionParams params_stencil =
 {
 	.name = NULL,
-	.response_tag_name = { NULL, BAD_CAST "option" },
+	.tag_name = { NULL, NULL },
 	.show_tags = false,
 	.show_passwords = false,
 	.repeat = true
@@ -37,9 +37,9 @@ xplCommand xplGetOptionCommand =
 			.type = XPL_CMD_PARAM_TYPE_STRING,
 			.value_stencil = &params_stencil.name
 		}, {
-			.name = BAD_CAST "responsetagname",
+			.name = BAD_CAST "tagname",
 			.type = XPL_CMD_PARAM_TYPE_QNAME,
-			.value_stencil = &params_stencil.response_tag_name
+			.value_stencil = &params_stencil.tag_name
 		}, {
 			.name = BAD_CAST "showtags",
 			.type = XPL_CMD_PARAM_TYPE_BOOL,
@@ -58,9 +58,13 @@ xplCommand xplGetOptionCommand =
 	}
 };
 
+static xplQName default_tag_name = { NULL, BAD_CAST "option" };
+static xplQName empty_qname = { NULL, NULL };
+
 void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdGetOptionParamsPtr params = (xplCmdGetOptionParamsPtr) commandInfo->params;
+	xplQName tag_name;
 	xmlNodePtr ret;
 
 	if (params->show_passwords && !xplSessionGetSaMode(commandInfo->document->session))
@@ -74,7 +78,9 @@ void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ret = xmlNewDocText(commandInfo->element->doc, NULL);
 		ret->content = xplGetOptionValue(params->name, params->show_passwords);
 		params->repeat = false;
-	} else
-		ret = xplOptionsToList(commandInfo->element, params->response_tag_name, params->show_tags, params->show_passwords);
+	} else {
+		tag_name = params->show_tags? empty_qname: params->tag_name.ncname? params->tag_name: default_tag_name;
+		ret = xplOptionsToList(commandInfo->element, tag_name, params->show_passwords);
+	}
 	ASSIGN_RESULT(ret, params->repeat, true);
 }

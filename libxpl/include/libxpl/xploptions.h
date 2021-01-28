@@ -22,7 +22,7 @@ XPLPUBFUN xmlChar* XPLCALL
 	xplGetOptionValue(xmlChar *optionName, bool showPasswords);
 /* get all options in a node list */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showTags, bool showPasswords);
+	xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showPasswords);
 
 typedef enum _xplSetOptionResult
 {
