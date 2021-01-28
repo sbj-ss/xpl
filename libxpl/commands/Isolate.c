@@ -152,6 +152,10 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			ASSIGN_RESULT(content, false, true);
 		} else
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "error \"%s\" processing child document", xplErrorToString(status)), true, true);
+		if (params->share_session)
+			child->session = NULL;
+		else if (child->session)
+			xplDeleteSession(xplSessionGetId(child->session));
 		xplDocumentFree(child);
 		xplParamsFree(env);
 	}
