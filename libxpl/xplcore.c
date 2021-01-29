@@ -125,7 +125,7 @@ bool xplDocStackIsEmpty(xplDocumentPtr doc)
 /* Node deferred deletion */
 void xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur)
 {
-	if (!buf | !cur)
+	if (!buf || !cur)
 		return;
 	if ((int) cur->type & XPL_NODE_DELETION_DEFERRED_FLAG)
 		return;
