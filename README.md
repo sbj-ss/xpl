@@ -6,6 +6,8 @@
 * libssl-dev
 * libtidy-dev
 * libxml2-dev
+* libz-dev
+* lzma-dev
 * unixodbc-dev
 
 ### Compiling:
