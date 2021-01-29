@@ -9,7 +9,7 @@ LIBS = -lxml2 -lxts
 WARNINGS = -Wall -Werror
 CFLAGS = $(WARNINGS)
 ifeq ($(DEBUG), 1)
-CFLAGS += -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -fstack-protector
+CFLAGS += -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=undefined -fno-sanitize-recover -fstack-protector
 endif
 
 SRC = xts.c
