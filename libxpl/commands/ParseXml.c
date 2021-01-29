@@ -40,6 +40,11 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlChar *parse_error;
 	xmlNodePtr ret;
 
+	if (!commandInfo->content)
+	{
+		ASSIGN_RESULT(NULL, false, true);
+		return;
+	}
 	doc = xmlParseMemory((const char*) commandInfo->content, xmlStrlen(commandInfo->content));
 	if (!doc)
 	{
