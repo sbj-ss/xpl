@@ -148,7 +148,7 @@ void xplDocDeferNodeDeletion(xplDocumentPtr doc, xmlNodePtr cur)
 {
 	if (!doc)
 		return;
-	if (cfgFoolproofDestructiveCommands && doc->iterator_spinlock)
+	if (cfgFoolproofDestructiveCommands && doc->iterator_spin)
 		xplDeferNodeDeletion(doc->deleted_nodes, cur);
 	else {
 		xmlUnlinkNode(cur);
@@ -160,7 +160,7 @@ void xplDocDeferNodeListDeletion(xplDocumentPtr doc, xmlNodePtr cur)
 {
 	if (!doc)
 		return;
-	if (cfgFoolproofDestructiveCommands && doc->iterator_spinlock)
+	if (cfgFoolproofDestructiveCommands && doc->iterator_spin)
 		xplDeferNodeListDeletion(doc->deleted_nodes, cur);
 	else
 		xmlFreeNodeList(cur);

@@ -111,7 +111,7 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	{
 		double_pass_mode = cfgFoolproofDestructiveCommands
 			&& (nodes->nodeNr > MAX_ELEMENTS_FOR_RELATIONSHIP_SCAN)
-			&& !commandInfo->document->iterator_spinlock;
+			&& !commandInfo->document->iterator_spin;
 		if (!double_pass_mode)
 		{
 			if (cfgFoolproofDestructiveCommands)
@@ -144,7 +144,7 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				case XML_ELEMENT_NODE:
 					if (xplIsAncestor(commandInfo->element, cur) || (commandInfo->element == cur)) /* self/parent deletion request */
 					{
-						if (commandInfo->document->iterator_spinlock) /* mark for deletion at the end of processing */
+						if (commandInfo->document->iterator_spin) /* mark for deletion at the end of processing */
 							xplDocDeferNodeDeletion(commandInfo->document, cur);
 						xplMarkAncestorAxisForDeletion(commandInfo->element, cur);
 					} else {

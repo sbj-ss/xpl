@@ -90,7 +90,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	xplResult temp_result;
 	int naos_check_result = NAOS_CHECK_RESULT_OK;
 	
-	commandInfo->document->iterator_spinlock++;
+	commandInfo->document->iterator_spin++;
 	if (params->select->nodesetval)
 	{
 		for (i = 0; i < (size_t) params->select->nodesetval->nodeNr; i++)
@@ -157,7 +157,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 				DISPLAY_INTERNAL_ERROR_MESSAGE();
 		} /* for */
 	} /* if (sel->nodesetval) */
-	commandInfo->document->iterator_spinlock--;
+	commandInfo->document->iterator_spin--;
 	if (params->select->nodesetval)
 		params->select->nodesetval->nodeNr = 0;
 	if (!((int) commandInfo->element->type & XPL_NODE_DELETION_MASK))
