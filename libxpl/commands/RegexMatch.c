@@ -9,11 +9,15 @@ void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 typedef struct _xplCmdRegexMatchParams
 {
 	xmlChar *regex;
+	bool full_string;
+	bool ignore_case;
 } xplCmdRegexMatchParams, *xplCmdRegexMatchParamsPtr;
 
 static const xplCmdRegexMatchParams params_stencil =
 {
-	.regex = NULL
+	.regex = NULL,
+	.full_string = false,
+	.ignore_case = false
 };
 
 xplCommand xplRegexMatchCommand =
@@ -30,6 +34,14 @@ xplCommand xplRegexMatchCommand =
 			.required = true,
 			.value_stencil = &params_stencil.regex
 		}, {
+			.name = BAD_CAST "fullstring",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.full_string
+		}, {
+			.name = BAD_CAST "ignorecase",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.ignore_case
+		}, {
 			.name = NULL
 		}
 	}
@@ -38,6 +50,7 @@ xplCommand xplRegexMatchCommand =
 void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdRegexMatchParamsPtr params = (xplCmdRegexMatchParamsPtr) commandInfo->params;
+	OnigOptionType options = 0;
 	xmlChar *content_end;
 	regex_t *regex = NULL;
 	OnigErrorInfo err_info;
@@ -47,13 +60,14 @@ void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	xmlNodePtr ret;
 	int ret_code;
 
-	/* ToDo: maybe some options controlled by XPL programmer? */
+	if (params->ignore_case)
+		ONIG_OPTION_ON(options, ONIG_OPTION_IGNORECASE);
 	if ((ret_code = onig_new(&regex, params->regex, params->regex + xmlStrlen(params->regex),
-		ONIG_OPTION_NONE, ONIG_ENCODING_UTF8, ONIG_SYNTAX_PERL_NG, &err_info)) != ONIG_NORMAL)
+		options, ONIG_ENCODING_UTF8, ONIG_SYNTAX_PERL_NG, &err_info)) != ONIG_NORMAL)
 	{
 		if (!onig_error_code_to_str(err_str, ret_code))
 			strcpy((char*) err_str, "unknown error");
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "Oniguruma error: %s", err_str), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "Oniguruma error: '%s'", err_str), true, true);
 		goto done;
 	}
 	region = onig_region_new();
@@ -63,11 +77,10 @@ void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		goto done;
 	}
 	content_end = commandInfo->content + xmlStrlen(commandInfo->content);
-#ifdef _REGEX_MATCH_FULL_STRING_ONLY
-	match = (onig_match(regex, commandInfo->content, content_end, commandInfo->content, region, 0) != ONIG_MISMATCH);
-#else
-	match = (onig_search(regex, commandInfo->content, content_end, commandInfo->content, content_end, region, 0) != ONIG_MISMATCH);
-#endif
+	if (params->full_string)
+		match = (onig_match(regex, commandInfo->content, content_end, commandInfo->content, region, 0) != ONIG_MISMATCH);
+	else
+		match = (onig_search(regex, commandInfo->content, content_end, commandInfo->content, content_end, region, 0) != ONIG_MISMATCH);
 	ret = xmlNewDocText(commandInfo->element->doc, NULL);
 	if (match)
 		ret->content = BAD_CAST XPL_STRDUP("true");
