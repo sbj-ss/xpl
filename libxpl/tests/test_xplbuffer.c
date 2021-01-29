@@ -1,6 +1,6 @@
 #include "test_xplbuffer.h"
-
 #include <assert.h>
+#include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplbuffer.h>
 
 #define FAIL(x) do {\
@@ -13,12 +13,18 @@ static xmlChar *flush_buf = NULL;
 
 static int _flushToDevNullAndSucceed(void *data, size_t size)
 {
+	UNUSED_PARAM(data);
+	UNUSED_PARAM(size);
+
 	flush_calls++;
 	return 0;
 }
 
 static int _flushToDevNullAndFail(void *data, size_t size)
 {
+	UNUSED_PARAM(data);
+	UNUSED_PARAM(size);
+
 	return -1;
 }
 

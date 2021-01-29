@@ -12,6 +12,8 @@ static int dealloc_invocations;
 
 static void _dummyDealloc(void* conn)
 {
+	UNUSED_PARAM(conn);
+
 	dealloc_invocations++;
 }
 
