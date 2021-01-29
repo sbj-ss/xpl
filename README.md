@@ -2,12 +2,12 @@
 
 ### Prerequisites:
 * libidn11-dev
+* liblzma-dev (**NOT** lzma-dev)
 * libonig-dev 
 * libssl-dev
 * libtidy-dev
 * libxml2-dev
 * libz-dev
-* lzma-dev
 * unixodbc-dev
 
 ### Compiling:
