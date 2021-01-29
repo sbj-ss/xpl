@@ -743,7 +743,7 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr resu
 			} /* otherwise do nothing */
 		} else if (c->type == XML_TEXT_NODE) {
 			tail = c->next;
-			if (!xstrStrNonblank(c->content) && !doc->indent_spinlock) /* remove formatting unless instructed otherwise */
+			if (!xstrStrNonblank(c->content) && !doc->indent_spin) /* remove formatting unless instructed otherwise */
 			{
 				xmlUnlinkNode(c);
 				xmlFreeNode(c);

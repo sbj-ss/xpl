@@ -33,14 +33,14 @@ xplCommand xplTextCommand = {
 
 void xplCmdTextPrologue(xplCommandInfoPtr commandInfo)
 {
-	commandInfo->document->indent_spinlock++;
+	commandInfo->document->indent_spin++;
 }
 
 void xplCmdTextEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdTextParamsPtr params = (xplCmdTextParamsPtr) commandInfo->params;
 
-	commandInfo->document->indent_spinlock--;
+	commandInfo->document->indent_spin--;
 	if (!(commandInfo->element->type & XPL_NODE_DELETION_MASK))
 		ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
 	else
