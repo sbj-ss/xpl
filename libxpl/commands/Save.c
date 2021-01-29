@@ -169,7 +169,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (params->create_destination)
 		xprEnsurePathExistence(filename);
-	if (!saveXmlDocToFile(doc, filename, (char*) params->encoding, options))
+	if (!xplSaveXmlDocToFile(doc, filename, (char*) params->encoding, options))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot save document \"%s\" using encoding \"%s\"", filename, params->encoding), true, true);
 		goto done;

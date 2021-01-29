@@ -1032,7 +1032,7 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 	}
 	if (cfgDebugSaveFile && !doc->parent) /* saving derived documents makes no sense */
 	{
-		if (!saveXmlDocToFile(doc->document, cfgDebugSaveFile, (char*) cfgDefaultEncoding, XML_SAVE_FORMAT))
+		if (!xplSaveXmlDocToFile(doc->document, cfgDebugSaveFile, (char*) cfgDefaultEncoding, XML_SAVE_FORMAT))
 			xplDisplayMessage(xplMsgWarning, BAD_CAST "Cannot save debug output to \"%s\", check that the file location exists and is writable", cfgDebugSaveFile);
 	}
 	return ret;

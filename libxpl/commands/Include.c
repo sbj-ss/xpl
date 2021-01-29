@@ -624,7 +624,7 @@ static void computeRetStep(IncludeContextPtr ctxt)
 		/* we have a node list and need an optionally encoded string. */
 		if (ctxt->content)
 			XPL_FREE(ctxt->content);
-		ctxt->content = serializeNodeList(ctxt->ret);
+		ctxt->content = xplSerializeNodeList(ctxt->ret);
 		ctxt->content_size = xmlStrlen(ctxt->content);
 		xmlFreeNodeList(ctxt->ret);
 	}

@@ -160,7 +160,7 @@ static void safeSerializeNodeList(FILE *fp, xmlNodePtr list, int indent)
 	}
 }
 
-void safeSerializeDocument(char *filename, xmlDocPtr doc)
+void xplSafeSerializeDocument(char *filename, xmlDocPtr doc)
 {
 	FILE *fp = fopen(filename, "w");
 	if (!fp)
@@ -185,7 +185,7 @@ static int xml_save_close_cb(void *context)
 	return 0;
 }
 
-bool saveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int options)
+bool xplSaveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int options)
 {
 	int fh;
 	xmlSaveCtxtPtr save_ctxt;
@@ -208,7 +208,7 @@ bool saveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int opti
 
 /* serialization */
 
-xmlChar* serializeNodeList(xmlNodePtr cur)
+xmlChar* xplSerializeNodeList(xmlNodePtr cur)
 {
 	xmlBufferPtr buf;
 	xmlSaveCtxtPtr save_ctxt;
@@ -239,7 +239,7 @@ xmlChar* serializeNodeList(xmlNodePtr cur)
 	return ret;
 }
 
-xmlChar* serializeNodeSet(xmlNodeSetPtr set)
+xmlChar* xplSerializeNodeSet(xmlNodeSetPtr set)
 {
 	size_t i;
 	xmlNodePtr cur;

@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
 	LEAK_DETECTION_START();
 	err_code = xplProcessFile(app_path, in_file, env, session, &doc);
 	if ((err_code >= XPL_ERR_NO_ERROR) && doc)
-		saveXmlDocToFile(doc->document, out_file, encoding, XML_SAVE_FORMAT);
+		xplSaveXmlDocToFile(doc->document, out_file, encoding, XML_SAVE_FORMAT);
 	else {
 		fprintf(stderr, "error processing document: %s\n", xplErrorToString(err_code));
 		ret_code = 3;

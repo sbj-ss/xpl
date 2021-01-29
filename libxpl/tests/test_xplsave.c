@@ -79,7 +79,7 @@ static bool _testSerializeNodeList(xtsContextPtr ctxt)
 	node_a = _buildNodeA();
 	node_b = _buildNodeB();
 	xmlAddSibling(node_a, node_b);
-	result = serializeNodeList(node_a);
+	result = xplSerializeNodeList(node_a);
 	if (!result)
 		FAIL("serializeNodeList() returned NULL");
 	if (xmlStrcmp(result, BAD_CAST NODE_A_CODE NODE_B_CODE))
@@ -106,7 +106,7 @@ static bool _testSerializeNodeSet(xtsContextPtr ctxt)
 	assert(set);
 	xmlXPathNodeSetAdd(set, node_a);
 	xmlXPathNodeSetAdd(set, node_b);
-	result = serializeNodeSet(set);
+	result = xplSerializeNodeSet(set);
 	if (!result)
 		FAIL("serializeNodeSet() returned NULL");
 	if (xmlStrcmp(result, BAD_CAST NODE_A_CODE NODE_B_CODE))
@@ -129,10 +129,10 @@ static bool _testSerializeNodeXXWitNullInput(xtsContextPtr ctxt)
 	bool ok = false;
 	xmlChar *result;
 
-	result = serializeNodeList(NULL);
+	result = xplSerializeNodeList(NULL);
 	if (result)
 		FAIL("serializeNodeList() must return NULL on NULL input");
-	result = serializeNodeSet(NULL);
+	result = xplSerializeNodeSet(NULL);
 	if (result)
 		FAIL("serializeNodeSet() must return NULL on NULL input");
 	ok = true;
