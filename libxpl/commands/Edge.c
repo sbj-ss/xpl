@@ -9,8 +9,7 @@ typedef enum {
 	EDGE_COPY,
 	EDGE_REPLACE,
 	EDGE_ELEMENT,
-	EDGE_ATTRIBUTE,
-	EDGE_ERROR = -1
+	EDGE_ATTRIBUTE
 } EdgeType;
 
 typedef struct _xplCmdEdgeParams
@@ -123,6 +122,17 @@ static xmlChar* _flattenTextSet(xmlNodeSetPtr set)
 	return ret;
 }
 
+static xmlNsPtr _getResultingNs(xmlNodePtr cur, xmlNsPtr ns)
+{
+	xmlNsPtr ret;
+
+	if (!ns)
+		return NULL;
+	if ((ret = xmlSearchNsByHref(cur->doc, cur, ns->href)))
+		return ret;
+	return xmlNewNs(cur, ns->href, ns->prefix);
+}
+
 void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdEdgeParamsPtr params = (xplCmdEdgeParamsPtr) commandInfo->params;
@@ -138,11 +148,11 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		if (!params->name.ncname)
 		{
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name argument"), true, true);
-			goto done;
+			return;
 		}
 	} else if (params->name.ncname)	{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "using name argument for this operation type makes no sense"), true, true);
-			goto done;
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "using name argument for this operation type makes no sense"), true, true);
+		return;
 	}
 	/* obtain source data taking into account they can be text only */
 	if (params->source)
@@ -155,12 +165,12 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					if (!params->source->nodesetval)
 					{
 						ASSIGN_RESULT(NULL, false, true);
-						goto done;
+						return;
 					}
 					if (!xplCheckNodeSetForText(params->source->nodesetval))
 					{
-						ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
-						goto done;
+						ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "can't create attribute from non-text nodes"), true, true);
+						return;
 					}
 					source_text = _flattenTextSet(params->source->nodesetval);
 					break;
@@ -170,8 +180,8 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					source_text = xmlXPathCastToString(params->source);
 					break;
 				default:
-					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "source XPath expression \"%s\" evaluated to an invalid result", params->source->user), true, true);
-					goto done;
+					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "source XPath expression '%s' evaluated to an invalid result", params->source->user), true, true);
+					return;
 			}
 		} else
 			source_list = _cloneNodeSet(params->source->nodesetval, commandInfo->element, NULL); // TODO do we really need a copy?
@@ -181,13 +191,13 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			if (!xplCheckNodeListForText(commandInfo->element->children))
 			{
 				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
-					goto done;
+				return;
 			}
 			source_text = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
 			if (!source_text)
 			{
 				ASSIGN_RESULT(NULL, false, true); /* nothing to do */
-				goto done;
+				return;
 			}
 		} else
 			source_list = commandInfo->element->children;
@@ -208,7 +218,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					xplAppendChildren(cur, xplCloneNodeList(source_list, cur, cur->doc));
 				break;
 			case EDGE_REPLACE:
-				if (!xplIsAncestor(commandInfo->element, cur))
+				if ((commandInfo->element != cur) && !xplIsAncestor(commandInfo->element, cur))
 					xplDocDeferNodeDeletion(commandInfo->document, xplReplaceWithList(cur, xplCloneNodeList(source_list, cur, cur->doc)));
 				else if (cfgWarnOnAncestorModificationAttempt)
 				{
@@ -223,7 +233,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			case EDGE_ELEMENT:
 				if (cur->type == XML_ELEMENT_NODE)
 				{
-					cur_ns = params->name.ns? xplGetResultingNs(cur, commandInfo->element, BAD_CAST params->name.ns->prefix): NULL;
+					cur_ns = _getResultingNs(cur, params->name.ns);
 					el = xmlNewDocNode(cur->doc, cur_ns, params->name.ncname, NULL);
 					xplAppendChildren(cur, el);
 					xplSetChildren(el, xplCloneNodeList(source_list, el, el->doc));
@@ -232,7 +242,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			case EDGE_ATTRIBUTE:
 				if (cur->type == XML_ELEMENT_NODE)
 				{
-					cur_ns = params->name.ns? xplGetResultingNs(cur, commandInfo->element, BAD_CAST params->name.ns->prefix): NULL;
+					cur_ns = _getResultingNs(cur, params->name.ns);
 					if (cur_ns)
 						xmlNewNsProp(cur, cur_ns, params->name.ncname, source_text);
 					else
@@ -244,11 +254,11 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		}
 	}
 	ASSIGN_RESULT(NULL, false, true);
-done:
-	if (source_list && source_list != commandInfo->element->children)
+
+	if (source_list && (source_list != commandInfo->element->children))
 		xmlFreeNodeList(source_list);
 	if (source_text)
 		XPL_FREE(source_text);
-	if (dst_nodes)
+	if (dst_nodes && (!params->destination || (dst_nodes != params->destination->nodesetval)))
 		xmlXPathFreeNodeSet(dst_nodes);
 }

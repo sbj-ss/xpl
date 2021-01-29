@@ -86,18 +86,6 @@ bool xplIsAncestor(xmlNodePtr maybeChild, xmlNodePtr maybeAncestor)
 	return false;
 }
 
-/* TODO check for occurrences and possibly remove */
-xmlNsPtr xplGetResultingNs(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name)
-{
-	xmlNsPtr ret;
-
-	if ((ret = xmlSearchNs(parent->doc, parent, name)))
-		return ret;
-	if ((ret = xmlSearchNs(invoker->doc, invoker, name)))
-		return xmlNewNs(parent, ret->href, ret->prefix);
-	return NULL;
-}
-
 /* from libxml2 internals (tree.c) */
 xmlChar* xplGetPropValue(xmlAttrPtr prop)
 {

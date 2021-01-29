@@ -45,9 +45,6 @@ XPLPUBFUN xmlNodePtr XPLCALL
 /* checks if maybeAncestor is ancestor of maybeChild */
 XPLPUBFUN bool XPLCALL
 	xplIsAncestor(xmlNodePtr maybeChild, xmlNodePtr maybeAncestor);
-/* if ns is declared on invoker but invalid on parent - a dupe is created */
-XPLPUBFUN xmlNsPtr XPLCALL
-	xplGetResultingNs(xmlNodePtr parent, xmlNodePtr invoker, xmlChar *name);
 
 /* returns a flattened copy of attribute value */
 XPLPUBFUN xmlChar* XPLCALL
