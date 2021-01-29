@@ -116,7 +116,13 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN bool XPLCALL
 	xplCheckNodeForXplNs(xplDocumentPtr doc, xmlNodePtr element);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNodePtr oldElement, xmlNodePtr macroContent);
+	xplReplaceContentEntries(
+		xplDocumentPtr doc,
+		const xmlChar* id,
+		xmlNodePtr oldElement,
+		xmlNodePtr macroContent,
+		xmlNodePtr parent
+	);
 XPLPUBFUN void XPLCALL
 	xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result);
 XPLPUBFUN void XPLCALL

@@ -137,7 +137,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 				continue;
 			} else if (naos_check_result == NAOS_CHECK_RESULT_ANCESTOR_DELETED)
 				break;
-			repl = xplReplaceContentEntries(commandInfo->document, params->id, cur, commandInfo->element->children);
+			repl = xplReplaceContentEntries(commandInfo->document, params->id, cur, commandInfo->element->children, cur->parent);
 			if (params->mode == WITH_MODE_REPLACE)
 			{
 				xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(cur));

@@ -563,7 +563,13 @@ void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, c
 	}
 }
 
-xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNodePtr oldElement, xmlNodePtr macroContent)
+xmlNodePtr xplReplaceContentEntries(
+	xplDocumentPtr doc,
+	const xmlChar* id,
+	xmlNodePtr oldElement,
+	xmlNodePtr macroContent,
+	xmlNodePtr parent
+)
 {
 	xmlNodePtr ret, cur, new_content, tail, cloned;
 	xmlNodeSetPtr content_cmds;
@@ -575,7 +581,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 	xmlHashTablePtr content_cache = NULL;
 	void *empty_content_marker = &empty_content_marker;
 
-	ret = xplCloneNodeList(macroContent, oldElement->parent, oldElement->doc);
+	ret = xplCloneNodeList(macroContent, parent, oldElement->doc);
 	if (!ret)
 		return NULL;
 	content_cmds = getContentList(doc, ret, id);
@@ -607,7 +613,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 			{
 				new_content = (xmlNodePtr) xmlHashLookup(content_cache, select_attr);
 				if (new_content && (new_content != empty_content_marker))
-					new_content = xplCloneNodeList(new_content, oldElement, oldElement->doc);
+					new_content = xplCloneNodeList(new_content, parent, oldElement->doc);
 			} else
 				new_content = NULL;
 			if (!new_content) /* get new content by selector */
@@ -622,7 +628,7 @@ xmlNodePtr xplReplaceContentEntries(xplDocumentPtr doc, const xmlChar* id, xmlNo
 							tail = NULL;
 							for (j = 0; j < sel->nodesetval->nodeNr; j++)
 							{	
-								cloned = xplCloneAsNodeChild(sel->nodesetval->nodeTab[j], oldElement);
+								cloned = xplCloneAsNodeChild(sel->nodesetval->nodeTab[j], parent);
 								if (tail)
 									tail->next = cloned;
 								cloned->prev = tail;
@@ -789,7 +795,7 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 	case XPL_MACRO_EXPAND_ONCE:
 		/* :inherit may be called, let's keep contents. not clearing parent intentionally */
 		macro->node_original_content = element->children; 
-		out = xplReplaceContentEntries(doc, macro->id, element, macro->content);
+		out = xplReplaceContentEntries(doc, macro->id, element, macro->content, element->parent);
 		xplSetChildren(element, out);
 		xplNodeListApply(doc, element->children, result);
 		out = xplDetachContent(element);

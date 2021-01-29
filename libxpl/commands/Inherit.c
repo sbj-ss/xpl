@@ -87,7 +87,7 @@ void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			temp_children = caller->children;
 			xplSetChildren(caller, original_content);
-			ret = xplReplaceContentEntries(commandInfo->document, macro->id, caller, macro->content);
+			ret = xplReplaceContentEntries(commandInfo->document, macro->id, caller, macro->content, commandInfo->element);
 			xplSetChildren(caller, temp_children); // TODO сюда попадает сама команда
 		} else
 			ret = xplCloneNodeList(macro->content, commandInfo->element->parent, commandInfo->element->doc);

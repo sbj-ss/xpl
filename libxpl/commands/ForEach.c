@@ -58,8 +58,8 @@ void xplCmdForEachPrologue(xplCommandInfoPtr commandInfo)
 		{
 			cur = params->select->nodesetval->nodeTab[i];
 			if ((cur->type != XML_ELEMENT_NODE) && (cur->type != XML_ATTRIBUTE_NODE))
-				continue;
-			repl = xplReplaceContentEntries(commandInfo->document, params->id, cur, commandInfo->element->children);
+				continue; // TODO warning
+			repl = xplReplaceContentEntries(commandInfo->document, params->id, cur, commandInfo->element->children, commandInfo->element);
 			if (!ret)
 				ret = repl;
 			else {
