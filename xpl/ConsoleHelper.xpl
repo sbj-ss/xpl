@@ -29,11 +29,11 @@
       </xpl:when>
       <xpl:when>
         <xpl:test>
-         '<xpl:file-exists abspath="true">
+          <xpl:file-exists abspath="true">
             <xpl:attribute name="file">
               <xpl:content/>
             </xpl:attribute>
-          </xpl:file-exists>' = 'true'
+          </xpl:file-exists>()
         </xpl:test>
         <xpl:text>true</xpl:text>
       </xpl:when>
