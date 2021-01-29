@@ -16,7 +16,7 @@ void xplCmdGetVersionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 #endif
 #include <oniguruma.h>
 #ifdef _USE_LZMA
-	#include "lzma.h"
+	#include <lzma.h>
 #endif
 #ifdef _USE_ZLIB
 	#include <zlib.h>
