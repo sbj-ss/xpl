@@ -78,6 +78,7 @@
         <A>2</A>
         <A>1</A>
         <A>3</A>
+        <A>1</A>
       </xpl:stringer>
     </Input>
     <Expected>123</Expected>
