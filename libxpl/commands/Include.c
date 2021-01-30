@@ -32,7 +32,7 @@ typedef struct _xplCmdIncludeParams
 	xmlChar *select; // we can't make use of built-in XPath management here
 	xmlChar *uri;
 	bool repeat;
-	xplQName response_tag_name;
+	xplQName tag_name;
 	xmlChar *encoding;
 	bool abs_path;
 	InputFormat input_format;
@@ -46,7 +46,7 @@ static const xplCmdIncludeParams params_stencil =
 	.select = NULL,
 	.uri = NULL,
 	.repeat = true,
-	.response_tag_name = { NULL, NULL },
+	.tag_name = { NULL, NULL },
 	.encoding = BAD_CAST "utf-8",
 	.abs_path = false,
 	.input_format = INPUT_FORMAT_XML,
@@ -56,6 +56,7 @@ static const xplCmdIncludeParams params_stencil =
 };
 
 static xmlChar* select_aliases[] = { BAD_CAST "source", NULL };
+static xmlChar* tagname_aliases[] = { BAD_CAST "responsetagname", NULL };
 static xmlChar* uri_aliases[] = { BAD_CAST "file", NULL };
 
 static xplCmdParamDictValue input_format_dict[] = {
@@ -95,9 +96,10 @@ xplCommand xplIncludeCommand =
 			.type = XPL_CMD_PARAM_TYPE_BOOL,
 			.value_stencil = &params_stencil.repeat
 		}, {
-			.name = BAD_CAST "responsetagname",
+			.name = BAD_CAST "tagname",
 			.type = XPL_CMD_PARAM_TYPE_QNAME,
-			.value_stencil = &params_stencil.response_tag_name
+			.aliases = tagname_aliases,
+			.value_stencil = &params_stencil.tag_name
 		}, {
 			.name = BAD_CAST "encoding",
 			.type = XPL_CMD_PARAM_TYPE_STRING,
@@ -548,15 +550,15 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 			}
 			xmlSetTreeDoc(ctxt->ret, ctxt->command_element->doc);
 		}
-		if (ctxt->params->response_tag_name.ncname)
+		if (ctxt->params->tag_name.ncname)
 		{
 			cur = ctxt->ret;
 			while (cur)
 			{
 				if (cur->type == XML_ELEMENT_NODE)
 				{
-					xmlNodeSetName(cur, ctxt->params->response_tag_name.ncname);
-					cur->ns = ctxt->params->response_tag_name.ns;
+					xmlNodeSetName(cur, ctxt->params->tag_name.ncname);
+					cur->ns = ctxt->params->tag_name.ns;
 				}
 				cur = cur->next;
 			}
@@ -583,10 +585,10 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 				{
 					sibling = sel->nodesetval->nodeTab[i];
 					cur = xplCloneAsNodeChild(sibling, ctxt->command_element);
-					if (ctxt->params->response_tag_name.ncname && (cur->type == XML_ELEMENT_NODE))
+					if (ctxt->params->tag_name.ncname && (cur->type == XML_ELEMENT_NODE))
 					{
-						xmlNodeSetName(cur, ctxt->params->response_tag_name.ncname);
-						cur->ns = ctxt->params->response_tag_name.ns;
+						xmlNodeSetName(cur, ctxt->params->tag_name.ncname);
+						cur->ns = ctxt->params->tag_name.ns;
 					}
 					if (!head)
 						head = tail = cur;

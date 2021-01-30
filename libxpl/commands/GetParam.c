@@ -105,12 +105,12 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (params->show_tags && params->tag_name.ncname)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "showtags and responsetagname can't be used simultaneously"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "showtags and tagname can't be used simultaneously"), true, true);
 		return;
 	}
 	if ((params->show_tags || params->tag_name.ncname) && params->delimiter)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "delimiter can't be used simultaneously with showtags or responsetagname"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "delimiter can't be used simultaneously with showtags or tagname"), true, true);
 		return;
 	}
 	if (params->default_value && !params->name)

@@ -8,7 +8,7 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 typedef struct _xplCmdGetDBParams
 {
 	xmlChar *name;
-	xplQName response_tag_name;
+	xplQName tag_name;
 	bool show_tags;
 	bool repeat;
 } xplCmdGetDBParams, *xplCmdGetDBParamsPtr;
@@ -16,10 +16,12 @@ typedef struct _xplCmdGetDBParams
 static const xplCmdGetDBParams params_stencil =
 {
 	.name = NULL,
-	.response_tag_name = { NULL, BAD_CAST "Database" },
+	.tag_name = { NULL, BAD_CAST "Database" },
 	.show_tags = false,
 	.repeat = true
 };
+
+static xmlChar* tagname_aliases[] = { BAD_CAST "responsetagname", NULL };
 
 xplCommand xplGetDBCommand =
 {
@@ -34,9 +36,10 @@ xplCommand xplGetDBCommand =
 			.type = XPL_CMD_PARAM_TYPE_STRING,
 			.value_stencil = &params_stencil.name
 		}, {
-			.name = BAD_CAST "responsetagname",
+			.name = BAD_CAST "tagname",
 			.type = XPL_CMD_PARAM_TYPE_QNAME,
-			.value_stencil = &params_stencil.response_tag_name
+			.aliases = tagname_aliases,
+			.value_stencil = &params_stencil.tag_name
 		}, {
 			.name = BAD_CAST "showtags",
 			.type = XPL_CMD_PARAM_TYPE_BOOL,
@@ -74,6 +77,6 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ret = xmlNewDocText(commandInfo->element->doc, db_list->conn_string);
 		cmd_params->repeat = false;
 	} else
-		ret = xplDatabasesToNodeList(commandInfo->element, cmd_params->response_tag_name, cmd_params->show_tags);
+		ret = xplDatabasesToNodeList(commandInfo->element, cmd_params->tag_name, cmd_params->show_tags);
 	ASSIGN_RESULT(ret, cmd_params->repeat, true);
 }

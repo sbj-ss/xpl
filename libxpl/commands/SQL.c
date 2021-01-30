@@ -20,7 +20,7 @@ typedef struct _xplCmdSqlParams
 	bool merge_table_as_xml;
 	bool repeat;
 	bool keep_nulls;
-	xmlChar *response_tag_name;
+	xmlChar *tag_name;
 	bool show_nulls;
 } xplCmdSqlParams, *xplCmdSqlParamsPtr;
 
@@ -32,9 +32,11 @@ static const xplCmdSqlParams params_stencil =
 	.keep_nulls = false,
 	.merge_table_as_xml = false,
 	.repeat = true,
-	.response_tag_name = DEFAULT_RESPONSE_TAG_NAME,
+	.tag_name = DEFAULT_RESPONSE_TAG_NAME,
 	.show_nulls = false
 };
+
+static xmlChar* tagname_aliases[] = { BAD_CAST "responsetagname", NULL };
 
 xplCommand xplSqlCommand =
 {
@@ -69,9 +71,10 @@ xplCommand xplSqlCommand =
 			.type = XPL_CMD_PARAM_TYPE_BOOL,
 			.value_stencil = &params_stencil.repeat
 		}, {
-			.name = BAD_CAST "responsetagname",
+			.name = BAD_CAST "tagname",
 			.type = XPL_CMD_PARAM_TYPE_STRING,
-			.value_stencil = &params_stencil.response_tag_name
+			.aliases = tagname_aliases,
+			.value_stencil = &params_stencil.tag_name
 		}, {
 			.name = BAD_CAST "shownulls",
 			.type = XPL_CMD_PARAM_TYPE_BOOL,
@@ -682,8 +685,8 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		doc_ctxt.parent = commandInfo->element;
 		ASSIGN_RESULT(_buildDoc(db_ctxt, &doc_ctxt, &cmd_params->repeat), cmd_params->repeat, true);
 	} else {
-		if (cmd_params->response_tag_name)
-			row_tag_names = _createRowTagNames(cmd_params->response_tag_name);
+		if (cmd_params->tag_name)
+			row_tag_names = _createRowTagNames(cmd_params->tag_name);
 		frag_ctxt.as_attributes = cmd_params->as_attributes;
 		frag_ctxt.keep_nulls = cmd_params->keep_nulls;
 		frag_ctxt.show_nulls = cmd_params->show_nulls;
