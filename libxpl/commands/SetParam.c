@@ -78,6 +78,7 @@ void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	switch (res)
 	{
 		case XPL_PARAM_RES_OK:
+			commandInfo->content = NULL;
 			break;
 		case XPL_PARAM_RES_OUT_OF_MEMORY:
 			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "out of memory");

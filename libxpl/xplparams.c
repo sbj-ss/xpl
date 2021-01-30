@@ -33,14 +33,17 @@ xmlChar* xplExpectTypeGetter(xplCommandInfoPtr commandInfo, const xmlChar *expec
 	return NULL;
 }
 
-static xmlChar* xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, xmlChar *out)
+static void xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, xmlChar *out)
 {
 	bool dot = 0;
 	xmlChar *p = data_buf;
-	bool leading_zero = 0, leading_x = 0;
+	bool leading_zero = false, leading_x = false;
 
 	if (!p)
-		return NULL;
+	{
+		*out = 0;
+		return;
+	}
 	while (*p)
 	{
 		switch (expect)
@@ -96,15 +99,17 @@ static xmlChar* xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, 
 		p++;
 	}
 	*out = 0;
-	return out;
 }
 
 xmlChar* xplCleanTextValue(xmlChar *data_buf, xplExpectType expect)
 {
 	xmlChar *ret;
+
 	if (!data_buf)
 		return NULL;
 	ret = (xmlChar*) XPL_MALLOC(xmlStrlen(data_buf) + 1);
+	if (!ret)
+		return NULL;
 	xplCleanTextValueInner(data_buf, expect, ret);
 	return ret;
 }
@@ -355,7 +360,7 @@ void xplParamValuesFree(xplParamValuesPtr values)
 
 xmlChar* xplParamValuesToString(const xplParamValuesPtr values, bool unique, const xmlChar *delim, xplExpectType expect)
 {
-	xmlChar *ret, *cur, *candidate;
+	xmlChar *ret, *cur, *tail = NULL;
 	int delim_len;
 	int total_len = 0;
 	int i;
@@ -379,24 +384,25 @@ xmlChar* xplParamValuesToString(const xplParamValuesPtr values, bool unique, con
 		unique_table = xmlHashCreate(values->param_nr);
 	for (i = 0; i < values->param_nr; i++)
 	{
-		candidate = cur;
-		cur = xplCleanTextValueInner((xmlChar*) values->param_tab[i], expect, cur);
-		if (unique_table && xmlHashLookup(unique_table, candidate))
-			cur = candidate; // ignore dup
-		else {
+		xplCleanTextValueInner((xmlChar*) values->param_tab[i], expect, cur);
+		if (!unique_table || !xmlHashLookup(unique_table, cur))
+		{
 			if (unique_table)
-				xmlHashAddEntry(unique_table, candidate, (void*) 1);
-			if (delim_len && (i < values->param_nr - 1)) 
+				xmlHashAddEntry(unique_table, cur, (void*) 1);
+			cur += xmlStrlen(cur);
+			tail = cur;
+			if (delim_len)
 			{
 				memcpy(cur, delim, delim_len);
 				cur += delim_len;
 			}
 		}
 	}
+	if (tail)
+		*tail = 0;
 	if (unique_table)
 		xmlHashFree(unique_table, NULL);
-	if (cur)
-		*cur = 0;
+	*cur = 0;
 	return ret;
 }
 
@@ -634,7 +640,6 @@ xplParamResult xplParamAddFileInfo(xplParamsPtr params, const xmlChar *name, xml
 
 xplParamResult xplParamReplaceValue(xplParamsPtr params, const xmlChar *name, xmlChar *value, xplParamType type)
 {
-	int ret;
 	xplParamValuesPtr carrier;
 
 	if (!params)
@@ -645,8 +650,7 @@ xplParamResult xplParamReplaceValue(xplParamsPtr params, const xmlChar *name, xm
 		carrier = xplParamValuesCreate();
 		if (!carrier)
 			return XPL_PARAM_RES_OUT_OF_MEMORY;
-		ret = xmlHashAddEntry((xmlHashTablePtr) params, name, carrier);
-		if (ret)
+		if (xmlHashAddEntry((xmlHashTablePtr) params, name, carrier))
 			return XPL_PARAM_RES_INTERNAL_ERROR;
 		return xplParamValuesAdd(carrier, value, type);
 	} else {
