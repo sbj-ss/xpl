@@ -16,6 +16,22 @@
       <A>я</A>
     </Expected>
   </MustSucceed>
+
+  <MustSucceed name="pass/empty">
+    <Input>
+      <xpl:unstringer tagname="A" delimiter=","/>
+    </Input>
+    <Expected/>
+  </MustSucceed>
+
+  <MustSucceed name="pass/no-match">
+    <Input>
+      <xpl:unstringer tagname="A" delimiter=",">1</xpl:unstringer>
+    </Input>
+    <Expected>
+      <A>1</A>
+    </Expected>
+  </MustSucceed>
   
   <MustSucceed name="pass/multi-delimiter">
     <Input>
@@ -73,6 +89,15 @@
         <A/>
         <A>2</A>
       </Keep>
+    </Expected>
+  </MustSucceed>
+
+  <MustSucceed name="pass/keep-empty-tags-with-empty-content">
+    <Input>
+      <xpl:unstringer tagname="A" delimiter="," keepemptytags="true"/>
+    </Input>
+    <Expected>
+      <A/>
     </Expected>
   </MustSucceed>
 
@@ -180,6 +205,12 @@
   <MustFail name="fail/bad-select">
     <Input>
       <xpl:unstringer tagname="A" select="))Z"/>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/unsupported-selection">
+    <Input>
+      <xpl:unstringer tagname="A" select="2*2"/>
     </Input>
   </MustFail>
 
