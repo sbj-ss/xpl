@@ -10,6 +10,7 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 typedef struct _xplCmdRegexSplitParams
 {
 	xmlChar *regex;
+	bool ignore_case;
 	bool repeat;
 	xplQName tagname;
 	xplQName delimiter_tagname;
@@ -21,6 +22,7 @@ typedef struct _xplCmdRegexSplitParams
 static const xplCmdRegexSplitParams params_stencil =
 {
 	.regex = NULL,
+	.ignore_case = false,
 	.repeat = true,
 	.tagname = { NULL, NULL },
 	.delimiter_tagname = { NULL, NULL },
@@ -45,6 +47,10 @@ xplCommand xplRegexSplitCommand =
 			.type = XPL_CMD_PARAM_TYPE_STRING,
 			.required = true,
 			.value_stencil = &params_stencil.regex
+		}, {
+			.name = BAD_CAST "ignorecase",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.ignore_case
 		}, {
 			.name = BAD_CAST "repeat",
 			.type = XPL_CMD_PARAM_TYPE_BOOL,
@@ -79,7 +85,7 @@ xplCommand xplRegexSplitCommand =
 void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 #define APPEND() \
-	{\
+	do {\
 		if (!ret)\
 			ret = tail = cur;\
 		else {\
@@ -87,9 +93,10 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 			cur->prev = tail;\
 			tail = cur;\
 		}\
-	}
+	} while (0)
 
 	xplCmdRegexSplitParamsPtr params = (xplCmdRegexSplitParamsPtr) commandInfo->params;
+	OnigOptionType options = 0;
 	xmlChar tmp;
 	xmlChar *content, *content_end;
 	regex_t *regex = NULL;
@@ -101,15 +108,25 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	bool match;
 	xmlChar *start, *end, *prev_boundary;
 	xmlHashTablePtr unique_hash = NULL;
-	char marker; 
+	char marker;
+
+	content = commandInfo->content;
+	if (!content || !*content)
+	{
+		if (params->keep_empty_tags)
+			ret = xmlNewDocNode(commandInfo->element->doc, params->tagname.ns, params->tagname.ncname, NULL);
+		ASSIGN_RESULT(ret, params->repeat, true);
+		return;
+	}
 
 	if (params->keep_delimiter && !params->delimiter_tagname.ncname)
 		params->delimiter_tagname = params->tagname;
 	if (params->unique)
 		unique_hash = xmlHashCreate(16);
-
+	if (params->ignore_case)
+		ONIG_OPTION_ON(options, ONIG_OPTION_IGNORECASE);
 	if ((onig_ret_code = onig_new(&regex, params->regex, params->regex + xmlStrlen(params->regex),
-		ONIG_OPTION_NONE, ONIG_ENCODING_UTF8, ONIG_SYNTAX_PERL_NG, &err_info)) != ONIG_NORMAL)
+		options, ONIG_ENCODING_UTF8, ONIG_SYNTAX_PERL_NG, &err_info)) != ONIG_NORMAL)
 	{
 		if (!onig_error_code_to_str(onig_err_str, onig_ret_code))
 			strcpy((char*) onig_err_str, "unknown error");
@@ -123,68 +140,55 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		goto done;
 	}
 
-	content = commandInfo->content;
-	if (!content || !*content)
-	{
-		if (params->keep_empty_tags)
-		{
-			cur = xmlNewDocNode(commandInfo->element->doc, params->tagname.ns, params->tagname.ncname, NULL);
-			APPEND()
-		}
-		ASSIGN_RESULT(ret, params->repeat, true);
-		goto done;
-	}
-
 	content_end = content + xmlStrlen(content);
 	match = (onig_search(regex, content, content_end, content, content_end, region, 0) != ONIG_MISMATCH);
 	if (!match)
 	{
-		cur = xmlNewDocNode(commandInfo->element->doc, params->tagname.ns, params->tagname.ncname, NULL);
-		cur->children = xmlNewDocText(commandInfo->element->doc, NULL);
-		cur->children->content = content;
-		APPEND()
-	} else {
-		prev_boundary = start = content;
-		while (match && *start)
+		ret = xmlNewDocNode(commandInfo->element->doc, params->tagname.ns, params->tagname.ncname, content);
+		ASSIGN_RESULT(ret, params->repeat, true);
+		goto done;
+	}
+
+	prev_boundary = start = content;
+	while (match && *start)
+	{
+		end = content + (size_t) region->beg[0];
+		if ((end > prev_boundary) || params->keep_empty_tags)
 		{
-			end = content + (size_t) region->beg[0];
-			if ((end > prev_boundary) || params->keep_empty_tags)
-			{
-				tmp = *end;
-				*end = 0;
-				if (!params->unique || (xmlHashAddEntry(unique_hash, prev_boundary, &marker) != -1))
-				{
-					cur = xmlNewDocNode(commandInfo->element->doc, params->tagname.ns, params->tagname.ncname, prev_boundary);
-					APPEND()
-				}
-				*end = tmp;
-			}
-			end = content + (size_t) region->end[0];
-			if (params->keep_delimiter)
-			{
-				start = content + (size_t) region->beg[0];
-				tmp = *end;
-				*end = 0;
-				cur = xmlNewDocNode(commandInfo->element->doc, params->delimiter_tagname.ns, params->delimiter_tagname.ncname, start);
-				*end = tmp;
-				APPEND()
-			}
-			if ((region->beg[0] == region->end[0]) && *start) /* zero-length match */
-				start = end + xstrGetOffsetToNextUTF8Char(end);
-			else
-				start = end;
-			prev_boundary = end;
-			match = (onig_search(regex, content, content_end, start, content_end, region, 0) != ONIG_MISMATCH);
-		}
-		if (*prev_boundary || params->keep_empty_tags)
-		{
-			if (!*prev_boundary)
-				prev_boundary = NULL;
+			tmp = *end;
+			*end = 0;
 			if (!params->unique || (xmlHashAddEntry(unique_hash, prev_boundary, &marker) != -1))
 			{
 				cur = xmlNewDocNode(commandInfo->element->doc, params->tagname.ns, params->tagname.ncname, prev_boundary);
-				APPEND()
+				APPEND();
 			}
+			*end = tmp;
+		}
+		end = content + (size_t) region->end[0];
+		if (params->keep_delimiter)
+		{
+			start = content + (size_t) region->beg[0];
+			tmp = *end;
+			*end = 0;
+			cur = xmlNewDocNode(commandInfo->element->doc, params->delimiter_tagname.ns, params->delimiter_tagname.ncname, start);
+			*end = tmp;
+			APPEND();
+		}
+		if ((region->beg[0] == region->end[0]) && *start) /* zero-length match */
+			start = end + xstrGetOffsetToNextUTF8Char(end);
+		else
+			start = end;
+		prev_boundary = end;
+		match = (onig_search(regex, content, content_end, start, content_end, region, 0) != ONIG_MISMATCH);
+	}
+	if (*prev_boundary || params->keep_empty_tags)
+	{
+		if (!*prev_boundary)
+			prev_boundary = NULL;
+		if (!params->unique || (xmlHashAddEntry(unique_hash, prev_boundary, &marker) != -1))
+		{
+			cur = xmlNewDocNode(commandInfo->element->doc, params->tagname.ns, params->tagname.ncname, prev_boundary);
+			APPEND();
 		}
 	}
 	ASSIGN_RESULT(ret, params->repeat, true);
