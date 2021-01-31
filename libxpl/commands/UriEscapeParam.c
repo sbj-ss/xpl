@@ -17,7 +17,6 @@ xplCommand xplUriEscapeParamCommand =
 
 void xplCmdUriEscapeParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xmlChar *param = NULL;
 	xmlNodePtr ret;
 
 	if (!commandInfo->content)
