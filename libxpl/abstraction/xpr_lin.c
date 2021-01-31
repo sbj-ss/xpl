@@ -280,6 +280,19 @@ bool xprIsDebuggerPresent(void)
    return debugged;
 }
 
+void xprGetTime(XPR_TIME *t)
+{
+    clock_gettime(CLOCK_REALTIME, t);
+}
+
+long xprTimeDelta(XPR_TIME *after, XPR_TIME *before)
+{
+	time_t sec_delta = after->tv_sec - before->tv_sec;
+	long ns_delta = after->tv_nsec - before->tv_nsec;
+
+	return sec_delta * 1000 + (ns_delta / 1000000);
+}
+
 bool xprStartup(int what)
 {
 	what &= ~active_subsystems;

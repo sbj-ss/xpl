@@ -75,7 +75,7 @@ struct _xplDocument
 	bool thread_was_suspended;		/* current thread with document was suspended */
 	int indent_spin;				/* for :text */
 	xmlNsPtr root_xpl_ns;			/* for fast XPL namespace checking */
-	time_t profile_checkpoint;		/* for :profile-xx */
+	XPR_TIME profile_start_time;	/* for execution timing */
 	rbBufPtr deleted_nodes;			/* for deferred node deletion */
 	int iterator_spin;				/* for :with */
 };

@@ -1,5 +1,5 @@
-#include <sys/time.h>
 #include <libxpl/xplcore.h>
+#include <libxpl/abstraction/xpr.h>
 
 void xplCmdStartTimerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
@@ -13,6 +13,6 @@ xplCommand xplStartTimerCommand =
 
 void xplCmdStartTimerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	commandInfo->document->main->profile_checkpoint = time(NULL);
+	xprGetTime(&commandInfo->document->main->profile_start_time);
 	ASSIGN_RESULT(NULL, false, true);
 }

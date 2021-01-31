@@ -86,3 +86,5 @@ int _scprintf(const char *format, ...);
 
 #define XPR_THREAD_ID pthread_t
 #define XPR_THREAD_ID_FORMAT "%08lX"
+
+#define XPR_TIME struct timespec
