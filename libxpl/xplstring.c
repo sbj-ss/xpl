@@ -527,8 +527,7 @@ xmlChar* xstrAppendThreadIdToString(xmlChar *str, XPR_THREAD_ID id)
 	str = (xmlChar*) XPL_REALLOC(str, len + sizeof(buf));
 	if (!str)
 		return NULL;
-	/* TODO x64 */
-	snprintf(buf, 17, XPR_THREAD_ID_FORMAT, id);
+	snprintf(buf, sizeof(buf), XPR_THREAD_ID_FORMAT, id);
 	strcpy((char*) (str+len), buf);
 	return str;
 }
