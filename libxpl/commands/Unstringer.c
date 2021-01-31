@@ -168,7 +168,7 @@ static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 			cur->prev = tail; \
 			tail = cur; \
 		}\
-	}while(0);
+	} while(0);
 
 	start = ctxt->input_str;
 	ret = tail = NULL;
@@ -269,6 +269,14 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		return;
 	}
 
+	if (!ctxt.params->select && (!commandInfo->content || !*commandInfo->content))
+	{
+		if (ctxt.params->keep_empty_tags)
+			ret = xmlNewDocNode(commandInfo->element->doc, ctxt.params->tag_name.ns, ctxt.params->tag_name.ncname, NULL);
+		ASSIGN_RESULT(ret, ctxt.params->repeat, true);
+		return;
+	}
+
 	if (!ctxt.params->delimiter_tag_name.ncname)
 		ctxt.params->delimiter_tag_name = ctxt.params->tag_name;
 	ctxt.doc = commandInfo->element->doc;
@@ -278,15 +286,20 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	{
 		i = 0;
 		cur = NULL;
-		if (ctxt.params->select->type == XPATH_NODESET && ctxt.params->select->nodesetval && ctxt.params->select->nodesetval->nodeNr)
-			cur = ctxt.params->select->nodesetval->nodeTab[0];
-		else if (ctxt.params->select->type == XPATH_STRING) {
+		if (ctxt.params->select->type == XPATH_NODESET)
+		{
+			if (ctxt.params->select->nodesetval && ctxt.params->select->nodesetval->nodeNr)
+				cur = ctxt.params->select->nodesetval->nodeTab[0];
+			else if (ctxt.params->keep_empty_tags)
+				ret = xmlNewDocNode(commandInfo->element->doc, ctxt.params->tag_name.ns, ctxt.params->tag_name.ncname, NULL);
+		} else if (ctxt.params->select->type == XPATH_STRING) {
 			ctxt.input_str = sel->stringval;
 			if (ctxt.params->start_delimiter && ctxt.params->end_delimiter)
 				ret = _splitByCouple(&ctxt);
 			else
 				ret = _splitBySingle(&ctxt);
-		}
+		} else
+			ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath expression '%s' evaluated to unsupported type", ctxt.params->select->user);
 	} else
 		cur = commandInfo->element->children;
 	while (cur)
