@@ -4,7 +4,7 @@
   :session-* and :get-thread-id commands
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl" xmlns:ns-a="http://a.example.com">
-  <xpl:include select="/Root/xpl:define" file="/home/ss/polaris/command-tests/composite/Helpers.xpl" abspath="true"/>
+  <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
 
   <MustSucceed name="pass/simple">
     <Input>
