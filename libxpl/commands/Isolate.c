@@ -113,13 +113,19 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		return;
 	}
 #endif
-	if (params->parallel && !commandInfo->element->children)
+	if (!commandInfo->element->children)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "can't isolate: command content is empty"), true, true);
+		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
 	env = xplParamsCopy(commandInfo->document->environment);
-	session = params->share_session? commandInfo->document->session: NULL;
+	if (params->share_session)
+	{
+		if (!commandInfo->document->session)
+			commandInfo->document->session = xplSessionCreateWithAutoId();
+		session = commandInfo->document->session;
+	} else
+		session = NULL;
 	if (!(child = _createChildDoc(commandInfo->document, commandInfo->element, params->inherit_macros, env, session)))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "out of memory"), true, true);
@@ -149,7 +155,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			xplLiftNsDefs(commandInfo->element->parent, content, content->children);
 			content = xplDetachContent(commandInfo->element->children);
 			xmlFreeNode(xplDetachContent(commandInfo->element)); // sub-document root
-			ASSIGN_RESULT(content, false, true);
+			ASSIGN_RESULT(content, params->repeat, true);
 		} else
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "error \"%s\" processing child document", xplErrorToString(status)), true, true);
 		if (params->share_session)
