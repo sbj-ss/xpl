@@ -10,15 +10,15 @@
     <Input>
       <A>1</A>
       <A>2</A>
-      <xpl:with select="../A">
-        <B>
+      <xpl:with select="../A" xmlns:ns-b="http://b.com">
+        <ns-b:B>
           <xpl:content/>
-        </B>
+        </ns-b:B>
       </xpl:with>
     </Input>
     <Expected>
-      <B>1</B>
-      <B>2</B>
+      <ns-b:B xmlns:ns-b="http://b.com">1</ns-b:B>
+      <ns-b:B xmlns:ns-b="http://b.com">2</ns-b:B>
     </Expected>
   </MustSucceed>
 
