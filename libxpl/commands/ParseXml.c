@@ -53,7 +53,7 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		XPL_FREE(parse_error);
 	} else {
 		/* ToDo: replaceRedundantNamespaces */
-		ret = xplDetachContent((xmlNodePtr) doc);
+		ret = xplDetachChildren((xmlNodePtr) doc);
 		xmlSetTreeDoc(ret, commandInfo->element->doc);
 		xmlFreeDoc(doc);
 		ASSIGN_RESULT(ret, params->repeat, true);

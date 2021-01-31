@@ -75,7 +75,7 @@ void xplCmdReplicatePrologue(xplCommandInfoPtr commandInfo)
 
 	if (params->before_count != 1)
 	{
-		old_children = xplDetachContent(commandInfo->element);
+		old_children = xplDetachChildren(commandInfo->element);
 		if (params->before_count > 1)
 			new_children = _replicateNodes(old_children, params->before_count, commandInfo->element);
 		xplDocDeferNodeListDeletion(commandInfo->document, old_children);
@@ -91,7 +91,7 @@ void xplCmdReplicateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (params->after_count > 1)
 		ret = _replicateNodes(commandInfo->element->children, params->after_count, commandInfo->element->parent);
 	else if (params->after_count == 1)
-		ret = xplDetachContent(commandInfo->element);
+		ret = xplDetachChildren(commandInfo->element);
 	else
 		ret = NULL;
 	ASSIGN_RESULT(ret, params->repeat, true);

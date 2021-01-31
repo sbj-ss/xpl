@@ -47,5 +47,5 @@ void xplCmdStackLocalizeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
 		ASSIGN_RESULT(NULL, false, false);
 	else
-		ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 }

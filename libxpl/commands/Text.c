@@ -42,7 +42,7 @@ void xplCmdTextEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	commandInfo->document->indent_spin--;
 	if (!(commandInfo->element->type & XPL_NODE_DELETION_MASK))
-		ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 	else
 		ASSIGN_RESULT(NULL, false, false);
 }

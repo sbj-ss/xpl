@@ -59,5 +59,5 @@ void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			nodes->nodesetval->nodeNr = 0;
 		ASSIGN_RESULT(NULL, false, false);
 	} else if (nodes)
-		ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 }

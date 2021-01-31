@@ -140,7 +140,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 			repl = xplReplaceContentEntries(commandInfo->document, params->id, cur, commandInfo->element->children, cur->parent);
 			if (params->mode == WITH_MODE_REPLACE)
 			{
-				xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(cur));
+				xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(cur));
 				xplSetChildren(cur, repl);
 				xplNodeApply(commandInfo->document, cur, &temp_result);
 				if ((int) cur->type & XPL_NODE_DELETION_MASK)
@@ -161,7 +161,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	if (params->select->nodesetval)
 		params->select->nodesetval->nodeNr = 0;
 	if (!((int) commandInfo->element->type & XPL_NODE_DELETION_MASK))
-		xmlFreeNodeList(xplDetachContent(commandInfo->element));
+		xmlFreeNodeList(xplDetachChildren(commandInfo->element));
 }
 
 void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)

@@ -69,7 +69,7 @@ void xplCmdForEachPrologue(xplCommandInfoPtr commandInfo)
 			tail = xplFindTail(repl);
 		}
 	}
-	xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
+	xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 	xplSetChildren(commandInfo->element, ret);	
 }
 
@@ -77,5 +77,5 @@ void xplCmdForEachEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdForEachParamsPtr params = (xplCmdForEachParamsPtr) commandInfo->params;
 
-	ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 }

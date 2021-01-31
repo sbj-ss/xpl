@@ -39,5 +39,5 @@ void xplCmdStartThreadsAndWaitEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 		xplStartDelayedThreads(commandInfo->document);
 		xplWaitForChildThreads(commandInfo->document);
 	}
-	ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 }

@@ -97,7 +97,7 @@ xmlNodePtr xplPopFromDocStack(xplDocumentPtr doc, xmlNodePtr parent)
 	carrier = doc->stack;
 	doc->stack = carrier->prev;
 	carrier->prev = NULL;
-	ret = xplDetachContent(carrier);
+	ret = xplDetachChildren(carrier);
 	xplLiftNsDefs(parent, carrier, ret);
 	xmlFreeNode(carrier);
 	return ret;
@@ -446,7 +446,7 @@ XPR_THREAD_ROUTINE_RESULT XPR_THREAD_ROUTINE_CALL xplDocThreadWrapper(XPR_THREAD
 			content = xplCreateErrorNode(doc->landing_point, BAD_CAST "error processing child document: \"%s\"", xplErrorToString(err));
 		else 
 			/* root element is a stub */
-			content = xplDetachContent((xmlNodePtr) doc->document->children);
+			content = xplDetachChildren((xmlNodePtr) doc->document->children);
 		if (!xprMutexAcquire(&doc->parent->thread_landing_lock))
 			DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
 		xmlSetListDoc(content, doc->parent->document);
@@ -798,7 +798,7 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 		out = xplReplaceContentEntries(doc, macro->id, element, macro->content, element->parent);
 		xplSetChildren(element, out);
 		xplNodeListApply(doc, element->children, result);
-		out = xplDetachContent(element);
+		out = xplDetachChildren(element);
 		if (!out) /* contents could be removed by :return */
 			out = macro->return_value;
 		break;
@@ -905,7 +905,7 @@ xplMacroPtr xplAddMacro(
 		xplNodeListApply(doc, macro->children, &tmp_result);
 		doc->current_macro = prev_macro;
 	}
-	mb->content = xplDetachContent(macro);
+	mb->content = xplDetachChildren(macro);
 	if (!mb->content)
 	{
 		mb->content = mb->return_value;

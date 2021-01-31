@@ -67,7 +67,7 @@ static xplDocumentPtr _createChildDoc(xplDocumentPtr doc, xmlNodePtr carrier, bo
 	xmlHashTablePtr macros = NULL;
 	xplDocumentPtr ret;
 
-	content = xplDetachContent(carrier);
+	content = xplDetachChildren(carrier);
 	root = xmlNewDocNode(carrier->doc, NULL, BAD_CAST "Root", NULL);
 	if (inherit_macros)
 		macros = xplCloneMacroTableUpwards(carrier, root);
@@ -148,13 +148,13 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			if ((status == XPL_ERR_FATAL_CALLED) && cfgWarnOnFatalErrorsInIsolatedDocuments)
 				xplDisplayMessage(xplMsgWarning, BAD_CAST ":fatal called while processing child document");
-			content = xplDetachContent((xmlNodePtr) child->document);
+			content = xplDetachChildren((xmlNodePtr) child->document);
 			xmlSetListDoc(content, commandInfo->element->doc);
 			xplSetChildren(commandInfo->element, content);
 			/* xplLiftNsDefs() removes duplicated nsDefs instead of lifting them */
 			xplLiftNsDefs(commandInfo->element->parent, content, content->children);
-			content = xplDetachContent(commandInfo->element->children);
-			xmlFreeNode(xplDetachContent(commandInfo->element)); // sub-document root
+			content = xplDetachChildren(commandInfo->element->children);
+			xmlFreeNode(xplDetachChildren(commandInfo->element)); // sub-document root
 			ASSIGN_RESULT(content, params->repeat, true);
 		} else
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "error \"%s\" processing child document", xplErrorToString(status)), true, true);

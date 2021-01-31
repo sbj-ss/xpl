@@ -143,7 +143,7 @@ void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo)
 			{
 				xmlHashFree(macros, NULL);
 				macros = NULL;
-				xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
+				xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 				commandInfo->prologue_error = error;
 			}
 		}
@@ -169,5 +169,5 @@ void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	else if (commandInfo->prologue_error)
 		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
 	else
-		ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 }

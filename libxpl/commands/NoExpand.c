@@ -22,7 +22,7 @@ void xplCmdNoExpandEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	commandInfo->document->expand = (bool) commandInfo->prologue_state;
 	if (!(commandInfo->element->type & XPL_NODE_DELETION_MASK))
-		ASSIGN_RESULT(xplDetachContent(commandInfo->element), false, true);
+		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), false, true);
 	else
 		ASSIGN_RESULT(NULL, false, true);
 }

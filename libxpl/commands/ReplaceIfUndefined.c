@@ -40,7 +40,7 @@ void xplCmdReplaceIfUndefinedPrologue(xplCommandInfoPtr commandInfo)
 
 	if (xplMacroLookupByQName(commandInfo->element->parent, params->name))
 	{
-		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
+		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 		/* use prologue_error as a buffer for the macro trigger node */
 		commandInfo->prologue_error = xmlNewDocNode(commandInfo->element->doc, params->name.ns, params->name.ncname, NULL);
 	}
@@ -51,5 +51,5 @@ void xplCmdReplaceIfUndefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPt
 	if (commandInfo->prologue_error)
 		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
 	else
-		ASSIGN_RESULT(xplDetachContent(commandInfo->element), false, true);
+		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), false, true);
 }

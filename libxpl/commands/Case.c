@@ -81,7 +81,7 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 	if (!xplCheckNodeForXplNs(commandInfo->document, parent) ||	xmlStrcmp(parent->name, BAD_CAST "switch"))
 	{
 		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "parent element must be a switch command");
-		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
+		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 		return;
 	}
 	parent_sel = (xmlXPathObjectPtr) parent->content;
@@ -94,7 +94,7 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 			parent->last = commandInfo->element;
 		}
 	} else
-		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachContent(commandInfo->element));
+		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 }
 
 void xplCmdCaseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
@@ -104,5 +104,5 @@ void xplCmdCaseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (commandInfo->prologue_error)
 		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
 	else
-		ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 }

@@ -536,9 +536,9 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 	if (!ctxt->params->select) /* return the input document/command content */
 	{
 		if (ctxt->input_source == INPUT_SOURCE_LOCAL)
-			ctxt->ret = xplDetachContent(ctxt->command_element);
+			ctxt->ret = xplDetachChildren(ctxt->command_element);
 		else {
-			cur = ctxt->ret = xplDetachContent(ctxt->src_node);
+			cur = ctxt->ret = xplDetachChildren(ctxt->src_node);
 			while (cur) /* doc may start with a comment */
 			{
 				if (cur->type == XML_ELEMENT_NODE)

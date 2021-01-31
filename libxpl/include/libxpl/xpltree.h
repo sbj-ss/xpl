@@ -54,8 +54,8 @@ XPLPUBFUN void XPLCALL
 	xplUnlinkProp(xmlAttrPtr cur);
 
 /* detaches el's children */
-XPLPUBFUN xmlNodePtr XPLCALL /* TODO rename */
-	xplDetachContent(xmlNodePtr el);
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplDetachChildren(xmlNodePtr el);
 /* sets el's children to list, returns list's last node */
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplSetChildren(xmlNodePtr el, xmlNodePtr list);

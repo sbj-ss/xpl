@@ -64,5 +64,5 @@ void xplCmdIfEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdIfParamsPtr params = (xplCmdIfParamsPtr) commandInfo->params;
 	
-	ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 }

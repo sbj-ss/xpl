@@ -124,7 +124,7 @@ void xplUnlinkProp(xmlAttrPtr cur)
 	}
 }
 
-xmlNodePtr xplDetachContent(xmlNodePtr el)
+xmlNodePtr xplDetachChildren(xmlNodePtr el)
 {
 	xmlNodePtr item;
 

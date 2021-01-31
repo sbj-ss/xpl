@@ -38,7 +38,7 @@ void xplCmdOtherwiseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlNodePtr brk;
 	xmlNsPtr brk_ns;
 
-	ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 	brk_ns = commandInfo->document->root_xpl_ns;
 	if (!brk_ns)
 		brk_ns = xmlSearchNsByHref(commandInfo->element->doc, commandInfo->element, cfgXplNsUri);

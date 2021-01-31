@@ -35,5 +35,5 @@ void xplCmdChooseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdChooseParamsPtr params = (xplCmdChooseParamsPtr) commandInfo->params;
 
-	ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 }

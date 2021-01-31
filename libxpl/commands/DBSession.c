@@ -35,5 +35,5 @@ void xplCmdDBSessionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdDBSessionParamsPtr params = (xplCmdDBSessionParamsPtr) commandInfo->params;
 
-	ASSIGN_RESULT(xplDetachContent(commandInfo->element), params->repeat, true);
+	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 }
