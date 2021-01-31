@@ -792,37 +792,3 @@ xmlNodePtr xplLoadedModulesToNodeList(const xplQName tagname, xmlNodePtr parent)
 	xmlHashScan(loaded_modules, loadedModulesListScanner, &ctxt);
 	return ctxt.first;
 }
-
-xmlNodePtr xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, bool *value, bool defaultValue) // TODO remove
-{
-	xmlChar *attr = xmlGetNoNsProp(cmd, name);
-	int dec_value;
-	xmlNodePtr ret = NULL;
-
-	if (!value)
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return NULL;
-	}
-	if (!attr)
-	{
-		*value = defaultValue;
-		return NULL;
-	}
-	dec_value = xplGetBooleanValue(attr);
-	switch(dec_value)
-	{
-	case 0:
-		*value = false;
-		break;
-	case 1:
-		*value = true;
-		break;
-	default:
-		*value = defaultValue;
-		ret = xplCreateErrorNode(cmd, BAD_CAST "invalid boolean parameter \"%s\" value \"%s\"", name, attr);
-		break;
-	}
-	XPL_FREE(attr);
-	return ret;
-}

@@ -196,8 +196,6 @@ XPLPUBFUN void XPLCALL
 	xplCleanupCommands(void);
 
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplDecodeCmdBoolParam(xmlNodePtr cmd, const xmlChar *name, bool *value, bool defaultValue);
-XPLPUBFUN xmlNodePtr XPLCALL
 	xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandInfo);
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplFillCommandInfo(xplCommandPtr command, xplCommandInfoPtr info, bool inPrologue);
