@@ -83,10 +83,6 @@
 /* Enable :file-op. This command needs to be rewritten. */
 /* #undef _FILEOP_SUPPORT */
 
-/* Command-level behavior control */
-/* TODO control flag in :regex-match */
-/* #undef _REGEX_MATCH_FULL_STRING_ONLY */
-
 /* Enable allocated blocks checking for debugging memory leaks.
  * Should be disabled in production as it slows down the interpreter. */
 #ifdef _DEBUG
