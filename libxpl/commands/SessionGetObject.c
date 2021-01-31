@@ -56,7 +56,7 @@ xplCommand xplSessionGetObjectCommand =
 void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdSessionGetObjectParamsPtr params = (xplCmdSessionGetObjectParamsPtr) commandInfo->params;
-	xmlXPathObjectPtr sel = NULL;
+	xmlXPathObjectPtr sel;
 	xmlNodePtr obj, head, tail, cur;
 	size_t i;
 
@@ -65,53 +65,56 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
-	if (!params->name) // TODO select?..
-	{
+	if (params->thread_local && params->name)
+		params->name = xstrAppendThreadIdToString(params->name, xprGetCurrentThreadId());
+	if (!params->name)
 		obj = xplSessionGetAllObjects(commandInfo->document->main->session);
-		obj = xplCloneNodeList(obj, commandInfo->element->parent, commandInfo->element->doc);
-		ASSIGN_RESULT(obj, params->repeat, true);
+	else
+		obj = xplSessionGetObject(commandInfo->document->main->session, params->name);
+	if (!obj)
+	{
+		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
-	if (params->thread_local)
-		params->name = xstrAppendThreadIdToString(params->name, xprGetCurrentThreadId());
-	obj = xplSessionGetObject(commandInfo->document->main->session, params->name);
-	if (obj)
+	if (!params->select)
 	{
-		if (params->select)
+		cur = head = xplCloneNodeList(obj->children, commandInfo->element->parent, commandInfo->element->doc);
+		while (cur)
 		{
-			sel = xplSelectNodes(commandInfo, obj, params->select); // note: we can't delegate this to params handling due to the different base
-			if (sel)
+			xplLiftNsDefs(commandInfo->element->parent, cur, cur->children);
+			cur = cur->next;
+		}
+		ASSIGN_RESULT(head, params->repeat, true);
+		return;
+	}
+	sel = xplSelectNodes(commandInfo, obj, params->select); // note: we can't delegate this to params handling due to the different base
+	if (!sel)
+	{
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression '%s'", params->select), true, true);
+		return;
+	}
+	head = tail = NULL;
+	if ((sel->type == XPATH_NODESET) && sel->nodesetval)
+	{
+		for (i = 0; i < (size_t) sel->nodesetval->nodeNr; i++)
+		{
+			cur = xplCloneNode(sel->nodesetval->nodeTab[i], commandInfo->element->parent, commandInfo->element->doc);
+			if (head)
 			{
-				head = tail = NULL;
-				if ((sel->type == XPATH_NODESET) && sel->nodesetval)
-				{
-					for (i = 0; i < (size_t) sel->nodesetval->nodeNr; i++)
-					{
-						cur = xplCloneNode(sel->nodesetval->nodeTab[i], commandInfo->element->parent, commandInfo->element->doc);
-						if (head)
-						{
-							tail->next = cur;
-							cur->prev = tail;
-							tail = cur;
-						} else
-							head = tail = cur;
-					}
-				} else if (sel->type != XPATH_UNDEFINED) {
-					head = xmlNewDocText(commandInfo->element->doc, NULL);
-					head->content = xmlXPathCastToString(sel);
-					params->repeat = false;
-				} else {
-					head = xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expresssion (%s) evaluated to undef", params->select);
-					params->repeat = true;
-				}
-				xmlXPathFreeObject(sel);
-			} else {
-				head = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid select XPath expression (%s)", params->select);
-				params->repeat = true;
-			}
-		} else 
-			head = xplCloneNodeList(obj->children, commandInfo->element->parent, commandInfo->element->doc);
-	} else
-		head = NULL;
+				tail->next = cur;
+				cur->prev = tail;
+				tail = cur;
+			} else
+				head = tail = cur;
+		}
+	} else if (sel->type != XPATH_UNDEFINED) {
+		head = xmlNewDocText(commandInfo->element->doc, NULL);
+		head->content = xmlXPathCastToString(sel);
+		params->repeat = false;
+	} else {
+		head = xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression '%s' evaluated to undef", params->select);
+		params->repeat = true;
+	}
+	xmlXPathFreeObject(sel);
 	ASSIGN_RESULT(head, params->repeat && head, true);
 }
