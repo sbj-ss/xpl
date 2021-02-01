@@ -6,6 +6,7 @@
 #include <oniguruma.h>
 
 static XPR_MUTEX mapper_interlock;
+static bool mapper_interlock_initialized = false;
 
 xplDocRole xplDocRoleFromString(const xmlChar *role)
 {
@@ -114,8 +115,9 @@ void xplCleanupWrapperMap(void)
 		}
 		wrapper_map[i] = NULL;
 	}
-	if (!xprMutexCleanup(&mapper_interlock))
+	if (mapper_interlock_initialized && !xprMutexCleanup(&mapper_interlock))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	mapper_interlock_initialized = false;
 }
 
 static void xplAssignWrapperMapEntry(xplWrapperMapEntryPtr *head, xplWrapperMapEntryPtr *tail, xmlNodePtr cur)
@@ -176,6 +178,7 @@ void xplReadWrapperMap(xmlNodePtr cur)
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		return;
 	}
+	mapper_interlock_initialized = true;
 	cur = cur->children;
 	while (cur)
 	{
