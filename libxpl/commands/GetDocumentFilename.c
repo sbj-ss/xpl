@@ -5,11 +5,13 @@ void xplCmdGetDocumentFilenameEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 
 typedef struct _xplCmdGetDocumentFilenameParams
 {
+	bool abs_path;
 	xplDocumentPtr document;
 } xplCmdGetDocumentFilenameParams, *xplCmdGetDocumentFilenameParamsPtr;
 
 static const xplCmdGetDocumentFilenameParams params_stencil =
 {
+	.abs_path = false,
 	.document = NULL
 };
 
@@ -32,6 +34,10 @@ xplCommand xplGetDocumentFilenameCommand =
 			},
 			.value_stencil = &params_stencil.document
 		}, {
+			.name = BAD_CAST "abspath",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.abs_path
+		}, {
 			.name = NULL
 		}
 	}
@@ -40,15 +46,18 @@ xplCommand xplGetDocumentFilenameCommand =
 void xplCmdGetDocumentFilenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdGetDocumentFilenameParamsPtr params = (xplCmdGetDocumentFilenameParamsPtr) commandInfo->params;
+	xplDocumentPtr doc;
 	xmlNodePtr ret;
 	xmlChar *fn;
 
-	if (!params->document)
-		fn = commandInfo->document->filename + xmlStrlen(xplGetDocRoot());
-	else if (!params->document->filename)
-		fn = BAD_CAST "<unknown>";
+	if (!(doc = params->document))
+		doc = commandInfo->document;
+	if (params->abs_path)
+		fn = commandInfo->document->filename;
 	else
-		fn = params->document->filename + xmlStrlen(xplGetDocRoot());
+		fn = commandInfo->document->filename + xmlStrlen(xplGetDocRoot()); // TODO relative path!
+	if (!fn)
+		fn = BAD_CAST "<unknown>";
 	ret = xmlNewDocText(commandInfo->element->doc, fn);
 	ASSIGN_RESULT(ret, false, true);
 }
