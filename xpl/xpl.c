@@ -29,6 +29,7 @@ xmlChar *params_file = NULL;
 xmlChar *session_file = NULL;
 char *encoding = NULL;
 int save_session = 0;
+int verbose = 0;
 
 static struct option option_list[] = 
 {
@@ -37,44 +38,42 @@ static struct option option_list[] =
 		.has_arg = required_argument,
 		.flag = NULL,
 		.val ='i'
-	},
-	{
+	}, {
 		.name = "out-file",
 		.has_arg = required_argument,
 		.flag = NULL,
 		.val = 'o'
-	},
-	{
+	}, {
 		.name = "config-file",
 		.has_arg = required_argument,
 		.flag = NULL,
 		.val = 'c'
-	},
-	{
+	}, {
 		.name = "params-file",
 		.has_arg = required_argument,
 		.flag = NULL,
 		.val = 'p'
-	},
-	{
+	}, {
 		.name = "session-file",
 		.has_arg = required_argument,
 		.flag = NULL,
 		.val = 's'
-	},
-	{
+	}, {
 		.name = "encoding",
 		.has_arg = required_argument,
 		.flag = NULL,
 		.val = 'e'
-	},
-	{
+	}, {
 		.name = "save-session",
 		.has_arg = no_argument,
 		.flag = &save_session,
 		.val = 1
-	},
-	{
+	}, {
+		.name = "verbose",
+		.has_arg = no_argument,
+		.flag = &verbose,
+		.val = 1
+	}, {
 		.name = NULL,
 		.has_arg = no_argument,
 		.flag = NULL,
@@ -151,6 +150,7 @@ int main(int argc, char* argv[])
 	/* TODO: ideally we want app_path = dirname(input_file) but we need working path c14n for this */
 	app_path = BAD_CAST getcwd(NULL, 0);
 	memcpy(&start_params, &xplDefaultStartParams, sizeof(xplStartParams));
+	start_params.verbose = (bool) verbose;
 	if (conf_file)
 		start_params.config_file_name = conf_file;
 
