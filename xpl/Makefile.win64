@@ -1,0 +1,37 @@
+#******************************************
+#* Polaris project: the pure C XPL engine *
+#* (c) НИЛ ИТС, Подковырин, 2006-2020     *
+#******************************************
+
+LIB_ROOT = /home/ss/src/polaris-libs
+INCLUDE = -I../libxpl/include -I$(LIB_ROOT)/include -I$(LIB_ROOT)/include/libxml2
+LIB = -L$(LIB_ROOT)/lib -L../libxpl
+LIBS = -lxml2 -lxpl_dll -lonig -lcrypto -ltidy -lidn -lodbc32
+WARNINGS = -Wall -Werror
+CFLAGS = -L../libxpl $(WARNINGS)
+ifeq ($(DEBUG), 1)
+CFLAGS += -g -D_DEBUG
+endif
+
+CC = x86_64-w64-mingw32-gcc
+
+SRC = xpl.c
+
+BUILD_DIR = build.win64
+OBJS = $(SRC:%.c=$(BUILD_DIR)/%.o)
+
+.DEFAULT_GOAL = all
+
+$(BUILD_DIR):
+	mkdir $@
+
+$(BUILD_DIR)/%.o: %.c $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
+	
+xpl.exe: $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LIBS)
+	
+clean:
+	rm $(BUILD_DIR)/*.o xpl.exe || /bin/true
+	
+all: xpl.exe
