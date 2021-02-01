@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <libxml/xmlsave.h>
 #include <libxpl/xplcore.h>
+#include <libxpl/xploptions.h>
 #include <libxpl/xplsave.h>
 #include <libxpl/xplstart.h>
 
@@ -163,6 +164,8 @@ int main(int argc, char* argv[])
 		goto cleanup;
 	}
 
+	if (!cfgDocRoot)
+		cfgDocRoot = BAD_CAST XPL_STRDUP(app_path);
 	xplSetGetAppTypeFunc(getAppType);
 
 	/* create auxiliary structures */
