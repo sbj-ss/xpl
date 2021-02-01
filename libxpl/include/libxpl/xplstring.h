@@ -39,18 +39,21 @@ XPLPUBFUN size_t XPLCALL
 XPLPUBFUN xmlChar* XPLCALL
 	xstrEncodeUriIdn(xmlChar *uri);
 
-#define XSTR_ENC_UNKNOWN (-1)
-#define XSTR_ENC_866 1
-#define XSTR_ENC_1251 2
-#define XSTR_ENC_KOI8 3
-#define XSTR_ENC_UTF8 4
-#define XSTR_ENC_UTF16LE 5
-#define XSTR_ENC_UTF16BE 6
+typedef enum _xstrEncoding {
+	XSTR_ENC_UNKNOWN,
+	XSTR_ENC_866,
+	XSTR_ENC_1251,
+	XSTR_ENC_KOI8,
+	XSTR_ENC_UTF8,
+	XSTR_ENC_UTF16LE,
+	XSTR_ENC_UTF16BE,
+	XSTR_ENC_MAX = XSTR_ENC_UTF16BE
+} xstrEncoding;
 
 #define XSTR_DEFAULT_ENC_DET_SAMPLE_LEN 256
 
 /* Detects cyrillic encoding automatically */
-XPLPUBFUN int XPLCALL
+XPLPUBFUN xstrEncoding XPLCALL
 	xstrDetectEncoding(char* str, size_t sampleLen);
 
 /* Recodes start..end. resultp is allocated inside */

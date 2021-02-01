@@ -211,7 +211,7 @@ xmlChar* xstrEncodeUriIdn(xmlChar *uri)
 #endif
 }
 
-int xstrDetectEncoding(char* str, size_t sampleLen)
+xstrEncoding xstrDetectEncoding(char* str, size_t sampleLen)
 {
 	size_t small_count, caps_count;
 	size_t a0af_count, f0ff_count;

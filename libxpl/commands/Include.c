@@ -144,7 +144,7 @@ typedef struct _IncludeContext
 	xplCmdIncludeParamsPtr params;
 	xmlNodePtr command_element;
 	xplDocumentPtr doc;
-	int encoding;
+	xstrEncoding encoding;
 	bool needs_recoding;
 	/* input source info */
 	InputSource input_source;
@@ -332,7 +332,7 @@ static size_t detectionSampleLen(char* content, size_t size)
 	return ret;
 }
 
-static int fastDetectEncoding(char* content, size_t size)
+static xstrEncoding fastDetectEncoding(char* content, size_t size)
 {
 	if (size >= 2)
 	{
@@ -342,12 +342,12 @@ static int fastDetectEncoding(char* content, size_t size)
 			return XSTR_ENC_UTF16LE;
 		if ((*content == (char) 0xFF) && (*(content+1) == (char) 0xFE))
 			return XSTR_ENC_UTF16BE;
-		if (!*(content+1))
+		if (!*(content + 1))
 			return XSTR_ENC_UTF16BE;
 	}
 	if (size >= 3)
 	{
-		if ((*content == (char) 0xEF) && (*(content+1) == (char) 0xBB) && (*(content+2) == (char) 0xBF))
+		if ((*content == (char) 0xEF) && (*(content + 1) == (char) 0xBB) && (*(content + 2) == (char) 0xBF))
 			return XSTR_ENC_UTF8;
 	}
 	return xstrDetectEncoding(content, detectionSampleLen(content, size));
@@ -355,6 +355,15 @@ static int fastDetectEncoding(char* content, size_t size)
 
 static void updateCtxtEncoding(IncludeContextPtr ctxt)
 {
+	static const char* encodings[] = {
+		[XSTR_ENC_UNKNOWN] = "utf-8",
+		[XSTR_ENC_866] = "cp866",
+		[XSTR_ENC_1251] = "cp1251",
+		[XSTR_ENC_KOI8] = "koi8-r",
+		[XSTR_ENC_UTF8] = "utf-8",
+		[XSTR_ENC_UTF16LE] = "utf-16le",
+		[XSTR_ENC_UTF16BE] = "utf-16be"
+	};
 	if (!ctxt->params->encoding || !xmlStrcasecmp(ctxt->params->encoding, BAD_CAST "utf-8"))
 	{
 		ctxt->needs_recoding = false;
@@ -364,34 +373,21 @@ static void updateCtxtEncoding(IncludeContextPtr ctxt)
 		ctxt->needs_recoding = true;
 		return;
 	}
-	XPL_FREE(ctxt->params->encoding); // was "auto"
 	/* run detection */
 	ctxt->encoding = fastDetectEncoding((char*) ctxt->content, ctxt->content_size);
-	switch (ctxt->encoding) // TODO array
+	if (ctxt->encoding == XSTR_ENC_UNKNOWN)
 	{
-	case XSTR_ENC_1251:
-		ctxt->params->encoding = BAD_CAST XPL_STRDUP("CP1251");
-		break;
-	case XSTR_ENC_UTF8: 
-	case XSTR_ENC_UNKNOWN: // TODO warn
-		ctxt->params->encoding = BAD_CAST XPL_STRDUP("utf-8");
-		ctxt->encoding = XSTR_ENC_UTF8;
-		break;
-	case XSTR_ENC_UTF16LE: 
-		ctxt->params->encoding = BAD_CAST XPL_STRDUP("utf-16le");
-		break;
-	case XSTR_ENC_UTF16BE: 
-		ctxt->params->encoding = BAD_CAST XPL_STRDUP("utf-16be");
-		break;
-	case XSTR_ENC_866: 
-		ctxt->params->encoding = BAD_CAST XPL_STRDUP("cp866");
-		break;
-	case XSTR_ENC_KOI8: 
-		ctxt->params->encoding = BAD_CAST XPL_STRDUP("KOI8-R");
-		break;
-	default: 
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "unable to determine content encoding automatically");
+		return;
 	}
+	if (ctxt->encoding > XSTR_ENC_MAX)
+	{
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "unable to determine content encoding: internal error");
+		return;
+	}
+	XPL_FREE(ctxt->params->encoding); // was "auto"
+	ctxt->params->encoding = BAD_CAST XPL_STRDUP(encodings[ctxt->encoding]);
 	ctxt->needs_recoding = (ctxt->encoding != XSTR_ENC_UTF8);
 }
 
