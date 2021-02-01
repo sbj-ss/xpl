@@ -69,18 +69,34 @@ static bool _checkJsonNs(xmlNsPtr ns, xmlNsPtr *cached_ns)
 	return true;
 }
 
-typedef enum _xjsonAtomType {
-	XJA_STRING,
-	XJA_NUMBER,
-	XJA_BOOLEAN,
-	XJA_NULL
-} xjsonAtomType;
+typedef enum _xjsonElementType {
+	XJE_ARRAY,
+	XJE_OBJECT,
+	XJE_STRING,
+	XJE_NUMBER,
+	XJE_BOOLEAN,
+	XJE_NULL,
+	XJE_NONE
+} xjsonElementType;
 
-typedef enum _xjsonContainerType {
-	XJC_NONE,
-	XJC_ARRAY,
-	XJC_OBJECT
-} xjsonContainerType;
+#define TYPE_IS_CONTAINER(t) ((t) == XJE_OBJECT || (t) == XJE_ARRAY)
+
+static xjsonElementType _getElementType(xmlNodePtr cur)
+{
+	if (!xmlStrcmp(cur->name, BAD_CAST "array"))
+		return XJE_ARRAY;
+	else if (!xmlStrcmp(cur->name, BAD_CAST "object"))
+		return XJE_OBJECT;
+	else if (!xmlStrcmp(cur->name, BAD_CAST "string"))
+		return XJE_STRING;
+	else if (!xmlStrcmp(cur->name, BAD_CAST "number"))
+		return XJE_NUMBER;
+	else if (!xmlStrcmp(cur->name, BAD_CAST "boolean"))
+		return XJE_BOOLEAN;
+	else if (!xmlStrcmp(cur->name, BAD_CAST "null"))
+		return XJE_NULL;
+	return XJE_NONE;
+}
 
 typedef struct _xjsonSerializeCtxt {
 	xmlNodePtr command_element;
@@ -88,7 +104,7 @@ typedef struct _xjsonSerializeCtxt {
 	rbBufPtr buf;
 	/* will be changed by serializer */
 	xmlNsPtr ns;
-	xjsonContainerType container_type;
+	xjsonElementType container_type;
 	bool is_first_item;
 } xjsonSerializeCtxt, *xjsonSerializeCtxtPtr;
 
@@ -97,16 +113,25 @@ static xmlNodePtr _createMemoryError(xjsonSerializeCtxtPtr ctxt)
 	return xplCreateErrorNode(ctxt->command_element, BAD_CAST "insufficient memory");
 }
 
+#define ADD_DATA(d, size) \
+	do { \
+		if (rbAddDataToBuf(ctxt->buf, d, size) != RB_RESULT_OK) \
+		{ \
+			ret = _createMemoryError(ctxt); \
+			goto done; \
+		} \
+	} while (0)
+
 /* forward declarations */
 static xmlNodePtr _xjsonSerializeNodeList(xmlNodePtr first, xjsonSerializeCtxtPtr ctxt);
 
-static xmlNodePtr _xjsonSerializeList(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt, xjsonContainerType containerType)
+static xmlNodePtr _xjsonSerializeList(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt, xjsonElementType containerType)
 {
-	bool prev_container_type;
+	xjsonElementType prev_container_type;
 	bool prev_is_first_item;
 	xmlNodePtr ret = NULL;
 
-	if (rbAddDataToBuf(ctxt->buf, (containerType == XJC_ARRAY)? "[": "{", 1) != RB_RESULT_OK)
+	if (rbAddDataToBuf(ctxt->buf, (containerType == XJE_ARRAY)? "[": "{", 1) != RB_RESULT_OK)
 		return _createMemoryError(ctxt);
 	prev_container_type = ctxt->container_type;
 	prev_is_first_item = ctxt->is_first_item;
@@ -114,67 +139,58 @@ static xmlNodePtr _xjsonSerializeList(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	ctxt->is_first_item = true;
 	if ((ret = _xjsonSerializeNodeList(cur->children, ctxt)))
 		goto done;
-	if (rbAddDataToBuf(ctxt->buf, (containerType == XJC_ARRAY)? "]": "}", 1) != RB_RESULT_OK)
-		ret = _createMemoryError(ctxt);
+	ADD_DATA(containerType == XJE_ARRAY? "]": "}", 1);
 done:
 	ctxt->container_type = prev_container_type;
 	ctxt->is_first_item = prev_is_first_item;
 	return ret;
 }
 
-static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt, xjsonAtomType type)
+static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt, xjsonElementType type)
 {
 	xmlNodePtr ret = NULL;
 	xmlChar *content = NULL;
 
 	if (!xplCheckNodeListForText(cur->children))
-		return xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s\" has non-text nodes inside", cur->name);
-	if ((type == XJA_STRING) || (ctxt->params->force_quotes && (type != XJA_NULL)))
-	{
-		if (rbAddDataToBuf(ctxt->buf, ctxt->params->single_quotes? "'": "\"", 1) != RB_RESULT_OK)
-			return _createMemoryError(ctxt);
-	}
+		return xplCreateErrorNode(ctxt->command_element, BAD_CAST "element '%s' has non-text nodes inside", cur->name);
+	if ((type == XJE_STRING) || (ctxt->params->force_quotes && (type != XJE_NULL)))
+		ADD_DATA(ctxt->params->single_quotes? "'": "\"", 1);
 	content = xmlNodeListGetString(cur->doc, cur->children, 1);
-	switch(type)
-	{
-	case XJA_STRING:
-		break;
-	case XJA_NUMBER:
-		if (ctxt->params->value_type_check && !xstrIsNumber(content))
+	if (ctxt->params->value_type_check)
+		switch(type)
 		{
-			ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s\" content \"%s\" is non-numeric", cur->name, content);
-			goto done;
+		case XJE_STRING:
+			break;
+		case XJE_NUMBER:
+			if (!xstrIsNumber(content))
+			{
+				ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "element '%s' content '%s' is non-numeric", cur->name, content);
+				goto done;
+			}
+			break;
+		case XJE_BOOLEAN:
+			if (xmlStrcmp(content, BAD_CAST "false") && xmlStrcmp(content, BAD_CAST "true"))
+			{
+				ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "element '%s' content '%s' is non-boolean", cur->name, content);
+				goto done;
+			}
+			break;
+		case XJE_NULL:
+			if (content && *content)
+			{
+				ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "element '%s' content '%s' is non-empty", cur->name, content);
+				goto done;
+			}
+			break;
+		default:
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
 		}
-		break;
-	case XJA_BOOLEAN:
-		if (ctxt->params->value_type_check && xmlStrcmp(content, BAD_CAST "false") && xmlStrcmp(content, BAD_CAST "true"))
-		{
-			ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s\" content \"%s\" is non-boolean", cur->name, content);
-			goto done;
-		}
-		break;
-	case XJA_NULL:
-		if (ctxt->params->value_type_check && content && *content)
-		{
-			ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s\" content \"%s\" is non-empty", cur->name, content);
-			goto done;
-		}
-		break;
-	default:
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	}
-	if (rbAddDataToBuf(ctxt->buf, (type == XJA_NULL)? BAD_CAST "null": content, xmlStrlen((type == XJA_NULL)? BAD_CAST "null": content)) != RB_RESULT_OK)
-	{
-		ret = _createMemoryError(ctxt);
-		goto done;
-	}
-	if ((type == XJA_STRING) || (ctxt->params->force_quotes && (type != XJA_NULL)))
-	{
-		if (rbAddDataToBuf(ctxt->buf, ctxt->params->single_quotes? "'": "\"", 1) != RB_RESULT_OK)
-			return _createMemoryError(ctxt);
-	}
+	ADD_DATA(type == XJE_NULL? BAD_CAST "null": content, xmlStrlen(type == XJE_NULL? BAD_CAST "null": content));
+	if ((type == XJE_STRING) || (ctxt->params->force_quotes && (type != XJE_NULL)))
+		ADD_DATA(ctxt->params->single_quotes? "'": "\"", 1);
 done:
-	if (content) XPL_FREE(content);
+	if (content)
+		XPL_FREE(content);
 	return ret;
 }
 
@@ -182,67 +198,59 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 {
 	xmlChar *name = NULL;
 	xmlNodePtr ret = NULL;
+	xjsonElementType el_type;
 
-	if (!cur->ns || !_checkJsonNs(cur->ns, &(ctxt->ns)))
+	if (!cur->ns || !_checkJsonNs(cur->ns, &ctxt->ns))
 	{
 		if (ctxt->params->strict_tag_names)
-			return xplCreateErrorNode(ctxt->command_element, BAD_CAST "element \"%s:%s\" is not in XJSON namespace", cur->ns? cur->ns->prefix: NULL, cur->name);
+			return xplCreateErrorNode(ctxt->command_element, BAD_CAST "element '%s:%s' is not in XJSON namespace", cur->ns? cur->ns->prefix: NULL, cur->name);
 		return NULL;
 	}
-	if (ctxt->container_type != XJC_NONE)
+	el_type = _getElementType(cur);
+	if (el_type == XJE_NONE)
+	{
+		if (ctxt->params->strict_tag_names)
+			return xplCreateErrorNode(ctxt->command_element, BAD_CAST "unknown tag name '%s'", cur->name);
+		return NULL;
+	}
+	if (ctxt->container_type != XJE_NONE)
 	{
 		if (!ctxt->is_first_item)
-		{
-			if (rbAddDataToBuf(ctxt->buf, ",", 1 != RB_RESULT_OK))
-				return _createMemoryError(ctxt);
-		} else
+			ADD_DATA(",", 1);
+		else
 			ctxt->is_first_item = false;
 	}
 	name = xmlGetNoNsProp(cur, BAD_CAST "name");
 	if (name)
 	{
-		if (ctxt->container_type != XJC_OBJECT)
+		if (ctxt->container_type != XJE_OBJECT)
 		{
 			ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot use named items outside of object");
 			goto done;
 		}
-		if (rbAddDataToBuf(ctxt->buf, name, xmlStrlen(name)) != RB_RESULT_OK)
-		{
-			ret = _createMemoryError(ctxt);
-			goto done;
-		}
-		if (rbAddDataToBuf(ctxt->buf, ":", 1) != RB_RESULT_OK)
-		{
-			ret = _createMemoryError(ctxt);
-			goto done;
-		}
-	} else if (ctxt->container_type == XJC_OBJECT) {
+		ADD_DATA(ctxt->params->single_quotes? "'": "\"", 1);
+		ADD_DATA(name, xmlStrlen(name));
+		ADD_DATA(ctxt->params->single_quotes? "'": "\"", 1);
+		ADD_DATA(":", 1);
+	} else if (ctxt->container_type == XJE_OBJECT) {
 		ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "items inside an object must be named");
 		goto done;
 	}
 
-	if (!xmlStrcmp(cur->name, BAD_CAST "array"))
-		ret = _xjsonSerializeList(cur, ctxt, XJC_ARRAY);
-	else if (!xmlStrcmp(cur->name, BAD_CAST "object")) 
-		ret = _xjsonSerializeList(cur, ctxt, XJC_OBJECT);
-	else if (!xmlStrcmp(cur->name, BAD_CAST "string")) 
-		ret = _xjsonSerializeAtom(cur, ctxt, XJA_STRING);
-	else if (!xmlStrcmp(cur->name, BAD_CAST "number")) 
-		ret = _xjsonSerializeAtom(cur, ctxt, XJA_NUMBER);
-	else if (!xmlStrcmp(cur->name, BAD_CAST "boolean")) 
-		ret = _xjsonSerializeAtom(cur, ctxt, XJA_BOOLEAN);
-	else if (!xmlStrcmp(cur->name, BAD_CAST "null")) 
-		ret = _xjsonSerializeAtom(cur, ctxt, XJA_NULL);
-	else if (ctxt->params->strict_tag_names)
-		ret = xplCreateErrorNode(ctxt->command_element, BAD_CAST "unknown tag name: \"%s\"", cur->name);
+	if (TYPE_IS_CONTAINER(el_type))
+		ret = _xjsonSerializeList(cur, ctxt, el_type);
+	else
+		ret = _xjsonSerializeAtom(cur, ctxt, el_type);
 done:
-	if (name) XPL_FREE(name);
+	if (name)
+		XPL_FREE(name);
 	return ret;
 }
 
 static xmlNodePtr _xjsonSerializeNodeList(xmlNodePtr first, xjsonSerializeCtxtPtr ctxt)
 {
 	xmlNodePtr error;
+
 	while (first)
 	{
 		if ((error = _xjsonSerializeNode(first, ctxt)))
@@ -267,13 +275,14 @@ void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	}
 	ctxt.ns = NULL;
 	ctxt.command_element = commandInfo->element;
-	ctxt.container_type = XJC_NONE;
+	ctxt.container_type = XJE_NONE;
+	ctxt.is_first_item = true;
 	if ((error = _xjsonSerializeNodeList(commandInfo->element->children, &ctxt)))
 	{
 		ASSIGN_RESULT(error, true, true);
 		goto done;
 	}
-	if (rbAddDataToBuf(ctxt.buf, "", 1) != RB_RESULT_OK)
+	if (rbAddDataToBuf(ctxt.buf, "", 1) != RB_RESULT_OK) // zero-terminate
 	{
 		ASSIGN_RESULT(_createMemoryError(&ctxt), true, true);
 		goto done;
@@ -282,5 +291,6 @@ void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	ret->content = rbDetachBufContent(ctxt.buf);
 	ASSIGN_RESULT(ret, false, true);
 done:
-	if (ctxt.buf) rbFreeBuf(ctxt.buf);
+	if (ctxt.buf)
+		rbFreeBuf(ctxt.buf);
 }
