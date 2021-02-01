@@ -197,7 +197,7 @@ static void getSourceStep(IncludeContextPtr ctxt)
 	else
 		ctxt->input_source = INPUT_SOURCE_FILE;
 
-	if (ctxt->params->abs_path)
+	if (!ctxt->params->abs_path)
 	{
 		ctxt->params->uri = xplFullFilename(uri, ctxt->doc->app_path);
 		XPL_FREE(uri);
