@@ -178,6 +178,18 @@ xmlNodePtr xplAppendChildren(xmlNodePtr el, xmlNodePtr list)
 	return el->last = _setListParent(el, list);
 }
 
+xmlNodePtr xplPrependChildren(xmlNodePtr el, xmlNodePtr list)
+{
+	if (!list)
+		return NULL;
+	if (!el)
+		return xplFindTail(list);
+	if (el->children)
+		return xplPrependList(el->children, list);
+	el->children = list;
+	return el->last = _setListParent(el, list);
+}
+
 void xplAppendNsDef(xmlNodePtr cur, xmlNsPtr ns)
 {
 	xmlNsPtr last_ns;

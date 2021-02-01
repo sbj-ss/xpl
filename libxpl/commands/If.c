@@ -51,12 +51,7 @@ void xplCmdIfPrologue(xplCommandInfoPtr commandInfo)
 		if (!(xplns = commandInfo->document->root_xpl_ns))
 			xplns = commandInfo->element->ns;
 		test_el = xmlNewDocNode(commandInfo->element->doc, xplns, BAD_CAST "test", params->test);
-		if (commandInfo->element->children)
-			xplPrependList(commandInfo->element->children, test_el);
-		else {
-			commandInfo->element->children = commandInfo->element->last = test_el;
-			test_el->parent = commandInfo->element;
-		}
+		xplPrependChildren(commandInfo->element, test_el);
 	}
 }
 

@@ -79,30 +79,10 @@ static void _doAppend(xmlNodePtr src, xmlNodePtr dst, AppendPosition mode)
 			xplAppendList(dst, src);
 			break;
 		case POS_FIRST:
-			if (dst->children)
-				xplPrependList(dst->children, src);
-			else {
-				dst->children = src;
-				dst->last = xplFindTail(src);
-				while (src)
-				{
-					src->parent = dst;
-					src = src->next;
-				}
-			}
+			xplPrependChildren(dst, src);
 			break;
 		case POS_LAST:
-			if (dst->children)
-				xplAppendList(dst->last?dst->last:xplFindTail(dst->children), src);
-			else {
-				dst->children = src;
-				dst->last = xplFindTail(src);
-				while (src)
-				{
-					src->parent = dst;
-					src = src->next;
-				}
-			}
+			xplAppendChildren(dst, src);
 			break;
 		default:
 			DISPLAY_INTERNAL_ERROR_MESSAGE();

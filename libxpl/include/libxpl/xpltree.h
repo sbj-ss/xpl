@@ -62,6 +62,10 @@ XPLPUBFUN xmlNodePtr XPLCALL
 /* appends list to el's children, returns list's last node */
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplAppendChildren(xmlNodePtr el, xmlNodePtr list);
+/* prepends list to el's children, returns list's last node */
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplPrependChildren(xmlNodePtr el, xmlNodePtr list);
+/* adds nsDef to the end of cur's nsDef list */
 XPLPUBFUN void XPLCALL
 	xplAppendNsDef(xmlNodePtr cur, xmlNsPtr ns);
 
