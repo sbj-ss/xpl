@@ -6,9 +6,9 @@
 LIB_ROOT = /home/ss/src/polaris-libs
 INCLUDE = -I./include -I./tests/include -I../xts/include -I$(LIB_ROOT)/include -I$(LIB_ROOT)/include/libxml2
 LIB = -L$(LIB_ROOT)/lib -L../xts -L.
-LIBS = -lxml2 -lonig -ltidy -lcrypto -lidn -lodbc32 -liconv -lz.dll -llzma -lpsapi -lole32
-WARNINGS = -Wall -Werror
-FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_TRANSPORT_WINHTTP -D_XEF_DB_ADO
+LIBS = -lxml2 -lonig -ltidy -lcrypto -lidn -lodbc32 -liconv -lz.dll -llzma -lpsapi -lole32 -lwinhttp
+WARNINGS = -Wall -Wmissing-prototypes -Wshadow -Werror -Wextra
+FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_TRANSPORT_WINHTTP -D_XEF_DB_ODBC
 CFLAGS = -fpic -D_IN_DLL $(FEATURES) $(WARNINGS)
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -D_DEBUG
@@ -27,7 +27,7 @@ abstraction/xefstart.c\
 abstraction/xpr.c\
 abstraction/xefhtmlcleanertidy.c\
 abstraction/xeftransportwinhttp.c\
-abstraction/xefdbado.c\
+abstraction/xefdbodbc.c\
 xplcommand.c\
 xplcore.c\
 xpldb.c\
@@ -62,6 +62,7 @@ commands/DBSession.c\
 commands/DebugBreak.c\
 commands/DebugPrint.c\
 commands/Default.c\
+commands/Define.c\
 commands/Delete.c\
 commands/Digest.c\
 commands/Edge.c\
@@ -106,9 +107,9 @@ commands/Return.c\
 commands/Save.c\
 commands/Serialize.c\
 commands/SessionClear.c\
+commands/SessionContainsObject.c\
 commands/SessionGetId.c\
 commands/SessionGetObject.c\
-commands/SessionIsPresent.c\
 commands/SessionRemoveObject.c\
 commands/SessionSetObject.c\
 commands/SetLocal.c\
@@ -155,7 +156,7 @@ endif
 ifeq ($(THREADING_SUPPORT), 1)
 CFLAGS += -D_THREADING_SUPPORT
 COMMANDS +=\
-commands/StartThreadAndWait.c\
+commands/StartThreadsAndWait.c\
 commands/WaitForThreads.c
 endif
 
@@ -167,6 +168,10 @@ endif
 ifeq ($(FILEOP_SUPPORT), 1)
 CFLAGS += -D_FILEOP_SUPPORT
 COMMANDS += commands/FileOp.c
+endif
+
+ifeq ($(DEBUG), 1)
+COMMANDS += commands/DbGarbageCollect.c
 endif
 
 SRC += $(COMMANDS)
