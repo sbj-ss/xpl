@@ -418,7 +418,7 @@ static xmlNodePtr _buildDocFromMemory(xmlChar *src, size_t size, xmlNodePtr pare
 		ret = xplCreateErrorNode(parent, BAD_CAST "error parsing input document: \"%s\"", error);
 		goto done;
 	}
-	ret = xplDetachContent(doc->children);
+	ret = xplDetachChildren(doc->children);
 	xmlSetListDoc(ret, parent->doc);
 	xmlFreeDoc(doc);
 done:
