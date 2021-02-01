@@ -1094,6 +1094,22 @@ static void _ssReleaseConfigBasedResources()
 	xplCleanupWrapperMap();
 }
 
+static bool _ssInitCore()
+{
+	if (!xprMutexInit(&global_conf_mutex))
+	{
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return false;
+	}
+	return true;
+}
+
+static void _ssStopCore()
+{
+	if (!xprMutexCleanup(&global_conf_mutex))
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+}
+
 typedef struct _ParserStartStopStep
 {
 	bool (*start_fn)(void);
@@ -1109,7 +1125,8 @@ static ParserStartStopStep start_stop_steps[] =
 	{ xplInitCommands, xplCleanupCommands, "commands" },
 	{ xplRegisterBuiltinCommands, xplUnregisterBuiltinCommands, "builtin commands" },
 	{ xplInitNamePointers, NULL, "name pointers" },
-	{ _ssSessionManagerInit, xplSessionManagerCleanup, "session" }
+	{ _ssSessionManagerInit, xplSessionManagerCleanup, "session" },
+	{ _ssInitCore, _ssStopCore, "core" }
 };
 #define START_STOP_STEP_COUNT (sizeof(start_stop_steps) / sizeof(start_stop_steps[0]))
 
