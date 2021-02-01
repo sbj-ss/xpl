@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   XPL interpreter high-level test suite
-  :get-param, :set-local and :set-param commands
+  :xjson-serialize command
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl" xmlns:j="http://www.ibm.com/xmlns/prod/2009/jsonx">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
