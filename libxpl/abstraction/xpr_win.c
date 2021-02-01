@@ -367,6 +367,11 @@ void xprSetConsoleColor(int color)
 		SetConsoleTextAttribute(console_output_handle, color);
 }
 
+void xprResetConsoleColor()
+{
+	xprSetConsoleColor(XPR_DEFAULT_CONSOLE_COLOR);
+}
+
 int xprGetPid()
 {
 	return (int) GetCurrentProcessId();
