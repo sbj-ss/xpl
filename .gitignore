@@ -54,3 +54,5 @@ mt.dep
 **/.memdump
 # test output
 /command-tests/composite/out/*.xml
+/command-tests/composite/save/*.xml
+/command-tests/composite/save/a/*

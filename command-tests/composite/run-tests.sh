@@ -5,6 +5,9 @@ failed=0
 errors=0
 failed_files=()
 
+rm -rf save/*
+touch save/.keep
+
 for f in *.xpl; do
 	local_errors=$( \
 		( \
