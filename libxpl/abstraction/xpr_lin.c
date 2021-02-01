@@ -281,7 +281,7 @@ bool xprIsDebuggerPresent(void)
 
 void xprGetTime(XPR_TIME *t)
 {
-    clock_gettime(CLOCK_REALTIME, t);
+    clock_gettime(CLOCK_MONOTONIC, t);
 }
 
 long xprTimeDelta(XPR_TIME *after, XPR_TIME *before)
