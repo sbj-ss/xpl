@@ -93,7 +93,6 @@ bool xprCheckFilePresence(const xmlChar *path)
 bool xprEnsurePathExistence(const xmlChar *path)
 {
 	xmlChar *internal_path, *slash_pos, tmp;
-	bool create = false;
 
 	if (!path)
 		return false;
@@ -102,19 +101,19 @@ bool xprEnsurePathExistence(const xmlChar *path)
 	slash_pos = internal_path;
 	while ((slash_pos = (xmlChar*) xmlStrchr(slash_pos, '/')))
 	{
+		if (slash_pos == internal_path)
+			slash_pos++;
 		tmp = *slash_pos;
 		*slash_pos = 0;
-		if (create)
-		{
+		if (!xprCheckFilePresence(internal_path))
 			if (mkdir((char*) internal_path, 0755) != 0)
 			{
 				XPL_FREE(internal_path);
 				return false;
 			}
-		} else if (!xprCheckFilePresence(internal_path))
-			create = true;
 		*slash_pos = tmp;
-		slash_pos++;
+		if (slash_pos - internal_path != 1)
+			slash_pos++;
 	}
 	XPL_FREE(internal_path);
 	return true;
