@@ -18,14 +18,18 @@ typedef struct _xplStartParams
 	xmlChar *config_file_name;
 } xplStartParams, *xplStartParamsPtr;
 
-extern const bool xplDefaultDebugAllocation;
-extern const bool xplDefaultUseTcmalloc;
-extern const xplStartParams xplDefaultStartParams;
+XPLPUBVAR const bool xplDefaultDebugAllocation;
+XPLPUBVAR const bool xplDefaultUseTcmalloc;
+XPLPUBVAR const xplStartParams xplDefaultStartParams;
 
-bool xplInitMemory(bool debugAllocation, bool useTcmalloc);
-bool xplStartEngine(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error);
-void xplShutdownEngine(void);
-void xplCleanupMemory(void);
+XPLPUBFUN bool XPLCALL
+	xplInitMemory(bool debugAllocation, bool useTcmalloc);
+XPLPUBFUN bool XPLCALL
+	xplStartEngine(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error);
+XPLPUBFUN void XPLCALL
+	xplShutdownEngine(void);
+XPLPUBFUN void XPLCALL
+	xplCleanupMemory(void);
 
 #ifdef __cplusplus
 }
