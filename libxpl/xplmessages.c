@@ -216,7 +216,7 @@ static bool xplInitLogger()
 		log_file_full_name = xmlStrcat(log_file_full_name, cfgLogFileName);
 		log_file = xprFOpen(log_file_full_name, "a");
 		if (!log_file)
-			xplDisplayMessage(xplMsgWarning, BAD_CAST "cannot open log file \"%s\" for writing", cfgLogFileName);
+			xplDisplayMessage(xplMsgWarning, BAD_CAST "cannot open log file \"%s\" for writing", log_file_full_name);
 		XPL_FREE(log_file_full_name);
 		XPL_FREE(executable_path);
 		return !!log_file;
