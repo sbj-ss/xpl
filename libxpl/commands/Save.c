@@ -104,7 +104,6 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		root = xmlNewDocNode(doc, NULL, params->root.ncname, NULL);
 		if (params->root.ns)
 			root->nsDef = root->ns = xmlCopyNamespace(params->root.ns);
-		xmlAddChild((xmlNodePtr) doc, root);
 	}
 	/* We can transform scalar selection values into text nodes unless omit_root is requested.
 	   And if it is - we can only use a single element node for a root. */
@@ -123,23 +122,25 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 						goto done;
 					}
 					root = nodes->nodeTab[0];
-					xmlAddChild((xmlNodePtr) doc, root);
-				} else
+				} else {
 					for (i = 0; i < (size_t) nodes->nodeNr; i++)
 						xmlAddChild(root, xplCloneAsNodeChild(nodes->nodeTab[i], root));
+				}
+				xmlAddChild((xmlNodePtr) doc, root);
 			} else if (params->omit_root) {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath selection (%s) returned an empty result but omitroot is requested", params->select), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath expression '%s' returned an empty result but omitroot is requested", params->select->user), true, true);
 				goto done;
 			}
 		} else if (params->omit_root) {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", params->select), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression '%s' evaluated to non-nodeset value", params->select->user), true, true);
 			goto done;
 		} else if ((params->select->type == XPATH_BOOLEAN) || (params->select->type == XPATH_NUMBER) || (params->select->type == XPATH_STRING)) {
 			value = xmlXPathCastToString(params->select);
 			xmlAddChild(root, xmlNewDocText(doc, NULL));
+			xmlAddChild((xmlNodePtr) doc, root);
 			root->children->content = value;
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to unsupported type %d", params->select, params->select->type), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression '%s' evaluated to unsupported type %d", params->select->user, params->select->type), true, true);
 			goto done;
 		}
 	} else {
@@ -160,11 +161,13 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "command content is non-element but omitroot is requested"), true, true);
 				goto done;
 			}
-			root = xplCloneNode(commandInfo->element->children, (xmlNodePtr) doc, doc);
-			xmlAddChild((xmlNodePtr) doc, root);
-		} else 
-			/* we have to duplicate content or we risk to lose namespaces */
-			xmlAddChildList(root, xplCloneNodeList(commandInfo->element->children, root, doc));
+			root = commandInfo->element->children;
+		} else {
+			xplSetChildren(root, xplDetachChildren(commandInfo->element));
+			xplSetChildren(commandInfo->element, root);
+		}
+		xplMakeNsSelfContainedTree(root);
+		xmlAddChild((xmlNodePtr) doc, xplDetachChildren(commandInfo->element));
 	}
 
 	if (params->create_destination)
