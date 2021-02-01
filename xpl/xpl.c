@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
 	}
 
 	if (!cfgDocRoot)
-		cfgDocRoot = BAD_CAST XPL_STRDUP(app_path);
+		cfgDocRoot = BAD_CAST XPL_STRDUP((char*) app_path);
 	xplSetGetAppTypeFunc(getAppType);
 
 	/* create auxiliary structures */
