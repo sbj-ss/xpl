@@ -296,3 +296,14 @@ done:
 
 	return (params->error)? false: true;
 }
+
+void xefFetchParamsClear(xefFetchDocumentParamsPtr params)
+{
+	if (params->document)
+		xmlFree(params->document);
+	if (params->encoding)
+		xmlFree(params->encoding);
+	if (params->real_uri)
+		xmlFree(params->real_uri);
+}
+
