@@ -87,3 +87,5 @@
 #define XPR_THREAD_ID DWORD
 #define XPR_GET_CURRENT_THREAD_ID() GetCurrentThreadId()
 #define XPR_THREAD_ID_FORMAT "%08lX"
+
+#define XPR_TIME struct timespec

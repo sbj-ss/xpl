@@ -72,6 +72,8 @@ int xprSOpen(const xmlChar *path, int mode, int sharing, int perms)
 
 static bool _xprCheckFilePresenceW(const WCHAR *path)
 {
+	// TODO
+	UNUSED_PARAM(path);
 #if 0
 	struct _stat64 stat_buf;
 	size_t path_len;
@@ -345,7 +347,6 @@ void xprSpawnProcessCopy()
 	startup_info.cb = sizeof(startup_info);
 	ZeroMemory(&proc_info, sizeof(proc_info));
 	wprintf(L"! Respawning process with command line '%s'\n", new_cmdline);
-	/* ������� �� ��������, ������� �������� ��������� */
 	if (!CreateProcessW(NULL, new_cmdline, NULL, NULL, true, 0/*CREATE_NEW_CONSOLE*/, NULL, NULL, &startup_info, &proc_info))
 		printf("! Failed to spawn replacement process\n");
 	else
@@ -377,7 +378,7 @@ bool xprCheckPid(int pid)
 	WCHAR process_fn[MAX_PATH + 1], self_process_fn[MAX_PATH + 1];
 
 	printf("* checking pid. ours is %08lX, input is %08X\n", GetCurrentProcessId(), pid);
-	if (pid == GetCurrentProcessId())
+	if (pid == (int) GetCurrentProcessId())
 		return false;
 	process = OpenProcess(SYNCHRONIZE | PROCESS_QUERY_INFORMATION, false, (DWORD) pid);
 	if (process) /* if the function failed, we assume the process isn't ours */
@@ -407,7 +408,33 @@ bool xprIsDebuggerPresent(void)
 	return !!IsDebuggerPresent();
 }
 
-void _invalid_crt_param_handler(
+//struct timespec { long tv_sec; long tv_nsec; };    //header part
+static int clock_gettime(int clock_id, struct timespec *spec)
+{
+	LONGLONG wintime;
+	UNUSED_PARAM(clock_id);
+
+	GetSystemTimeAsFileTime((FILETIME*) &wintime);
+	wintime -= 116444736000000000ULL;  // 1jan1601 to 1jan1970
+	spec->tv_sec = wintime / 10000000ULL; //seconds
+	spec->tv_nsec = wintime % 10000000ULL *100; //nano-seconds
+	return 0;
+}
+
+void xprGetTime(XPR_TIME *t)
+{
+    clock_gettime(0, t);
+}
+
+long xprTimeDelta(XPR_TIME *after, XPR_TIME *before)
+{
+	time_t sec_delta = after->tv_sec - before->tv_sec;
+	long ns_delta = after->tv_nsec - before->tv_nsec;
+
+	return sec_delta * 1000 + (ns_delta / 1000000);
+}
+
+static void _invalid_crt_param_handler(
 	const WCHAR *expression,
 	const WCHAR *function,
 	const WCHAR *file,
@@ -415,6 +442,11 @@ void _invalid_crt_param_handler(
 	uintptr_t pReserved
 )
 {
+	UNUSED_PARAM(expression);
+	UNUSED_PARAM(function);
+	UNUSED_PARAM(file);
+	UNUSED_PARAM(line);
+	UNUSED_PARAM(pReserved);
 }
 
 #ifdef _USE_PHOENIX_TECH
