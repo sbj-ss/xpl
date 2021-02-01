@@ -12,15 +12,25 @@ CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=undefined -fno-sanitize-rec
 # -fsanitize=address 
 endif
 
+CC = gcc
+
+SRC = xpl.c
+
+BUILD_DIR = build
+OBJS = $(SRC:%.c=$(BUILD_DIR)/%.o)
+
 .DEFAULT_GOAL = all
 
-.c.o:
+$(BUILD_DIR):
+	mkdir $@
+
+$(BUILD_DIR)/%.o: %.c $(BUILD_DIR)
 	gcc $(CFLAGS) $(INCLUDE) -c $< -o $@
 	
-xpl: xpl.o
+xpl: $(OBJS)
 	gcc $(CFLAGS) -o $@ $< $(LIBS)
 	
 clean:
-	rm *.o xpl || /bin/true
+	rm $(BUILD_DIR)/*.o xpl || /bin/true
 	
 all: xpl
