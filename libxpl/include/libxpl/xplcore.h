@@ -197,6 +197,10 @@ XPLPUBFUN xmlChar* XPLCALL
 XPLPUBFUN xplError XPLCALL
 	xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr environment, xplSessionPtr session, xplDocumentPtr *docOut);
 
+#if defined(_IN_DLL) && (defined(_WIN32) || defined(_WIN64))
+int __stdcall DllMain(int reason);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
