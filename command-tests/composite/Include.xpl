@@ -175,6 +175,17 @@
     </Expected>
   </MustSucceed>
 
+  <MustSucceed name="pass/abspath">
+    <Input>
+      <xpl:include abspath="true" select="/Root/node()">
+        <xpl:attribute name="file"><xpl:get-option name="DocRoot"/>/include/WellFormed.xml</xpl:attribute>
+      </xpl:include>
+    </Input>
+    <Expected>
+      <A/>
+    </Expected>
+  </MustSucceed>
+
   <MustFail name="fail/bad-select">
     <Input>
       <xpl:include select="))Z"/>
