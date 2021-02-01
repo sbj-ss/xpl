@@ -271,11 +271,10 @@ static void fetchXTPContent(IncludeContextPtr ctxt)
 {
 #ifdef _XEF_HAS_TRANSPORT
 	xefFetchDocumentParams params;
-	xmlChar *error_text;
 
 	memset(&params, 0, sizeof(params));
-	params.uri = ctxt->uri;
-	params.extra_query = xmlGetNoNsProp(ctxt->command_element, POSTDATA_ATTR);
+	params.uri = ctxt->params->uri;
+	params.extra_query = ctxt->params->post_data;
 	if (xefFetchDocument(&params))
 	{
 		ctxt->content = params.document;
@@ -284,15 +283,11 @@ static void fetchXTPContent(IncludeContextPtr ctxt)
 	} else {
 		if (params.error)
 		{
-			error_text = xefGetErrorText(params.error);
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "fetch error \"%s\"", error_text);
-			XPL_FREE(error_text);
-			xefFreeErrorMessage(params.error);
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "fetch error \"%s\"", params.error);
+			XPL_FREE(params.error);
 		} else
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "unknown fetch error");
 	}
-	if (params.extra_query)
-		XPL_FREE(params.extra_query);
 	xefFetchParamsClear(&params);
 #else
 	ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "remote transport support not compiled in");

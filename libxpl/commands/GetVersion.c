@@ -101,8 +101,8 @@ static void _getLibiconvVersion(xmlNodePtr carrier)
 	xmlNewProp(carrier, RUNNING_A, BAD_CAST gnu_get_libc_version());
 #else
 	snprintf(buf, sizeof(buf), "%d.%d", _LIBICONV_VERSION >> 8, _LIBICONV_VERSION & 0xFF);
-	xmlNewProp(ret, COMPILED_A, BAD_CAST buf);
-	xmlNewProp(ret, RUNNING_A, NOT_CHECKABLE);
+	xmlNewProp(carrier, COMPILED_A, BAD_CAST buf);
+	xmlNewProp(carrier, RUNNING_A, NOT_CHECKABLE);
 #endif
 }
 
