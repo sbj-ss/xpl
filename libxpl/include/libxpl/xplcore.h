@@ -171,7 +171,7 @@ XPLPUBFUN bool XPLCALL
 /* High-level functions */
 /* Init and done */
 XPLPUBFUN xplError XPLCALL
-	xplInitParser(xmlChar* cfgFile);
+	xplInitParser(xmlChar* cfgFile, bool verbose);
 XPLPUBFUN void XPLCALL
 	xplDoneParser(void);
 XPLPUBFUN bool XPLCALL

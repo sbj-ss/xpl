@@ -1098,21 +1098,22 @@ typedef struct _ParserStartStopStep
 {
 	bool (*start_fn)(void);
 	void (*stop_fn)(void);
+	char *name;
 } ParserStartStopStep, *ParserStartStopStepPtr;
 
 static ParserStartStopStep start_stop_steps[] =
 {
-	{ _ssLoadableModulesInit, xplLoadableModulesCleanup },
-	{ xplReadConfig, _ssReleaseConfigBasedResources }, // TODO this should be split into individual steps
-	{ xplInitMessages, xplCleanupMessages },
-	{ xplInitCommands, xplCleanupCommands },
-	{ xplRegisterBuiltinCommands, xplUnregisterBuiltinCommands },
-	{ xplInitNamePointers, NULL },
-	{ _ssSessionManagerInit, xplSessionManagerCleanup }
+	{ _ssLoadableModulesInit, xplLoadableModulesCleanup, "loadable modules" },
+	{ xplReadConfig, _ssReleaseConfigBasedResources, "config" }, // TODO this should be split into individual steps
+	{ xplInitMessages, xplCleanupMessages, "messages" },
+	{ xplInitCommands, xplCleanupCommands, "commands" },
+	{ xplRegisterBuiltinCommands, xplUnregisterBuiltinCommands, "builtin commands" },
+	{ xplInitNamePointers, NULL, "name pointers" },
+	{ _ssSessionManagerInit, xplSessionManagerCleanup, "session" }
 };
 #define START_STOP_STEP_COUNT (sizeof(start_stop_steps) / sizeof(start_stop_steps[0]))
 
-xplError xplInitParser(xmlChar *cfgFile)
+xplError xplInitParser(xmlChar *cfgFile, bool verbose)
 {
 	int i, j;
 
@@ -1125,8 +1126,12 @@ xplError xplInitParser(xmlChar *cfgFile)
 	{
 		if (!start_stop_steps[i].start_fn)
 			continue;
+		if (verbose)
+			printf("Initializing: %s... ", start_stop_steps[i].name);
 		if (!start_stop_steps[i].start_fn())
 		{
+			if (verbose)
+				printf("FAILED!\n");
 			for (j = i - 1; j >= 0; j--)
 			{
 				if (!start_stop_steps[j].stop_fn)
@@ -1136,7 +1141,8 @@ xplError xplInitParser(xmlChar *cfgFile)
 			XPL_FREE(config_file_path);
 			config_file_path = NULL;
 			return XPL_ERR_NO_PARSER;
-		}
+		} else if (verbose)
+			printf("OK\n");
 	}
 	parser_loaded = true;
 	return XPL_ERR_NO_ERROR;

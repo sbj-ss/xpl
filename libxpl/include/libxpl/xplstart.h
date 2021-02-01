@@ -16,6 +16,7 @@ typedef struct _xplStartParams
 {
 	int xpr_start_flags;
 	xmlChar *config_file_name;
+	bool verbose;
 } xplStartParams, *xplStartParamsPtr;
 
 XPLPUBVAR const bool xplDefaultDebugAllocation;

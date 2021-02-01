@@ -142,7 +142,7 @@ static bool _startXpl(const xplStartParamsPtr params, int argc, const char **arg
 			conf_path = BAD_CAST XPL_STRDUP((char*) params->config_file_name);
 	}
 
-	err_code = xplInitParser(conf_path);
+	err_code = xplInitParser(conf_path, params->verbose);
 	XPL_FREE(conf_path);
 	if (err_code != XPL_ERR_NO_ERROR)
 	{
@@ -210,5 +210,6 @@ void xplShutdownEngine()
 const xplStartParams xplDefaultStartParams =
 {
 	.xpr_start_flags = XPR_STARTSTOP_EVERYTHING,
-	.config_file_name = BAD_CAST "xpl.xml"
+	.config_file_name = BAD_CAST "xpl.xml",
+	.verbose = false
 };
