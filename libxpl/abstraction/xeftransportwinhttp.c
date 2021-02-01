@@ -9,6 +9,8 @@
 
 bool xefStartupTransport(xefStartupParamsPtr params)
 {
+	UNUSED_PARAM(params);
+
 	return true;
 }
 
