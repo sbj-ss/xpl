@@ -24,7 +24,7 @@
     <Input>
       <xpl:file-exists abspath="true">
         <xpl:attribute name="file">
-          <xpl:get-document-filename/>
+          <xpl:get-document-filename abspath="true"/>
         </xpl:attribute>
       </xpl:file-exists>
     </Input>
@@ -42,7 +42,7 @@
       <xpl:file-exists file="x" abspath="partially"/>
     </Input>
   </MustFail>
-  
+
   <Summary/>
 </Root>
   
