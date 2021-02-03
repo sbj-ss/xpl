@@ -7,6 +7,7 @@
 
 void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
+void xplCmdSuppressMacrosRestoreState(xplCommandInfoPtr commandInfo);
 
 typedef struct _xplCmdSuppressMacrosParams
 {
@@ -25,7 +26,8 @@ static const xplCmdSuppressMacrosParams params_stencil =
 xplCommand xplSuppressMacrosCommand = {
 	.prologue = xplCmdSuppressMacrosPrologue,
 	.epilogue = xplCmdSuppressMacrosEpilogue,
-	.flags = XPL_CMD_FLAG_CONTENT_SAFE | XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE | XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.restore_state = xplCmdSuppressMacrosRestoreState,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE | XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdSuppressMacrosParams),
 	.parameters = {
@@ -156,6 +158,15 @@ void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo)
 void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdSuppressMacrosParamsPtr params = (xplCmdSuppressMacrosParamsPtr) commandInfo->params;
+
+	if (commandInfo->prologue_error)
+		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
+	else
+		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
+}
+
+void xplCmdSuppressMacrosRestoreState(xplCommandInfoPtr commandInfo)
+{
 	xmlHashTablePtr macros;
 
 	macros = (xmlHashTablePtr) commandInfo->prologue_state;
@@ -164,10 +175,4 @@ void xplCmdSuppressMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 		xmlHashScan(macros, _switchMacro, (void*) -1);
 		xmlHashFree(macros, NULL);
 	}
-	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
-		ASSIGN_RESULT(NULL, false, false);
-	else if (commandInfo->prologue_error)
-		ASSIGN_RESULT(commandInfo->prologue_error, true, true);
-	else
-		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 }

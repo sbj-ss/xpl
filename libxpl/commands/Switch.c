@@ -4,6 +4,7 @@
 
 void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
+void xplCmdSwitchRestoreState(xplCommandInfoPtr commandInfo);
 
 typedef struct _xplCmdSwitchParams
 {
@@ -20,7 +21,8 @@ static const xplCmdSwitchParams params_stencil =
 xplCommand xplSwitchCommand = {
 	.prologue = xplCmdSwitchPrologue,
 	.epilogue = xplCmdSwitchEpilogue,
-	.flags = XPL_CMD_FLAG_CONTENT_SAFE | XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE | XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.restore_state = xplCmdSwitchRestoreState,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE | XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdSwitchParams),
 	.parameters = {
@@ -46,18 +48,25 @@ void xplCmdSwitchPrologue(xplCommandInfoPtr commandInfo)
 	xplCmdSwitchParamsPtr params = (xplCmdSwitchParamsPtr) commandInfo->params;
 
 	commandInfo->element->content = (xmlChar*) params->key;
+	params->key = NULL;
 }
 
 void xplCmdSwitchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdSwitchParamsPtr params = (xplCmdSwitchParamsPtr) commandInfo->params;
-	xmlXPathObjectPtr nodes = (xmlXPathObjectPtr) commandInfo->element->content;
 
-	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
+	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
+}
+
+void xplCmdSwitchRestoreState(xplCommandInfoPtr commandInfo)
+{
+	xmlXPathObjectPtr sel = (xmlXPathObjectPtr) commandInfo->element->content;
+
+	if (sel)
 	{
-		if (nodes->nodesetval)
-			nodes->nodesetval->nodeNr = 0;
-		ASSIGN_RESULT(NULL, false, false);
-	} else if (nodes)
-		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
+		if (sel->user)
+			XPL_FREE(sel->user);
+		xmlXPathFreeObject(sel);
+		commandInfo->element->content = NULL;
+	}
 }

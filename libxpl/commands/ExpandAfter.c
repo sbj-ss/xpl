@@ -3,12 +3,14 @@
 
 void xplCmdExpandAfterPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdExpandAfterEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
+void xplCmdExpandAfterRestoreState(xplCommandInfoPtr commandInfo);
 
 xplCommand xplExpandAfterCommand =
 {
 	.prologue = xplCmdExpandAfterPrologue,
 	.epilogue = xplCmdExpandAfterEpilogue,
-	.flags = XPL_CMD_FLAG_CONTENT_SAFE | XPL_CMD_FLAG_ALWAYS_EXPAND,
+	.restore_state = xplCmdExpandAfterRestoreState,
+	.flags = XPL_CMD_FLAG_ALWAYS_EXPAND,
 	.params_stencil = NULL
 };
 
@@ -20,9 +22,10 @@ void xplCmdExpandAfterPrologue(xplCommandInfoPtr commandInfo)
 
 void xplCmdExpandAfterEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
+	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), true, true);
+}
+
+void xplCmdExpandAfterRestoreState(xplCommandInfoPtr commandInfo)
+{
 	commandInfo->document->expand = (bool) commandInfo->prologue_state;
-	if (!(commandInfo->element->type & XPL_NODE_DELETION_MASK))
-		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), true, true);
-	else
-		ASSIGN_RESULT(NULL, false, true);
 }

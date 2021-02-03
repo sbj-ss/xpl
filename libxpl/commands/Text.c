@@ -3,6 +3,7 @@
 
 void xplCmdTextPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdTextEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
+void xplCmdTextRestoreState(xplCommandInfoPtr commandInfo);
 
 typedef struct _xplCmdTextParams
 {
@@ -17,7 +18,8 @@ static const xplCmdTextParams params_stencil =
 xplCommand xplTextCommand = {
 	.prologue = NULL,
 	.epilogue = xplCmdTextEpilogue,
-	.flags = XPL_CMD_FLAG_CONTENT_SAFE | XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.restore_state = xplCmdTextRestoreState,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdTextParams),
 	.parameters = {
@@ -40,9 +42,10 @@ void xplCmdTextEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdTextParamsPtr params = (xplCmdTextParamsPtr) commandInfo->params;
 
+	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
+}
+
+void xplCmdTextRestoreState(xplCommandInfoPtr commandInfo)
+{
 	commandInfo->document->indent_spin--;
-	if (!(commandInfo->element->type & XPL_NODE_DELETION_MASK))
-		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
-	else
-		ASSIGN_RESULT(NULL, false, false);
 }

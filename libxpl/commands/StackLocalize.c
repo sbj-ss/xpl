@@ -3,6 +3,7 @@
 
 void xplCmdStackLocalizePrologue(xplCommandInfoPtr commandInfo);
 void xplCmdStackLocalizeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
+void xplCmdStackLocalizeRestoreState(xplCommandInfoPtr commandInfo);
 
 typedef struct _xplCmdStackLocalizeParams
 {
@@ -17,7 +18,8 @@ static const xplCmdStackLocalizeParams params_stencil =
 xplCommand xplStackLocalizeCommand = {
 	.prologue = xplCmdStackLocalizePrologue,
 	.epilogue = xplCmdStackLocalizeEpilogue,
-	.flags = XPL_CMD_FLAG_CONTENT_SAFE | XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.restore_state = xplCmdStackLocalizeRestoreState,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdStackLocalizeParams),
 	.parameters = {
@@ -40,12 +42,15 @@ void xplCmdStackLocalizePrologue(xplCommandInfoPtr commandInfo)
 void xplCmdStackLocalizeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdStackLocalizeParamsPtr params = (xplCmdStackLocalizeParamsPtr) commandInfo->params;
+
+	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
+}
+
+void xplCmdStackLocalizeRestoreState(xplCommandInfoPtr commandInfo)
+{
 	xmlNodePtr old_stack = (xmlNodePtr) commandInfo->prologue_state;
 
 	xplClearDocStack(commandInfo->document);
 	commandInfo->document->stack = old_stack;
-	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
-		ASSIGN_RESULT(NULL, false, false);
-	else
-		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
+
 }

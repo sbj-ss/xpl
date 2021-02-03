@@ -4,6 +4,7 @@
 
 void xplCmdSetLocalPrologue(xplCommandInfoPtr commandInfo);
 void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
+void xplCmdSetLocalRestoreState(xplCommandInfoPtr commandInfo);
 
 typedef struct _xplCmdSetLocalParams
 {
@@ -18,7 +19,8 @@ static const xplCmdSetLocalParams params_stencil =
 xplCommand xplSetLocalCommand = {
 	.prologue = xplCmdSetLocalPrologue,
 	.epilogue = xplCmdSetLocalEpilogue,
-	.flags = XPL_CMD_FLAG_CONTENT_SAFE | XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.restore_state = xplCmdSetLocalRestoreState,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdSetLocalParams),
 	.parameters = {
@@ -48,6 +50,12 @@ void xplCmdSetLocalPrologue(xplCommandInfoPtr commandInfo)
 void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdSetLocalParamsPtr params = (xplCmdSetLocalParamsPtr) commandInfo->params;
+
+	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
+}
+
+void xplCmdSetLocalRestoreState(xplCommandInfoPtr commandInfo)
+{
 	xplParamsPtr old_params, tmp_params;
 	
 	tmp_params = commandInfo->document->environment;
@@ -55,8 +63,4 @@ void xplCmdSetLocalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		xplParamsFree(tmp_params);
 	old_params = (xplParamsPtr) commandInfo->prologue_state;
 	commandInfo->document->environment = old_params;
-	if (commandInfo->element->type & XPL_NODE_DELETION_MASK)
-		ASSIGN_RESULT(NULL, false, false);
-	else
-		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 }

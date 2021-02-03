@@ -51,15 +51,15 @@ typedef struct _xplCommandInfo
 
 typedef void (*xplCommandPrologue) (xplCommandInfoPtr info);
 typedef void (*xplCommandEpilogue) (xplCommandInfoPtr info, xplResultPtr result);
+typedef void (*xplCommandRestoreState) (xplCommandInfoPtr info);
 typedef bool (*xplCommandInitializer) (void*, xmlChar **error);
 typedef void (*xplCommandFinalizer) (void*);
 
-#define XPL_CMD_FLAG_CONTENT_SAFE 0x0001UL
-#define XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE 0x0010UL
-#define XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE 0x0020UL
-#define XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE 0x0040UL
-#define XPL_CMD_FLAG_REQUIRE_CONTENT 0x0080UL
-#define XPL_CMD_FLAG_ALWAYS_EXPAND 0x0100UL
+#define XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE 0x0001UL
+#define XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE 0x0002UL
+#define XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE 0x0004UL
+#define XPL_CMD_FLAG_REQUIRE_CONTENT 0x0008UL
+#define XPL_CMD_FLAG_ALWAYS_EXPAND 0x0010UL
 #define XPL_CMD_FLAG_INITIALIZED 0x1000UL
 
 typedef enum _xplCmdParamType
@@ -126,6 +126,7 @@ typedef struct _xplCommand
 {
 	xplCommandPrologue prologue;
 	xplCommandEpilogue epilogue;
+	xplCommandRestoreState restore_state;
 	xplCommandInitializer initializer;
 	xplCommandFinalizer finalizer;
 	unsigned int flags;

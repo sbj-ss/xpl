@@ -831,7 +831,7 @@ void _xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr res
 {
 	xmlNodePtr error;
 	xplCommandPtr cmd;
-	xplCommandInfo cmdInfo;
+	xplCommandInfo cmd_info;
 
 	cmd = xplGetCommand(element);
 	if (!cmd)
@@ -846,28 +846,30 @@ void _xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr res
 		xplNodeListApply(doc, element->children, result);
 		return;
 	}
-	memset(&cmdInfo, 0, sizeof(cmdInfo));
-	cmdInfo.element = element;
-	cmdInfo.document = doc;
-	cmdInfo.xpath_ctxt = doc->xpath_ctxt;
-	if (!(error = xplFillCommandInfo(cmd, &cmdInfo, true)))
+	memset(&cmd_info, 0, sizeof(cmd_info));
+	cmd_info.element = element;
+	cmd_info.document = doc;
+	cmd_info.xpath_ctxt = doc->xpath_ctxt;
+	if (!(error = xplFillCommandInfo(cmd, &cmd_info, true)))
 	{
 		if (cmd->prologue)
-			cmd->prologue(&cmdInfo);
+			cmd->prologue(&cmd_info);
 		/* element could be removed (:with) */
 		if (!(element->type & XPL_NODE_DELETION_MASK))
-			xplNodeListApply(doc, cmdInfo.element->children, result);
+			xplNodeListApply(doc, cmd_info.element->children, result);
 		/* element could be removed by its children */
-		if ((!(element->type & XPL_NODE_DELETION_MASK)) || (cmd->flags & XPL_CMD_FLAG_CONTENT_SAFE))
+		if (!(element->type & XPL_NODE_DELETION_MASK))
 		{
-			if (!(error = xplFillCommandInfo(cmd, &cmdInfo, false)))
-				cmd->epilogue(&cmdInfo, result);
+			if (!(error = xplFillCommandInfo(cmd, &cmd_info, false)))
+				cmd->epilogue(&cmd_info, result);
 			else
 				ASSIGN_RESULT(error, true, true);
 		}
+		if (cmd->restore_state)
+			cmd->restore_state(&cmd_info);
 	} else
 		ASSIGN_RESULT(error, true, true);
-	xplClearCommandInfo(cmd, &cmdInfo);
+	xplClearCommandInfo(cmd, &cmd_info);
 }
 
 xplMacroPtr xplAddMacro(
