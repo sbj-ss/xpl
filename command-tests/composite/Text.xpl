@@ -4,7 +4,7 @@
   :text command
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl" xmlns:ns-a="http://a.example.com">
-  <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
+  <xpl:include select="/Root/xpl:define" file="/home/ss/polaris/command-tests/composite/Helpers.xpl" abspath="true"/>
 
   <MustSucceed name="pass/simple">
     <Input>
@@ -36,6 +36,19 @@
     <Expected>
       <A/>
       <ProcessedA/>
+    </Expected>
+  </MustSucceed>
+
+  <MustSucceed name="pass/restore-state">
+    <Input>
+      <xpl:text>
+        <xpl:delete select="parent::xpl:text"/>
+      </xpl:text>
+      <A/>   <B/>
+    </Input>
+    <Expected>
+      <A/>
+      <B/>
     </Expected>
   </MustSucceed>
 
