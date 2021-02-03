@@ -105,7 +105,7 @@
     </Expected>  
   </MustSucceed>
   
-  <MustSucceed name="pass/recover">
+  <MustSucceed name="pass/restore-state">
     <Input>
       <xpl:define name="A">
         <ProcessedA/>

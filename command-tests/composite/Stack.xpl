@@ -98,6 +98,25 @@
       </Expected>
     </Input>
   </MustSucced>
+
+  <MustSucceed name="pass/stack-localize-restore-state">
+    <Input>
+      <xpl:stack-push>
+        <A/>
+      </xpl:stack-push>
+      <xpl:stack-localize>
+        <Marker/>
+        <xpl:stack-push>
+          <Heffalump/>
+        </xpl:stack-push>
+        <xpl:delete select="parent::xpl:stack-localize"/>
+      </xpl:stack-localize>
+      <xpl:stack-pop/>
+    </Input>
+    <Expected>
+      <A/>
+    </Expected>
+  </MustSucceed>
   
   <MustFail name="fail/localize-bad-repeat">
     <Input>

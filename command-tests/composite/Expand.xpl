@@ -49,6 +49,46 @@
       <ProcessedB/>
     </Expected>
   </MustSucceed>
+
+  <MustSucceed name="pass/expand-restore-state">
+    <Input>
+      <xpl:define name="A">
+        <ProcessedA/>
+      </xpl:define>
+      <xpl:no-expand>
+        <A/>
+        <xpl:expand>
+          <A/>
+          <xpl:delete select="parent::xpl:expand"/>
+        </xpl:expand>
+        <A/>
+      </xpl:no-expand>
+    </Input>
+    <Expected>
+      <A/>
+      <A/>
+    </Expected>
+  </MustSucceed>
+
+  <MustSucceed name="pass/no-expand-restore-state">
+    <Input>
+      <xpl:define name="A">
+        <ProcessedA/>
+      </xpl:define>
+      <A/>
+      <xpl:no-expand>
+        <A/>
+        <xpl:expand>
+          <xpl:delete select="ancestor::xpl:no-expand[1]"/>
+        </xpl:expand>
+      </xpl:no-expand>
+      <A/>
+    </Input>
+    <Expected>
+      <ProcessedA/>
+      <ProcessedA/>
+    </Expected>
+  </MustSucceed>
   
   <Summary/>
 </Root>

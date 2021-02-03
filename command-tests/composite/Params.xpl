@@ -265,6 +265,19 @@
     </Expected>
   </MustSucceed>
 
+  <MustSucceed name="pass/set-local-restore-state">
+    <Input>
+      <xpl:set-param name="a">1</xpl:set-param>
+      <xpl:set-local>
+        <xpl:set-param name="a">heffalump</xpl:set-param>
+        <Marker/>
+        <xpl:delete select="parent::xpl:set-local"/>
+      </xpl:set-local>
+      <xpl:get-param name="a"/>
+    </Input>
+    <Expected>1</Expected>
+  </MustSucceed>
+
   <MustFail name="fail/set-param-missing-name">
     <Input>
       <xpl:set-param/>
@@ -276,13 +289,13 @@
       <xpl:set-param mode="emphasize"/>
     </Input>
   </MustFail>
-<!--
+
   <MustFail name="fail/set-local-bad-repeat">
     <Input>
       <xpl:set-local repeat="twice"/>
     </Input>
   </MustFail>
---> 
+ 
   <MustFail name="fail/get-param-bad-expect">
     <Input>
       <xpl:get-param expect="pin-code"/>

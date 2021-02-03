@@ -143,6 +143,16 @@
       <B/>
     </Expected>  
   </MustSucceed>
+
+  <MustSucceed name="pass/restore-state">
+    <!-- this only tests for memory leaks -->
+    <Input>
+      <xpl:switch key="2+2">
+        <xpl:delete select="parent::xpl:switch"/>
+      </xpl:switch>
+    </Input>
+    <Expected/>
+  </MustSucceed>
   
   <MustFail name="fail/missing-switch-key">
     <Input>
