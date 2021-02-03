@@ -16,7 +16,7 @@ static const xplCmdTextParams params_stencil =
 };
 
 xplCommand xplTextCommand = {
-	.prologue = NULL,
+	.prologue = xplCmdTextPrologue,
 	.epilogue = xplCmdTextEpilogue,
 	.restore_state = xplCmdTextRestoreState,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
