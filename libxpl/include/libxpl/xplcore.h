@@ -56,13 +56,8 @@ struct _xplDocument
 	int recursion_level;			/* protection from infinite loops in macros */
 	xmlXPathContextPtr xpath_ctxt;	/* reusable XPath context */
 	xmlNodePtr fatal_content;		/* for xpl:fatal */
-	xplDocRole role;				/* role in "prologue-main-epilogue" model */
-	xplDocumentPtr prologue;		/* prologue-main-epilogue parts */
-	xplDocumentPtr main;
-	xplDocumentPtr epilogue;
 	xplMacroPtr current_macro;		/* ditto */
 	xplError status;				/* processing status */
-	xplDocSource source;			/* was the original document overridden by wrappers? */
 	xmlChar *response;				/* for :set-response and app using the interpreter */
 	xmlNodePtr stack;				/* for :stack-xx */
 									/* threading support */
@@ -189,11 +184,6 @@ XPLPUBFUN xplError XPLCALL
 /* Path format (e.g.)
    basePath = "d:\\Tomcat 4.1\\webapps\\ROOT"
    relativePath = "/Impulse/Developer.xpl" */
-XPLPUBFUN bool XPLCALL
-	xplGetDocByRole(xplDocumentPtr docIn, const xmlChar *strRole, xplDocumentPtr *docOut);
-/* command params helper */
-XPLPUBFUN xmlChar* XPLCALL
-	xplDocByRoleGetter(xplCommandInfoPtr info, const xmlChar *raw_value, void **result);
 XPLPUBFUN xplError XPLCALL
 	xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr environment, xplSessionPtr session, xplDocumentPtr *docOut);
 

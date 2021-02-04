@@ -45,12 +45,12 @@ void xplCmdSessionContainsObjectEpilogue(xplCommandInfoPtr commandInfo, xplResul
 	bool ret_value;
 	xmlNodePtr ret;
 
-	ret_value = (commandInfo->document->main->session && xplSessionIsValid(commandInfo->document->main->session));
+	ret_value = (commandInfo->document->session && xplSessionIsValid(commandInfo->document->session));
 	if (params->name)
 	{
 		if (params->thread_local)
 			params->name = xstrAppendThreadIdToString(params->name, xprGetCurrentThreadId());
-		ret_value = ret_value && xplSessionGetObject(commandInfo->document->main->session, params->name);
+		ret_value = ret_value && xplSessionGetObject(commandInfo->document->session, params->name);
 	}
 	ret = xmlNewDocText(commandInfo->document->document, ret_value? BAD_CAST "true": BAD_CAST "false");
 	ASSIGN_RESULT(ret, false, true);	

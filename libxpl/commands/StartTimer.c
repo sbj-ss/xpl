@@ -13,6 +13,6 @@ xplCommand xplStartTimerCommand =
 
 void xplCmdStartTimerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xprGetTime(&commandInfo->document->main->profile_start_time);
+	xprGetTime(&commandInfo->document->profile_start_time);
 	ASSIGN_RESULT(NULL, false, true);
 }

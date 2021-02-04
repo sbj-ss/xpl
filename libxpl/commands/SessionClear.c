@@ -12,8 +12,8 @@ xplCommand xplSessionClearCommand = {
 
 void xplCmdSessionClearEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	if (!commandInfo->document->main->session)
+	if (!commandInfo->document->session)
 		return;
-	xplSessionClear(commandInfo->document->main->session);
+	xplSessionClear(commandInfo->document->session);
 	ASSIGN_RESULT(NULL, false, true);
 }

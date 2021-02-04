@@ -73,13 +73,9 @@ commands/ForEach.c\
 commands/GetAppType.c\
 commands/GetAttributes.c\
 commands/GetDocumentFilename.c\
-commands/GetDocumentRole.c\
-commands/GetDocumentSource.c\
 commands/GetElapsedTime.c\
 commands/GetOption.c\
-commands/GetOutputDocument.c\
 commands/GetParam.c\
-commands/GetProcessingStatus.c\
 commands/GetThreadId.c\
 commands/GetVersion.c\
 commands/If.c\
@@ -110,7 +106,6 @@ commands/SessionGetObject.c\
 commands/SessionRemoveObject.c\
 commands/SessionSetObject.c\
 commands/SetLocal.c\
-commands/SetOutputDocument.c\
 commands/SetParam.c\
 commands/SetResponse.c\
 commands/Sleep.c\

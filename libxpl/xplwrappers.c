@@ -8,48 +8,6 @@
 static XPR_MUTEX mapper_interlock;
 static bool mapper_interlock_initialized = false;
 
-xplDocRole xplDocRoleFromString(const xmlChar *role)
-{
-	if (!role)
-		return XPL_DOC_ROLE_UNKNOWN;
-	if (!xmlStrcasecmp(role, BAD_CAST "prologue"))
-		return XPL_DOC_ROLE_PROLOGUE;
-	if (!xmlStrcasecmp(role, BAD_CAST "main"))
-		return XPL_DOC_ROLE_MAIN;
-	if (!xmlStrcasecmp(role, BAD_CAST "epilogue"))
-		return XPL_DOC_ROLE_EPILOGUE;
-	return XPL_DOC_ROLE_UNKNOWN;
-}
-
-const xmlChar* xplDocRoleToString(xplDocRole role)
-{
-	switch (role)
-	{
-		case XPL_DOC_ROLE_UNKNOWN: return BAD_CAST "unknown";
-		case XPL_DOC_ROLE_PROLOGUE: return BAD_CAST "prologue";
-		case XPL_DOC_ROLE_MAIN: return BAD_CAST "main";
-		case XPL_DOC_ROLE_EPILOGUE: return BAD_CAST "epilogue";
-		default:
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-			return BAD_CAST "unknown role";
-	}
-}
-
-const xmlChar* xplDocSourceToString(xplDocSource src)
-{
-	switch (src)
-	{
-		case XPL_DOC_SOURCE_ORIGINAL: return BAD_CAST "original";
-		case XPL_DOC_SOURCE_MAPPED: return BAD_CAST "mapped";
-		case XPL_DOC_SOURCE_SWEATOUT: return BAD_CAST "sweatout";
-		case XPL_DOC_SOURCE_ABSENT: return BAD_CAST "absent";
-		case XPL_DOC_SOURCE_OVERRIDDEN: return BAD_CAST "overridden";
-		default:
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-			return BAD_CAST "unknown source";
-	}
-}
-
 /* prologue/epilogue/etc path mapper */
 typedef struct _xplWrapperMapEntry xplWrapperMapEntry;
 typedef xplWrapperMapEntry *xplWrapperMapEntryPtr;
@@ -60,23 +18,9 @@ struct _xplWrapperMapEntry {
 	xplWrapperMapEntryPtr next;
 };
 
-static xplWrapperMapEntryPtr wrapper_map[XPL_DOC_ROLE_MAX + 1] = { 0 };
+static xplWrapperMapEntryPtr wrappers;
 
-typedef struct _xplWrapperMapEntryDecl
-{
-	xplDocRole role;
-	xmlChar *name;
-} xplWrapperMapEntryDecl, *xplWrapperMapEntryDeclPtr;
-
-xplWrapperMapEntryDecl wrapper_map_entries[] =
-{
-	{ XPL_DOC_ROLE_PROLOGUE, BAD_CAST "Prologue" },
-	{ XPL_DOC_ROLE_MAIN,     BAD_CAST "Main" },
-	{ XPL_DOC_ROLE_EPILOGUE, BAD_CAST "Epilogue" }
-};
-#define WRAPPER_MAP_ENTRIES_COUNT (sizeof(wrapper_map_entries) / sizeof(wrapper_map_entries[0]))
-
-static xplWrapperMapEntryPtr xplWrapperMapEntryCreate(xmlChar *regexString, xmlChar *wrapperFile, regex_t *regex)
+static xplWrapperMapEntryPtr _createWrapperMapEntry(xmlChar *regexString, xmlChar *wrapperFile, regex_t *regex)
 {
 	xplWrapperMapEntryPtr ret = (xplWrapperMapEntryPtr) XPL_MALLOC(sizeof(xplWrapperMapEntry));
 	if (!ret)
@@ -88,7 +32,7 @@ static xplWrapperMapEntryPtr xplWrapperMapEntryCreate(xmlChar *regexString, xmlC
 	return ret;
 }
 
-static void xplFreeWrapperMapEntry(xplWrapperMapEntryPtr cur)
+static void _freeWrapperMapEntry(xplWrapperMapEntryPtr cur)
 {
 	if (cur)
 	{
@@ -99,107 +43,36 @@ static void xplFreeWrapperMapEntry(xplWrapperMapEntryPtr cur)
 	}
 }
 
+bool xplInitWrapperMap()
+{
+	if (!mapper_interlock_initialized)
+	{
+		if (!xprMutexInit(&mapper_interlock))
+			return false;
+		mapper_interlock_initialized = true;
+	}
+	return true;
+}
+
 void xplCleanupWrapperMap(void)
 {
-	xplWrapperMapEntryPtr cur, list;
-	int i;
+	xplWrapperMapEntryPtr cur = wrappers, next;
 
-	for (i = 0; i <= XPL_DOC_ROLE_MAX; i++)
-	{
-		list = wrapper_map[i];
-		while (list)
-		{
-			cur = list;
-			list = list->next;
-			xplFreeWrapperMapEntry(cur);
-		}
-		wrapper_map[i] = NULL;
-	}
-	if (mapper_interlock_initialized && !xprMutexCleanup(&mapper_interlock))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	mapper_interlock_initialized = false;
-}
-
-static void xplAssignWrapperMapEntry(xplWrapperMapEntryPtr *head, xplWrapperMapEntryPtr *tail, xmlNodePtr cur)
-{
-	xmlChar *regex_string, *wrapper_file;
-	xplWrapperMapEntryPtr entry;
-	regex_t *regex;
-	int ret_code;
-	OnigErrorInfo err_info;
-	xmlChar err_str[ONIG_MAX_ERROR_MESSAGE_LEN+1];
-
-	regex_string = xmlGetNoNsProp(cur, BAD_CAST "regex");
-	if (!regex_string)
-	{
-		xplDisplayMessage(xplMsgWarning, BAD_CAST "Missing regex attribute at prologue/epilogue in config file (line %d), ignored", cur->line);
-		return;
-	}
-	if (!xplCheckNodeListForText(cur->children))
-	{
-		xplDisplayMessage(xplMsgWarning, BAD_CAST "Non-text content in prologue/epilogue in config file (line %d), ignored.", cur->line);
-		XPL_FREE(regex_string);
-		return;
-	}
-	wrapper_file = xmlNodeListGetString(cur->doc, cur->children, 1);
-	if ((ret_code = onig_new(&regex, regex_string, regex_string + xmlStrlen(regex_string),
-		ONIG_OPTION_NONE, ONIG_ENCODING_UTF8, ONIG_SYNTAX_PERL_NG, &err_info)) != ONIG_NORMAL)
-	{
-		if (onig_error_code_to_str(err_str, ret_code) != ONIG_NORMAL)
-			strcpy((char*) err_str, "unknown error");
-		xplDisplayMessage(xplMsgWarning, BAD_CAST "Invalid prologue/epilogue path regex \"%s\" in config file (line %d), ignored.", regex_string, cur->line);
-		XPL_FREE(regex_string);
-		XPL_FREE(wrapper_file);
-		return;
-	}
-	entry = xplWrapperMapEntryCreate(regex_string, wrapper_file, regex);
-	if (entry)
-	{
-		if (*tail)
-			(*tail)->next = entry;
-		*tail = entry;
-		if (!*head)
-			*head = entry;
-	} else {
-		XPL_FREE(regex_string);
-		XPL_FREE(wrapper_file);
-		onig_free(regex);
-	}
-}
-
-void xplReadWrapperMap(xmlNodePtr cur)
-{
-	xplWrapperMapEntryPtr tail[WRAPPER_MAP_ENTRIES_COUNT] = { 0 };
-	unsigned int i;
-
-	xplCleanupWrapperMap();
-	if (!xprMutexInit(&mapper_interlock))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return;
-	}
-	mapper_interlock_initialized = true;
-	cur = cur->children;
 	while (cur)
 	{
-		if (cur->type == XML_ELEMENT_NODE)
-		{
-			for (i = 0; i < WRAPPER_MAP_ENTRIES_COUNT; i++)
-			{
-				if (!xmlStrcmp(cur->name, wrapper_map_entries[i].name) && (!cur->ns || !cur->ns->prefix))
-				{
-					xplAssignWrapperMapEntry(&wrapper_map[wrapper_map_entries[i].role], &tail[wrapper_map_entries[i].role], cur);
-					break;
-				}
-			}
-			if (i == WRAPPER_MAP_ENTRIES_COUNT)
-				xplDisplayMessage(xplMsgWarning, BAD_CAST "Unknown node \"%s\" in config file, line %d", cur->name, cur->line);
-		}
-		cur = cur->next;
+		next = cur->next;
+		_freeWrapperMapEntry(cur);
+		cur = next;
+	}
+	wrappers = NULL;
+	if (mapper_interlock_initialized)
+	{
+		xprMutexCleanup(&mapper_interlock);
+		mapper_interlock_initialized = false;
 	}
 }
 
-xplWrapperMapEntryPtr xplWrapperMapAddEntry(xmlChar *regexString, xmlChar *wrapperFile, xplDocRole role)
+xplWrapperMapEntryPtr xplWrapperMapAddEntry(xmlChar *regexString, xmlChar *wrapperFile)
 {
 	regex_t *regex;
 	OnigErrorInfo err_info;
@@ -208,26 +81,26 @@ xplWrapperMapEntryPtr xplWrapperMapAddEntry(xmlChar *regexString, xmlChar *wrapp
 	if (onig_new(&regex, regexString, regexString + xmlStrlen(regexString),
 		ONIG_OPTION_NONE, ONIG_ENCODING_UTF8, ONIG_SYNTAX_PERL_NG, &err_info) != ONIG_NORMAL)
 		return NULL;
-	entry = xplWrapperMapEntryCreate(regexString, wrapperFile, regex);
+	entry = _createWrapperMapEntry(regexString, wrapperFile, regex);
 	if (!entry)
 		return NULL;
-	if ((cur = wrapper_map[role]))
+	if ((cur = wrappers))
 	{
 		while (cur->next)
 			cur = cur->next;
 		cur->next = entry;
 	} else
-		wrapper_map[role] = entry;
+		wrappers = entry;
 	return entry;
 }
 
-xmlChar* xplMapDocWrapper(xmlChar *filename, xplDocRole role)
+xmlChar* xplMapDocWrapper(xmlChar *filename)
 {
 	xplWrapperMapEntryPtr cur;
 	OnigRegion *region;
 	xmlChar *ret = NULL, *fn_end;
 
-	cur = wrapper_map[role];
+	cur = wrappers;
 	if (!cur)
 		return NULL; /* speedup */
 	region = onig_region_new();

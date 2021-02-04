@@ -40,10 +40,10 @@ void xplCmdGetElapsedTimeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	long elapsed;
 
 	xprGetTime(&now);
-	elapsed = xprTimeDelta(&now, &commandInfo->document->main->profile_start_time);
+	elapsed = xprTimeDelta(&now, &commandInfo->document->profile_start_time);
 	sprintf((char*) buf, "%ld", elapsed);
 	ret = xmlNewDocText(commandInfo->document->document, buf);
 	ASSIGN_RESULT(ret, false, true);
 	if (params->restart_measurement)
-		xprGetTime(&commandInfo->document->main->profile_start_time);
+		xprGetTime(&commandInfo->document->profile_start_time);
 }

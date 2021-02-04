@@ -16,7 +16,7 @@ void xplCmdSessionGetIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	xmlNodePtr ret;
 	xmlChar *id;
 
-	id = xplSessionGetId(commandInfo->document->main->session);
+	id = xplSessionGetId(commandInfo->document->session);
 	if (id)
 		ret = xmlNewDocText(commandInfo->document->document, id);
 	else

@@ -60,7 +60,7 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 	xmlNodePtr obj, head, tail, cur;
 	size_t i;
 
-	if (!commandInfo->document->main->session)
+	if (!commandInfo->document->session)
 	{
 		ASSIGN_RESULT(NULL, false, true);
 		return;
@@ -68,9 +68,9 @@ void xplCmdSessionGetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 	if (params->thread_local && params->name)
 		params->name = xstrAppendThreadIdToString(params->name, xprGetCurrentThreadId());
 	if (!params->name)
-		obj = xplSessionGetAllObjects(commandInfo->document->main->session);
+		obj = xplSessionGetAllObjects(commandInfo->document->session);
 	else
-		obj = xplSessionGetObject(commandInfo->document->main->session, params->name);
+		obj = xplSessionGetObject(commandInfo->document->session, params->name);
 	if (!obj)
 	{
 		ASSIGN_RESULT(NULL, false, true);

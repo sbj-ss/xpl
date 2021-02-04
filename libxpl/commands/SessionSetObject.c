@@ -50,10 +50,10 @@ void xplCmdSessionSetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "name attribute is empty"), true, true);
 		return;
 	}
-	if (!commandInfo->document->main->session)
-		commandInfo->document->main->session = xplSessionCreateWithAutoId();
+	if (!commandInfo->document->session)
+		commandInfo->document->session = xplSessionCreateWithAutoId();
 	if (params->thread_local)
 		params->name = xstrAppendThreadIdToString(params->name, xprGetCurrentThreadId());
-	xplSessionSetObject(commandInfo->document->main->session, commandInfo->element, params->name);
+	xplSessionSetObject(commandInfo->document->session, commandInfo->element, params->name);
 	ASSIGN_RESULT(NULL, false, true);
 }

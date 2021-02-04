@@ -209,47 +209,6 @@ xmlChar* xplGetAppType()
 	return BAD_CAST "unknown";
 }
 
-bool xplGetDocByRole(xplDocumentPtr docIn, const xmlChar *strRole, xplDocumentPtr *docOut)
-{
-	xplDocRole role;
-
-	if (!strRole)
-	{
-		*docOut = docIn;
-		return true;
-	}
-	if (!docIn)
-	{
-		*docOut = NULL;
-		return true;
-	}
-	if ((role = xplDocRoleFromString(strRole)) == XPL_DOC_ROLE_UNKNOWN)
-		return false;
-	switch (role)
-	{
-	case XPL_DOC_ROLE_PROLOGUE: 
-		*docOut = docIn->prologue;
-		return true;
-	case XPL_DOC_ROLE_MAIN:
-		*docOut = docIn->main;
-		return true;
-	case XPL_DOC_ROLE_EPILOGUE:
-		*docOut = docIn->epilogue;
-		return true;
-	default:
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	}
-	*docOut = NULL;
-	return false;
-}
-
-xmlChar* xplDocByRoleGetter(xplCommandInfoPtr info, const xmlChar *raw_value, void **result)
-{
-	if (!xplGetDocByRole(info->document, raw_value, (xplDocumentPtr*) result))
-		return xplFormatMessage(BAD_CAST "invalid document attribute value '%s'", raw_value);
-	return NULL;
-}
-
 /* common document initialization part */
 
 static void _xpathDummyError(void *data, xmlErrorPtr error)
@@ -1047,10 +1006,12 @@ bool xplReadConfig()
 	int options_read = 0;
 
 	if (!config_file_path)
-		return 0;
+		return false;
+	if (!xplInitWrapperMap())
+		return false;
 	cfg = xmlParseFile((const char*) config_file_path); /* TODO path encoding */
 	if (!cfg)
-		return 0;
+		return false;
 	cur = cfg->children->children;
 	while (cur)
 	{
@@ -1067,7 +1028,7 @@ bool xplReadConfig()
 				xplReadOptions(cur);
 				options_read = 1;
 			} else if (!xmlStrcmp(cur->name, BAD_CAST "WrapperMap"))
-				xplReadWrapperMap(cur);
+				NOOP();
 		}
 		cur = cur->next;
 	}
@@ -1249,10 +1210,7 @@ xplError xplProcessFile(xmlChar *aAppPath, xmlChar *aFilename, xplParamsPtr aEnv
 	*docOut = xplDocumentCreateFromFile(aAppPath, aFilename, aEnvironment, aSession);
 	if (!*docOut)
 		return XPL_ERR_DOC_NOT_CREATED;
-	(*docOut)->main = *docOut;
-	(*docOut)->source = XPL_DOC_SOURCE_ORIGINAL;
 	(*docOut)->status = XPL_ERR_NOT_YET_REACHED;
-	(*docOut)->role = XPL_DOC_ROLE_MAIN;
 	ret = xplDocumentApply(*docOut);
 	if (ret >= XPL_ERR_NO_ERROR)
 	{
@@ -1263,104 +1221,14 @@ xplError xplProcessFile(xmlChar *aAppPath, xmlChar *aFilename, xplParamsPtr aEnv
 
 xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr environment, xplSessionPtr session, xplDocumentPtr *docOut)
 {
-	xmlChar *prologue_file, *main_file, *epilogue_file;
 	xmlChar *norm_path;
 	xmlChar *norm_filename;
-	xplError prologue_status, main_status = XPL_ERR_NOT_YET_REACHED, epilogue_status;
-	xplDocumentPtr doc_prologue = NULL, doc_main = NULL, doc_epilogue = NULL;
-	xplDocSource main_source;
+	xplError status;
 
-	if (!cfgUseWrappers) 
-	{ 
-		xstrComposeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename);
-		main_status = xplProcessFile(norm_path, norm_filename, environment, session, docOut);
-		if (norm_path) XPL_FREE(norm_path);
-		return main_status;
-	}
-
-	/* We'll have to create all wrappers right now as certain commands expect them.
-	   Set "prologue-main-epilogue" links (Cartesian product).
-	 */
-	// TODO don't create all docs immediately (main may be overridden)
-	prologue_file = xplMapDocWrapper(relativePath, XPL_DOC_ROLE_PROLOGUE);
-	main_file = xplMapDocWrapper(relativePath, XPL_DOC_ROLE_MAIN);
-	if (main_file)
-		main_source = XPL_DOC_SOURCE_MAPPED;
-	else {
-		main_file = relativePath;
-		main_source = XPL_DOC_SOURCE_ORIGINAL;
-	}
-	epilogue_file = xplMapDocWrapper(relativePath, XPL_DOC_ROLE_EPILOGUE);
-
-	if (prologue_file)
-	{
-		xstrComposeAndSplitPath(basePath, prologue_file, &norm_path, &norm_filename);
-		doc_prologue = xplDocumentCreateFromFile(norm_path, norm_filename, environment, session);
-		if (doc_prologue) 
-		{
-			doc_prologue->role = XPL_DOC_ROLE_PROLOGUE;
-			doc_prologue->source = XPL_DOC_SOURCE_MAPPED;
-			doc_prologue->prologue = doc_prologue;
-		} else
-			prologue_status = XPL_ERR_DOC_NOT_CREATED;
-		if (norm_path) XPL_FREE(norm_path);
-	}
-
-	xstrComposeAndSplitPath(basePath, main_file, &norm_path, &norm_filename);
-	doc_main = xplDocumentCreateFromFile(norm_path, norm_filename, environment, session);
-	if (doc_main)
-	{
-		doc_main->role = XPL_DOC_ROLE_MAIN;
-		doc_main->source = main_source;
-		doc_main->prologue = doc_prologue;
-		if (doc_prologue)
-			doc_prologue->main = doc_main;
-		doc_main->main = doc_main;
-	} else
-		main_status = XPL_ERR_DOC_NOT_CREATED;
+	xstrComposeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename);
+	status = xplProcessFile(norm_path, norm_filename, environment, session, docOut);
 	if (norm_path) XPL_FREE(norm_path);
-
-	if (epilogue_file)
-	{
-		xstrComposeAndSplitPath(basePath, epilogue_file, &norm_path, &norm_filename);
-		doc_epilogue = xplDocumentCreateFromFile(norm_path, norm_filename, environment, session);
-		if (doc_epilogue) 
-		{
-			doc_epilogue->role = XPL_DOC_ROLE_EPILOGUE;
-			doc_epilogue->source = XPL_DOC_SOURCE_MAPPED;
-			doc_epilogue->prologue = doc_prologue;
-			doc_epilogue->main = doc_main;
-			doc_epilogue->epilogue = doc_epilogue;
-			if (doc_prologue)
-				doc_prologue->epilogue = doc_epilogue;
-			if (doc_main)
-				doc_main->epilogue = doc_epilogue;
-		} else
-			epilogue_status = XPL_ERR_DOC_NOT_CREATED;
-		if (norm_path) XPL_FREE(norm_path);
-	} 
-
-	if (doc_prologue)
-	{
-		prologue_status = xplDocumentApply(doc_prologue);
-		doc_prologue->status = prologue_status;
-	}
-	if (doc_main)
-	{
-		if (doc_main->source == XPL_DOC_SOURCE_OVERRIDDEN) 
-			main_status = prologue_status;
-		else {
-			main_status = xplDocumentApply(doc_main);
-			doc_main->status = main_status;
-		}
-	}
-	if (doc_epilogue)
-	{
-		epilogue_status = xplDocumentApply(doc_epilogue);
-		doc_epilogue->status = epilogue_status;
-	}
-	*docOut = doc_epilogue? doc_epilogue->main: doc_main;
-	return doc_epilogue? doc_epilogue->main->status: main_status;
+	return status;
 }
 
 

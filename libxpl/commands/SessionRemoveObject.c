@@ -47,6 +47,6 @@ void xplCmdSessionRemoveObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 
 	if (params->thread_local)
 		params->name = xstrAppendThreadIdToString(params->name, xprGetCurrentThreadId());
-	xplSessionRemoveObject(commandInfo->document->main->session, params->name);
+	xplSessionRemoveObject(commandInfo->document->session, params->name);
 	ASSIGN_RESULT(NULL, false, true);
 }
