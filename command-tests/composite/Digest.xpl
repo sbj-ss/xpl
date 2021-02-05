@@ -49,13 +49,13 @@
     </Expected>
   </MustSucceed>
   
-  <MustFail name="fail/no-digest">
+  <MustFail name="fail/no-method">
     <Input>
       <xpl:digest/>
     </Input>
   </MustFail>
   
-  <MustFail name="fail/bad-digest">
+  <MustFail name="fail/bad-method">
     <Input>
       <xpl:digest method="random"/>
     </Input>
