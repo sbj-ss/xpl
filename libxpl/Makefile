@@ -39,6 +39,7 @@ xplstart.c\
 xplstring.c\
 xpltree.c\
 xplwrappers.c\
+xplxjson.c\
 Register.c
 
 COMMANDS = \

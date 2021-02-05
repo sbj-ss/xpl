@@ -43,35 +43,6 @@
     <Expected>abc</Expected>
   </MustSucceed>
 
-  <MustSucceed name="pass/force-quotes">
-    <Input>
-      <xpl:xjson-serialize forcequotes="true">
-        <j:object>
-          <j:number name="n">1</j:number>
-          <j:string name="s">abc</j:string>
-          <j:boolean name="b">true</j:boolean>
-          <j:null name="null"/>
-        </j:object>
-      </xpl:xjson-serialize>
-    </Input>
-    <Expected>{"n":"1","s":"abc","b":"true","null":null}</Expected>
-  </MustSucceed>
-
-  <xpl:comment>this breaks the test system</xpl:comment>
-  <xpl:comment>
-    <MustSucceed name="pass/single-quotes">
-      <Input>
-        <xpl:xjson-serialize singlequotes="true">
-          <j:object>
-            <j:string name="s">abc</j:string>
-            <j:number name="n">1</j:number>
-          </j:object>
-        </xpl:xjson-serialize>
-      </Input>
-      <Expected>{'s':'abc','n':1}</Expected>
-    </MustSucceed>
-  </xpl:comment>
-
   <MustFail name="fail/value-type-check">
     <Input>
       <xpl:xjson-serialize valuetypecheck="true">
@@ -97,18 +68,6 @@
   <MustFail name="fail/bad-strict-tag-names">
     <Input>
       <xpl:xjson-serialize stricttagnames="HNTR"/>
-    </Input>
-  </MustFail>
-
-  <MustFail name="fail/bad-force-quotes">
-    <Input>
-      <xpl:xjson-serialize forcequotes="maybe"/>
-    </Input>
-  </MustFail>
-
-  <MustFail name="fail/bad-single-quotes">
-    <Input>
-      <xpl:xjson-serialize singlequotes="unless double"/>
     </Input>
   </MustFail>
 
