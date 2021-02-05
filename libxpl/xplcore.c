@@ -1227,10 +1227,10 @@ xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr
 
 	xstrComposeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename);
 	status = xplProcessFile(norm_path, norm_filename, environment, session, docOut);
-	if (norm_path) XPL_FREE(norm_path);
+	if (norm_path)
+		XPL_FREE(norm_path);
 	return status;
 }
-
 
 #if defined(_IN_DLL) && (defined(_WIN32) || defined(_WIN64))
 int __stdcall DllMain(int reason)
