@@ -197,7 +197,7 @@ static void getSourceStep(IncludeContextPtr ctxt)
 	else
 		ctxt->input_source = INPUT_SOURCE_FILE;
 
-	if (!ctxt->params->abs_path)
+	if (!ctxt->params->abs_path && ctxt->input_source == INPUT_SOURCE_FILE)
 	{
 		ctxt->params->uri = xplFullFilename(uri, ctxt->doc->app_path);
 		XPL_FREE(uri);
@@ -529,6 +529,7 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 		if (ctxt->input_source == INPUT_SOURCE_LOCAL)
 			ctxt->ret = xplDetachChildren(ctxt->command_element);
 		else {
+			xplMergeDocOldNamespaces(ctxt->src_node->doc, ctxt->command_element->doc);
 			cur = ctxt->ret = xplDetachChildren(ctxt->src_node);
 			while (cur) /* doc may start with a comment */
 			{
