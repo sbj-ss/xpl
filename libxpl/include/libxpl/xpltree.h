@@ -116,6 +116,10 @@ XPLPUBFUN bool XPLCALL
 /* Translate top's nsDefs one level up removing redundant ones. Returns false on OOM */
 XPLPUBFUN bool XPLCALL
 	xplLiftNsDefs(xmlNodePtr parent, xmlNodePtr carrier, xmlNodePtr children);
+/* Ensure no links to from->oldNs remain inside its child tree */
+XPLPUBFUN bool XPLCALL
+	xplMergeDocOldNamespaces(xmlDocPtr from, xmlDocPtr to);
+
   
 XPLPUBFUN void XPLCALL
 	xplRegisterXPathExtensions(xmlXPathContextPtr ctxt);

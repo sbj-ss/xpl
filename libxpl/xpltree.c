@@ -932,9 +932,12 @@ bool xplMakeNsSelfContainedTree(xmlNodePtr top)
 	if (!_initNsPairs(&pairs, INITIAL_NS_PAIRS_SIZE))
 		return false;
 	cur = top->parent;
-	while (cur->type == XML_ELEMENT_NODE)
+	while (cur)
 	{
-		old_ns = cur->nsDef;
+		if (cur->type == XML_ELEMENT_NODE)
+			old_ns = cur->nsDef;
+		else if (cur->type == XML_DOCUMENT_NODE)
+			old_ns = ((xmlDocPtr) cur)->oldNs;
 		while (old_ns)
 		{
 			/* TODO we may want our own implementation of xmlNewNs:
@@ -1009,6 +1012,78 @@ bool xplLiftNsDefs(xmlNodePtr parent, xmlNodePtr carrier, xmlNodePtr children)
 		xplAppendNsDef(parent, carrier->nsDef); /* lift the whole chain */
 		carrier->nsDef = NULL;
 	}
+	return true;
+}
+
+static xmlNsPtr _appendDocOldNs(xmlDocPtr doc, xmlNsPtr ns)
+{
+	xmlNsPtr last_ns;
+
+	if (!doc->oldNs)
+	{
+		doc->oldNs = ns;
+		return ns;
+	}
+	last_ns = doc->oldNs;
+	while (last_ns->next)
+		last_ns = last_ns->next;
+	last_ns->next = ns;
+	return ns;
+}
+
+static xmlNsPtr _findDocOldNsByHref(xmlDocPtr doc, const xmlChar *href)
+{
+	xmlNsPtr ns = doc->oldNs;
+
+	while (ns)
+	{
+		if (!xmlStrcmp(ns->href, href))
+			return ns;
+	}
+	return NULL;
+}
+
+bool xplMergeDocOldNamespaces(xmlDocPtr from, xmlDocPtr to)
+{
+	xmlNsPtr ns_from, ns_to;
+	xplNsPairs pairs;
+	xmlNodePtr root;
+
+	if (!from->oldNs)
+		return true;
+	if (!to->oldNs)
+	{
+		to->oldNs = from->oldNs;
+		from->oldNs = NULL;
+		return true;
+	}
+	if (!_initNsPairs(&pairs, INITIAL_NS_PAIRS_SIZE))
+		return false;
+	ns_from = from->oldNs;
+	while (ns_from)
+	{
+		if (!(ns_to = _findDocOldNsByHref(to, ns_from->href))) /* relink */
+			ns_to = _appendDocOldNs(to, xmlCopyNamespace(ns_from));
+		if (!_addNamespacesToNsPairs(&pairs, ns_from, ns_to))
+		{
+			_clearNsPairs(&pairs, false);
+			return false;
+		}
+		ns_from = ns_from->next;
+	}
+	if (pairs.count)
+	{
+		root = from->children;
+		while (root)
+		{
+			if (root->type == XML_ELEMENT_NODE)
+				break;
+			root = root->next;
+		}
+		if (root)
+			_relinkNodeListNamespaces(&pairs, root);
+	}
+	_clearNsPairs(&pairs, false);
 	return true;
 }
 
