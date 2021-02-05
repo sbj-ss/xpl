@@ -6,7 +6,7 @@
 INCLUDE = -I./include -I./tests/include -I../xts/include -I/usr/include/libxml2
 LIBS = -lxml2 -lxpl -lonig -ltidy -lcrypto -lidn -lodbc
 WARNINGS = -Wall -Wmissing-prototypes -Wshadow -Werror -Wextra 
-FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_DB_ODBC
+FEATURES = -D_XEF_TRANSPORT_CURL -D_XEF_HTML_CLEANER_TIDY -D_XEF_DB_ODBC
 CFLAGS = -fpic -D_IN_DLL $(FEATURES) $(WARNINGS)
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=undefined -fno-sanitize-recover -fstack-protector
@@ -23,6 +23,7 @@ SRC = \
 abstraction/xefstart.c\
 abstraction/xpr.c\
 abstraction/xpr_lin.c\
+abstraction/xeftransportcurl.c\
 abstraction/xefhtmlcleanertidy.c\
 abstraction/xefdbodbc.c\
 xplcommand.c\

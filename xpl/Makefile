@@ -4,7 +4,7 @@
 #******************************************
 
 INCLUDE = -I../libxpl/include -I/usr/include/libxml2
-LIBS = -lxml2 -lxpl -lonig -lcrypto -ltidy -lidn -lodbc
+LIBS = -lxml2 -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -lcurl
 WARNINGS = -Wall -Werror
 CFLAGS = -L../libxpl $(WARNINGS)
 ifeq ($(DEBUG), 1)

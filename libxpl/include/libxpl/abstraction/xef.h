@@ -168,6 +168,14 @@ XPLPUBFUN bool XPLCALL
 	#endif
 #endif
 
+#ifdef _XEF_TRANSPORT_CURL
+	#ifdef _XEF_HAS_TRANSPORT
+		#error XEF: another document transport is used already
+	#else
+		#define _XEF_HAS_TRANSPORT
+	#endif
+#endif
+
 #ifndef _XEF_HAS_TRANSPORT
 	#pragma message("WARNING: no external document transport is used, some xpl:include features will be unavailable")
 #endif

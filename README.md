@@ -1,6 +1,7 @@
 # XPL: XML Processing Language
 
 ### Prerequisites:
+* libcurl4-openssl-dev
 * libidn11-dev
 * liblzma-dev (**NOT** lzma-dev)
 * libonig-dev 
