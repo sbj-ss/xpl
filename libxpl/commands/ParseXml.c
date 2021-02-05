@@ -38,7 +38,7 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplCmdParseXmlParamsPtr params = (xplCmdParseXmlParamsPtr) commandInfo->params;
 	xmlDocPtr doc = NULL;
 	xmlChar *parse_error;
-	xmlNodePtr ret;
+	xmlNodePtr ret, root;
 
 	if (!commandInfo->content)
 	{
@@ -52,8 +52,15 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "document parsing error: %s", parse_error), true, true);
 		XPL_FREE(parse_error);
 	} else {
-		/* ToDo: replaceRedundantNamespaces */
-		ret = xplDetachChildren((xmlNodePtr) doc);
+		xplMergeDocOldNamespaces(doc, commandInfo->element->doc);
+		root = ret = xplDetachChildren((xmlNodePtr) doc);
+		while (root)
+		{
+			if (root->type == XML_ELEMENT_NODE)
+				break;
+		}
+		if (root)
+			xplLiftNsDefs(commandInfo->element->parent, root, root->children);
 		xmlSetTreeDoc(ret, commandInfo->element->doc);
 		xmlFreeDoc(doc);
 		ASSIGN_RESULT(ret, params->repeat, true);

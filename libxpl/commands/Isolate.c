@@ -142,6 +142,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			if ((status == XPL_ERR_FATAL_CALLED) && cfgWarnOnFatalErrorsInIsolatedDocuments)
 				xplDisplayMessage(xplMsgWarning, BAD_CAST ":fatal called while processing child document");
+			xplMergeDocOldNamespaces(child->document, commandInfo->element->doc);
 			content = xplDetachChildren((xmlNodePtr) child->document);
 			xmlSetListDoc(content, commandInfo->element->doc);
 			xplSetChildren(commandInfo->element, content);
