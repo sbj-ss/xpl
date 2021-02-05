@@ -1,7 +1,7 @@
+#include <curl/curl.h>
 #include <libxpl/abstraction/xef.h>
 #include <libxpl/xplbuffer.h>
 #include <libxpl/xploptions.h>
-#include <curl/curl.h>
 
 #define USER_AGENT_STRING "User-Agent: Mozilla/5.0 (X11; Linux x86_64) " \
     "AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/47.0.2526.73 " \

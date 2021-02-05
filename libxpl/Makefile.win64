@@ -6,9 +6,9 @@
 LIB_ROOT = /home/ss/src/polaris-libs
 INCLUDE = -I./include -I./tests/include -I../xts/include -I$(LIB_ROOT)/include -I$(LIB_ROOT)/include/libxml2
 LIB = -L$(LIB_ROOT)/lib -L../xts -L.
-LIBS = -lxml2 -lonig -ltidy -lcrypto -lidn -lodbc32 -liconv -lz.dll -llzma -lpsapi -lole32 -lwinhttp
+LIBS = -lxml2 -lonig -ltidy -lcrypto -lidn -lodbc32 -liconv -lz.dll -llzma -lpsapi -lole32 -lwinhttp -lcurl
 WARNINGS = -Wall -Wmissing-prototypes -Wshadow -Werror -Wextra
-FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_TRANSPORT_WINHTTP -D_XEF_DB_ODBC
+FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_TRANSPORT_CURL -D_XEF_DB_ODBC
 CFLAGS = -fpic -D_IN_DLL $(FEATURES) $(WARNINGS)
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -D_DEBUG
@@ -26,7 +26,7 @@ abstraction/xpr_win.c\
 abstraction/xefstart.c\
 abstraction/xpr.c\
 abstraction/xefhtmlcleanertidy.c\
-abstraction/xeftransportwinhttp.c\
+abstraction/xeftransportcurl.c\
 abstraction/xefdbodbc.c\
 xplcommand.c\
 xplcore.c\
@@ -77,13 +77,9 @@ commands/ForEach.c\
 commands/GetAppType.c\
 commands/GetAttributes.c\
 commands/GetDocumentFilename.c\
-commands/GetDocumentRole.c\
-commands/GetDocumentSource.c\
 commands/GetElapsedTime.c\
 commands/GetOption.c\
-commands/GetOutputDocument.c\
 commands/GetParam.c\
-commands/GetProcessingStatus.c\
 commands/GetThreadId.c\
 commands/GetVersion.c\
 commands/If.c\
@@ -114,7 +110,6 @@ commands/SessionGetObject.c\
 commands/SessionRemoveObject.c\
 commands/SessionSetObject.c\
 commands/SetLocal.c\
-commands/SetOutputDocument.c\
 commands/SetParam.c\
 commands/SetResponse.c\
 commands/Sleep.c\
