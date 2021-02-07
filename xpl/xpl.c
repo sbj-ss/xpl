@@ -1,5 +1,7 @@
+#include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <libxml/xmlsave.h>
 #include <libxpl/xplcore.h>
@@ -182,7 +184,8 @@ int main(int argc, char* argv[])
 		xplParamAddValue(env, BAD_CAST "HelperFunction", BAD_CAST XPL_STRDUP("Load"), XPL_PARAM_TYPE_USERDATA);
 		err_code = xplProcessFile(app_path, HELPER_FILE, env, session, &doc);
 		xplDocumentFree(doc);
-		// TODO clear env
+		xplParamsFree(env);
+		env = xplParamsCreate();
 		if (err_code != XPL_ERR_NO_ERROR)
 		{
 			fprintf(stderr, "error: %s returned an error \"%s\" parsing session and/or parameters files\n", HELPER_FILE, xplErrorToString(err_code));
@@ -195,9 +198,14 @@ int main(int argc, char* argv[])
 	LEAK_DETECTION_START();
 	err_code = xplProcessFile(app_path, in_file, env, session, &doc);
 	if ((err_code >= XPL_ERR_NO_ERROR) && doc)
-		xplSaveXmlDocToFile(doc->document, out_file, encoding, XML_SAVE_FORMAT);
-	else {
-		fprintf(stderr, "error processing document: %s\n", xplErrorToString(err_code));
+	{
+		if (!xplSaveXmlDocToFile(doc->document, out_file, encoding, XML_SAVE_FORMAT))
+		{
+			fprintf(stderr, "can't save output file '%s': %s\n", out_file, strerror(errno));
+			ret_code = 4;
+		}
+	} else {
+		fprintf(stderr, "error processing document: %s (%s)\n", xplErrorToString(err_code), doc? doc->error: NULL);
 		ret_code = 3;
 	}
 	if (doc)
