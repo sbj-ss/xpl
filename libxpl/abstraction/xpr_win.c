@@ -74,12 +74,21 @@ static bool _xprCheckFilePresenceW(WCHAR *path)
 {
 	struct _stat64 stat_buf;
 	size_t path_len;
+	WCHAR drive[4];
 
 	if (!path || !*path)
 		return false;
 	path_len = wcslen(path);
 	if (path_len < 2)
 		return false;
+	if (path_len == 2 && path[1] == L':')
+	{
+		drive[0] = path[0];
+		drive[1] = L':';
+		drive[2] = L'\\';
+		drive[3] = 0;
+		return !_wstat64(drive, &stat_buf);
+	}
 	if ((path[path_len - 1] == XPR_FS_PATH_DELIM) && ((path_len != 3) || (path[1] != L':')))
 		path[path_len - 1] = 0; /* remove trailing slash */
 	return !_wstat64(path, &stat_buf);
