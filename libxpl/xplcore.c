@@ -987,7 +987,8 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 	} else {
 		error_doc = xmlNewDoc(BAD_CAST "1.0");
 		error_node = xmlNewDocNode(error_doc, NULL, ERROR_NODE_NAME, doc->error);
-		error_doc->children = error_node;
+		error_doc->children = error_doc->last = error_node;
+		error_node->parent = (xmlNodePtr) error_doc;
 		doc->document = error_doc;
 		ret = doc->status = XPL_ERR_INVALID_DOCUMENT;
 	}

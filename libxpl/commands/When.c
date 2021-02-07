@@ -50,7 +50,8 @@ void xplCmdWhenPrologue(xplCommandInfoPtr commandInfo)
 		if (!(xpl_ns = commandInfo->document->root_xpl_ns))
 			xpl_ns = xmlSearchNsByHref(commandInfo->element->doc, commandInfo->element, cfgXplNsUri);
 		test_el = xmlNewDocNode(commandInfo->element->doc, xpl_ns, BAD_CAST "test", NULL);
-		test_el->children = xmlNewDocText(commandInfo->element->doc, NULL);
+		test_el->children = test_el->last = xmlNewDocText(commandInfo->element->doc, NULL);
+		test_el->children->parent = test_el;
 		test_el->children->content = params->test;
 		params->test = NULL;
 		xplPrependChildren(commandInfo->element, test_el);
