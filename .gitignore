@@ -44,6 +44,8 @@
 mt.dep
 # IDE
 **/.settings
+**/.cproject
+**/.project
 # core dumps
 **/core
 # parser test configs
