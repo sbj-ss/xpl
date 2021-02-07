@@ -101,45 +101,30 @@ bool xprCheckFilePresence(const xmlChar *path)
 
 bool xprEnsurePathExistence(const xmlChar *path)
 {
-	WCHAR *slash_pos, *path_copy, tmp;
+	WCHAR *internal_path, *slash_pos, tmp;
 
-	if (!path)
-		return true;
-
-	xstrIconvString(XPR_FS_ENCODING, "utf-8", (char*) path, (char*) path + xmlStrlen(path), (char**) &path_copy, NULL);
-	slash_pos = path_copy;
-
-	while ((slash_pos = wcschr(slash_pos, XPR_FS_PATH_DELIM)))
+	if (!path || !*path)
+		return false;
+	if (!(internal_path = convertToFSPath(path)))
+		return false;
+	slash_pos = internal_path;
+	while ((slash_pos = wcschr(slash_pos, L'\\')))
 	{
+		if (slash_pos == internal_path)
+			slash_pos++;
 		tmp = *slash_pos;
 		*slash_pos = 0;
-		if (!_xprCheckFilePresenceW(path_copy))
-			break;
+		if (!_xprCheckFilePresenceW(internal_path))
+			if (_wmkdir(internal_path) == -1)
+			{
+				XPL_FREE(internal_path);
+				return false;
+			}
 		*slash_pos = tmp;
-		slash_pos++;
+		if (slash_pos - internal_path != 1)
+			slash_pos++;
 	}
-	if (!slash_pos)
-	{
-		XPL_FREE(path_copy);
-		return true;
-	}
-
-	while (slash_pos)
-	{
-		if (_wmkdir(path_copy) == -1)
-		{
-			XPL_FREE(path_copy);
-			return false;
-		}
-		*slash_pos = tmp;
-		slash_pos = wcschr(++slash_pos, XPR_FS_PATH_DELIM);
-		if (slash_pos)
-		{
-			tmp = *slash_pos;
-			*slash_pos = 0;
-		}
-	}
-	XPL_FREE(path_copy);
+	XPL_FREE(internal_path);
 	return true;
 }
 
