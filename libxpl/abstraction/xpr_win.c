@@ -70,34 +70,19 @@ int xprSOpen(const xmlChar *path, int mode, int sharing, int perms)
 	return ret;
 }
 
-static bool _xprCheckFilePresenceW(const WCHAR *path)
+static bool _xprCheckFilePresenceW(WCHAR *path)
 {
-	// TODO
-	UNUSED_PARAM(path);
-#if 0
 	struct _stat64 stat_buf;
 	size_t path_len;
 
-	if (!path_ptr)
-		return false;
-	path = *path_ptr;
-	if (!path)
+	if (!path || !*path)
 		return false;
 	path_len = wcslen(path);
 	if (path_len < 2)
 		return false;
-	if ((path_len == 2) && (path[1] == ':')) /* path with a drive letter */
-	{  // TODO don't realloc!!
-		*path_ptr = path = (WCHAR*) XPL_REALLOC(path, 4*sizeof(WCHAR));
-		if (!path)
-			return NULL;
-		path[2] = XPR_FS_PATH_DELIM; /* append trailing slash */
-		path[3] = 0;
-	} else if ((path[path_len - 1] == XPR_FS_PATH_DELIM) && ((path_len != 3) || (path[1] != ':')))
+	if ((path[path_len - 1] == XPR_FS_PATH_DELIM) && ((path_len != 3) || (path[1] != L':')))
 		path[path_len - 1] = 0; /* remove trailing slash */
 	return !_wstat64(path, &stat_buf);
-#endif
-	return false;
 }
 
 bool xprCheckFilePresence(const xmlChar *path)
