@@ -203,7 +203,8 @@ static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 				if (ctxt->params->keep_delimiter)
 				{
 					cur = xmlNewDocNode(ctxt->doc, ctxt->params->delimiter_tag_name.ns, ctxt->params->delimiter_tag_name.ncname, NULL);
-					cur->children = xmlNewDocText(ctxt->doc, NULL); 
+					cur->children = cur->last = xmlNewDocText(ctxt->doc, NULL);
+					cur->children->parent = cur;
 					cur->children->content = xmlStrndup(cur_end, (ctxt->params->multi_delimiter)? (int) multi_delim_len: (int) delim_len);
 					APPEND_NODE();
 				}
