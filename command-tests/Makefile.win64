@@ -13,9 +13,9 @@ verify-helpers:
 	composite/verify-helpers.sh $(TAIL)
 
 bootstrap-tests:
-	cd bootstrap && WINEPATH='$(WINEPATH)' RUNNER=wine XPL=xpl.exe ./run-tests.sh $(TAIL)
+	cd bootstrap && WINEPATH='$(WINEPATH)' RUNNER=$(RUNNER) XPL=xpl.exe ./run-tests.sh $(TAIL)
 
 composite-tests:
-	cd composite && WINEPATH='$(WINEPATH)' RUNNER=wine XPL=xpl.exe ./run-tests.sh $(TAIL)
+	cd composite && WINEPATH='$(WINEPATH)' RUNNER=$(RUNNER) XPL=xpl.exe ./run-tests.sh $(TAIL)
 
 test: verify-helpers bootstrap-tests composite-tests

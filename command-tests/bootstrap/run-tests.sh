@@ -11,7 +11,7 @@ for f in $d/*.xpl; do
 		((failed++))
 	else
 		((processed++))
-		if ! diff ${f%.*}.xml /tmp/$(basename ${f%.*}.xml); then
+		if ! diff --ignore-all-space ${f%.*}.xml /tmp/$(basename ${f%.*}.xml); then
 			((failed++))
 		fi
 	fi
