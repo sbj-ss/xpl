@@ -205,6 +205,8 @@ static xplDBPtr _xefDbGetAvailDB(xplDBListPtr list, xmlChar **error)
 		if (!db->connection)
 		{
 			db->busy = false;
+			if (append)
+				xplAddDBToDBList(list, db);
 			return NULL;
 		}
 	}
