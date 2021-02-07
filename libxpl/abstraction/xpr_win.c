@@ -426,11 +426,8 @@ static void _invalid_crt_param_handler(
 	uintptr_t pReserved
 )
 {
-	UNUSED_PARAM(expression);
-	UNUSED_PARAM(function);
-	UNUSED_PARAM(file);
-	UNUSED_PARAM(line);
 	UNUSED_PARAM(pReserved);
+	wprintf(L"CRT error in expression '%s', function '%s', file '%s', line %d\n", expression, function, file, line);
 }
 
 #ifdef _USE_PHOENIX_TECH
