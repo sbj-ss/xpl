@@ -7,7 +7,6 @@
 *.exe
 *.exp
 *.gch
-*.htm*
 *.idb
 *.idc
 *.ilk
