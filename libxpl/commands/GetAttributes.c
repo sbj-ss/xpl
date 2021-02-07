@@ -83,10 +83,12 @@ static xmlNodePtr _wrapAttributes(xmlAttrPtr prop, xplQName tagname)
 			} else
 				name = BAD_CAST XPL_STRDUP((char*) prop->name);
 			name_prop = xmlNewProp(cur, BAD_CAST "name", NULL);
-			name_prop->children = xmlNewDocText(prop->doc, NULL);
+			name_prop->children = name_prop->last = xmlNewDocText(prop->doc, NULL);
+			name_prop->children->parent = (xmlNodePtr) name_prop;
 			name_prop->children->content = name;
 		}
-		cur->children = xmlNewDocText(prop->doc, NULL);
+		cur->children = cur->last = xmlNewDocText(prop->doc, NULL);
+		cur->children->parent = cur;
 		cur->children->content = xplGetPropValue(prop);
 		if (!ret)
 			ret = tail = cur;
@@ -146,6 +148,5 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 		} // TODO warning if more elements follow
 	}
 	tag_name = params->show_tags? empty_qname: params->tagname.ncname? params->tagname: default_tag_name;
-
 	ASSIGN_RESULT(_wrapAttributes(src->properties, tag_name), params->repeat, true);
 }
