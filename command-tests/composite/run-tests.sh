@@ -4,6 +4,7 @@ processed=0
 failed=0
 errors=0
 failed_files=()
+xpl=${XPL:-xpl}
 
 rm -rf save/*
 touch save/.keep
@@ -11,7 +12,7 @@ touch save/.keep
 for f in *.xpl; do
 	local_errors=$( \
 		( \
-			LD_LIBRARY_PATH=../../libxpl:$LD_LIBRARY_PATH ../../xpl/xpl -i $f -o out/${f%.*}.xml 2>&1; \
+			LD_LIBRARY_PATH=../../libxpl:$LD_LIBRARY_PATH $RUNNER ../../xpl/$xpl -i $f -o out/${f%.*}.xml 2>&1; \
 			echo $? > /tmp/xpl-test-result
 		) | tee >( \
 			grep -i 'error:' | wc -l \

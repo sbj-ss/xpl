@@ -3,10 +3,11 @@
 processed=0
 failed=0
 d=$(dirname $0)
+xpl=${XPL:-xpl}
 
 for f in $d/*.xpl; do
 	echo "Running ${f}..." 1>&2
-	if ! LD_LIBRARY_PATH=$d/../../libxpl:$LD_LIBRARY_PATH $d/../../xpl/xpl -i $f -o /tmp/$(basename ${f%.*}.xml); then
+	if ! LD_LIBRARY_PATH=$d/../../libxpl:$LD_LIBRARY_PATH $RUNNER $d/../../xpl/$xpl -i $f -o /tmp/$(basename ${f%.*}.xml); then
 		((failed++))
 	else
 		((processed++))

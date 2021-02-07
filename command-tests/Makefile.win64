@@ -1,0 +1,21 @@
+ifeq ($(QUIET), 1)
+TAIL = 2> /dev/null
+endif
+
+ifeq ($(LIB_ROOT),)
+WINEPATH = ../../libxpl
+else
+WINEPATH = $(LIB_ROOT)/bin;../../libxpl
+endif
+
+
+verify-helpers:
+	composite/verify-helpers.sh $(TAIL)
+
+bootstrap-tests:
+	cd bootstrap && WINEPATH='$(WINEPATH)' RUNNER=wine XPL=xpl.exe ./run-tests.sh $(TAIL)
+
+composite-tests:
+	cd composite && WINEPATH='$(WINEPATH)' RUNNER=wine XPL=xpl.exe ./run-tests.sh $(TAIL)
+
+test: verify-helpers bootstrap-tests composite-tests
