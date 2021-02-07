@@ -203,6 +203,7 @@ bool xplSaveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int o
 	xmlSaveSetAttrEscape(save_ctxt, NULL);
 	xmlSaveDoc(save_ctxt, doc);
 	xmlSaveClose(save_ctxt);
+	close(fh);
 	return true;
 }
 
