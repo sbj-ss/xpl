@@ -183,7 +183,7 @@ tests/test_xplsave.c
 BUILD_DIR = build.win64
 OBJS = $(SRC:%.c=$(BUILD_DIR)/%.o)
 TEST_OBJS = $(TEST_SRC:%.c=$(BUILD_DIR)/%.o)
-TEST_BIN = tests/Runner$(BIN_EXT)
+TEST_BIN = tests\Runner$(BIN_EXT)
 
 .DEFAULT_GOAL = all
 
@@ -210,6 +210,8 @@ test: $(TEST_BIN)
 	WINEPATH=$(LIB_ROOT)/bin wine $(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
 	
 clean:
-	rm -rf $(BUILD_DIR) libxpl$(SO_EXT) $(TEST_BIN)
+	del /S /Q $(BUILD_DIR)
+	del libxpl$(SO_EXT)
+	del $(TEST_BIN)
 	
 all: build_dirs libxpl$(SO_EXT)
