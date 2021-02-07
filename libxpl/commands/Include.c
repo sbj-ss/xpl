@@ -234,7 +234,7 @@ static void fetchFileContent(IncludeContextPtr ctxt)
 	ssize_t num_read;
 	char* file_content;
 	
-	fd = xprSOpen(ctxt->params->uri, O_BINARY | O_RDONLY, 0, 0);
+	fd = xprSOpen(ctxt->params->uri, O_BINARY | O_RDONLY, _SH_DENYNO, 0);
 	if (fd == -1)
 	{
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot open file \"%s\"", ctxt->params->uri);

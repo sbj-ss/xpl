@@ -56,6 +56,13 @@ int _scprintf(const char *format, ...);
 */
 #define O_BINARY 0
 #define O_TEXT 0
+
+#define _SH_COMPAT 0
+#define _SH_DENYRW 0
+#define _SH_DENYWR 0
+#define _SH_DENYRD 0
+#define _SH_DENYNO 0
+#define _SH_SECURE 0
 /*
 #define XPR_FILE_COPY(src, dst, failIfExists) CopyFileW(src, dst, failIfExists)
 #define XPR_FILE_COPY_FAILED(x) (!(x))

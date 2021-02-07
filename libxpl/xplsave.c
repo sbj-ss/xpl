@@ -2,6 +2,7 @@
 #include <libxpl/abstraction/xpr.h>
 #include <libxml/xmlsave.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 static void safeSerializeIndent(FILE *fp, int indent)
 {
@@ -192,7 +193,7 @@ bool xplSaveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int o
 
 	if (!doc || !filename)
 		return false;
-	fh = xprSOpen(filename, O_CREAT | O_TRUNC | O_RDWR | O_BINARY, 0, S_IREAD | S_IWRITE);
+	fh = xprSOpen(filename, O_CREAT | O_TRUNC | O_WRONLY | O_BINARY, _SH_DENYWR, S_IREAD | S_IWRITE);
 	if (fh == -1)
 		return false;
 	save_ctxt = xmlSaveToIO(xml_save_write_cb, xml_save_close_cb, (void*) (size_t) fh, encoding, options);
