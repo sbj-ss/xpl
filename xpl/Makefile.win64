@@ -3,9 +3,12 @@
 #* (c) НИЛ ИТС, Подковырин, 2006-2020     *
 #******************************************
 
-LIB_ROOT = /home/ss/src/polaris-libs
-INCLUDE = -I../libxpl/include -I$(LIB_ROOT)/include -I$(LIB_ROOT)/include/libxml2
-LIB = -L$(LIB_ROOT)/lib -L../libxpl
+INCLUDE = -I../libxpl/include
+LIB = -L../libxpl
+ifneq ($(LIB_ROOT),)
+INCLUDE += -I$(LIB_ROOT)/include -I$(LIB_ROOT)/include/libxml2
+LIB += -L$(LIB_ROOT)/lib
+endif
 LIBS = -lxml2 -lxpl_dll -lonig -lcrypto -ltidy -lidn -lodbc32
 WARNINGS = -Wall -Werror
 CFLAGS = -L../libxpl $(WARNINGS)

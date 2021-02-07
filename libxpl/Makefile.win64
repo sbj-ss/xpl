@@ -3,9 +3,12 @@
 #* (c) НИЛ ИТС, Подковырин, 2006-2020     *
 #******************************************
 
-LIB_ROOT = /home/ss/src/polaris-libs
-INCLUDE = -I./include -I./tests/include -I../xts/include -I$(LIB_ROOT)/include -I$(LIB_ROOT)/include/libxml2
-LIB = -L$(LIB_ROOT)/lib -L../xts -L.
+INCLUDE = -I./include -I./tests/include -I../xts/include
+LIB = -L../xts -L.
+ifneq ($(LIB_ROOT),)
+INCLUDE += -I$(LIB_ROOT)/include -I$(LIB_ROOT)/include/libxml2
+LIB += -L$(LIB_ROOT)/lib 
+endif
 LIBS = -lxml2 -lonig -ltidy -lcrypto -lidn -lodbc32 -liconv -lz.dll -llzma -lpsapi -lole32 -lwinhttp -lcurl
 WARNINGS = -Wall -Wmissing-prototypes -Wshadow -Werror -Wextra
 FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_TRANSPORT_CURL -D_XEF_DB_ODBC
