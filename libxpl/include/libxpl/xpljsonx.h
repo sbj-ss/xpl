@@ -13,10 +13,10 @@
 extern "C" {
 #endif
 
-#define XJSON_SCHEMA_URI BAD_CAST "http://www.ibm.com/xmlns/prod/2009/jsonx"
+#define JSONX_SCHEMA_URI BAD_CAST "http://www.ibm.com/xmlns/prod/2009/jsonx"
 
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplXJsonSerializeNodeList(xmlNodePtr list, bool strictTagNames,	bool valueTypeCheck);
+	xplJsonXSerializeNodeList(xmlNodePtr list, bool strictTagNames,	bool valueTypeCheck);
 
 #ifdef __cplusplus
 }

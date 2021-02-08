@@ -52,6 +52,7 @@ extern xplCommand xplIncludeCommand;
 extern xplCommand xplInheritCommand;
 extern xplCommand xplIsDefinedCommand;
 extern xplCommand xplIsolateCommand;
+extern xplCommand xplJsonXSerializeCommand;
 extern xplCommand xplListMacrosCommand;
 extern xplCommand xplLoadModuleCommand;
 extern xplCommand xplModuleLoadedCommand;
@@ -97,7 +98,6 @@ extern xplCommand xplUriEscapeParamCommand;
 extern xplCommand xplValueOfCommand;
 extern xplCommand xplWhenCommand;
 extern xplCommand xplWithCommand;
-extern xplCommand xplXJsonSerializeCommand;
 
 #ifdef _USE_CRASH_COMMAND
 extern xplCommand xplCrashCommand;

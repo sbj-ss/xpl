@@ -29,6 +29,7 @@ abstraction/xefdbodbc.c\
 xplcommand.c\
 xplcore.c\
 xpldb.c\
+xpljsonx.c\
 xplmacro.c\
 xplmessages.c\
 xploptions.c\
@@ -40,7 +41,6 @@ xplstart.c\
 xplstring.c\
 xpltree.c\
 xplwrappers.c\
-xplxjson.c\
 Register.c
 
 COMMANDS = \
@@ -85,6 +85,7 @@ commands/Include.c\
 commands/Inherit.c\
 commands/IsDefined.c\
 commands/Isolate.c\
+commands/JsonXSerialize.c\
 commands/ListMacros.c\
 commands/LoadModule.c\
 commands/ModuleLoaded.c\
@@ -129,8 +130,7 @@ commands/UriEncode.c\
 commands/UriEscapeParam.c\
 commands/ValueOf.c\
 commands/When.c\
-commands/With.c\
-commands/XJsonSerialize.c
+commands/With.c
 
 ifeq ($(DYNACONF_SUPPORT), 1)
 CFLAGS += -D_DYNACONF_SUPPORT

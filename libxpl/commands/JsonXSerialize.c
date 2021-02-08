@@ -1,31 +1,31 @@
 #include <libxpl/xplbuffer.h>
 #include <libxpl/xplcommand.h>
+#include <libxpl/xpljsonx.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
-#include <libxpl/xplxjson.h>
 
-void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
+void xplCmdJsonXSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
-typedef struct _xplCmdXJsonSerializeParams
+typedef struct _xplCmdJsonXSerializeParams
 {
 	bool strict_tag_names;
 	bool value_type_check;
-} xplCmdXJsonSerializeParams, *xplCmdXJsonSerializeParamsPtr;
+} xplCmdJsonXSerializeParams, *xplCmdJsonXSerializeParamsPtr;
 
-static const xplCmdXJsonSerializeParams params_stencil =
+static const xplCmdJsonXSerializeParams params_stencil =
 {
 	.strict_tag_names = false,
 	.value_type_check = false,
 };
 
-xplCommand xplXJsonSerializeCommand =
+xplCommand xplJsonXSerializeCommand =
 {
 	.prologue = NULL,
-	.epilogue = xplCmdXJsonSerializeEpilogue,
+	.epilogue = xplCmdJsonXSerializeEpilogue,
 	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
-	.stencil_size = sizeof(xplCmdXJsonSerializeParams),
+	.stencil_size = sizeof(xplCmdJsonXSerializeParams),
 	.parameters = {
 		{
 			.name = BAD_CAST "stricttagnames",
@@ -41,11 +41,11 @@ xplCommand xplXJsonSerializeCommand =
 	}
 };
 
-void xplCmdXJsonSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
+void xplCmdJsonXSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xplCmdXJsonSerializeParamsPtr params = (xplCmdXJsonSerializeParamsPtr) commandInfo->params;
+	xplCmdJsonXSerializeParamsPtr params = (xplCmdJsonXSerializeParamsPtr) commandInfo->params;
 	xmlNodePtr ret;
 
-	ret = xplXJsonSerializeNodeList(commandInfo->element->children, params->strict_tag_names, params->value_type_check);
+	ret = xplJsonXSerializeNodeList(commandInfo->element->children, params->strict_tag_names, params->value_type_check);
 	ASSIGN_RESULT(ret, ret->type == XML_ELEMENT_NODE, true);
 }

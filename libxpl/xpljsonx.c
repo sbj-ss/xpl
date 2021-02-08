@@ -1,34 +1,34 @@
 #include <stdbool.h>
 #include <libxpl/xplbuffer.h>
+#include <libxpl/xpljsonx.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
-#include <libxpl/xplxjson.h>
 
-typedef enum _xjsonElementType {
-	XJE_ARRAY,
-	XJE_OBJECT,
-	XJE_STRING,
-	XJE_NUMBER,
-	XJE_BOOLEAN,
-	XJE_NULL,
-	XJE_NONE
-} xjsonElementType;
+typedef enum _jsonxElementType {
+	JXE_ARRAY,
+	JXE_OBJECT,
+	JXE_STRING,
+	JXE_NUMBER,
+	JXE_BOOLEAN,
+	JXE_NULL,
+	JXE_NONE
+} jsonxElementType;
 
-#define XJSON_TYPE_IS_CONTAINER(t) ((t) == XJE_OBJECT || (t) == XJE_ARRAY)
+#define JSONX_TYPE_IS_CONTAINER(t) ((t) == JXE_OBJECT || (t) == JXE_ARRAY)
 
-typedef struct _xjsonSerializeCtxt {
+typedef struct _jsonxSerializeCtxt {
 	xmlNodePtr parent;
 	bool strict_tag_names;
 	bool value_type_check;
 	rbBufPtr buf;
 	/* will be changed by serializer */
-	xmlNsPtr xjson_ns;
-	xjsonElementType container_type;
+	xmlNsPtr jsonx_ns;
+	jsonxElementType container_type;
 	bool is_first_item;
-} xjsonSerializeCtxt, *xjsonSerializeCtxtPtr;
+} jsonxSerializeCtxt, *jsonxSerializeCtxtPtr;
 
-static bool _checkJsonNs(xmlNsPtr ns, xmlNsPtr *cached_ns)
+static bool _checkJsonXNs(xmlNsPtr ns, xmlNsPtr *cached_ns)
 {
 	if (!ns)
 		return false;
@@ -36,31 +36,31 @@ static bool _checkJsonNs(xmlNsPtr ns, xmlNsPtr *cached_ns)
 		return true;
 	if (!ns->href)
 		return false;
-	if (xmlStrcmp(ns->href, XJSON_SCHEMA_URI))
+	if (xmlStrcmp(ns->href, JSONX_SCHEMA_URI))
 		return false;
 	if (!*cached_ns)
 		*cached_ns = ns;
 	return true;
 }
 
-static xjsonElementType _getElementType(xmlNodePtr cur)
+static jsonxElementType _getElementType(xmlNodePtr cur)
 {
 	if (!xmlStrcmp(cur->name, BAD_CAST "array"))
-		return XJE_ARRAY;
+		return JXE_ARRAY;
 	else if (!xmlStrcmp(cur->name, BAD_CAST "object"))
-		return XJE_OBJECT;
+		return JXE_OBJECT;
 	else if (!xmlStrcmp(cur->name, BAD_CAST "string"))
-		return XJE_STRING;
+		return JXE_STRING;
 	else if (!xmlStrcmp(cur->name, BAD_CAST "number"))
-		return XJE_NUMBER;
+		return JXE_NUMBER;
 	else if (!xmlStrcmp(cur->name, BAD_CAST "boolean"))
-		return XJE_BOOLEAN;
+		return JXE_BOOLEAN;
 	else if (!xmlStrcmp(cur->name, BAD_CAST "null"))
-		return XJE_NULL;
-	return XJE_NONE;
+		return JXE_NULL;
+	return JXE_NONE;
 }
 
-static xmlNodePtr _createMemoryError(xjsonSerializeCtxtPtr ctxt)
+static xmlNodePtr _createMemoryError(jsonxSerializeCtxtPtr ctxt)
 {
 	return xplCreateErrorNode(ctxt->parent, BAD_CAST "insufficient memory");
 }
@@ -85,7 +85,7 @@ static char esc_map[256] = {
 	['\f'] = 'f'
 };
 
-static xmlChar *_xjsonEscapeString(const xmlChar *s)
+static xmlChar *_jsonxEscapeString(const xmlChar *s)
 {
 	int extra = 0;
 	const xmlChar *p = s;
@@ -109,59 +109,59 @@ static xmlChar *_xjsonEscapeString(const xmlChar *s)
 	return ret;
 }
 
-static xmlNodePtr _xjsonSerializeNodeList(xmlNodePtr first, xjsonSerializeCtxtPtr ctxt);
+static xmlNodePtr _jsonxSerializeNodeList(xmlNodePtr first, jsonxSerializeCtxtPtr ctxt);
 
-static xmlNodePtr _xjsonSerializeList(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt, xjsonElementType containerType)
+static xmlNodePtr _jsonxSerializeList(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt, jsonxElementType containerType)
 {
-	xjsonElementType prev_container_type;
+	jsonxElementType prev_container_type;
 	bool prev_is_first_item;
 	xmlNodePtr ret = NULL;
 
-	if (rbAddDataToBuf(ctxt->buf, (containerType == XJE_ARRAY)? "[": "{", 1) != RB_RESULT_OK)
+	if (rbAddDataToBuf(ctxt->buf, (containerType == JXE_ARRAY)? "[": "{", 1) != RB_RESULT_OK)
 		return _createMemoryError(ctxt);
 	prev_container_type = ctxt->container_type;
 	prev_is_first_item = ctxt->is_first_item;
 	ctxt->container_type = containerType;
 	ctxt->is_first_item = true;
-	if ((ret = _xjsonSerializeNodeList(cur->children, ctxt)))
+	if ((ret = _jsonxSerializeNodeList(cur->children, ctxt)))
 		goto done;
-	ADD_DATA(containerType == XJE_ARRAY? "]": "}", 1);
+	ADD_DATA(containerType == JXE_ARRAY? "]": "}", 1);
 done:
 	ctxt->container_type = prev_container_type;
 	ctxt->is_first_item = prev_is_first_item;
 	return ret;
 }
 
-static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt, xjsonElementType type)
+static xmlNodePtr _jsonxSerializeAtom(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt, jsonxElementType type)
 {
 	xmlNodePtr ret = NULL;
 	xmlChar *content = NULL, *str_content = NULL;
 
 	if (!xplCheckNodeListForText(cur->children))
 		return xplCreateErrorNode(ctxt->parent, BAD_CAST "element '%s' has non-text nodes inside", cur->name);
-	if (type == XJE_STRING)
+	if (type == JXE_STRING)
 		ADD_DATA("\"", 1);
 	content = xmlNodeListGetString(cur->doc, cur->children, 1);
 	if (ctxt->value_type_check)
 		switch(type)
 		{
-		case XJE_STRING:
+		case JXE_STRING:
 			break;
-		case XJE_NUMBER:
+		case JXE_NUMBER:
 			if (!xstrIsNumber(content))
 			{
 				ret = xplCreateErrorNode(ctxt->parent, BAD_CAST "element '%s' content '%s' is non-numeric", cur->name, content);
 				goto done;
 			}
 			break;
-		case XJE_BOOLEAN:
+		case JXE_BOOLEAN:
 			if (xmlStrcmp(content, BAD_CAST "false") && xmlStrcmp(content, BAD_CAST "true"))
 			{
 				ret = xplCreateErrorNode(ctxt->parent, BAD_CAST "element '%s' content '%s' is non-boolean", cur->name, content);
 				goto done;
 			}
 			break;
-		case XJE_NULL:
+		case JXE_NULL:
 			if (content && *content)
 			{
 				ret = xplCreateErrorNode(ctxt->parent, BAD_CAST "element '%s' content '%s' is non-empty", cur->name, content);
@@ -171,15 +171,15 @@ static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 		default:
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 		}
-	if (type == XJE_STRING && content)
-		str_content = _xjsonEscapeString(content);
+	if (type == JXE_STRING && content)
+		str_content = _jsonxEscapeString(content);
 	else
 		str_content = content;
-	if (type == XJE_NULL)
+	if (type == JXE_NULL)
 		ADD_DATA(BAD_CAST "null", 4);
 	else if (str_content)
 		ADD_DATA(str_content, xmlStrlen(str_content));
-	if (type == XJE_STRING)
+	if (type == JXE_STRING)
 		ADD_DATA("\"", 1);
 done:
 	if (str_content && str_content != content)
@@ -189,26 +189,26 @@ done:
 	return ret;
 }
 
-static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt)
+static xmlNodePtr _jsonxSerializeNode(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt)
 {
 	xmlChar *name = NULL, *escaped_name = NULL;
 	xmlNodePtr ret = NULL;
-	xjsonElementType el_type;
+	jsonxElementType el_type;
 
-	if (!cur->ns || !_checkJsonNs(cur->ns, &ctxt->xjson_ns))
+	if (!cur->ns || !_checkJsonXNs(cur->ns, &ctxt->jsonx_ns))
 	{
 		if (ctxt->strict_tag_names)
-			return xplCreateErrorNode(ctxt->parent, BAD_CAST "element '%s:%s' is not in XJSON namespace", cur->ns? cur->ns->prefix: NULL, cur->name);
+			return xplCreateErrorNode(ctxt->parent, BAD_CAST "element '%s:%s' is not in JSONX namespace", cur->ns? cur->ns->prefix: NULL, cur->name);
 		return NULL;
 	}
 	el_type = _getElementType(cur);
-	if (el_type == XJE_NONE)
+	if (el_type == JXE_NONE)
 	{
 		if (ctxt->strict_tag_names)
 			return xplCreateErrorNode(ctxt->parent, BAD_CAST "unknown tag name '%s'", cur->name);
 		return NULL;
 	}
-	if (ctxt->container_type != XJE_NONE)
+	if (ctxt->container_type != JXE_NONE)
 	{
 		if (!ctxt->is_first_item)
 			ADD_DATA(",", 1);
@@ -218,24 +218,24 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	name = xmlGetNoNsProp(cur, BAD_CAST "name");
 	if (name)
 	{
-		if (ctxt->container_type != XJE_OBJECT)
+		if (ctxt->container_type != JXE_OBJECT)
 		{
 			ret = xplCreateErrorNode(ctxt->parent, BAD_CAST "cannot use named items outside of object");
 			goto done;
 		}
 		ADD_DATA("\"", 1);
-		escaped_name = _xjsonEscapeString(name);
+		escaped_name = _jsonxEscapeString(name);
 		ADD_DATA(escaped_name, xmlStrlen(escaped_name));
 		ADD_DATA("\":", 2);
-	} else if (ctxt->container_type == XJE_OBJECT) {
+	} else if (ctxt->container_type == JXE_OBJECT) {
 		ret = xplCreateErrorNode(ctxt->parent, BAD_CAST "items inside an object must be named");
 		goto done;
 	}
 
-	if (XJSON_TYPE_IS_CONTAINER(el_type))
-		ret = _xjsonSerializeList(cur, ctxt, el_type);
+	if (JSONX_TYPE_IS_CONTAINER(el_type))
+		ret = _jsonxSerializeList(cur, ctxt, el_type);
 	else
-		ret = _xjsonSerializeAtom(cur, ctxt, el_type);
+		ret = _jsonxSerializeAtom(cur, ctxt, el_type);
 done:
 	if (escaped_name)
 		xmlFree(escaped_name);
@@ -244,22 +244,22 @@ done:
 	return ret;
 }
 
-static xmlNodePtr _xjsonSerializeNodeList(xmlNodePtr first, xjsonSerializeCtxtPtr ctxt)
+static xmlNodePtr _jsonxSerializeNodeList(xmlNodePtr first, jsonxSerializeCtxtPtr ctxt)
 {
 	xmlNodePtr error;
 
 	while (first)
 	{
-		if ((error = _xjsonSerializeNode(first, ctxt)))
+		if ((error = _jsonxSerializeNode(first, ctxt)))
 			return error;
 		first = first->next;
 	}
 	return NULL;
 }
 
-xmlNodePtr xplXJsonSerializeNodeList(xmlNodePtr list, bool strictTagNames, bool valueTypeCheck)
+xmlNodePtr xplJsonXSerializeNodeList(xmlNodePtr list, bool strictTagNames, bool valueTypeCheck)
 {
-	xjsonSerializeCtxt ctxt;
+	jsonxSerializeCtxt ctxt;
 	xmlNodePtr ret;
 
 	ctxt.buf = rbCreateBufParams(1024, RB_GROW_DOUBLE, 2);
@@ -267,12 +267,12 @@ xmlNodePtr xplXJsonSerializeNodeList(xmlNodePtr list, bool strictTagNames, bool 
 		return NULL;
 	ctxt.strict_tag_names = strictTagNames;
 	ctxt.value_type_check = valueTypeCheck;
-	ctxt.xjson_ns = NULL;
+	ctxt.jsonx_ns = NULL;
 	ctxt.parent = list->parent;
-	ctxt.container_type = XJE_NONE;
+	ctxt.container_type = JXE_NONE;
 	ctxt.is_first_item = true;
 
-	if ((ret = _xjsonSerializeNodeList(list, &ctxt)))
+	if ((ret = _jsonxSerializeNodeList(list, &ctxt)))
 		goto done;
 
 	if (rbAddDataToBuf(ctxt.buf, "", 1) != RB_RESULT_OK) // zero-terminate
