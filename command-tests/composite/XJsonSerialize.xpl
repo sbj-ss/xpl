@@ -10,17 +10,17 @@
     <Input>
       <xpl:xjson-serialize>
         <j:object>
-          <j:array name="number_array">
+          <j:array name="number_&quot;array">
             <j:number>1</j:number>
             <j:number>2</j:number>
             <j:null/>
           </j:array>
-          <j:string name="s">string</j:string>
+          <j:string name="s">string\a</j:string>
           <j:boolean name="b">true</j:boolean>
         </j:object>
       </xpl:xjson-serialize>
     </Input>
-    <Expected>{"number_array":[1,2,null],"s":"string","b":true}</Expected>
+    <Expected>{"number_\"array":[1,2,null],"s":"string\\a","b":true}</Expected>
   </MustSucceed>
 
   <MustSucceed name="pass/skip-unknown">

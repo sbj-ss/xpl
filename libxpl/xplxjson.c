@@ -74,6 +74,41 @@ static xmlNodePtr _createMemoryError(xjsonSerializeCtxtPtr ctxt)
 		} \
 	} while (0)
 
+static char esc_map[256] = {
+	['"'] = '"',
+	['/'] = '/',
+	['\\'] = '\\',
+	['\r'] = 'r',
+	['\n'] = 'n',
+	['\t'] = 't',
+	['\b'] = 'b',
+	['\f'] = 'f'
+};
+
+static xmlChar *_xjsonEscapeString(const xmlChar *s)
+{
+	int extra = 0;
+	const xmlChar *p = s;
+	xmlChar *ret, *cur;
+
+	while (*p)
+		extra += !!esc_map[*p++];
+	if (!(ret = cur = BAD_CAST XPL_MALLOC(p - s + extra + 1)))
+		return NULL;
+	p = s;
+	while (*p)
+	{
+		if (esc_map[*p])
+		{
+			*cur++ = '\\';
+			*cur++ = esc_map[*p++];
+		} else
+			*cur++ = *p++;
+	}
+	*cur = 0;
+	return ret;
+}
+
 static xmlNodePtr _xjsonSerializeNodeList(xmlNodePtr first, xjsonSerializeCtxtPtr ctxt);
 
 static xmlNodePtr _xjsonSerializeList(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt, xjsonElementType containerType)
@@ -100,7 +135,7 @@ done:
 static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt, xjsonElementType type)
 {
 	xmlNodePtr ret = NULL;
-	xmlChar *content = NULL;
+	xmlChar *content = NULL, *str_content = NULL;
 
 	if (!xplCheckNodeListForText(cur->children))
 		return xplCreateErrorNode(ctxt->parent, BAD_CAST "element '%s' has non-text nodes inside", cur->name);
@@ -136,10 +171,16 @@ static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 		default:
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 		}
-	ADD_DATA(type == XJE_NULL? BAD_CAST "null": content, xmlStrlen(type == XJE_NULL? BAD_CAST "null": content));
+	if (type == XJE_STRING)
+		str_content = _xjsonEscapeString(content);
+	else
+		str_content = content;
+	ADD_DATA(type == XJE_NULL? BAD_CAST "null": str_content, xmlStrlen(type == XJE_NULL? BAD_CAST "null": str_content));
 	if (type == XJE_STRING)
 		ADD_DATA("\"", 1);
 done:
+	if (str_content && str_content != content)
+		XPL_FREE(str_content);
 	if (content)
 		XPL_FREE(content);
 	return ret;
@@ -147,7 +188,7 @@ done:
 
 static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt)
 {
-	xmlChar *name = NULL;
+	xmlChar *name = NULL, *escaped_name = NULL;
 	xmlNodePtr ret = NULL;
 	xjsonElementType el_type;
 
@@ -180,7 +221,8 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 			goto done;
 		}
 		ADD_DATA("\"", 1);
-		ADD_DATA(name, xmlStrlen(name));
+		escaped_name = _xjsonEscapeString(name);
+		ADD_DATA(escaped_name, xmlStrlen(escaped_name));
 		ADD_DATA("\":", 2);
 	} else if (ctxt->container_type == XJE_OBJECT) {
 		ret = xplCreateErrorNode(ctxt->parent, BAD_CAST "items inside an object must be named");
@@ -192,6 +234,8 @@ static xmlNodePtr _xjsonSerializeNode(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 	else
 		ret = _xjsonSerializeAtom(cur, ctxt, el_type);
 done:
+	if (escaped_name)
+		xmlFree(escaped_name);
 	if (name)
 		XPL_FREE(name);
 	return ret;
