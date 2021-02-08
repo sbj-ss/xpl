@@ -15,12 +15,13 @@
             <j:number>2</j:number>
             <j:null/>
           </j:array>
+          <j:string name="empty"/>
           <j:string name="s">string\a</j:string>
           <j:boolean name="b">true</j:boolean>
         </j:object>
       </xpl:xjson-serialize>
     </Input>
-    <Expected>{"number_\"array":[1,2,null],"s":"string\\a","b":true}</Expected>
+    <Expected>{"number_\"array":[1,2,null],"empty":"","s":"string\\a","b":true}</Expected>
   </MustSucceed>
 
   <MustSucceed name="pass/skip-unknown">

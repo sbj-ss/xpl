@@ -171,11 +171,14 @@ static xmlNodePtr _xjsonSerializeAtom(xmlNodePtr cur, xjsonSerializeCtxtPtr ctxt
 		default:
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 		}
-	if (type == XJE_STRING)
+	if (type == XJE_STRING && content)
 		str_content = _xjsonEscapeString(content);
 	else
 		str_content = content;
-	ADD_DATA(type == XJE_NULL? BAD_CAST "null": str_content, xmlStrlen(type == XJE_NULL? BAD_CAST "null": str_content));
+	if (type == XJE_NULL)
+		ADD_DATA(BAD_CAST "null", 4);
+	else if (str_content)
+		ADD_DATA(str_content, xmlStrlen(str_content));
 	if (type == XJE_STRING)
 		ADD_DATA("\"", 1);
 done:
