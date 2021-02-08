@@ -74,7 +74,7 @@ static xmlNodePtr _createMemoryError(jsonxSerializeCtxtPtr ctxt)
 		} \
 	} while (0)
 
-static char esc_map[256] = {
+static xmlChar esc_map[256] = {
 	['"'] = '"',
 	['/'] = '/',
 	['\\'] = '\\',
