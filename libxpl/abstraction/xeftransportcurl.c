@@ -7,6 +7,67 @@
     "AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/47.0.2526.73 " \
     "Chrome/47.0.2526.73 Safari/537.36"
 
+#ifdef _WIN32
+#include <processenv.h>
+#define CA_BUNDLE_FILE_NAME "cacert.pem"
+
+static char *ca_bundle_path;
+
+static char* _getCaBundleLocation()
+{
+	char *buffer, *file_part;
+	DWORD size;
+
+	if (!(size = SearchPathA(NULL, CA_BUNDLE_FILE_NAME, NULL, 0, NULL, NULL)))
+		return NULL;
+	if (!(buffer = XPL_MALLOC(size)))
+		return NULL;
+	SearchPathA(NULL, CA_BUNDLE_FILE_NAME, NULL, size, buffer, &file_part);
+	return buffer;
+}
+
+static bool _initSSL(xefStartupParamsPtr params)
+{
+	if (!(ca_bundle_path = _getCaBundleLocation()))
+	{
+		params->error = BAD_CAST XPL_STRDUP("Can't locate "CA_BUNDLE_FILE_NAME);
+		return false;
+	}
+	return true;
+}
+
+static bool _setCurlSSL(CURL *curl)
+{
+	return (curl_easy_setopt(curl, CURLOPT_CAINFO, ca_bundle_path) == CURLE_OK);
+}
+
+static void _cleanupSSL(void)
+{
+	if (ca_bundle_path)
+	{
+		XPL_FREE(ca_bundle_path);
+		ca_bundle_path = NULL;
+	}
+}
+#else
+static bool _initSSL(xefStartupParamsPtr params)
+{
+	UNUSED_PARAM(params);
+	return true;
+}
+
+static bool _setCurlSSL(CURL *curl)
+{
+	/* we rely on builtins in linux */
+	UNUSED_PARAM(curl);
+	return true;
+}
+
+static void _cleanupSSL(void)
+{
+}
+#endif
+
 bool xefStartupTransport(xefStartupParamsPtr params)
 {
 	CURLcode res;
@@ -16,6 +77,8 @@ bool xefStartupTransport(xefStartupParamsPtr params)
 		params->error = BAD_CAST XPL_STRDUP(curl_easy_strerror(res));
 		return false;
 	}
+	if (!_initSSL(params))
+		return false;
 	params->error = NULL;
 	return true;
 }
@@ -65,6 +128,11 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	if (!(curl = curl_easy_init()))
 	{
 		params->error = BAD_CAST XPL_STRDUP("curl_easy_init() failed");
+		goto done;
+	}
+	if (!_setCurlSSL(curl))
+	{
+		params->error = BAD_CAST XPL_STRDUP("setting SSL options failed");
 		goto done;
 	}
 	if (!(buf = rbCreateBufParams(0x10000, RB_GROW_DOUBLE, 0)))
@@ -145,5 +213,5 @@ void xefFetchParamsClear(xefFetchDocumentParamsPtr params)
 
 void xefShutdownTransport(void)
 {
-	NOOP();
+	_cleanupSSL();
 }
