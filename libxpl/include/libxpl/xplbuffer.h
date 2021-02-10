@@ -44,7 +44,7 @@ typedef struct _rbBuf *rbBufPtr;
    < 0 = failure
    The function should be able to handle blocks up to the buffer size.
  */
-typedef int (*rbFlushCallback)(void* data, size_t size);
+typedef int (*rbFlushCallback)(const void* data, size_t size);
 
 /* Creates a buffer with default parameters */
 XPLPUBFUN rbBufPtr XPLCALL
@@ -93,7 +93,7 @@ XPLPUBFUN void* XPLCALL
 	rbDetachBufContent(rbBufPtr buf);
 /* Writes data to buffer */
 XPLPUBFUN rbOpResult XPLCALL
-	rbAddDataToBuf(rbBufPtr buf, void* content, size_t size);
+	rbAddDataToBuf(rbBufPtr buf, const void* content, size_t size);
 /* Rewinds the content pointer. Memory isn't freed. */
 XPLPUBFUN rbOpResult XPLCALL
 	rbRewindBuf(rbBufPtr buf);

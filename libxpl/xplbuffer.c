@@ -231,7 +231,7 @@ rbOpResult rbEnsureBufFreeSize(rbBufPtr buf, size_t minfree)
 	return RB_RESULT_OK;
 }
 
-rbOpResult rbAddDataToBuf(rbBufPtr buf, void* content, size_t size)
+rbOpResult rbAddDataToBuf(rbBufPtr buf, const void* content, size_t size)
 {
 	rbOpResult rslt;
 	size_t free_space;
