@@ -17,6 +17,8 @@ extern "C" {
 
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplJsonXSerializeNodeList(xmlNodePtr list, bool strictTagNames,	bool valueTypeCheck, bool prettyPrint);
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplJsonXParse(xmlChar *src, xmlNodePtr parent, bool validateStrings);
 
 #ifdef __cplusplus
 }

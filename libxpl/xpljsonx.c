@@ -53,7 +53,7 @@ typedef enum _jsonxElementType {
 
 #define JSONX_TYPE_IS_CONTAINER(t) ((t) == JXE_OBJECT || (t) == JXE_ARRAY)
 
-typedef struct _jsonxSerializeCtxt {
+typedef struct _jsonxSerializeContext {
 	xmlNodePtr parent;
 	bool strict_tag_names;
 	bool value_type_check;
@@ -63,7 +63,7 @@ typedef struct _jsonxSerializeCtxt {
 	xmlNsPtr jsonx_ns;
 	jsonxElementType container_type;
 	bool out_of_memory;
-} jsonxSerializeCtxt, *jsonxSerializeCtxtPtr;
+} jsonxSerializeContext, *jsonxSerializeContextPtr;
 
 static bool _checkJsonXNs(xmlNsPtr ns, xmlNsPtr *cached_ns)
 {
@@ -136,9 +136,9 @@ static xmlChar* _yajlGenStatusToString(int status)
 		} \
 	} while(0) \
 
-static xmlNodePtr _jsonxSerializeNodeList(xmlNodePtr first, jsonxSerializeCtxtPtr ctxt);
+static xmlNodePtr _jsonxSerializeNodeList(xmlNodePtr first, jsonxSerializeContextPtr ctxt);
 
-static xmlNodePtr _jsonxSerializeList(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt, jsonxElementType containerType)
+static xmlNodePtr _jsonxSerializeList(xmlNodePtr cur, jsonxSerializeContextPtr ctxt, jsonxElementType containerType)
 {
 	jsonxElementType prev_container_type;
 	xmlNodePtr ret = NULL;
@@ -167,7 +167,7 @@ done:
 	return ret;
 }
 
-static xmlNodePtr _jsonxSerializeAtom(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt, jsonxElementType type)
+static xmlNodePtr _jsonxSerializeAtom(xmlNodePtr cur, jsonxSerializeContextPtr ctxt, jsonxElementType type)
 {
 	xmlNodePtr ret = NULL;
 	xmlChar *content = NULL;
@@ -232,7 +232,7 @@ done:
 	return ret;
 }
 
-static xmlNodePtr _jsonxSerializeNode(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt)
+static xmlNodePtr _jsonxSerializeNode(xmlNodePtr cur, jsonxSerializeContextPtr ctxt)
 {
 	xmlChar *name = NULL;
 	xmlNodePtr ret = NULL;
@@ -279,7 +279,7 @@ done:
 	return ret;
 }
 
-static xmlNodePtr _jsonxSerializeNodeList(xmlNodePtr first, jsonxSerializeCtxtPtr ctxt)
+static xmlNodePtr _jsonxSerializeNodeList(xmlNodePtr first, jsonxSerializeContextPtr ctxt)
 {
 	xmlNodePtr error;
 
@@ -294,7 +294,7 @@ static xmlNodePtr _jsonxSerializeNodeList(xmlNodePtr first, jsonxSerializeCtxtPt
 
 static void _yajlPrint(void *ctx, const char *str, size_t len)
 {
-	jsonxSerializeCtxtPtr jctxt = (jsonxSerializeCtxtPtr) ctx;
+	jsonxSerializeContextPtr jctxt = (jsonxSerializeContextPtr) ctx;
 
 	if (!str)
 		return;
@@ -304,9 +304,10 @@ static void _yajlPrint(void *ctx, const char *str, size_t len)
 
 xmlNodePtr xplJsonXSerializeNodeList(xmlNodePtr list, bool strictTagNames, bool valueTypeCheck, bool prettyPrint)
 {
-	jsonxSerializeCtxt ctxt;
+	jsonxSerializeContext ctxt;
 	xmlNodePtr ret;
 
+	memset(&ctxt, 0, sizeof(ctxt));
 	if (!(ctxt.buf = rbCreateBufParams(2048, RB_GROW_DOUBLE, 0)))
 	{
 		ret = xplCreateErrorNode(list->parent, BAD_CAST "%s(): rbCreateBufParams() failed", __FUNCTION__);
@@ -349,5 +350,193 @@ done:
 		rbFreeBuf(ctxt.buf);
 	if (ctxt.gen)
 		yajl_gen_free(ctxt.gen);
+	return ret;
+}
+
+typedef struct _jsonxParseContext
+{
+	xmlNodePtr parent;
+	xmlNodePtr cur;
+	xmlChar *key;
+	xmlNsPtr ns;
+} jsonxParseContext, *jsonxParseContextPtr;
+
+static void _setName(jsonxParseContextPtr ctxt, xmlNodePtr node)
+{
+	if (ctxt->key)
+	{
+		xmlNewProp(node, BAD_CAST "name", ctxt->key);
+		XPL_FREE(ctxt->key);
+		ctxt->key = NULL;
+	}
+}
+
+static xmlNodePtr _createTextNode(jsonxParseContextPtr ctxt, const xmlChar *name, const xmlChar *content, size_t len)
+{
+	xmlChar *value;
+	xmlNodePtr ret;
+
+	value = xmlStrndup(content, len);
+	ret = xmlNewDocNode(ctxt->parent->doc, ctxt->ns, name, NULL);
+	ret->children = ret->last = xmlNewDocText(ctxt->parent->doc, NULL);
+	ret->children->parent = ret;
+	ret->children->content = value;
+	return ret;
+}
+
+static int _yajlNull(void *ctx)
+{
+	jsonxParseContextPtr jctxt = (jsonxParseContextPtr) ctx;
+	xmlNodePtr null;
+
+	if (!(null = xmlNewDocNode(jctxt->parent->doc, jctxt->ns, BAD_CAST "null", NULL)))
+		return 0;
+	_setName(jctxt, null);
+	xmlAddChild(jctxt->cur, null);
+	return 1;
+}
+
+static int _yajlBoolean(void *ctx, int boolVal)
+{
+	jsonxParseContextPtr jctxt = (jsonxParseContextPtr) ctx;
+	xmlNodePtr boolean;
+
+	if (!(boolean = xmlNewDocNode(jctxt->parent->doc, jctxt->ns, BAD_CAST "boolean", BAD_CAST (boolVal? "true": "false"))))
+		return 0;
+	_setName(jctxt, boolean);
+	xmlAddChild(jctxt->cur, boolean);
+	return 1;
+}
+
+static int _yajlNumber(void *ctx, const char *numberVal, size_t numberLen)
+{
+	jsonxParseContextPtr jctxt = (jsonxParseContextPtr) ctx;
+	xmlNodePtr number;
+
+	if (!(number = _createTextNode(jctxt, BAD_CAST "number", BAD_CAST numberVal, numberLen)))
+		return 0;
+	_setName(jctxt, number);
+	xmlAddChild(jctxt->cur, number);
+	return 1;
+}
+
+static int _yajlString(void *ctx, const unsigned char *stringVal, size_t stringLen)
+{
+	jsonxParseContextPtr jctxt = (jsonxParseContextPtr) ctx;
+	xmlNodePtr string;
+
+	if (!(string = _createTextNode(jctxt, BAD_CAST "string", stringVal, stringLen)))
+		return 0;
+	_setName(jctxt, string);
+	xmlAddChild(jctxt->cur, string);
+	return 1;
+}
+
+static int _yajlStartMap(void *ctx)
+{
+	jsonxParseContextPtr jctxt = (jsonxParseContextPtr) ctx;
+	xmlNodePtr object;
+
+	if (!(object = xmlNewDocNode(jctxt->parent->doc, jctxt->ns, BAD_CAST "object", NULL)))
+		return 0;
+	_setName(jctxt, object);
+	xmlAddChild(jctxt->cur, object);
+	jctxt->cur = object;
+	return 1;
+}
+
+static int _yajlMapKey(void *ctx, const unsigned char *key, size_t stringLen)
+{
+	jsonxParseContextPtr jctxt = (jsonxParseContextPtr) ctx;
+
+	if (!(jctxt->key = xmlStrndup(key, stringLen)))
+		return 0;
+	return 1;
+}
+
+static int _yajlEndMap(void *ctx)
+{
+	jsonxParseContextPtr jctxt = (jsonxParseContextPtr) ctx;
+
+	jctxt->cur = jctxt->cur->parent;
+	return 1;
+}
+
+static int _yajlStartArray(void *ctx)
+{
+	jsonxParseContextPtr jctxt = (jsonxParseContextPtr) ctx;
+	xmlNodePtr array;
+
+	if (!(array = xmlNewDocNode(jctxt->parent->doc, jctxt->ns, BAD_CAST "array", NULL)))
+		return 0;
+	_setName(jctxt, array);
+	xmlAddChild(jctxt->cur, array);
+	jctxt->cur = array;
+	return 1;
+}
+
+static int _yajlEndArray(void *ctx)
+{
+	jsonxParseContextPtr jctxt = (jsonxParseContextPtr) ctx;
+
+	jctxt->cur = jctxt->cur->parent;
+	return 1;
+}
+
+static const yajl_callbacks yajl_parse_callbacks =
+{
+	.yajl_null = _yajlNull,
+	.yajl_boolean = _yajlBoolean,
+	.yajl_number = _yajlNumber,
+	.yajl_string = _yajlString,
+	.yajl_start_map = _yajlStartMap,
+	.yajl_map_key = _yajlMapKey,
+	.yajl_end_map = _yajlEndMap,
+	.yajl_start_array = _yajlStartArray,
+	.yajl_end_array = _yajlEndArray
+};
+
+xmlNodePtr xplJsonXParse(xmlChar *src, xmlNodePtr parent, bool validateStrings)
+{
+	jsonxParseContext ctxt;
+	xmlNodePtr ret;
+	yajl_handle parser;
+	int status;
+	size_t len;
+	xmlChar *error;
+
+	memset(&ctxt, 0, sizeof(ctxt));
+	if (!(parser = yajl_alloc(&yajl_parse_callbacks, (yajl_alloc_funcs*) yajl_mem_funcs_ptr, &ctxt)))
+		return xplCreateErrorNode(parent, BAD_CAST "%s(): yajl_alloc() failed", __FUNCTION__);
+	if (!yajl_config(parser, yajl_dont_validate_strings, (int) !validateStrings))
+	{
+		ret = xplCreateErrorNode(parent, BAD_CAST "%s(): yajl_config(yajl_dont_validate_strings) failed", __FUNCTION__);
+		goto done;
+	}
+	if (!(ctxt.ns = xmlSearchNsByHref(parent->doc, parent, JSONX_SCHEMA_URI)))
+		if (!(ctxt.ns = xmlNewNs(parent, JSONX_SCHEMA_URI, BAD_CAST "j")))
+		{
+			ret = xplCreateErrorNode(parent, BAD_CAST "out of memory");
+			goto done;
+		}
+	ctxt.parent = ctxt.cur = parent;
+	len = xmlStrlen(src);
+	if (
+		(status = yajl_parse(parser, src, len) != yajl_status_ok)
+		||
+		(status = yajl_complete_parse(parser) != yajl_status_ok)
+	)
+	{
+		error = yajl_get_error(parser, true, src, len);
+		ret = xplCreateErrorNode(parent, BAD_CAST "%s", error);
+		XPL_FREE(error);
+		goto done;
+	}
+	ret = xplDetachChildren(parent);
+done:
+	if (parser)
+		yajl_free(parser);
+	if (ctxt.key)
+		XPL_FREE(ctxt.key);
 	return ret;
 }
