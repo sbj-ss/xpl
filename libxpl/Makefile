@@ -85,6 +85,7 @@ commands/Include.c\
 commands/Inherit.c\
 commands/IsDefined.c\
 commands/Isolate.c\
+commands/JsonXParse.c\
 commands/JsonXSerialize.c\
 commands/ListMacros.c\
 commands/LoadModule.c\

@@ -52,6 +52,7 @@ extern xplCommand xplIncludeCommand;
 extern xplCommand xplInheritCommand;
 extern xplCommand xplIsDefinedCommand;
 extern xplCommand xplIsolateCommand;
+extern xplCommand xplJsonXParseCommand;
 extern xplCommand xplJsonXSerializeCommand;
 extern xplCommand xplListMacrosCommand;
 extern xplCommand xplLoadModuleCommand;

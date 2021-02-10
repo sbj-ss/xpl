@@ -56,6 +56,7 @@ static xplCommandSignature builtinCommands[] =
 	{ BAD_CAST "is-defined", &xplIsDefinedCommand, 0 },
 	{ BAD_CAST "is-file-exist", &xplFileExistsCommand, XPL_CMDSIG_COMPAT_ONLY },
 	{ BAD_CAST "isolate", &xplIsolateCommand, 0 },
+	{ BAD_CAST "jsonx-parse", &xplJsonXParseCommand, 0 },
 	{ BAD_CAST "jsonx-serialize", &xplJsonXSerializeCommand, 0 },
 	{ BAD_CAST "list-macros", &xplListMacrosCommand, 0 },
 	{ BAD_CAST "load-module", &xplLoadModuleCommand, 0 },
