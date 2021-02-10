@@ -9,7 +9,7 @@ ifneq ($(LIB_ROOT),)
 INCLUDE += -I$(LIB_ROOT)/include -I$(LIB_ROOT)/include/libxml2
 LIB += -L$(LIB_ROOT)/lib
 endif
-LIBS = -lxml2 -lxpl_dll -lonig -lcrypto -ltidy -lidn -lodbc32
+LIBS = -lxml2 -lxpl_dll -lonig -lcrypto -ltidy -lidn -lodbc32 -lyajl
 WARNINGS = -Wall -Werror
 CFLAGS = -L../libxpl $(WARNINGS)
 ifeq ($(DEBUG), 1)

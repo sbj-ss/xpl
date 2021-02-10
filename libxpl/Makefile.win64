@@ -9,7 +9,7 @@ ifneq ($(LIB_ROOT),)
 INCLUDE += -I$(LIB_ROOT)/include -I$(LIB_ROOT)/include/libxml2
 LIB += -L$(LIB_ROOT)/lib 
 endif
-LIBS = -lxml2 -lonig -ltidy -lcrypto -lidn -lodbc32 -liconv -lz.dll -llzma -lpsapi -lole32 -lwinhttp -lcurl
+LIBS = -lxml2 -lonig -ltidy -lcrypto -lidn -lodbc32 -liconv -lz.dll -llzma -lpsapi -lole32 -lwinhttp -lcurl -lyajl
 WARNINGS = -Wall -Wmissing-prototypes -Wshadow -Werror -Wextra
 FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_TRANSPORT_CURL -D_XEF_DB_ODBC
 CFLAGS = -fpic -D_IN_DLL $(FEATURES) $(WARNINGS)
