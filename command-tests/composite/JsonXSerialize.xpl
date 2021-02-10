@@ -12,7 +12,7 @@
         <j:object>
           <j:array name="number_&quot;array">
             <j:number>1</j:number>
-            <j:number>2</j:number>
+            <j:number>-2.5e6</j:number>
             <j:null/>
           </j:array>
           <j:string name="empty"/>
@@ -21,7 +21,7 @@
         </j:object>
       </xpl:jsonx-serialize>
     </Input>
-    <Expected>{"number_\"array":[1,2,null],"empty":"","s":"string\\a","b":true}</Expected>
+    <Expected>{"number_\"array":[1,-2.5e6,null],"empty":"","s":"string\\a","b":true}</Expected>
   </MustSucceed>
 
   <MustSucceed name="pass/format">
@@ -105,6 +105,14 @@
       <xpl:jsonx-serialize>
         <j:number>1</j:number>
         <j:number>2</j:number>
+      </xpl:jsonx-serialize>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/number-too-big">
+    <Input>
+      <xpl:jsonx-serialize valuetypecheck="true">
+        <j:number>1e100500</j:number>
       </xpl:jsonx-serialize>
     </Input>
   </MustFail>

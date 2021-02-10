@@ -1,4 +1,7 @@
+#include <errno.h>
+#include <math.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <yajl/yajl_common.h>
 #include <yajl/yajl_gen.h>
 #include <yajl/yajl_parse.h>
@@ -168,6 +171,7 @@ static xmlNodePtr _jsonxSerializeAtom(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt
 {
 	xmlNodePtr ret = NULL;
 	xmlChar *content = NULL;
+	char *end;
 	int yajl_result;
 
 	if (!xplCheckNodeListForText(cur->children))
@@ -179,9 +183,9 @@ static xmlNodePtr _jsonxSerializeAtom(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt
 		case JXE_STRING:
 			break;
 		case JXE_NUMBER:
-			if (!xstrIsNumber(content))
+			if (!isfinite(strtod((char*) content, &end)) || end || errno == ERANGE)
 			{
-				ret = xplCreateErrorNode(ctxt->parent, BAD_CAST "element '%s' content '%s' is non-numeric", cur->name, content);
+				ret = xplCreateErrorNode(ctxt->parent, BAD_CAST "element '%s' content '%s' is non-numeric or out of range", cur->name, content);
 				goto done;
 			}
 			break;
