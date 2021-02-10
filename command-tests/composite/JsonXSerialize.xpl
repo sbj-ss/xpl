@@ -24,6 +24,34 @@
     <Expected>{"number_\"array":[1,2,null],"empty":"","s":"string\\a","b":true}</Expected>
   </MustSucceed>
 
+  <MustSucceed name="pass/format">
+    <Input>
+      <xpl:jsonx-serialize format="true">
+        <j:object>
+          <j:array name="number_&quot;array">
+            <j:number>1</j:number>
+            <j:number>2</j:number>
+            <j:null/>
+          </j:array>
+          <j:string name="empty"/>
+          <j:string name="s">string\a</j:string>
+          <j:boolean name="b">true</j:boolean>
+        </j:object>
+      </xpl:jsonx-serialize>
+    </Input>
+    <Expected>{
+    "number_\"array": [
+        1,
+        2,
+        null
+    ],
+    "empty": "",
+    "s": "string\\a",
+    "b": true
+}
+</Expected>
+  </MustSucceed>
+
   <MustSucceed name="pass/skip-unknown">
     <Input>
       <xpl:jsonx-serialize>
@@ -69,6 +97,15 @@
   <MustFail name="fail/bad-strict-tag-names">
     <Input>
       <xpl:jsonx-serialize stricttagnames="HNTR"/>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/sequential/atoms">
+    <Input>
+      <xpl:jsonx-serialize>
+        <j:number>1</j:number>
+        <j:number>2</j:number>
+      </xpl:jsonx-serialize>
     </Input>
   </MustFail>
 

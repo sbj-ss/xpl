@@ -8,6 +8,7 @@
 * libssl-dev
 * libtidy-dev
 * libxml2-dev
+* libyajl-dev
 * libz-dev
 * unixodbc-dev
 

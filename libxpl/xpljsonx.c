@@ -1,9 +1,42 @@
 #include <stdbool.h>
+#include <yajl/yajl_common.h>
+#include <yajl/yajl_gen.h>
+#include <yajl/yajl_parse.h>
 #include <libxpl/xplbuffer.h>
 #include <libxpl/xpljsonx.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
+
+#ifdef _LEAK_DETECTION
+static void* _yajlMalloc(void *ctx, size_t sz)
+{
+	UNUSED_PARAM(ctx);
+	return XPL_MALLOC(sz);
+}
+
+static void* _yajlRealloc(void *ctx, void *ptr, size_t sz)
+{
+	UNUSED_PARAM(ctx);
+	return XPL_REALLOC(ptr, sz);
+}
+
+static void _yajlFree(void *ctx, void *ptr)
+{
+	UNUSED_PARAM(ctx);
+	XPL_FREE(ptr);
+}
+
+static const yajl_alloc_funcs yajl_mem_funcs ={
+	.malloc = _yajlMalloc,
+	.realloc = _yajlRealloc,
+	.free = _yajlFree
+};
+
+static const yajl_alloc_funcs *yajl_mem_funcs_ptr = &yajl_mem_funcs;
+#else
+static const yajl_alloc_funcs *yajl_mem_funcs_ptr = NULL;
+#endif
 
 typedef enum _jsonxElementType {
 	JXE_ARRAY,
@@ -21,11 +54,12 @@ typedef struct _jsonxSerializeCtxt {
 	xmlNodePtr parent;
 	bool strict_tag_names;
 	bool value_type_check;
+	yajl_gen gen;
 	rbBufPtr buf;
 	/* will be changed by serializer */
 	xmlNsPtr jsonx_ns;
 	jsonxElementType container_type;
-	bool is_first_item;
+	bool out_of_memory;
 } jsonxSerializeCtxt, *jsonxSerializeCtxtPtr;
 
 static bool _checkJsonXNs(xmlNsPtr ns, xmlNsPtr *cached_ns)
@@ -60,87 +94,84 @@ static jsonxElementType _getElementType(xmlNodePtr cur)
 	return JXE_NONE;
 }
 
-static xmlNodePtr _createMemoryError(jsonxSerializeCtxtPtr ctxt)
+static xmlChar* _yajlGenStatusToString(int status)
 {
-	return xplCreateErrorNode(ctxt->parent, BAD_CAST "insufficient memory");
+	switch(status)
+	{
+	case yajl_gen_status_ok:
+		return BAD_CAST "no error";
+	case yajl_gen_keys_must_be_strings:
+		return BAD_CAST "keys must be strings";
+	case yajl_max_depth_exceeded:
+		return BAD_CAST "max JSON depth exceeded";
+	case yajl_gen_in_error_state:
+		return BAD_CAST "yajl_gen_XXX called while already in error state";
+	case yajl_gen_generation_complete:
+		return BAD_CAST "extra data after the end of JSON document (sequential atoms without a parent?..)";
+	case yajl_gen_invalid_number:
+		return BAD_CAST "invalid number";
+	case yajl_gen_no_buf:
+		return BAD_CAST "custom print callback is used so YAJL buffer is empty";
+	case yajl_gen_invalid_string:
+		return BAD_CAST "invalid UTF-8 string";
+	default:
+		return BAD_CAST "unknown error";
+	}
 }
 
-#define ADD_DATA(d, size) \
+#define CHECK_RESULT_AND_OOM(result, ctxt, allow_complete) \
 	do { \
-		if (rbAddDataToBuf(ctxt->buf, d, size) != RB_RESULT_OK) \
+		if ((result != yajl_gen_status_ok) && (!(allow_complete) || result != yajl_gen_generation_complete)) \
 		{ \
-			ret = _createMemoryError(ctxt); \
+			ret = xplCreateErrorNode(ctxt->parent, _yajlGenStatusToString(result)); \
 			goto done; \
 		} \
-	} while (0)
-
-static xmlChar esc_map[256] = {
-	['"'] = '"',
-	['/'] = '/',
-	['\\'] = '\\',
-	['\r'] = 'r',
-	['\n'] = 'n',
-	['\t'] = 't',
-	['\b'] = 'b',
-	['\f'] = 'f'
-};
-
-static xmlChar *_jsonxEscapeString(const xmlChar *s)
-{
-	int extra = 0;
-	const xmlChar *p = s;
-	xmlChar *ret, *cur;
-
-	while (*p)
-		extra += !!esc_map[*p++];
-	if (!(ret = cur = BAD_CAST XPL_MALLOC(p - s + extra + 1)))
-		return NULL;
-	p = s;
-	while (*p)
-	{
-		if (esc_map[*p])
-		{
-			*cur++ = '\\';
-			*cur++ = esc_map[*p++];
-		} else
-			*cur++ = *p++;
-	}
-	*cur = 0;
-	return ret;
-}
+		if (ctxt->out_of_memory) \
+		{ \
+			ret = xplCreateErrorNode(ctxt->parent, BAD_CAST "%s(): out of memory", __FUNCTION__); \
+			goto done; \
+		} \
+	} while(0) \
 
 static xmlNodePtr _jsonxSerializeNodeList(xmlNodePtr first, jsonxSerializeCtxtPtr ctxt);
 
 static xmlNodePtr _jsonxSerializeList(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt, jsonxElementType containerType)
 {
 	jsonxElementType prev_container_type;
-	bool prev_is_first_item;
 	xmlNodePtr ret = NULL;
+	int yajl_result;
 
-	if (rbAddDataToBuf(ctxt->buf, (containerType == JXE_ARRAY)? "[": "{", 1) != RB_RESULT_OK)
-		return _createMemoryError(ctxt);
+	if (containerType == JXE_ARRAY)
+		yajl_result = yajl_gen_array_open(ctxt->gen);
+	else if (containerType == JXE_OBJECT)
+		yajl_result = yajl_gen_map_open(ctxt->gen);
+	else {
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return xplCreateErrorNode(ctxt->parent, BAD_CAST "internal error");
+	}
+	CHECK_RESULT_AND_OOM(yajl_result, ctxt, false);
 	prev_container_type = ctxt->container_type;
-	prev_is_first_item = ctxt->is_first_item;
 	ctxt->container_type = containerType;
-	ctxt->is_first_item = true;
 	if ((ret = _jsonxSerializeNodeList(cur->children, ctxt)))
 		goto done;
-	ADD_DATA(containerType == JXE_ARRAY? "]": "}", 1);
+	if (containerType == JXE_ARRAY)
+		yajl_result = yajl_gen_array_close(ctxt->gen);
+	else if (containerType == JXE_OBJECT)
+		yajl_result = yajl_gen_map_close(ctxt->gen);
+	CHECK_RESULT_AND_OOM(yajl_result, ctxt, prev_container_type == JXE_NONE);
 done:
 	ctxt->container_type = prev_container_type;
-	ctxt->is_first_item = prev_is_first_item;
 	return ret;
 }
 
 static xmlNodePtr _jsonxSerializeAtom(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt, jsonxElementType type)
 {
 	xmlNodePtr ret = NULL;
-	xmlChar *content = NULL, *str_content = NULL;
+	xmlChar *content = NULL;
+	int yajl_result;
 
 	if (!xplCheckNodeListForText(cur->children))
 		return xplCreateErrorNode(ctxt->parent, BAD_CAST "element '%s' has non-text nodes inside", cur->name);
-	if (type == JXE_STRING)
-		ADD_DATA("\"", 1);
 	content = xmlNodeListGetString(cur->doc, cur->children, 1);
 	if (ctxt->value_type_check)
 		switch(type)
@@ -171,19 +202,27 @@ static xmlNodePtr _jsonxSerializeAtom(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt
 		default:
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 		}
-	if (type == JXE_STRING && content)
-		str_content = _jsonxEscapeString(content);
-	else
-		str_content = content;
-	if (type == JXE_NULL)
-		ADD_DATA(BAD_CAST "null", 4);
-	else if (str_content)
-		ADD_DATA(str_content, xmlStrlen(str_content));
-	if (type == JXE_STRING)
-		ADD_DATA("\"", 1);
+	switch(type)
+	{
+	case JXE_STRING:
+		yajl_result = yajl_gen_string(ctxt->gen, content, xmlStrlen(content));
+		break;
+	case JXE_NUMBER:
+		yajl_result = yajl_gen_number(ctxt->gen, (char*) content, xmlStrlen(content));
+		break;
+	case JXE_BOOLEAN:
+		yajl_result = yajl_gen_bool(ctxt->gen, content && content[0] == 't');
+		break;
+	case JXE_NULL:
+		yajl_result = yajl_gen_null(ctxt->gen);
+		break;
+	default:
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		ret = xplCreateErrorNode(ctxt->parent, BAD_CAST "internal error");
+		goto done;
+	}
+	CHECK_RESULT_AND_OOM(yajl_result, ctxt, false); // ??
 done:
-	if (str_content && str_content != content)
-		XPL_FREE(str_content);
 	if (content)
 		XPL_FREE(content);
 	return ret;
@@ -191,9 +230,10 @@ done:
 
 static xmlNodePtr _jsonxSerializeNode(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt)
 {
-	xmlChar *name = NULL, *escaped_name = NULL;
+	xmlChar *name = NULL;
 	xmlNodePtr ret = NULL;
 	jsonxElementType el_type;
+	int yajl_result;
 
 	if (!cur->ns || !_checkJsonXNs(cur->ns, &ctxt->jsonx_ns))
 	{
@@ -208,13 +248,6 @@ static xmlNodePtr _jsonxSerializeNode(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt
 			return xplCreateErrorNode(ctxt->parent, BAD_CAST "unknown tag name '%s'", cur->name);
 		return NULL;
 	}
-	if (ctxt->container_type != JXE_NONE)
-	{
-		if (!ctxt->is_first_item)
-			ADD_DATA(",", 1);
-		else
-			ctxt->is_first_item = false;
-	}
 	name = xmlGetNoNsProp(cur, BAD_CAST "name");
 	if (name)
 	{
@@ -223,22 +256,20 @@ static xmlNodePtr _jsonxSerializeNode(xmlNodePtr cur, jsonxSerializeCtxtPtr ctxt
 			ret = xplCreateErrorNode(ctxt->parent, BAD_CAST "cannot use named items outside of object");
 			goto done;
 		}
-		ADD_DATA("\"", 1);
-		escaped_name = _jsonxEscapeString(name);
-		ADD_DATA(escaped_name, xmlStrlen(escaped_name));
-		ADD_DATA("\":", 2);
 	} else if (ctxt->container_type == JXE_OBJECT) {
 		ret = xplCreateErrorNode(ctxt->parent, BAD_CAST "items inside an object must be named");
 		goto done;
 	}
-
+	if (name)
+	{
+		yajl_result = yajl_gen_string(ctxt->gen, name, xmlStrlen(name));
+		CHECK_RESULT_AND_OOM(yajl_result, ctxt, ctxt->container_type != JXE_NONE);
+	}
 	if (JSONX_TYPE_IS_CONTAINER(el_type))
 		ret = _jsonxSerializeList(cur, ctxt, el_type);
 	else
 		ret = _jsonxSerializeAtom(cur, ctxt, el_type);
 done:
-	if (escaped_name)
-		xmlFree(escaped_name);
 	if (name)
 		XPL_FREE(name);
 	return ret;
@@ -257,27 +288,53 @@ static xmlNodePtr _jsonxSerializeNodeList(xmlNodePtr first, jsonxSerializeCtxtPt
 	return NULL;
 }
 
-xmlNodePtr xplJsonXSerializeNodeList(xmlNodePtr list, bool strictTagNames, bool valueTypeCheck)
+static void _yajlPrint(void *ctx, const char *str, size_t len)
+{
+	jsonxSerializeCtxtPtr jctxt = (jsonxSerializeCtxtPtr) ctx;
+
+	if (!str)
+		return;
+	if (rbAddDataToBuf(jctxt->buf, str, len) != RB_RESULT_OK)
+		jctxt->out_of_memory = true;
+}
+
+xmlNodePtr xplJsonXSerializeNodeList(xmlNodePtr list, bool strictTagNames, bool valueTypeCheck, bool prettyPrint)
 {
 	jsonxSerializeCtxt ctxt;
 	xmlNodePtr ret;
 
-	ctxt.buf = rbCreateBufParams(1024, RB_GROW_DOUBLE, 2);
-	if (!ctxt.buf)
-		return NULL;
+	if (!(ctxt.buf = rbCreateBufParams(2048, RB_GROW_DOUBLE, 0)))
+	{
+		ret = xplCreateErrorNode(list->parent, BAD_CAST "%s(): rbCreateBufParams() failed", __FUNCTION__);
+		goto done;
+	}
+	if (!(ctxt.gen = yajl_gen_alloc(yajl_mem_funcs_ptr)))
+	{
+		ret = xplCreateErrorNode(list->parent, BAD_CAST "%s(): yajl_gen_alloc() failed", __FUNCTION__);
+		goto done;
+	}
+	if (!yajl_gen_config(ctxt.gen, yajl_gen_print_callback, _yajlPrint, &ctxt))
+	{
+		ret = xplCreateErrorNode(list->parent, BAD_CAST "%s(): yajl_gen_config(yajl_gen_print_callback) failed", __FUNCTION__);
+		goto done;
+	}
+	if (!yajl_gen_config(ctxt.gen, yajl_gen_beautify, (int) prettyPrint))
+	{
+		ret = xplCreateErrorNode(list->parent, BAD_CAST "%s(): yajl_gen_config(yajl_gen_beautify) failed", __FUNCTION__);
+		goto done;
+	}
 	ctxt.strict_tag_names = strictTagNames;
 	ctxt.value_type_check = valueTypeCheck;
 	ctxt.jsonx_ns = NULL;
 	ctxt.parent = list->parent;
 	ctxt.container_type = JXE_NONE;
-	ctxt.is_first_item = true;
+	ctxt.out_of_memory = false;
 
 	if ((ret = _jsonxSerializeNodeList(list, &ctxt)))
 		goto done;
-
-	if (rbAddDataToBuf(ctxt.buf, "", 1) != RB_RESULT_OK) // zero-terminate
+	if (rbAddDataToBuf(ctxt.buf, "", 1) != RB_RESULT_OK) // null-terminate
 	{
-		ret = _createMemoryError(&ctxt);
+		ret = xplCreateErrorNode(list->parent, BAD_CAST "%s(): out of memory", __FUNCTION__);
 		goto done;
 	}
 
@@ -286,5 +343,7 @@ xmlNodePtr xplJsonXSerializeNodeList(xmlNodePtr list, bool strictTagNames, bool 
 done:
 	if (ctxt.buf)
 		rbFreeBuf(ctxt.buf);
+	if (ctxt.gen)
+		yajl_gen_free(ctxt.gen);
 	return ret;
 }

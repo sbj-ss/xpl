@@ -11,12 +11,14 @@ typedef struct _xplCmdJsonXSerializeParams
 {
 	bool strict_tag_names;
 	bool value_type_check;
+	bool format;
 } xplCmdJsonXSerializeParams, *xplCmdJsonXSerializeParamsPtr;
 
 static const xplCmdJsonXSerializeParams params_stencil =
 {
 	.strict_tag_names = false,
 	.value_type_check = false,
+	.format = false
 };
 
 xplCommand xplJsonXSerializeCommand =
@@ -36,6 +38,10 @@ xplCommand xplJsonXSerializeCommand =
 			.type = XPL_CMD_PARAM_TYPE_BOOL,
 			.value_stencil = &params_stencil.value_type_check
 		}, {
+			.name = BAD_CAST "format",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.format
+		}, {
 			.name = NULL
 		}
 	}
@@ -46,6 +52,6 @@ void xplCmdJsonXSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	xplCmdJsonXSerializeParamsPtr params = (xplCmdJsonXSerializeParamsPtr) commandInfo->params;
 	xmlNodePtr ret;
 
-	ret = xplJsonXSerializeNodeList(commandInfo->element->children, params->strict_tag_names, params->value_type_check);
+	ret = xplJsonXSerializeNodeList(commandInfo->element->children, params->strict_tag_names, params->value_type_check, params->format);
 	ASSIGN_RESULT(ret, ret->type == XML_ELEMENT_NODE, true);
 }
