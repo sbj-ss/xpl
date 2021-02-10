@@ -90,6 +90,7 @@ commands/Include.c\
 commands/Inherit.c\
 commands/IsDefined.c\
 commands/Isolate.c\
+commands/JsonXParse.c\
 commands/JsonXSerialize.c\
 commands/ListMacros.c\
 commands/LoadModule.c\
@@ -210,8 +211,6 @@ test: $(TEST_BIN)
 	WINEPATH=$(LIB_ROOT)/bin wine $(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
 	
 clean:
-	del /S /Q $(BUILD_DIR)
-	del libxpl$(SO_EXT)
-	del $(TEST_BIN)
+	rm -rf $(BUILD_DIR) libxpl$(SO_EXT) libxpl_dll.a $(TEST_BIN) || true
 	
 all: build_dirs libxpl$(SO_EXT)
