@@ -35,7 +35,6 @@ xpl.exe: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LIBS)
 	
 clean:
-	del /S /Q $(BUILD_DIR)\*.o
-	del xpl.exe
+	rm -rf $(BUILD_DIR) xpl.exe
 	
 all: xpl.exe
