@@ -1,9 +1,5 @@
-#include <libxpl/xplbuffer.h>
 #include <libxpl/xplcommand.h>
 #include <libxpl/xpljsonx.h>
-#include <libxpl/xplmessages.h>
-#include <libxpl/xplstring.h>
-#include <libxpl/xpltree.h>
 
 void xplCmdJsonXSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
