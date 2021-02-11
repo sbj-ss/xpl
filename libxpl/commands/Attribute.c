@@ -1,5 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
 
 void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
@@ -54,14 +55,14 @@ xplCommand xplAttributeCommand =
 
 void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xplCmdAttributeParamsPtr cmd_params = (xplCmdAttributeParamsPtr) commandInfo->params;
+	xplCmdAttributeParamsPtr params = (xplCmdAttributeParamsPtr) commandInfo->params;
 	xmlChar *attr_value;
 	xmlNodePtr cur;
 	size_t i;
 	
 	if (!commandInfo->content || !*commandInfo->content)
 	{
-		if (!cmd_params->force_blank)
+		if (!params->force_blank)
 		{
 			ASSIGN_RESULT(NULL, false, true);
 			return; /* empty value, nothing to do */
@@ -70,15 +71,18 @@ void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	} else
 		attr_value = commandInfo->content;
 
-	if (cmd_params->destination && cmd_params->destination->nodesetval)
+	if (params->destination && params->destination->nodesetval)
 	{
-		for (i = 0; i < (size_t) cmd_params->destination->nodesetval->nodeNr; i++)
+		for (i = 0; i < (size_t) params->destination->nodesetval->nodeNr; i++)
 		{
-			cur = cmd_params->destination->nodesetval->nodeTab[i];
+			cur = params->destination->nodesetval->nodeTab[i];
 			if (cur->type == XML_ELEMENT_NODE)
-				(void) xplCreateAttribute(cur, cmd_params->qname, attr_value, cmd_params->replace);
+				(void) xplCreateAttribute(cur, params->qname, attr_value, params->replace);
+			else if (cfgWarnOnInvalidNodeType)
+				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:attribute: can't assign attributes to non-elements, file '%s', line %d, destination '%s'",
+				commandInfo->element->doc->URL, commandInfo->element->line, params->destination->user);
 		}
 	} else if (commandInfo->element->parent) 
-		(void) xplCreateAttribute(commandInfo->element->parent, cmd_params->qname, attr_value, cmd_params->replace);
+		(void) xplCreateAttribute(commandInfo->element->parent, params->qname, attr_value, params->replace);
 	ASSIGN_RESULT(NULL, false, true);
 }
