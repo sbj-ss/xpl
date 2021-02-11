@@ -50,7 +50,7 @@
       <Container attr="content"/>
     </Expected>
   </MustSucceed>
-
+ 
   <MustSucceed name="pass/replace">
     <Input>
       <Container kept-attr="old" replaced-attr="old">
@@ -73,6 +73,13 @@
     <Expected>
       <Container forced=""/>
     </Expected>
+  </MustSucceed>
+
+  <MustSucceed name="pass/to-non-element">
+    <Input>
+      <xpl:attribute destination="./@destination" name="whatever">whatever</xpl:attribute>
+    </Input>
+    <Expected/>
   </MustSucceed>
 
   <MustFail name="error/unknown-ns">
