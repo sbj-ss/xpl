@@ -148,9 +148,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			xplSetChildren(commandInfo->element, content);
 			/* xplLiftNsDefs() removes duplicated nsDefs instead of lifting them */
 			xplLiftNsDefs(commandInfo->element->parent, content, content->children);
-			content = xplDetachChildren(commandInfo->element->children);
-			xmlFreeNode(xplDetachChildren(commandInfo->element)); // sub-document root
-			ASSIGN_RESULT(content, params->repeat, true);
+			ASSIGN_RESULT(xplDetachChildren(commandInfo->element->children), params->repeat, true);
 		} else
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "error \"%s\" processing child document", xplErrorToString(status)), true, true);
 		if (params->share_session)
