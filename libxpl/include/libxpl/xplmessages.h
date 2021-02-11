@@ -16,12 +16,12 @@ extern "C" {
 
 typedef enum _xplMsgType
 {
-	xplMsgUnknown = -1,
-	xplMsgDebug = 0,
-	xplMsgInfo,
-	xplMsgWarning,
-	xplMsgError,
-	xplMsgInternalError
+	XPL_MSG_UNKNOWN = -1,
+	XPL_MSG_DEBUG = 0,
+	XPL_MSG_INFO,
+	XPL_MSG_WARNING,
+	XPL_MSG_ERROR,
+	XPL_MSG_INTERNAL_ERROR
 } xplMsgType;
 
 XPLPUBFUN xplMsgType XPLCALL

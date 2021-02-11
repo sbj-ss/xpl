@@ -11,16 +11,16 @@ static XPR_MUTEX console_interlock;
 xplMsgType xplMsgTypeFromString(const xmlChar *severity, bool allowInternalError)
 {
 	if (!xmlStrcasecmp(severity, BAD_CAST "debug"))
-		return xplMsgDebug;
+		return XPL_MSG_DEBUG;
 	if (!xmlStrcasecmp(severity, BAD_CAST "info"))
-		return xplMsgInfo;
+		return XPL_MSG_INFO;
 	if (!xmlStrcasecmp(severity, BAD_CAST "warning"))
-		return xplMsgWarning;
+		return XPL_MSG_WARNING;
 	if (!xmlStrcasecmp(severity, BAD_CAST "error"))
-		return xplMsgError;
+		return XPL_MSG_ERROR;
 	if (allowInternalError && !xmlStrcasecmp(severity, BAD_CAST "internal error"))
-		return xplMsgInternalError;
-	return xplMsgUnknown;
+		return XPL_MSG_INTERNAL_ERROR;
+	return XPL_MSG_UNKNOWN;
 }
 
 xmlChar* xplFormatMessage(xmlChar *fmt, ...)
@@ -65,11 +65,11 @@ void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
 
 	switch (msgType)
 	{
-		case xplMsgDebug:   what = "DEBUG"; break;
-		case xplMsgInfo:    what = "INFO"; break;
-		case xplMsgWarning: what = "WARNING"; break;
-		case xplMsgError:   what = "ERROR"; break;
-		case xplMsgInternalError: what = "INTERNAL ERROR"; break;
+		case XPL_MSG_DEBUG:   what = "DEBUG"; break;
+		case XPL_MSG_INFO:    what = "INFO"; break;
+		case XPL_MSG_WARNING: what = "WARNING"; break;
+		case XPL_MSG_ERROR:   what = "ERROR"; break;
+		case XPL_MSG_INTERNAL_ERROR: what = "INTERNAL ERROR"; break;
 		default: what = "UNKNOWN MESSAGE";
 	}
 
@@ -97,11 +97,11 @@ void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
 	{
 		switch (msgType)
 		{
-			case xplMsgDebug: color = 0x06; break; // TODO define these codes in XPR
-			case xplMsgInfo: color = XPR_DEFAULT_CONSOLE_COLOR; break;
-			case xplMsgWarning: color = 0x0B; break;
-			case xplMsgError: color = 0x0E; break;
-			case xplMsgInternalError: color = 0x0C; break;
+			case XPL_MSG_DEBUG: color = 0x06; break; // TODO define these codes in XPR
+			case XPL_MSG_INFO: color = XPR_DEFAULT_CONSOLE_COLOR; break;
+			case XPL_MSG_WARNING: color = 0x0B; break;
+			case XPL_MSG_ERROR: color = 0x0E; break;
+			case XPL_MSG_INTERNAL_ERROR: color = 0x0C; break;
 			default: color = XPR_DEFAULT_CONSOLE_COLOR;
 		}
 		xprSetConsoleColor(color);
@@ -154,7 +154,7 @@ xmlNodePtr xplCreateErrorNode(const xmlNodePtr cmd, const xmlChar *fmt_msg, ...)
 	XPL_FREE(fmt);
 	ret = xplCreateSimpleErrorNode(cmd->doc, msg, cmd->name);
 	if (cfgErrorsToConsole)
-		xplDisplayMessage(xplMsgError, msg);
+		xplDisplayMessage(XPL_MSG_ERROR, msg);
 	if (cfgStackTrace)
 		xplStackTrace(cmd);
 	return ret;
@@ -216,7 +216,7 @@ static bool xplInitLogger()
 		log_file_full_name = xmlStrcat(log_file_full_name, cfgLogFileName);
 		log_file = xprFOpen(log_file_full_name, "a");
 		if (!log_file)
-			xplDisplayMessage(xplMsgWarning, BAD_CAST "cannot open log file \"%s\" for writing", log_file_full_name);
+			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "cannot open log file \"%s\" for writing", log_file_full_name);
 		XPL_FREE(log_file_full_name);
 		XPL_FREE(executable_path);
 		return !!log_file;

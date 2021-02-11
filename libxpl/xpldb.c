@@ -249,7 +249,7 @@ bool xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors)
 	xplDBListPtr db;
 	xmlChar *dbname;
 	bool ok = true;
-	const xplMsgType msg_type = warningsAsErrors? xplMsgError: xplMsgWarning;
+	const xplMsgType msg_type = warningsAsErrors? XPL_MSG_ERROR: XPL_MSG_WARNING;
 	const xmlChar *tail = BAD_CAST (warningsAsErrors? "stopping": "ignored");
 
 	xplCleanupDatabases();
@@ -302,7 +302,7 @@ static void checkDatabase(void *payload, void *data, XML_HCBNC xmlChar *name)
 	UNUSED_PARAM(data);
 	if (msg)
 	{
-		xplDisplayMessage(is_avail? xplMsgInfo: xplMsgWarning, msg);
+		xplDisplayMessage(is_avail? XPL_MSG_INFO: XPL_MSG_WARNING, msg);
 		XPL_FREE(msg);
 	}
 }

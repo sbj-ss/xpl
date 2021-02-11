@@ -613,12 +613,12 @@ xmlNodePtr xplReplaceContentEntries(
 			if (new_content == empty_content_marker)
 				new_content = NULL;
 			if (required && !new_content)
-				xplDisplayMessage(xplMsgWarning, BAD_CAST "missing macro content \"%s\" (file \"%s\", line %d)", select_attr, oldElement->doc->URL, oldElement->line);
+				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "missing macro content \"%s\" (file \"%s\", line %d)", select_attr, oldElement->doc->URL, oldElement->line);
 			XPL_FREE(select_attr);
 		} else { /* if (select_attr) */
 			new_content = xplCloneNodeList(oldElement->children, cur->parent, oldElement->doc);
 			if (required && !new_content)
-				xplDisplayMessage(xplMsgWarning, BAD_CAST "missing macro content (file \"%s\", line %d)", oldElement->doc->URL, oldElement->line);
+				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "missing macro content (file \"%s\", line %d)", oldElement->doc->URL, oldElement->line);
 		}
 		if (ret == cur)
 			ret = new_content; /* <xpl:define name="A"><xpl:content/></xpl:define> */
@@ -745,10 +745,10 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 		if (cfgWarnOnExpandedMacroContent && (macro->expansion_state == XPL_MACRO_EXPANDED))
 		{
 			if (element->ns && element->ns->prefix)
-				xplDisplayMessage(xplMsgWarning, BAD_CAST "child nodes present in expanded macro caller \"%s:%s\" (file \"%s\", line %d)",
+				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "child nodes present in expanded macro caller \"%s:%s\" (file \"%s\", line %d)",
 				element->ns->prefix, element->name, doc->document->URL, element->line);
 			else
-				xplDisplayMessage(xplMsgWarning, BAD_CAST "child nodes present in expanded macro caller \"%s\" (file \"%s\", line %d)",
+				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "child nodes present in expanded macro caller \"%s\" (file \"%s\", line %d)",
 				element->name, doc->document->URL, element->line);
 		}
 	}
@@ -800,7 +800,7 @@ void _xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr res
 	if (!cmd)
 	{
 		if (cfgWarnOnUnknownCommand && doc->expand)
-			xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown command \"%s\" (file \"%s\", line %d)", element->name, element->doc->URL, element->line);
+			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "unknown command \"%s\" (file \"%s\", line %d)", element->name, element->doc->URL, element->line);
 		xplNodeListApply(doc, element->children, result);
 		return;
 	}
@@ -855,9 +855,9 @@ xplMacroPtr xplAddMacro(
 	if (replace && cfgWarnOnMacroRedefinition && prev_def)
 	{
 		if (qname.ns)
-			xplDisplayMessage(xplMsgWarning, BAD_CAST "macro \"%s:%s\" redefined, previous line: %d (file \"%s\", line %d)", qname.ns->prefix, qname.ncname, prev_def->line, doc->document->URL, macro->line);
+			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "macro \"%s:%s\" redefined, previous line: %d (file \"%s\", line %d)", qname.ns->prefix, qname.ncname, prev_def->line, doc->document->URL, macro->line);
 		else
-			xplDisplayMessage(xplMsgWarning, BAD_CAST "macro \"%s\" redefined, previous line: %d (file \"%s\", line %d)", qname.ncname, prev_def->line, doc->document->URL, macro->line);
+			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "macro \"%s\" redefined, previous line: %d (file \"%s\", line %d)", qname.ncname, prev_def->line, doc->document->URL, macro->line);
 	}
 	if (!replace && prev_def)
 		return NULL;
@@ -931,10 +931,10 @@ static void xplCheckRootNs(xplDocumentPtr doc, xmlNodePtr root)
 	if (cfgWarnOnInvalidXplNsUri)
 	{
 		if (doc->root_xpl_ns)
-			xplDisplayMessage(xplMsgWarning, BAD_CAST "XPL namespace uri \"%s\" differs from configured \"%s\", document \"%s\"",
+			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "XPL namespace uri \"%s\" differs from configured \"%s\", document \"%s\"",
 			doc->root_xpl_ns->href, cfgXplNsUri, doc->document->URL);
 		else
-			xplDisplayMessage(xplMsgWarning, BAD_CAST "Cannot find XPL namespace on the root document element, document \"%s\"", doc->document->URL);
+			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "Cannot find XPL namespace on the root document element, document \"%s\"", doc->document->URL);
 	}
 }
 
@@ -999,7 +999,7 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 	if (cfgDebugSaveFile && !doc->parent) /* saving derived documents makes no sense */
 	{
 		if (!xplSaveXmlDocToFile(doc->document, cfgDebugSaveFile, (char*) cfgDefaultEncoding, XML_SAVE_FORMAT))
-			xplDisplayMessage(xplMsgWarning, BAD_CAST "Cannot save debug output to \"%s\", check that the file location exists and is writable", cfgDebugSaveFile);
+			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "Cannot save debug output to \"%s\", check that the file location exists and is writable", cfgDebugSaveFile);
 	}
 	return ret;
 }

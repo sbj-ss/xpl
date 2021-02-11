@@ -100,7 +100,7 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	bool free_needed = false;
 
 	if (cfgWarnOnNoExpectParam && params->expect == XPL_EXPECT_UNSPECIFIED)
-		xplDisplayMessage(xplMsgWarning, BAD_CAST "no expect attribute in get-param command (file \"%s\", line %d)",
+		xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "no expect attribute in get-param command (file \"%s\", line %d)",
 			commandInfo->element->doc->URL, commandInfo->element->line);
 
 	if (params->show_tags && params->tag_name.ncname)

@@ -12,13 +12,13 @@ typedef struct _xplCmdDebugPrintParams
 
 static const xplCmdDebugPrintParams params_stencil =
 {
-	.severity = xplMsgDebug
+	.severity = XPL_MSG_DEBUG
 };
 
 static xmlChar* _getSeverity(xplCommandInfoPtr info, const xmlChar *raw_value, int *result)
 {
 	UNUSED_PARAM(info);
-	if ((*result = xplMsgTypeFromString(raw_value, false)) == xplMsgUnknown)
+	if ((*result = xplMsgTypeFromString(raw_value, false)) == XPL_MSG_UNKNOWN)
 		return xplFormatMessage(BAD_CAST "unknown severity value '%s'", raw_value);
 	return NULL;
 }

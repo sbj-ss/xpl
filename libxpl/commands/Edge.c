@@ -223,10 +223,10 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				else if (cfgWarnOnAncestorModificationAttempt)
 				{
 					if (cur->ns)
-						xplDisplayMessage(xplMsgWarning, BAD_CAST "ancestor/self node \"%s:%s\" modification attempt denied (file \"%s\", line %d)",
+						xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "ancestor/self node \"%s:%s\" modification attempt denied (file \"%s\", line %d)",
 						cur->ns->prefix, cur->name, commandInfo->document->document->URL, commandInfo->element->line);
 					else
-						xplDisplayMessage(xplMsgWarning, BAD_CAST "ancestor/self node \"%s\" modification attempt denied (file \"%s\", line %d)",
+						xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "ancestor/self node \"%s\" modification attempt denied (file \"%s\", line %d)",
 						cur->name, commandInfo->document->document->URL, commandInfo->element->line);
 				}
 				break;

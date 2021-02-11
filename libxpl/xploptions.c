@@ -294,7 +294,7 @@ static void xplReadOption(xplConfigEntryPtr opt, xmlChar *value)
 
 	if (opt->options & CFG_OPTION_DEPRECATED)
 	{
-		xplDisplayMessage(xplMsgWarning, BAD_CAST "Option \"%s\" is deprecated. Setting it has no effect.", opt->name);
+		xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "Option \"%s\" is deprecated. Setting it has no effect.", opt->name);
 		return;
 	}
 	switch (opt->cfg_type)
@@ -305,7 +305,7 @@ static void xplReadOption(xplConfigEntryPtr opt, xmlChar *value)
 		case CFG_TYPE_INT:
 			if (sscanf((char*) value, "%d", (int*) opt->value_ptr) != 1)
 			{
-				xplDisplayMessage(xplMsgWarning, BAD_CAST "\"%s\" is not a valid integer value. Setting config option \"%s\" to its default value \"%d\"\n",
+				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "\"%s\" is not a valid integer value. Setting config option \"%s\" to its default value \"%d\"\n",
 					value, opt->name, VOID_PTR_TO_INT(opt->default_value));
 				*((int*) opt->value_ptr) = VOID_PTR_TO_INT(opt->default_value);
 			}
@@ -314,7 +314,7 @@ static void xplReadOption(xplConfigEntryPtr opt, xmlChar *value)
 			int_value = xplGetBooleanValue(value);
 			if (int_value == -1)
 			{
-				xplDisplayMessage(xplMsgWarning, BAD_CAST "\"%s\" is not a valid boolean value. Setting config option \"%s\" to its default value \"%d\"\n",
+				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "\"%s\" is not a valid boolean value. Setting config option \"%s\" to its default value \"%d\"\n",
 					value, opt->name, VOID_PTR_TO_INT(opt->default_value));
 				*((int*) opt->value_ptr) = VOID_PTR_TO_INT(opt->default_value);
 			} else
@@ -390,12 +390,12 @@ int xplReadOptions(xmlNodePtr opt_root)
 					if (opt)
 						xplReadOption(opt, cur->children?cur->children->content:NULL);
 					else
-						xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown config option \"%s\" (line %d), ignored\n", opt_name, cur->line);
+						xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "unknown config option \"%s\" (line %d), ignored\n", opt_name, cur->line);
 					XPL_FREE(opt_name);
 				} else
-					xplDisplayMessage(xplMsgWarning, BAD_CAST "missing option name in config file (line %d), ignored\n", cur->line);
+					xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "missing option name in config file (line %d), ignored\n", cur->line);
 			} else
-				xplDisplayMessage(xplMsgWarning, BAD_CAST "unknown node \"%s\" in Options section in config file (line %d), ignored", cur->name, cur->line);
+				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "unknown node \"%s\" in Options section in config file (line %d), ignored", cur->name, cur->line);
 		}
 		cur = cur->next;
 	}
@@ -404,7 +404,7 @@ int xplReadOptions(xmlNodePtr opt_root)
 	if (cfgStackTrace)
 		cfgErrorsToConsole = 1;
 	if (cfgProxyServer && *cfgProxyServer)
-		xplDisplayMessage(xplMsgInfo, BAD_CAST "Using proxy server \"%s:%d\"", cfgProxyServer, cfgProxyPort);
+		xplDisplayMessage(XPL_MSG_INFO, BAD_CAST "Using proxy server \"%s:%d\"", cfgProxyServer, cfgProxyPort);
 	return 1;
 }
 

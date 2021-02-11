@@ -117,7 +117,7 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			{
 				/* don't assign content to non-elements */
 				if (cfgWarnOnInvalidNodeType)
-					xplDisplayMessage(xplMsgWarning, BAD_CAST "xpl:append: can't add children to non-elements, file '%s', line %d, destination '%s'",
+					xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:append: can't add children to non-elements, file '%s', line %d, destination '%s'",
 					commandInfo->element->doc->URL, commandInfo->element->line, params->destination->user);
 				continue;
 			}
@@ -125,7 +125,7 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			{
 				/* can't add elements to attributes */
 				if (cfgWarnOnInvalidNodeType)
-					xplDisplayMessage(xplMsgWarning, BAD_CAST "xpl:append: can't add anything to attributes, file '%s', line %d, destination '%s'",
+					xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:append: can't add anything to attributes, file '%s', line %d, destination '%s'",
 					commandInfo->element->doc->URL, commandInfo->element->line, params->destination->user);
 				continue;
 			}

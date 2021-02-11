@@ -103,7 +103,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 				if (cfgWarnOnDeletedNodeReference)
 				{
 					if (cur->ns)
-						xplDisplayMessage(xplMsgWarning,
+						xplDisplayMessage(XPL_MSG_WARNING,
 							BAD_CAST "node \"%s:%s\" (line %d) post-mortem access attempt (file \"%s\", line %d)",
 							cur->ns->prefix,
 							cur->name,
@@ -111,7 +111,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 							commandInfo->document->document->URL,
 							commandInfo->element->line);
 					else
-						xplDisplayMessage(xplMsgWarning,
+						xplDisplayMessage(XPL_MSG_WARNING,
 							BAD_CAST "node \"%s\" (line %d) post-mortem access attempt (file \"%s\", line %d)",
 							cur->name,
 							cur->line,
@@ -128,10 +128,10 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 				if (cfgWarnOnAncestorModificationAttempt)
 				{
 					if (cur->ns)
-						xplDisplayMessage(xplMsgWarning, BAD_CAST "ancestor/self node \"%s:%s\" modification attempt denied (file \"%s\", line %d)",
+						xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "ancestor/self node \"%s:%s\" modification attempt denied (file \"%s\", line %d)",
 						cur->ns->prefix, cur->name, commandInfo->document->document->URL, commandInfo->element->line);
 					else
-						xplDisplayMessage(xplMsgWarning, BAD_CAST "ancestor/self node \"%s\" modification attempt denied (file \"%s\", line %d)",
+						xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "ancestor/self node \"%s\" modification attempt denied (file \"%s\", line %d)",
 						cur->name, commandInfo->document->document->URL, commandInfo->element->line);
 				}
 				continue;
