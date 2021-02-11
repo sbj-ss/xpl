@@ -216,9 +216,17 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			case EDGE_COPY:
 				if (cur->type == XML_ELEMENT_NODE)
 					xplAppendChildren(cur, xplCloneNodeList(source_list, cur, cur->doc));
+				else if (cfgWarnOnInvalidNodeType)
+					xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:edge: can't add content to non-elements, file '%s', line %d, destination '%s'",
+					commandInfo->element->doc->URL, commandInfo->element->line, params->destination->user);
 				break;
 			case EDGE_REPLACE:
-				if ((commandInfo->element != cur) && !xplIsAncestor(commandInfo->element, cur))
+				if (cur->type != XML_ELEMENT_NODE && cur->type != XML_TEXT_NODE)
+				{
+					if (cfgWarnOnInvalidNodeType)
+						xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:edge: can only replace elements and text nodes, file '%s', line %d, destination '%s'",
+						commandInfo->element->doc->URL, commandInfo->element->line, params->destination->user);
+				} else if ((commandInfo->element != cur) && !xplIsAncestor(commandInfo->element, cur))
 					xplDocDeferNodeDeletion(commandInfo->document, xplReplaceWithList(cur, xplCloneNodeList(source_list, cur, cur->doc)));
 				else if (cfgWarnOnAncestorModificationAttempt)
 				{
@@ -237,7 +245,9 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					el = xmlNewDocNode(cur->doc, cur_ns, params->name.ncname, NULL);
 					xplAppendChildren(cur, el);
 					xplSetChildren(el, xplCloneNodeList(source_list, el, el->doc));
-				} // TODO warn otherwise
+				} else if (cfgWarnOnInvalidNodeType)
+					xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:edge: can't add elements to non-elements, file '%s', line %d, destination '%s'",
+					commandInfo->element->doc->URL, commandInfo->element->line, params->destination->user);
 				break;
 			case EDGE_ATTRIBUTE:
 				if (cur->type == XML_ELEMENT_NODE)
@@ -247,7 +257,9 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 						xmlNewNsProp(cur, cur_ns, params->name.ncname, source_text);
 					else
 						xmlNewProp(cur, params->name.ncname, source_text);
-				} // TODO warn otherwise
+				} else if (cfgWarnOnInvalidNodeType)
+					xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:edge: can't assign attributes to non-elements, file '%s', line %d, destination '%s'",
+					commandInfo->element->doc->URL, commandInfo->element->line, params->destination->user);
 				break;
 			default:
 				DISPLAY_INTERNAL_ERROR_MESSAGE();
