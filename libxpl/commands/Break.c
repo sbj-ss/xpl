@@ -62,41 +62,41 @@ static xmlNodePtr _createBreak(xplCommandInfoPtr commandInfo, xmlChar *where)
 
 void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xplCmdBreakParamsPtr cmd_params = (xplCmdBreakParamsPtr) commandInfo->params;
+	xplCmdBreakParamsPtr params = (xplCmdBreakParamsPtr) commandInfo->params;
 	xmlChar number_buf[32];
 	bool delete_tail = true;
 	bool ascend = false;
 	xmlChar *upper_point;
 	xmlNodePtr upper_break;
 
-	if (cmd_params->point)
+	if (params->point)
 	{
-		switch (cmd_params->point->type)
+		switch (params->point->type)
 		{
 			case XPATH_BOOLEAN:
-				delete_tail = cmd_params->point->boolval;
+				delete_tail = params->point->boolval;
 				break;
 			case XPATH_STRING:
-				delete_tail = (cmd_params->point->stringval && *cmd_params->point->stringval);
+				delete_tail = (params->point->stringval && *params->point->stringval);
 				break;
 			case XPATH_NUMBER:
-				ascend = (cmd_params->point->floatval > 1.0);
+				ascend = (params->point->floatval > 1.0);
 				if (ascend)
 				{
-					snprintf((char*) number_buf, sizeof(number_buf) - 1, "%d", (int) (cmd_params->point->floatval - .5));
+					snprintf((char*) number_buf, sizeof(number_buf) - 1, "%d", (int) (params->point->floatval - .5));
 					number_buf[sizeof(number_buf) - 1] = 0;
 					upper_point = number_buf;
 				}
 				break;
 			case XPATH_NODESET:
-				if (cmd_params->point->nodesetval)
-					ascend = !_checkForParent(commandInfo->document, commandInfo->element, cmd_params->point->user);
+				if (params->point->nodesetval)
+					ascend = !_checkForParent(commandInfo->document, commandInfo->element, params->point->user);
 				else
 					ascend = true;
-				upper_point = (xmlChar*) cmd_params->point->user;
+				upper_point = (xmlChar*) params->point->user;
 				break;
 			default:
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "point XPath expression \"%s\" evaluated to invalid type", cmd_params->point->user), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "point XPath expression \"%s\" evaluated to invalid type", params->point->user), true, true);
 				return;
 		}
 		if (ascend)
@@ -106,7 +106,9 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			{
 				upper_break = _createBreak(commandInfo, upper_point);
 				xmlAddNextSibling(commandInfo->element->parent, upper_break);
-			} // TODO warning
+			} else if (cfgWarnOnInvalidNodeType)
+				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:break: can't add children to non-elements, file '%s', line %d, point '%s'",
+				commandInfo->element->doc->URL, commandInfo->element->line, params->point);
 		}
 	}
 	if (delete_tail)
