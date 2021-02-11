@@ -114,7 +114,7 @@ XPLPUBVAR xmlChar *cfgXplNsUri;
 #define DEFAULT_WARN_ON_NO_EXPECT_PARAM true
 #define DEFAULT_WARN_ON_UNINITIALIZED_TIMER false
 #define DEFAULT_WARN_ON_UNKNOWN_COMMAND false
-#define DEFAULT_XPL_NS_URI (BAD_CAST "http://tch.org/xpl")
+#define DEFAULT_XPL_NS_URI (BAD_CAST "urn:x-xpl:xpl")
 
 #ifdef __cplusplus
 }
