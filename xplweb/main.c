@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
 	memset(&callbacks, 0, sizeof(callbacks));
 	if (!(ctx = start_civetweb(argc, argv, NULL, &callbacks)))
 	{
-		xplDisplayMessage(xplMsgError, BAD_CAST "Cannot initialize CivetWeb context");
+		xplDisplayMessage(XPL_MSG_ERROR, BAD_CAST "Cannot initialize CivetWeb context");
 		xplShutdownEngine();
 		mg_exit_library();
 		exit(EXIT_FAILURE);
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
 
 	mg_set_request_handler(ctx, "**.xpl$", serveXpl, NULL);
 
-	xplDisplayMessage(xplMsgInfo, BAD_CAST "XPL web server based on CivetWeb %s started on port(s) [%s], serving directory \"%s\"",
+	xplDisplayMessage(XPL_MSG_INFO, BAD_CAST "XPL web server based on CivetWeb %s started on port(s) [%s], serving directory \"%s\"",
 	    mg_version(),
 	    mg_get_option(ctx, "listening_ports"),
 	    mg_get_option(ctx, "document_root"));
