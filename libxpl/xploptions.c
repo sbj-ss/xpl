@@ -7,8 +7,8 @@
 
 int cfgCheckDbOnStartup;
 int cfgCheckSAMode;
-xmlChar *cfgDefaultEncoding;
 xmlChar *cfgDebugSaveFile;
+xmlChar *cfgDefaultEncoding;
 xmlChar *cfgDocRoot;
 int cfgEnableAssertions;
 int cfgErrorsToConsole;
@@ -34,10 +34,13 @@ int cfgWarnOnDeletedNodeReference;
 int cfgWarnOnExpandedMacroContent;
 int cfgWarnOnFatalErrorsInIsolatedDocuments;
 int cfgWarnOnInvalidXplNsUri;
+int cfgWarnOnInvalidNodeType;
 int cfgWarnOnMacroRedefinition;
 int cfgWarnOnMissingInheritBase;
 int cfgWarnOnMissingMacroContent;
+int cfgWarnOnMultipleSelection;
 int cfgWarnOnNoExpectParam;
+int cfgWarnOnUninitializedTimer;
 int cfgWarnOnUnknownCommand;
 xmlChar *cfgXplNsUri;
 
@@ -379,7 +382,7 @@ int xplReadOptions(xmlNodePtr opt_root)
 
 	if (config_entries_hash)
 		xplCleanupOptions();
-	config_entries_hash = xmlHashCreate(32);
+	config_entries_hash = xmlHashCreate(sizeof(configEntries) / sizeof(configEntries[0]) * 2);
 
 	for (i = 0; i < CONFIG_ENTRIES_COUNT; i++)
 	{
