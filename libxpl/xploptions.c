@@ -74,7 +74,7 @@ typedef struct _xplConfigEntry
 	xplCfgState state;
 } xplConfigEntry, *xplConfigEntryPtr;
 
-xplConfigEntry configEntries[] =
+xplConfigEntry config_entries[] =
 {
 /* cfg_type, value_ptr, name, default_value */
 	{
@@ -368,8 +368,8 @@ void xplAssignDefaultsToAllOptions(void)
 
 	for (i = 0; i < CONFIG_ENTRIES_COUNT; i++)
 	{
-		if (configEntries[i].state == CFG_STATE_UNASSIGNED)
-			xplAssignDefaultToOption(&configEntries[i]);
+		if (config_entries[i].state == CFG_STATE_UNASSIGNED)
+			xplAssignDefaultToOption(&config_entries[i]);
 	}
 }
 
@@ -382,12 +382,12 @@ int xplReadOptions(xmlNodePtr opt_root)
 
 	if (config_entries_hash)
 		xplCleanupOptions();
-	config_entries_hash = xmlHashCreate(sizeof(configEntries) / sizeof(configEntries[0]) * 2);
+	config_entries_hash = xmlHashCreate(sizeof(config_entries) / sizeof(config_entries[0]) * 2);
 
 	for (i = 0; i < CONFIG_ENTRIES_COUNT; i++)
 	{
-		configEntries[i].state = CFG_STATE_UNASSIGNED;
-		xmlHashAddEntry(config_entries_hash, configEntries[i].name, &configEntries[i]);
+		config_entries[i].state = CFG_STATE_UNASSIGNED;
+		xmlHashAddEntry(config_entries_hash, config_entries[i].name, &config_entries[i]);
 	}
 	cur = opt_root->children;
 	while (cur)
@@ -427,12 +427,12 @@ void xplCleanupOptions(void)
 
 	for (i = 0; i < CONFIG_ENTRIES_COUNT; i++)
 	{
-		if (configEntries[i].options & CFG_OPTION_DEPRECATED)
+		if (config_entries[i].options & CFG_OPTION_DEPRECATED)
 			continue;
-		if ((configEntries[i].cfg_type == CFG_TYPE_STRING) && *((xmlChar**) configEntries[i].value_ptr))
+		if ((config_entries[i].cfg_type == CFG_TYPE_STRING) && *((xmlChar**) config_entries[i].value_ptr))
 		{
-			XPL_FREE(*((xmlChar**)configEntries[i].value_ptr));
-			*((xmlChar**) configEntries[i].value_ptr) = NULL;
+			XPL_FREE(*((xmlChar**)config_entries[i].value_ptr));
+			*((xmlChar**) config_entries[i].value_ptr) = NULL;
 		}
 	}
 	if (config_entries_hash)
@@ -490,19 +490,19 @@ xmlNodePtr xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showPasswo
 
 	for (i = 0; i < CONFIG_ENTRIES_COUNT; i++)
 	{
-		if (configEntries[i].options & CFG_OPTION_DEPRECATED)
+		if (config_entries[i].options & CFG_OPTION_DEPRECATED)
 			continue;
 		if (!tagname.ncname)
-			cur = xmlNewDocNode(parent->doc, NULL, configEntries[i].name, NULL);
+			cur = xmlNewDocNode(parent->doc, NULL, config_entries[i].name, NULL);
 		else
 			cur = xmlNewDocNode(parent->doc, tagname.ns, tagname.ncname, NULL);
 		value = xmlNewDocText(parent->doc, NULL);
-		value->content = xplGetOptionValueInner(&configEntries[i], showPasswords);
+		value->content = xplGetOptionValueInner(&config_entries[i], showPasswords);
 		value->parent = cur;
 		cur->children = cur->last = value;
 		if (tagname.ncname)
-			xmlNewProp(cur, BAD_CAST "name", configEntries[i].name);
-		switch(configEntries[i].cfg_type)
+			xmlNewProp(cur, BAD_CAST "name", config_entries[i].name);
+		switch(config_entries[i].cfg_type)
 		{
 			case CFG_TYPE_BOOL: xmlNewProp(cur, BAD_CAST "type", BAD_CAST "bool"); break;
 			case CFG_TYPE_INT: xmlNewProp(cur, BAD_CAST "type", BAD_CAST "int"); break;
@@ -511,11 +511,11 @@ xmlNodePtr xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showPasswo
 			default:
 				DISPLAY_INTERNAL_ERROR_MESSAGE();
 		}
-		if (configEntries[i].state == CFG_STATE_DEFAULT)
+		if (config_entries[i].state == CFG_STATE_DEFAULT)
 			xmlNewProp(cur, BAD_CAST "default", BAD_CAST "true");
-		if (configEntries[i].options & CFG_OPTION_IS_PASSWORD)
+		if (config_entries[i].options & CFG_OPTION_IS_PASSWORD)
 			xmlNewProp(cur, BAD_CAST "ispassword", BAD_CAST "true");
-		if (configEntries[i].options & CFG_OPTION_RESTART_REQUIRED)
+		if (config_entries[i].options & CFG_OPTION_RESTART_REQUIRED)
 			xmlNewProp(cur, BAD_CAST "restartrequired", BAD_CAST "true");
 		if (ret)
 		{
