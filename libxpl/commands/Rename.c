@@ -1,5 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
 
 void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
@@ -62,7 +63,8 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					xplAppendNsDef(cur, ns_copy);
 					cur->ns = ns_copy;
 				}
-			}
+			} else if (cfgWarnOnInvalidNodeType)
+				xplDisplayWarning(commandInfo->element, BAD_CAST "can only rename elements and attributes, select = '%s'", params->select->user);
 		}
 	}
 	ASSIGN_RESULT(NULL, false, true);

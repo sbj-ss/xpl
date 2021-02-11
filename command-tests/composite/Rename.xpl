@@ -25,6 +25,16 @@
       </Outer>
     </Expected>
   </MustSucceed>
+
+  <MustSucceed name="pass/invalid-node-type">
+    <Input>
+      <A>1</A>
+      <xpl:rename select="../A/node()" newname="Q"/>
+    </Input>
+    <Expected>
+      <A>1</A>
+    </Expected>
+  </MustSucceed>
   
   <MustFail name="fail/missing-select">
     <Input>
