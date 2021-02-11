@@ -74,6 +74,7 @@ XPLPUBVAR int cfgWarnOnExpandedMacroContent;
 XPLPUBVAR int cfgWarnOnFatalErrorsInIsolatedDocuments;
 XPLPUBVAR int cfgWarnOnInvalidNodeType;
 XPLPUBVAR int cfgWarnOnInvalidXplNsUri;
+XPLPUBVAR int cfgWarnOnJsonxSerializationIssues;
 XPLPUBVAR int cfgWarnOnMacroRedefinition;
 XPLPUBVAR int cfgWarnOnMissingInheritBase;
 XPLPUBVAR int cfgWarnOnMissingMacroContent;
@@ -107,6 +108,7 @@ XPLPUBVAR xmlChar *cfgXplNsUri;
 #define DEFAULT_WARN_ON_EXPANDED_MACRO_CONTENT false
 #define DEFAULT_WARN_ON_INVALID_NODE_TYPE false
 #define DEFAULT_WARN_ON_INVALID_XPL_NS_URI false
+#define DEFAULT_WARN_ON_JSONX_SERIALIZATION_ISSUES false
 #define DEFAULT_WARN_ON_MACRO_REDEFINITION false
 #define DEFAULT_WARN_ON_MISSING_MACRO_CONTENT false
 #define DEFAULT_WARN_ON_MISSING_INHERIT_BASE false
