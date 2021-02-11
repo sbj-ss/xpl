@@ -41,14 +41,8 @@ void xplCmdSerializeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlNodePtr ret;
 
 	if (params->select)
-	{
-		if (params->select->type != XPATH_NODESET)
-		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression (%s) evaluated to non-nodeset value", params->select), true, true);
-			return;
-		}
 		txt = xplSerializeNodeSet(params->select->nodesetval);
-	} else
+	else
 		txt = xplSerializeNodeList(commandInfo->element->children);
 	ret = xmlNewDocText(commandInfo->element->doc, NULL);
 	ret->content = txt;
