@@ -309,8 +309,11 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 			ctxt.input_str = xmlNodeListGetString(cur->doc, cur->children, 1);
 		else if ((cur->type == XML_TEXT_NODE || cur->type == XML_CDATA_SECTION_NODE) && cur->content)
 			ctxt.input_str = BAD_CAST XPL_STRDUP((char*) cur->content);
-		else
-			continue; // TODO warn?
+		else {
+			if (cfgWarnOnInvalidNodeType)
+				xplDisplayWarning(commandInfo->element, BAD_CAST "can only use elements, attributes and text/cdata as input");
+			continue;
+		}
 		if (!ctxt.input_str)
 			continue;
 		if (ctxt.params->start_delimiter && ctxt.params->end_delimiter)
