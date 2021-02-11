@@ -82,6 +82,7 @@ XPLPUBVAR int cfgWarnOnMultipleSelection;
 XPLPUBVAR int cfgWarnOnNoExpectParam;
 XPLPUBVAR int cfgWarnOnUninitializedTimer;
 XPLPUBVAR int cfgWarnOnUnknownCommand;
+XPLPUBVAR int cfgWarnOnWontReplace;
 XPLPUBVAR xmlChar *cfgXplNsUri;
 
 /* Config defaults - for reference */
@@ -116,6 +117,7 @@ XPLPUBVAR xmlChar *cfgXplNsUri;
 #define DEFAULT_WARN_ON_NO_EXPECT_PARAM true
 #define DEFAULT_WARN_ON_UNINITIALIZED_TIMER false
 #define DEFAULT_WARN_ON_UNKNOWN_COMMAND false
+#define DEFAULT_WARN_ON_WONT_REPLACE false
 #define DEFAULT_XPL_NS_URI (BAD_CAST "urn:x-xpl:xpl")
 
 #ifdef __cplusplus

@@ -43,6 +43,7 @@ int cfgWarnOnMultipleSelection;
 int cfgWarnOnNoExpectParam;
 int cfgWarnOnUninitializedTimer;
 int cfgWarnOnUnknownCommand;
+int cfgWarnOnWontReplace;
 xmlChar *cfgXplNsUri;
 
 static xmlHashTablePtr config_entries_hash = NULL;
@@ -276,6 +277,11 @@ xplConfigEntry config_entries[] =
 		.value_ptr = &cfgWarnOnUnknownCommand,
 		.name = BAD_CAST "WarnOnUnknownCommand",
 		.default_value = (void*) DEFAULT_WARN_ON_UNKNOWN_COMMAND
+	}, {
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnWontReplace,
+		.name = BAD_CAST "WarnOnWontReplace",
+		.default_value = (void*) DEFAULT_WARN_ON_WONT_REPLACE
 	}, {
 		.cfg_type = CFG_TYPE_STRING,
 		.value_ptr = NULL,
