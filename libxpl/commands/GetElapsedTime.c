@@ -1,4 +1,6 @@
 #include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
 #include <libxpl/abstraction/xpr.h>
 
 void xplCmdGetElapsedTimeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
@@ -39,6 +41,9 @@ void xplCmdGetElapsedTimeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	XPR_TIME now;
 	long elapsed;
 
+	if (cfgWarnOnUninitializedTimer && xprTimeIsEmpty(&commandInfo->document->profile_start_time))
+		xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:get-elapsed-time: xpl:start-timer never called, file '%s', line %d",
+		commandInfo->element->doc->URL, commandInfo->element->line);
 	xprGetTime(&now);
 	elapsed = xprTimeDelta(&now, &commandInfo->document->profile_start_time);
 	sprintf((char*) buf, "%ld", elapsed);
