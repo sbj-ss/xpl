@@ -1,5 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
 
 void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
@@ -91,48 +92,58 @@ static void _doAppend(xmlNodePtr src, xmlNodePtr dst, AppendPosition mode)
 
 void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define PARENT(node) (((cmd_params->position == POS_AFTER) || (cmd_params->position == POS_BEFORE))? ((node)->parent): (node))
-	xplCmdAppendParamsPtr cmd_params = (xplCmdAppendParamsPtr) commandInfo->params;
+#define PARENT(node) (((params->position == POS_AFTER) || (params->position == POS_BEFORE))? ((node)->parent): (node))
+	xplCmdAppendParamsPtr params = (xplCmdAppendParamsPtr) commandInfo->params;
 	xmlNodePtr parent, clone, cur_dst;
 	ssize_t i, j;
 
 	if (
-		(cmd_params->source && (!cmd_params->source->nodesetval || !cmd_params->source->nodesetval->nodeNr))
+		(params->source && (!params->source->nodesetval || !params->source->nodesetval->nodeNr))
 		||
-		(!cmd_params->source && !commandInfo->element->children)
+		(!params->source && !commandInfo->element->children)
 	){
 		/* no nodes to append */
 		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
 
-	if (cmd_params->destination && cmd_params->destination->nodesetval)
+	if (params->destination && params->destination->nodesetval)
 	{
 
-		for (i = 0; i < (ssize_t) cmd_params->destination->nodesetval->nodeNr; i++)
+		for (i = 0; i < (ssize_t) params->destination->nodesetval->nodeNr; i++)
 		{
-			cur_dst = cmd_params->destination->nodesetval->nodeTab[i];
-			if ((cmd_params->position > POS_AFTER) && (cur_dst->type != XML_ELEMENT_NODE))
-				/* don't assign content to non-elements */ // TODO warning
+			cur_dst = params->destination->nodesetval->nodeTab[i];
+			if ((params->position > POS_AFTER) && (cur_dst->type != XML_ELEMENT_NODE))
+			{
+				/* don't assign content to non-elements */
+				if (cfgWarnOnInvalidNodeType)
+					xplDisplayMessage(xplMsgWarning, BAD_CAST "xpl:append: can't add children to non-elements, file '%s', line %d, destination '%s'",
+					commandInfo->element->doc->URL, commandInfo->element->line, params->destination->user);
 				continue;
+			}
 			if (cur_dst->type == XML_ATTRIBUTE_NODE)
-				/* can't add elements to attributes */ // TODO warning
+			{
+				/* can't add elements to attributes */
+				if (cfgWarnOnInvalidNodeType)
+					xplDisplayMessage(xplMsgWarning, BAD_CAST "xpl:append: can't add anything to attributes, file '%s', line %d, destination '%s'",
+					commandInfo->element->doc->URL, commandInfo->element->line, params->destination->user);
 				continue;
+			}
 			parent = PARENT(cur_dst);
-			if (!cmd_params->source) /* add own content */
+			if (!params->source) /* add own content */
 			{
 				clone = xplCloneNodeList(commandInfo->element->children, parent, commandInfo->element->doc);
-				_doAppend(clone, cur_dst, cmd_params->position);
-			} else if (cmd_params->source->nodesetval) {
+				_doAppend(clone, cur_dst, params->position);
+			} else if (params->source->nodesetval) {
 				/* add source selection */
-				if (cmd_params->position == POS_FIRST || cmd_params->position == POS_AFTER)
+				if (params->position == POS_FIRST || params->position == POS_AFTER)
 				{
 					/* reverse loop to keep node order */
-					for (j = (ssize_t) cmd_params->source->nodesetval->nodeNr - 1; j >= 0; j--)
-						_doAppend(xplCloneAsNodeChild(cmd_params->source->nodesetval->nodeTab[j], parent), cur_dst, cmd_params->position);
+					for (j = (ssize_t) params->source->nodesetval->nodeNr - 1; j >= 0; j--)
+						_doAppend(xplCloneAsNodeChild(params->source->nodesetval->nodeTab[j], parent), cur_dst, params->position);
 				} else {
-					for (j = 0; j < (ssize_t) cmd_params->source->nodesetval->nodeNr; j++)
-						_doAppend(xplCloneAsNodeChild(cmd_params->source->nodesetval->nodeTab[j], parent), cur_dst, cmd_params->position);
+					for (j = 0; j < (ssize_t) params->source->nodesetval->nodeNr; j++)
+						_doAppend(xplCloneAsNodeChild(params->source->nodesetval->nodeTab[j], parent), cur_dst, params->position);
 				}
 			}
 		}
