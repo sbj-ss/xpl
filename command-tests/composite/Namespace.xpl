@@ -39,6 +39,28 @@
       <B xmlns:ns-b="http://b.com"/>
     </Expected>
   </MustSucceed>
+  
+  <MustSucceed name="pass/no-replace">
+    <Input>
+      <Wrapper xmlns:ns-b="http://b.com">
+        <xpl:namespace prefix="ns-b">http://other.com</xpl:namespace>
+      </Wrapper>
+    </Input>
+    <Expected>
+      <Wrapper xmlns:ns-b="http://b.com"/>
+    </Expected>
+  </MustSucceed>
+
+  <MustSucceed name="pass/replace">
+    <Input>
+      <Wrapper xmlns:ns-b="http://b.com">
+        <xpl:namespace prefix="ns-b" replace="true">http://other.com</xpl:namespace>
+      </Wrapper>
+    </Input>
+    <Expected>
+      <Wrapper xmlns:ns-b="http://other.com"/>
+    </Expected>
+  </MustSucceed>
 
   <MustFail name="fail/scalar-selection">
     <Input>
