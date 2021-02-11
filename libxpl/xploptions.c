@@ -284,7 +284,7 @@ xplConfigEntry config_entries[] =
 	}
 };
 
-#define CONFIG_ENTRIES_COUNT (sizeof(configEntries) / sizeof(configEntries[0]))
+#define CONFIG_ENTRIES_COUNT (sizeof(config_entries) / sizeof(config_entries[0]))
 
 int xplGetBooleanValue(xmlChar* str)
 {
@@ -469,15 +469,17 @@ static xmlChar *xplGetOptionValueInner(xplConfigEntryPtr p, bool showPasswords)
 	return NULL;
 }
 
-xmlChar *xplGetOptionValue(xmlChar *optionName, bool showPasswords)
+xmlChar *xplGetOptionValue(xmlChar *optionName, bool showPasswords, bool *found)
 {
 	xplConfigEntryPtr p;
 
+	*found = false;
 	if (!config_entries_hash)
 		return NULL;
 	p = (xplConfigEntryPtr) xmlHashLookup(config_entries_hash, optionName);
 	if (!p)
 		return NULL;
+	*found = true;
 	if (p->options & CFG_OPTION_DEPRECATED)
 		return NULL;
 	return xplGetOptionValueInner(p, showPasswords);

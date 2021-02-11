@@ -19,7 +19,7 @@ XPLPUBFUN int XPLCALL
 	xplGetBooleanValue(xmlChar* str);
 /* get option value. result must be freed. */
 XPLPUBFUN xmlChar* XPLCALL
-	xplGetOptionValue(xmlChar *optionName, bool showPasswords);
+	xplGetOptionValue(xmlChar *optionName, bool showPasswords, bool *found);
 /* get all options in a node list */
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showPasswords);

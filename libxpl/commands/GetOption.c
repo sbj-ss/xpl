@@ -66,6 +66,8 @@ void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplCmdGetOptionParamsPtr params = (xplCmdGetOptionParamsPtr) commandInfo->params;
 	xplQName tag_name;
 	xmlNodePtr ret;
+	bool found;
+	xmlChar *value;
 
 	if (params->show_passwords && !xplSessionGetSaMode(commandInfo->document->session))
 	{
@@ -75,8 +77,14 @@ void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (params->name)
 	{
+		value = xplGetOptionValue(params->name, params->show_passwords, &found);
+		if (!found)
+		{
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "option '%s' not found", params->name), true, true);
+			return;
+		}
 		ret = xmlNewDocText(commandInfo->element->doc, NULL);
-		ret->content = xplGetOptionValue(params->name, params->show_passwords);
+		ret->content = value;
 		params->repeat = false;
 	} else {
 		tag_name = params->show_tags? empty_qname: params->tag_name.ncname? params->tag_name: default_tag_name;

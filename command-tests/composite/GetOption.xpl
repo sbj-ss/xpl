@@ -13,13 +13,6 @@
     <Expected>true</Expected>
   </MustSucceed>
 
-  <MustSucceed name="pass/unknown">
-    <Input>
-      <xpl:get-option name="HuntHeffalumps"/>
-    </Input>
-    <Expected/>
-  </MustSucceed>
-
   <MustSucceed name="pass/all">
     <Input>
       <xpl:include select="./option[@name='EnableAssertions']">
@@ -105,6 +98,12 @@
   <MustFail name="fail/bad-show-passwords">
     <Input>
       <xpl:get-option showpasswords="when nobody's watching"/>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/unknown">
+    <Input>
+      <xpl:get-option name="HuntHeffalumps"/>
     </Input>
   </MustFail>
   
