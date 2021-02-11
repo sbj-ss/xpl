@@ -118,6 +118,8 @@ XPLPUBFUN void XPLCALL
 	xprGetTime(XPR_TIME *t);
 XPLPUBFUN long XPLCALL
 	xprTimeDelta(XPR_TIME *after, XPR_TIME *before);
+XPLPUBFUN bool XPLCALL
+	xprTimeIsEmpty(XPR_TIME *t);
 
 #define XPR_STARTSTOP_LOW_LEVEL 0x01
 #define XPR_STARTSTOP_CONSOLE 0x02

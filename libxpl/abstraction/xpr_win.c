@@ -418,6 +418,11 @@ long xprTimeDelta(XPR_TIME *after, XPR_TIME *before)
 	return sec_delta * 1000 + (ns_delta / 1000000);
 }
 
+bool xprTimeIsEmpty(XPR_TIME *t)
+{
+	return !t || (!t->tv_sec && !t->tv_nsec);
+}
+
 static void _invalid_crt_param_handler(
 	const WCHAR *expression,
 	const WCHAR *function,
