@@ -41,7 +41,7 @@ XPLPUBFUN xmlNodePtr XPLCALL
 XPLPUBFUN void XPLCALL
 	xplStackTrace(const xmlNodePtr startPoint);
 
-#define DISPLAY_INTERNAL_ERROR_MESSAGE() xplDisplayMessage(xplMsgInternalError,\
+#define DISPLAY_INTERNAL_ERROR_MESSAGE() xplDisplayMessage(XPL_MSG_INTERNAL_ERROR,\
 	BAD_CAST "please contact the developer. Function %s, file %s, line %d",\
 	__FUNCTION__, __FILE__, __LINE__);
 
