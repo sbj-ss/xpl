@@ -184,7 +184,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					return;
 			}
 		} else
-			source_list = _cloneNodeSet(params->source->nodesetval, commandInfo->element, NULL); // TODO do we really need a copy?
+			source_list = _cloneNodeSet(params->source->nodesetval, commandInfo->element, NULL);
 	} else {
 		if (params->type == EDGE_ATTRIBUTE)
 		{
