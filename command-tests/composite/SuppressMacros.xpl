@@ -17,17 +17,13 @@
       <xpl:define name="C">
         <ProcessedC/>
       </xpl:define>
-      <xpl:suppress-macros select="./A | ./B">
-        <A/>
-        <B/>
-        <C/>
+      <xpl:suppress-macros select="./node()[local-name() != 'C']">
+        <A/>z<B/><C/>
       </xpl:suppress-macros>
       <A/>
     </Input>
     <Expected>
-      <A/>
-      <B/>
-      <ProcessedC/>
+      <A/>z<B/><ProcessedC/>
       <ProcessedA/>
     </Expected>
   </MustSucceed>

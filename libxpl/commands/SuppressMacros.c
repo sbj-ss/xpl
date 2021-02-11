@@ -2,6 +2,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmacro.h>
 #include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
 
@@ -50,7 +51,7 @@ xplCommand xplSuppressMacrosCommand = {
 	}
 };
 
-static void _fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target, xmlNodeSetPtr nodeset)
+static void _fillMacroHashFromNodeSet(xmlNodePtr source, xmlHashTablePtr target, xmlNodeSetPtr nodeset)
 {
 	xplMacroPtr macro;
 	xmlNodePtr cur;
@@ -64,7 +65,8 @@ static void _fillMacroHashFromNodeset(xmlNodePtr source, xmlHashTablePtr target,
 			macro = xplMacroLookupByElement(source, cur);
 			if (macro)
 				xmlHashAddEntry(target, cur->name, macro);
-		}
+		} else if (cfgWarnOnInvalidNodeType)
+			xplDisplayWarning(source, BAD_CAST "only element nodes returned by the select parameter are used");
 	}
 }
 
@@ -135,7 +137,7 @@ void xplCmdSuppressMacrosPrologue(xplCommandInfoPtr commandInfo)
 		if (params->select && params->select->nodesetval)
 		{
 			macros = xmlHashCreate(16);
-			_fillMacroHashFromNodeset(commandInfo->element, macros, params->select->nodesetval);
+			_fillMacroHashFromNodeSet(commandInfo->element, macros, params->select->nodesetval);
 		}
 		if (params->list)
 		{
