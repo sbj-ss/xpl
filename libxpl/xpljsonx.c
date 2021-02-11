@@ -501,7 +501,6 @@ xmlNodePtr xplJsonXParse(xmlChar *src, xmlNodePtr parent, bool validateStrings)
 	jsonxParseContext ctxt;
 	xmlNodePtr ret;
 	yajl_handle parser;
-	int status;
 	size_t len;
 	xmlChar *error;
 
@@ -522,9 +521,9 @@ xmlNodePtr xplJsonXParse(xmlChar *src, xmlNodePtr parent, bool validateStrings)
 	ctxt.parent = ctxt.cur = parent;
 	len = xmlStrlen(src);
 	if (
-		(status = yajl_parse(parser, src, len) != yajl_status_ok)
+		(yajl_parse(parser, src, len) != yajl_status_ok)
 		||
-		(status = yajl_complete_parse(parser) != yajl_status_ok)
+		(yajl_complete_parse(parser) != yajl_status_ok)
 	)
 	{
 		error = yajl_get_error(parser, true, src, len);
