@@ -35,7 +35,7 @@ xplCommand xplAssertCommand =
 
 void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xplCmdAssertParamsPtr cmd_params = (xplCmdAssertParamsPtr) commandInfo->params;
+	xplCmdAssertParamsPtr params = (xplCmdAssertParamsPtr) commandInfo->params;
 	xmlXPathObjectPtr ct = NULL;
 	int smth = 0;
 
@@ -67,9 +67,9 @@ void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		}
 		if (!smth)
 		{
-			if (cmd_params->message)
+			if (params->message)
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, cmd_params->message), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, params->message), true, true);
 			} else {
 				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "assertion \"%s\" failed", commandInfo->content), true, true);
 			}

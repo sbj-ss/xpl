@@ -40,7 +40,7 @@ xplCommand xplRemoveDBCommand =
 
 void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xplCmdRemoveDBParamsPtr cmd_params = (xplCmdRemoveDBParamsPtr) commandInfo->params;
+	xplCmdRemoveDBParamsPtr params = (xplCmdRemoveDBParamsPtr) commandInfo->params;
 	xplDBConfigResult cfg_result;
 
 	if (!xplSessionGetSaMode(commandInfo->document->session))
@@ -49,14 +49,14 @@ void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		return;
 	}
 	xplLockThreads(true);
-	cfg_result = xplRemoveDB(cmd_params->name);
-	if (cfg_result == XPL_DBCR_NOT_FOUND && cmd_params->ignore_if_not_exists)
+	cfg_result = xplRemoveDB(params->name);
+	if (cfg_result == XPL_DBCR_NOT_FOUND && params->ignore_if_not_exists)
 		cfg_result = XPL_DBCR_OK;
 	xplLockThreads(false);
 	if (cfg_result == XPL_DBCR_OK)
 		ASSIGN_RESULT(NULL, false, true);
 	else
 		ASSIGN_RESULT(xplCreateErrorNode(
-			commandInfo->element, BAD_CAST "can't remove database \"%s\": %s", cmd_params->name, xplDecodeDBConfigResult(cfg_result)
+			commandInfo->element, BAD_CAST "can't remove database \"%s\": %s", params->name, xplDecodeDBConfigResult(cfg_result)
 		), true, true);
 }

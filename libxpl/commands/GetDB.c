@@ -56,7 +56,7 @@ xplCommand xplGetDBCommand =
 
 void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xplCmdGetDBParamsPtr cmd_params = (xplCmdGetDBParamsPtr) commandInfo->params;
+	xplCmdGetDBParamsPtr params = (xplCmdGetDBParamsPtr) commandInfo->params;
 	xplDBListPtr db_list;
 	xmlNodePtr ret;
 
@@ -66,17 +66,17 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		return;
 	}
 
-	if (cmd_params->name)
+	if (params->name)
 	{
-		db_list = xplLocateDBList(cmd_params->name);
+		db_list = xplLocateDBList(params->name);
 		if (!db_list)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid database name \"%s\"", cmd_params->name), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid database name \"%s\"", params->name), true, true);
 			return;
 		}
 		ret = xmlNewDocText(commandInfo->element->doc, db_list->conn_string);
-		cmd_params->repeat = false;
+		params->repeat = false;
 	} else
-		ret = xplDatabasesToNodeList(commandInfo->element, cmd_params->tag_name, cmd_params->show_tags);
-	ASSIGN_RESULT(ret, cmd_params->repeat, true);
+		ret = xplDatabasesToNodeList(commandInfo->element, params->tag_name, params->show_tags);
+	ASSIGN_RESULT(ret, params->repeat, true);
 }

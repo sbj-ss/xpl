@@ -47,7 +47,7 @@ xplCommand xplAddDBCommand =
 
 void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xplCmdAddDBParamsPtr cmd_params = (xplCmdAddDBParamsPtr) commandInfo->params;
+	xplCmdAddDBParamsPtr params = (xplCmdAddDBParamsPtr) commandInfo->params;
 	xplDBConfigResult cfg_result;
 
 	if (!xplSessionGetSaMode(commandInfo->document->session))
@@ -56,14 +56,14 @@ void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		return;
 	}
 	xplLockThreads(true);
-	cfg_result = xplAddDB(cmd_params->name, commandInfo->content, cmd_params->check);
-	if (cfg_result == XPL_DBCR_ALREADY_EXISTS && cmd_params->modify_if_exists)
-		cfg_result = xplChangeDB(cmd_params->name, commandInfo->content, cmd_params->check);
+	cfg_result = xplAddDB(params->name, commandInfo->content, params->check);
+	if (cfg_result == XPL_DBCR_ALREADY_EXISTS && params->modify_if_exists)
+		cfg_result = xplChangeDB(params->name, commandInfo->content, params->check);
 	xplLockThreads(false);
 	if (cfg_result == XPL_DBCR_OK)
 		ASSIGN_RESULT(NULL, false, true);
 	else
 		ASSIGN_RESULT(xplCreateErrorNode(
-			commandInfo->element, BAD_CAST "can't add database \"%s\": %s", cmd_params->name, xplDecodeDBConfigResult(cfg_result)
+			commandInfo->element, BAD_CAST "can't add database \"%s\": %s", params->name, xplDecodeDBConfigResult(cfg_result)
 		), true, true);
 }
