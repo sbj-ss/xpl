@@ -1,6 +1,7 @@
 #include <string.h>
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
 
 void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
@@ -102,6 +103,28 @@ static xmlNodePtr _wrapAttributes(xmlAttrPtr prop, xplQName tagname)
 	return ret;
 }
 
+static bool _hasElementTail(xmlNodePtr tail)
+{
+	while (tail)
+	{
+		if (tail->type == XML_ELEMENT_NODE)
+			return true;
+		tail = tail->next;
+	}
+	return false;
+}
+
+static bool _hasMoreElements(xmlNodeSetPtr nodes, ssize_t i)
+{
+	while (i < nodes->nodeNr)
+	{
+		if (nodes->nodeTab[i]->type == XML_ELEMENT_NODE)
+			return true;
+		i++;
+	}
+	return false;
+}
+
 static xplQName empty_qname = { NULL, NULL };
 static xplQName default_tag_name = { NULL, BAD_CAST "attribute" };
 
@@ -110,6 +133,8 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 	xplCmdGetAttributesParamsPtr params = (xplCmdGetAttributesParamsPtr) commandInfo->params;
 	xmlNodePtr src = NULL;
 	xplQName tag_name;
+	ssize_t i = 0;
+	xmlNodeSetPtr nodes;
 
 	if (params->tagname.ncname && params->show_tags)
 	{
@@ -117,27 +142,21 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 		return;
 	}
 
-	if (params->select)
+	if (params->select && (nodes = params->select->nodesetval) && nodes->nodeNr)
 	{
-		if (params->select->nodesetval)
+		while ((i < nodes->nodeNr) && (nodes->nodeTab[i]->type != XML_ELEMENT_NODE))
+			i++;
+		if (cfgWarnOnInvalidNodeType && i)
+			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:get-attributes can only work with element nodes, file '%s', line %d, select '%s'",
+			commandInfo->element->doc->URL, commandInfo->element->line, params->select->user);
+		if (i < nodes->nodeNr)
 		{
-			if ((params->select->nodesetval->nodeNr == 1) && (params->select->nodesetval->nodeTab[0]->type == XML_ELEMENT_NODE))
-			{
-				src = params->select->nodesetval->nodeTab[0];
-				if (src->type != XML_ELEMENT_NODE)
-				{
-					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) evaluated to non-element node(s)"), true, true);
-					return;
-				}
-			} else if (!params->select->nodesetval->nodeNr) {
-				ASSIGN_RESULT(NULL, false, true);
-				return;
-			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath (%s) must evaluate to a single element node", params->select->user), true, true);
-				return;
-			}
+			src = params->select->nodesetval->nodeTab[i];
+			if (cfgWarnOnMultipleSelection && _hasMoreElements(params->select->nodesetval, i))
+				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:get-attributes gets attributes only from the first selected element but more elements follow,"
+				"file '%s', line %d, select '%s'", commandInfo->element->doc->URL, commandInfo->element->line, params->select->user);
 		}
-	} else {
+	} else if (!params->select) {
 		src = commandInfo->element->children;
 		while (src && (src->type != XML_ELEMENT_NODE))
 			src = src->next;
@@ -145,7 +164,18 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 		{
 			ASSIGN_RESULT(NULL, false, true);
 			return;
-		} // TODO warning if more elements follow
+		}
+		if (cfgWarnOnInvalidNodeType && src != commandInfo->element->children)
+			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:get-attributes can only work with element nodes, file '%s', line %d, select '%s'",
+			commandInfo->element->doc->URL, commandInfo->element->line, params->select->user);
+		if (cfgWarnOnMultipleSelection && _hasElementTail(src))
+			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:get-attributes gets attributes only from its first child element but more elements follow, file '%s', line %d",
+			commandInfo->element->doc->URL, commandInfo->element->line);
+	}
+	if (!src)
+	{
+		ASSIGN_RESULT(NULL, false, true);
+		return;
 	}
 	tag_name = params->show_tags? empty_qname: params->tagname.ncname? params->tagname: default_tag_name;
 	ASSIGN_RESULT(_wrapAttributes(src->properties, tag_name), params->repeat, true);

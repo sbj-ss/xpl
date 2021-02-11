@@ -60,6 +60,16 @@
     </Input>
     <Expected/>
   </MustSucceed>
+
+  <MustSucceed name="fail/selected-non-element">
+    <Input>
+      <Something>text</Something>
+      <xpl:get-attributes select="../Something/text()"/>
+    </Input>
+    <Expected>
+      <Something>text</Something>
+    </Expected>
+  </MustSucceed>
   
   <MustSucceed name="pass/empty-children">
     <Input>
@@ -113,13 +123,6 @@
   <MustFail name="fail/bad-select">
     <Input>
       <xpl:get-attributes select="))Z"/>
-    </Input>
-  </MustFail>
-
-  <MustFail name="fail/selected-non-element">
-    <Input>
-      <Something>text</Something>
-      <xpl:get-attributes select="../Something/text()"/>
     </Input>
   </MustFail>
   
