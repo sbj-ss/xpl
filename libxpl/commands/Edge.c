@@ -220,10 +220,10 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					xplDisplayWarning(commandInfo->element, BAD_CAST "can't add content to non-elements, destination '%s'", params->destination->user);
 				break;
 			case EDGE_REPLACE:
-				if (cur->type != XML_ELEMENT_NODE && cur->type != XML_TEXT_NODE)
+				if (cur->type != XML_ELEMENT_NODE && cur->type != XML_TEXT_NODE && cur->type != XML_CDATA_SECTION_NODE)
 				{
 					if (cfgWarnOnInvalidNodeType)
-						xplDisplayWarning(commandInfo->element, BAD_CAST "can only replace elements and text nodes, destination '%s'", params->destination->user);
+						xplDisplayWarning(commandInfo->element, BAD_CAST "can only replace elements and text/cdata nodes, destination '%s'", params->destination->user);
 				} else if ((commandInfo->element != cur) && !xplIsAncestor(commandInfo->element, cur))
 					xplDocDeferNodeDeletion(commandInfo->document, xplReplaceWithList(cur, xplCloneNodeList(source_list, cur, cur->doc)));
 				else if (cfgWarnOnAncestorModificationAttempt)
