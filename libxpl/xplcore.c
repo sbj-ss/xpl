@@ -613,12 +613,12 @@ xmlNodePtr xplReplaceContentEntries(
 			if (new_content == empty_content_marker)
 				new_content = NULL;
 			if (required && !new_content)
-				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "missing macro content \"%s\" (file \"%s\", line %d)", select_attr, oldElement->doc->URL, oldElement->line);
+				xplDisplayWarning(oldElement, BAD_CAST "missing macro content '%s'", select_attr);
 			XPL_FREE(select_attr);
 		} else { /* if (select_attr) */
 			new_content = xplCloneNodeList(oldElement->children, cur->parent, oldElement->doc);
 			if (required && !new_content)
-				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "missing macro content (file \"%s\", line %d)", oldElement->doc->URL, oldElement->line);
+				xplDisplayWarning(oldElement, BAD_CAST "missing macro content");
 		}
 		if (ret == cur)
 			ret = new_content; /* <xpl:define name="A"><xpl:content/></xpl:define> */
@@ -740,18 +740,8 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 	macro->caller = element;
 	doc->current_macro = macro;
 	macro->times_called++;
-	if (element->children)
-	{
-		if (cfgWarnOnExpandedMacroContent && (macro->expansion_state == XPL_MACRO_EXPANDED))
-		{
-			if (element->ns && element->ns->prefix)
-				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "child nodes present in expanded macro caller \"%s:%s\" (file \"%s\", line %d)",
-				element->ns->prefix, element->name, doc->document->URL, element->line);
-			else
-				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "child nodes present in expanded macro caller \"%s\" (file \"%s\", line %d)",
-				element->name, doc->document->URL, element->line);
-		}
-	}
+	if (element->children && cfgWarnOnExpandedMacroContent && (macro->expansion_state == XPL_MACRO_EXPANDED))
+		xplDisplayWarning(element, BAD_CAST "child nodes present in expanded macro caller");
 	switch (macro->expansion_state)
 	{
 	case XPL_MACRO_EXPAND_ALWAYS:
@@ -800,7 +790,7 @@ void _xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr res
 	if (!cmd)
 	{
 		if (cfgWarnOnUnknownCommand && doc->expand)
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "unknown command \"%s\" (file \"%s\", line %d)", element->name, element->doc->URL, element->line);
+			xplDisplayWarning(element, BAD_CAST "unknown command");
 		xplNodeListApply(doc, element->children, result);
 		return;
 	}
@@ -853,12 +843,10 @@ xplMacroPtr xplAddMacro(
 	if (!replace || (replace && cfgWarnOnMacroRedefinition))
 		prev_def = xplMacroLookupByQName(macro->parent, qname);
 	if (replace && cfgWarnOnMacroRedefinition && prev_def)
-	{
-		if (qname.ns)
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "macro \"%s:%s\" redefined, previous line: %d (file \"%s\", line %d)", qname.ns->prefix, qname.ncname, prev_def->line, doc->document->URL, macro->line);
-		else
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "macro \"%s\" redefined, previous line: %d (file \"%s\", line %d)", qname.ncname, prev_def->line, doc->document->URL, macro->line);
-	}
+		xplDisplayWarning(macro, BAD_CAST "macro '%s%s%s' redefined, previous line: %d",
+			qname.ns && qname.ns->href? qname.ns->href: BAD_CAST "",
+			qname.ns && qname.ns->href? ":": "",
+			qname.ncname, prev_def->line);
 	if (!replace && prev_def)
 		return NULL;
 	mb = xplMacroCreate(id, NULL, expansionState);

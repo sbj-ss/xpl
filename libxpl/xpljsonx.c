@@ -245,8 +245,10 @@ static xmlNodePtr _jsonxSerializeNode(xmlNodePtr cur, jsonxSerializeContextPtr c
 		if (ctxt->strict_tag_names)
 			return xplCreateErrorNode(ctxt->parent, BAD_CAST "element '%s:%s' is not in JSONX namespace", cur->ns? cur->ns->prefix: NULL, cur->name);
 		if (cfgWarnOnJsonxSerializationIssues)
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "element '%s:%s' is not in JSONX namespace, file '%s', line %d",
-			cur->ns? cur->ns->prefix: NULL, cur->name, ctxt->parent->doc->URL, ctxt->parent->line);
+			xplDisplayWarning(ctxt->parent, BAD_CAST "element '%s%s%s' (line %d) is not in JSONX namespace",
+				cur->ns && cur->ns->prefix? cur->ns->prefix: BAD_CAST "",
+				cur->ns && cur->ns->prefix? ":": "",
+				cur->name, cur->line);
 		return NULL;
 	}
 	el_type = _getElementType(cur);
@@ -255,8 +257,10 @@ static xmlNodePtr _jsonxSerializeNode(xmlNodePtr cur, jsonxSerializeContextPtr c
 		if (ctxt->strict_tag_names)
 			return xplCreateErrorNode(ctxt->parent, BAD_CAST "unknown tag name '%s'", cur->name);
 		if (cfgWarnOnJsonxSerializationIssues)
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "unknown tag name '%s', file '%s', line %d",
-			cur->name, ctxt->parent->doc->URL, ctxt->parent->line);
+			xplDisplayWarning(ctxt->parent, BAD_CAST "unknown tag name '%s%s%s' (line %d)",
+				cur->ns && cur->ns->prefix? cur->ns->prefix: BAD_CAST "",
+				cur->ns && cur->ns->prefix? ":": "",
+				cur->name, cur->line);
 		return NULL;
 	}
 	name = xmlGetNoNsProp(cur, BAD_CAST "name");

@@ -107,7 +107,7 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				upper_break = _createBreak(commandInfo, upper_point);
 				xmlAddNextSibling(commandInfo->element->parent, upper_break);
 			} else if (cfgWarnOnInvalidNodeType)
-				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:break: can't add children to non-elements, file '%s', line %d, point '%s'",
+				xplDisplayWarning(commandInfo->element, BAD_CAST "can't add children to non-elements, point '%s'",
 				commandInfo->element->doc->URL, commandInfo->element->line, params->point);
 		}
 	}

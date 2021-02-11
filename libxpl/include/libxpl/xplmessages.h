@@ -33,6 +33,8 @@ XPLPUBFUN xmlChar* XPLCALL
 	xplVFormatMessage(xmlChar *fmt, va_list args);
 XPLPUBFUN void XPLCALL
 	xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ...);
+XPLPUBFUN void XPLCALL
+	xplDisplayWarning(xmlNodePtr carrier, xmlChar *fmt, ...);
 /* eats msg */
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplCreateSimpleErrorNode(xmlDocPtr doc, xmlChar *msg, const xmlChar *src);

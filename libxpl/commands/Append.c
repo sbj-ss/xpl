@@ -117,16 +117,14 @@ void xplCmdAppendEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			{
 				/* don't assign content to non-elements */
 				if (cfgWarnOnInvalidNodeType)
-					xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:append: can't add children to non-elements, file '%s', line %d, destination '%s'",
-					commandInfo->element->doc->URL, commandInfo->element->line, params->destination->user);
+					xplDisplayWarning(commandInfo->element, BAD_CAST "can't add children to non-elements, destination '%s'", params->destination->user);
 				continue;
 			}
 			if (cur_dst->type == XML_ATTRIBUTE_NODE)
 			{
 				/* can't add elements to attributes */
 				if (cfgWarnOnInvalidNodeType)
-					xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:append: can't add anything to attributes, file '%s', line %d, destination '%s'",
-					commandInfo->element->doc->URL, commandInfo->element->line, params->destination->user);
+					xplDisplayWarning(commandInfo->element, BAD_CAST "can't add anything to attributes, destination '%s'", params->destination->user);
 				continue;
 			}
 			parent = PARENT(cur_dst);

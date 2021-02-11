@@ -147,14 +147,12 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 		while ((i < nodes->nodeNr) && (nodes->nodeTab[i]->type != XML_ELEMENT_NODE))
 			i++;
 		if (cfgWarnOnInvalidNodeType && i)
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:get-attributes can only work with element nodes, file '%s', line %d, select '%s'",
-			commandInfo->element->doc->URL, commandInfo->element->line, params->select->user);
+			xplDisplayWarning(commandInfo->element, BAD_CAST "can only work with element nodes, select '%s'", params->select->user);
 		if (i < nodes->nodeNr)
 		{
 			src = params->select->nodesetval->nodeTab[i];
 			if (cfgWarnOnMultipleSelection && _hasMoreElements(params->select->nodesetval, i))
-				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:get-attributes gets attributes only from the first selected element but more elements follow,"
-				"file '%s', line %d, select '%s'", commandInfo->element->doc->URL, commandInfo->element->line, params->select->user);
+				xplDisplayWarning(commandInfo->element, BAD_CAST "gets attributes only from the first selected element but more elements follow, select '%s'", params->select->user);
 		}
 	} else if (!params->select) {
 		src = commandInfo->element->children;
@@ -166,11 +164,9 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 			return;
 		}
 		if (cfgWarnOnInvalidNodeType && src != commandInfo->element->children)
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:get-attributes can only work with element nodes, file '%s', line %d, select '%s'",
-			commandInfo->element->doc->URL, commandInfo->element->line, params->select->user);
+			xplDisplayWarning(commandInfo->element, BAD_CAST "can only work with element nodes, select '%s'", params->select->user);
 		if (cfgWarnOnMultipleSelection && _hasElementTail(src))
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:get-attributes gets attributes only from its first child element but more elements follow, file '%s', line %d",
-			commandInfo->element->doc->URL, commandInfo->element->line);
+			xplDisplayWarning(commandInfo->element, BAD_CAST "gets attributes only from its first child element but more elements follow");
 	}
 	if (!src)
 	{

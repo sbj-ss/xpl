@@ -42,8 +42,7 @@ void xplCmdGetElapsedTimeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	long elapsed;
 
 	if (cfgWarnOnUninitializedTimer && xprTimeIsEmpty(&commandInfo->document->profile_start_time))
-		xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:get-elapsed-time: xpl:start-timer never called, file '%s', line %d",
-		commandInfo->element->doc->URL, commandInfo->element->line);
+		xplDisplayWarning(commandInfo->element, BAD_CAST "start-timer never called");
 	xprGetTime(&now);
 	elapsed = xprTimeDelta(&now, &commandInfo->document->profile_start_time);
 	sprintf((char*) buf, "%ld", elapsed);

@@ -79,12 +79,12 @@ void xplCmdAttributeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			if (cur->type == XML_ELEMENT_NODE)
 			{
 				if (!xplCreateAttribute(cur, params->qname, attr_value, params->replace) && cfgWarnOnWontReplace)
-					xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:attribute: won't replace existing attribute");
+					xplDisplayWarning(commandInfo->element, BAD_CAST "won't replace existing attribute");
 			} else if (cfgWarnOnInvalidNodeType)
-				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:attribute: can't assign attributes to non-elements, file '%s', line %d, destination '%s'",
-				commandInfo->element->doc->URL, commandInfo->element->line, params->destination->user);
+				xplDisplayWarning(commandInfo->element, BAD_CAST "can't assign attributes to non-elements, destination '%s'", params->destination->user);
 		}
 	} else if (commandInfo->element->parent) 
-		(void) xplCreateAttribute(commandInfo->element->parent, params->qname, attr_value, params->replace);
+		if (!xplCreateAttribute(commandInfo->element->parent, params->qname, attr_value, params->replace) && cfgWarnOnWontReplace)
+			xplDisplayWarning(commandInfo->element, BAD_CAST "won't replace existing attribute");
 	ASSIGN_RESULT(NULL, false, true);
 }

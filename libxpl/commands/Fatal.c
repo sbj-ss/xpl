@@ -26,8 +26,7 @@ static xmlNodePtr _onlyFirstChildElement(xmlNodePtr parent)
 		if (tmp)
 		{
 			if (cfgWarnOnMultipleSelection)
-				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "xpl:fatal: more nodes follow in command content, deleted. file '%s', line %d",
-				parent->doc->URL, parent->line);
+				xplDisplayWarning(parent, BAD_CAST "more nodes follow in command content, deleted");
 			cur->next = NULL;
 			tmp->prev = NULL;
 			xmlFreeNodeList(tmp);

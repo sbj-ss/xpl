@@ -115,6 +115,29 @@ void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
 	XPL_FREE(msg);
 }
 
+void xplDisplayWarning(xmlNodePtr carrier, xmlChar *fmt, ...)
+{
+	va_list arg_list;
+	xmlChar *inner_message;
+
+	va_start(arg_list, fmt);
+	inner_message = xplVFormatMessage(fmt, arg_list);
+
+	xplDisplayMessage(
+		XPL_MSG_WARNING,
+		BAD_CAST "%s%s%s: %s. file '%s', line %d",
+		(carrier->ns && carrier->ns->prefix)? (char*) carrier->ns->prefix: "",
+		(carrier->ns && carrier->ns->prefix)? ":": "",
+		carrier->name,
+		inner_message,
+		carrier->doc->URL,
+		carrier->line
+	);
+	if (inner_message)
+		XPL_FREE(inner_message);
+}
+
+
 xmlNodePtr xplCreateSimpleErrorNode(xmlDocPtr doc, xmlChar *msg, const xmlChar *src)
 {
 	xmlNodePtr txt, ret;

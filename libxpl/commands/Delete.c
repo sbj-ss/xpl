@@ -131,12 +131,10 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			if ((int) cur->type & XPL_NODE_DELETION_MASK)
 			{
 				if (cfgWarnOnDeletedNodeReference)
-					xplDisplayMessage(XPL_MSG_WARNING,
-						BAD_CAST "node \"%s\" (line %d) post-mortem access attempt (file \"%s\", line %d)",
-						cur->name,
-						cur->line,
-						commandInfo->document->document->URL,
-						commandInfo->element->line);
+					xplDisplayWarning(commandInfo->element, BAD_CAST "node '%s%s%s' (line %d) post-mortem access attempt",
+						cur->ns && cur->ns->prefix? cur->ns->prefix: BAD_CAST "",
+						cur->ns && cur->ns->prefix? ":": "",
+						cur->name, cur->line);
 				continue;
 			}
 			switch (cur->type)

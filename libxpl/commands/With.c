@@ -101,23 +101,10 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 			if (((int) cur->type) & XPL_NODE_DELETION_MASK)
 			{
 				if (cfgWarnOnDeletedNodeReference)
-				{
-					if (cur->ns)
-						xplDisplayMessage(XPL_MSG_WARNING,
-							BAD_CAST "node \"%s:%s\" (line %d) post-mortem access attempt (file \"%s\", line %d)",
-							cur->ns->prefix,
-							cur->name,
-							cur->line,
-							commandInfo->document->document->URL,
-							commandInfo->element->line);
-					else
-						xplDisplayMessage(XPL_MSG_WARNING,
-							BAD_CAST "node \"%s\" (line %d) post-mortem access attempt (file \"%s\", line %d)",
-							cur->name,
-							cur->line,
-							commandInfo->document->document->URL,
-							commandInfo->element->line);
-				}
+					xplDisplayWarning(commandInfo->element, BAD_CAST "node '%s%s%s' (line %d) post-mortem access attempt",
+							cur->ns && cur->ns->prefix? cur->ns->prefix: BAD_CAST "",
+							cur->ns && cur->ns->prefix? ":": "",
+							cur->name, cur->line);
 				continue;
 			}
 			if ((cur->type != XML_ELEMENT_NODE))
@@ -126,14 +113,10 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 			if (naos_check_result == NAOS_CHECK_RESULT_IS_ANCESTOR)
 			{
 				if (cfgWarnOnAncestorModificationAttempt)
-				{
-					if (cur->ns)
-						xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "ancestor/self node \"%s:%s\" modification attempt denied (file \"%s\", line %d)",
-						cur->ns->prefix, cur->name, commandInfo->document->document->URL, commandInfo->element->line);
-					else
-						xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "ancestor/self node \"%s\" modification attempt denied (file \"%s\", line %d)",
-						cur->name, commandInfo->document->document->URL, commandInfo->element->line);
-				}
+					xplDisplayWarning(commandInfo->element, BAD_CAST "ancestor/self node '%s%s%s' (line %d) modification attempt denied",
+						cur->ns && cur->ns->prefix? cur->ns->prefix: BAD_CAST "",
+						cur->ns && cur->ns->prefix? ":": "",
+						cur->name, cur->line);
 				continue;
 			} else if (naos_check_result == NAOS_CHECK_RESULT_ANCESTOR_DELETED)
 				break;

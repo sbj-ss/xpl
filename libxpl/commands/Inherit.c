@@ -73,11 +73,7 @@ void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (!macro)
 	{
 		if (cfgWarnOnMissingInheritBase)
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "%s:%s: no macro \"%s:%s\" to inherit from",
-				commandInfo->element->ns? commandInfo->element->ns->prefix: NULL,
-				commandInfo->element->name,
-				macro_name.ns? macro_name.ns->prefix: NULL,
-				macro_name.ncname);
+			xplDisplayWarning(commandInfo->element, BAD_CAST "no macro '%s:%s' to inherit from", macro_name.ns? macro_name.ns->prefix: NULL, macro_name.ncname);
 		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
