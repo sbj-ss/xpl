@@ -79,6 +79,7 @@ XPLPUBVAR int cfgWarnOnMissingInheritBase;
 XPLPUBVAR int cfgWarnOnMissingMacroContent;
 XPLPUBVAR int cfgWarnOnMultipleSelection;
 XPLPUBVAR int cfgWarnOnNoExpectParam;
+XPLPUBVAR int cfgWarnOnUninitializedTimer;
 XPLPUBVAR int cfgWarnOnUnknownCommand;
 XPLPUBVAR xmlChar *cfgXplNsUri;
 
@@ -111,6 +112,7 @@ XPLPUBVAR xmlChar *cfgXplNsUri;
 #define DEFAULT_WARN_ON_MISSING_INHERIT_BASE false
 #define DEFAULT_WARN_ON_MULTIPLE_SELECTION false
 #define DEFAULT_WARN_ON_NO_EXPECT_PARAM true
+#define DEFAULT_WARN_ON_UNINITIALIZED_TIMER false
 #define DEFAULT_WARN_ON_UNKNOWN_COMMAND false
 #define DEFAULT_XPL_NS_URI (BAD_CAST "http://tch.org/xpl")
 

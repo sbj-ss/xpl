@@ -259,6 +259,11 @@ xplConfigEntry configEntries[] =
 		.default_value = (void*) DEFAULT_WARN_ON_NO_EXPECT_PARAM
 	}, {
 		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnUninitializedTimer,
+		.name = BAD_CAST "WarnOnUninitializedTimer",
+		.default_value = (void*) DEFAULT_WARN_ON_UNINITIALIZED_TIMER
+	}, {
+		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgWarnOnUnknownCommand,
 		.name = BAD_CAST "WarnOnUnknownCommand",
 		.default_value = (void*) DEFAULT_WARN_ON_UNKNOWN_COMMAND
