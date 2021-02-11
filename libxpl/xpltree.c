@@ -1356,7 +1356,7 @@ xmlAttrPtr xplCreateAttribute(xmlNodePtr dst, xplQName qname, xmlChar *value, bo
 	if (prev)
 	{
 		if (!allowReplace)
-			return prev;
+			return NULL;
 		xmlFreeNodeList(prev->children);
 		xplSetChildren((xmlNodePtr) prev, xmlNewDocText(dst->doc, value));
 		return prev;
