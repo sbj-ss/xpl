@@ -203,7 +203,7 @@ xplConfigEntry configEntries[] =
 		.name = BAD_CAST "UseWrappers",
 		.default_value = (void*) DEFAULT_USE_WRAPPERS
 	}, {
-		.cfg_type = CFG_TYPE_BOOL, /* TODO should be registered by xpl:with (or xpl:edge? */
+		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgWarnOnAncestorModificationAttempt,
 		.name = BAD_CAST "WarnOnAncestorModificationAttempt",
 		.default_value = (void*) DEFAULT_WARN_ON_ANCESTOR_MODIFICATION_ATTEMPT
@@ -238,7 +238,7 @@ xplConfigEntry configEntries[] =
 		.name = BAD_CAST "WarnOnMacroRedefinition",
 		.default_value = (void*) DEFAULT_WARN_ON_MACRO_REDEFINITION
 	}, {
-		.cfg_type = CFG_TYPE_BOOL, /* TODO should be registered by xpl:inherit */
+		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgWarnOnMissingInheritBase,
 		.name = BAD_CAST "WarnOnMissingInheritBase",
 		.default_value = (void*) DEFAULT_WARN_ON_MISSING_INHERIT_BASE
@@ -248,7 +248,12 @@ xplConfigEntry configEntries[] =
 		.name = BAD_CAST "WarnOnMissingMacroContent",
 		.default_value = (void*) DEFAULT_WARN_ON_MISSING_MACRO_CONTENT
 	}, {
-		.cfg_type = CFG_TYPE_BOOL, /* TODO should be registered by xpl:get-param */
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnMultipleSelection,
+		.name = BAD_CAST "WarnOnMultipleSelection",
+		.default_value = (void*) DEFAULT_WARN_ON_MULTIPLE_SELECTION
+	}, {
+		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgWarnOnNoExpectParam,
 		.name = BAD_CAST "WarnOnNoExpectParam",
 		.default_value = (void*) DEFAULT_WARN_ON_NO_EXPECT_PARAM
