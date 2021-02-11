@@ -72,6 +72,7 @@ XPLPUBVAR int cfgWarnOnAncestorModificationAttempt;
 XPLPUBVAR int cfgWarnOnDeletedNodeReference;
 XPLPUBVAR int cfgWarnOnExpandedMacroContent;
 XPLPUBVAR int cfgWarnOnFatalErrorsInIsolatedDocuments;
+XPLPUBVAR int cfgWarnOnInvalidNodeType;
 XPLPUBVAR int cfgWarnOnInvalidXplNsUri;
 XPLPUBVAR int cfgWarnOnMacroRedefinition;
 XPLPUBVAR int cfgWarnOnMissingInheritBase;
@@ -102,6 +103,7 @@ XPLPUBVAR xmlChar *cfgXplNsUri;
 #define DEFAULT_WARN_ON_DELETED_NODE_REFERENCE false
 #define DEFAULT_WARN_ON_FATAL_ERRORS_IN_ISOLATED_DOCUMENTS false
 #define DEFAULT_WARN_ON_EXPANDED_MACRO_CONTENT false
+#define DEFAULT_WARN_ON_INVALID_NODE_TYPE false
 #define DEFAULT_WARN_ON_INVALID_XPL_NS_URI false
 #define DEFAULT_WARN_ON_MACRO_REDEFINITION false
 #define DEFAULT_WARN_ON_MISSING_MACRO_CONTENT false

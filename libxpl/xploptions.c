@@ -93,7 +93,7 @@ xplConfigEntry configEntries[] =
 		.cfg_type = CFG_TYPE_STRING,
 		.value_ptr = &cfgDefaultEncoding,
 		.name = BAD_CAST "DefaultEncoding",
-		.default_value = DEFAULT_DEFAULT_ENCODING
+		.default_value = (void*) DEFAULT_DEFAULT_ENCODING
 	}, {
 		.cfg_type = CFG_TYPE_STRING,
 		.value_ptr = &cfgDocRoot,
@@ -221,7 +221,12 @@ xplConfigEntry configEntries[] =
 		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgWarnOnFatalErrorsInIsolatedDocuments,
 		.name = BAD_CAST "WarnOnFatalErrorsInIsolatedDocuments",
-		.default_value = DEFAULT_WARN_ON_FATAL_ERRORS_IN_ISOLATED_DOCUMENTS
+		.default_value = (void*) DEFAULT_WARN_ON_FATAL_ERRORS_IN_ISOLATED_DOCUMENTS
+	}, {
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnInvalidNodeType,
+		.name = BAD_CAST "WarnOnInvalidNodeType",
+		.default_value = (void*) DEFAULT_WARN_ON_INVALID_NODE_TYPE,
 	}, {
 		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgWarnOnInvalidXplNsUri,
@@ -262,7 +267,7 @@ xplConfigEntry configEntries[] =
 		.cfg_type = CFG_TYPE_STRING,
 		.value_ptr = &cfgXplNsUri,
 		.name = BAD_CAST "XplNsUri",
-		.default_value = DEFAULT_XPL_NS_URI
+		.default_value = (void*) DEFAULT_XPL_NS_URI
 	}
 };
 
