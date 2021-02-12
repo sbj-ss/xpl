@@ -84,7 +84,7 @@ void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
 	if (log_file)
 	{
 		fprintf(log_file, "[%s] %s: %s\n", now, what, msg);
-		/* ToDo: может, настройку?.. */
+		/* ToDo: setting?.. */
 		fflush(log_file);
 	}
 

@@ -116,7 +116,7 @@ xmlChar* xplMapDocWrapper(xmlChar *filename)
 	{
 		if (onig_match(cur->regex, filename, fn_end, filename, region, 0) != ONIG_MISMATCH)
 		{
-			ret = *cur->wrapper_file? cur->wrapper_file: NULL; /* Пустое значение = "не использовать" */
+			ret = *cur->wrapper_file? cur->wrapper_file: NULL; /* empty value = don't use and stop searching */
 			break;
 		}
 		cur = cur->next;

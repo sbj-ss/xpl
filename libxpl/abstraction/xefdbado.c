@@ -334,7 +334,7 @@ typedef struct xefDbContext
 
 void _xefDbFreeRowDesc(xefDbRowDescPtr desc);
 
-/* Дескриптор строки */
+/* Row descriptor */
 static void _xefDbCreateRowDesc(xefDbContextPtr ctxt)
 {
 	ADOFields *flds = NULL;
@@ -357,7 +357,7 @@ static void _xefDbCreateRowDesc(xefDbContextPtr ctxt)
 	desc = (xefDbRowDescPtr) XPL_MALLOC(sizeof(xefDbRowDesc));
 	if (!desc)
 	{
-		/* впрочем, это тоже свалится */
+		/* this will likely fail, too */
 		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): insufficient memory for desc", __FUNCTION__));
 		return;
 	}

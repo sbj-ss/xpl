@@ -345,7 +345,7 @@ static void xplReadOption(xplConfigEntryPtr opt, xmlChar *value)
 			} else
 				*((int*) opt->value_ptr) = int_value;
 			break;
-		default: /* Если мы здесь, значит, что-то добавлено в перечисление типов, но забыто */
+		default:
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 			return;
 	}
@@ -425,7 +425,7 @@ int xplReadOptions(xmlNodePtr opt_root)
 		cur = cur->next;
 	}
 	xplAssignDefaultsToAllOptions();
-	/* Импликация */
+	/* implication */
 	if (cfgStackTrace)
 		cfgErrorsToConsole = 1;
 	if (cfgProxyServer && *cfgProxyServer)

@@ -156,9 +156,8 @@ XPLPUBFUN xplGetAppTypeFunc XPLCALL
 XPLPUBFUN xmlChar* XPLCALL
 	xplGetAppType(void);
 
-/* Функция берёт путь к конфигу из значения, переданного xplInitParser.
-   Соответственно, вызывать её до инициализации парсера - бессмысленно.
-   Назначение - ПЕРЕчитать конфиг после внесения в него изменений.
+/* This function uses the config file path set by xplInitParser.
+ * It should only be called after the parser initialization to RE-read the config if it's changed externally.
  */
 XPLPUBFUN bool XPLCALL
 	xplReadConfig(void);
@@ -175,7 +174,7 @@ XPLPUBFUN xmlChar* XPLCALL
 	xplGetDocRoot(void);
 XPLPUBFUN void XPLCALL
 	xplSetDocRoot(xmlChar *new_root);
-/* Полное имя файла с учётом абсолютных путей. Результат необходимо удалить. */
+/* Full file name wrt "semi-absolute" (i.e. from app root) paths. Result must be freed by the caller. */
 XPLPUBFUN xmlChar* XPLCALL
 	xplFullFilename(const xmlChar* file, const xmlChar* appPath);
 /* Actual processing */

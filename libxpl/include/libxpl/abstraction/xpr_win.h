@@ -14,11 +14,8 @@
 #include <share.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-/* TODO */
-//#include <locstdint.h>
 #include <direct.h>
 
-/* Работа с файлами и консолью */
 #define XPR_PATH_DELIM '\\'
 #define XPR_PATH_INVERSE_DELIM '/'
 #define XPR_PATH_DELIM_STR "\\"

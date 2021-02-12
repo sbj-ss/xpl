@@ -68,7 +68,7 @@ typedef struct _xplParamFileInfo
 	int size;
 } xplParamFileInfo, *xplParamFileInfoPtr;
 
-/* Входные строковые параметры присваиваются, а не дублируются! */
+/* Input string parameters are eaten */
 XPLPUBFUN xplParamFileInfoPtr XPLCALL
 	xplParamFileInfoCreate(xmlChar *realPath, xmlChar *filename, int Size);
 XPLPUBFUN xplParamFileInfoPtr XPLCALL
