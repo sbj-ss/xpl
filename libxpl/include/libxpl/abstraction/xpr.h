@@ -43,6 +43,8 @@ XPLPUBFUN int XPLCALL
 	xprSOpen(const xmlChar *path, int mode, int sharing, int perms);
 
 XPLPUBFUN bool XPLCALL
+	xprIsPathAbsolute(const xmlChar *path);
+XPLPUBFUN bool XPLCALL
 	xprCheckFilePresence(const xmlChar *path);
 XPLPUBFUN bool XPLCALL
 	xprEnsurePathExistence(const xmlChar *path);

@@ -74,6 +74,11 @@ int xprSOpen(const xmlChar *path, int mode, int sharing, int perms)
 	return ret;
 }
 
+bool xprIsPathAbsolute(const xmlChar *path)
+{
+	return path && path[0] == '/';
+}
+
 bool xprCheckFilePresence(const xmlChar *path)
 {
 	xmlChar *internal_path;

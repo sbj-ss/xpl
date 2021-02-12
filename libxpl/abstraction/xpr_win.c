@@ -94,6 +94,15 @@ static bool _xprCheckFilePresenceW(WCHAR *path)
 	return !_wstat64(path, &stat_buf);
 }
 
+bool xprIsPathAbsolute(const xmlChar *path)
+{
+	return path && (
+		(path[0] == '\\' && path[1] == '\\')  /* UNC path, e.g. \\server\dir */
+		||
+		(isalpha(path[0]) && path[1] == ':' && path[2] == '\\')  /* E.g. X:\dir */
+	);
+}
+
 bool xprCheckFilePresence(const xmlChar *path)
 {
 	WCHAR *internal_path = NULL;
