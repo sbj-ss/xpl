@@ -7,7 +7,8 @@
 #endif
 
 #ifndef _INC_WINDOWS
-# include <windows.h>
+	#define WIN32_LEAN_AND_MEAN
+	#include <windows.h>
 #endif
 #include <io.h>
 #include <fcntl.h>
@@ -50,10 +51,6 @@
 #define XPR_FILE_UNLINK(s) _wunlink(s)
 #define XPR_FILE_UNLINK_FAILED(x) ((x) == -1)
 */
-#define XPR_FOPEN(s, m) _wfopen(s, L#m)
-#define XPR_FCLOSE(f) fclose(f)
-#define XPR_FILE_SOPEN(hptr, name, mode, sharing, perms) _wsopen_s(hptr, name, mode, sharing, perms)
-#define XPR_FILE_CLOSE(handle) _close(handle)
 /*
 #define XPR_FILE_COPY(src, dst, failIfExists) CopyFileW(src, dst, failIfExists)
 #define XPR_FILE_COPY_FAILED(x) (!(x))
@@ -82,7 +79,6 @@
 #define XPR_EXIT_THREAD(code) ExitThread(code)
 
 #define XPR_THREAD_ID DWORD
-#define XPR_GET_CURRENT_THREAD_ID() GetCurrentThreadId()
 #define XPR_THREAD_ID_FORMAT "%08lX"
 
 #define XPR_TIME struct timespec
