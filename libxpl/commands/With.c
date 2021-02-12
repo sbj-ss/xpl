@@ -148,7 +148,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	if (params->select->nodesetval)
 		params->select->nodesetval->nodeNr = 0;
 	if (!((int) commandInfo->element->type & XPL_NODE_DELETION_MASK))
-		xmlFreeNodeList(xplDetachChildren(commandInfo->element));
+		xplDocDeferNodeDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 }
 
 void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
