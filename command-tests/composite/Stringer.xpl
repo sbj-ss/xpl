@@ -62,6 +62,29 @@
       <Str>123</Str>
     </Expected>
   </MustSucceed>
+
+  <MustSucceed name="pass/selected-text">
+    <Input>
+      <Data>
+        <A>1</A>
+        <A>2</A>
+        <A>3</A>
+        <B>Ы</B>
+      </Data>
+      <Str>
+        <xpl:stringer select="preceding::Data/A/text()"/>
+      </Str>
+    </Input>
+    <Expected>
+      <Data>
+        <A>1</A>
+        <A>2</A>
+        <A>3</A>
+        <B>Ы</B>
+      </Data>
+      <Str>123</Str>
+    </Expected>
+  </MustSucceed>
   
   <MustSucceed name="pass/empty-selection">
     <Input>

@@ -101,9 +101,12 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	while (cur) /* unified cycle */
 	{
 		// filter by node type
-		if ((cur->type == XML_ELEMENT_NODE) || (cur->type == XML_ATTRIBUTE_NODE))
+		if ((cur->type == XML_ELEMENT_NODE) || (cur->type == XML_ATTRIBUTE_NODE) || (cur->type == XML_TEXT_NODE) || (cur->type == XML_CDATA_SECTION_NODE))
 		{
-			cur_str = xmlNodeListGetString(cur->doc, cur->children, 1);
+			if (cur->type == XML_ELEMENT_NODE || cur->type == XML_ATTRIBUTE_NODE)
+				cur_str = xmlNodeListGetString(cur->doc, cur->children, 1);
+			else
+				cur_str = cur->content;
 			if ((cur_str && *cur_str) || params->keep_empty_tags)
 			{
 				if (!params->unique || (xmlHashAddEntry(unique_hash, cur_str, (void*) 883) != - 1))
@@ -135,9 +138,10 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					*ret_str_pos = 0;
 				}
 			}
-			if (cur_str)
+			if (cur_str && cur_str != cur->content)
 				XPL_FREE(cur_str);
-		} // TODO warn? TODO text?
+		} else if (cfgWarnOnInvalidNodeType)
+			xplDisplayWarning(commandInfo->element, BAD_CAST "only elements, attributes and text/cdata can be used for text extraction");
 		// advance to next node
 		if (params->select)
 		{
