@@ -7,30 +7,28 @@ void xplCmdFatalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 static xmlNodePtr _onlyFirstChildElement(xmlNodePtr parent)
 {
-	xmlNodePtr cur, tmp;
+	xmlNodePtr cur = parent->children;
 
-	cur = parent->children;
-	parent->children = parent->last = NULL;
-	/* remove all non-elements */
+	/* skip all non-elements */
 	while (cur && cur->type != XML_ELEMENT_NODE)
-	{
-		tmp = cur->next;
-		xmlUnlinkNode(cur);
-		xmlFreeNode(cur);
-		cur = tmp;
-	}
+		cur = cur->next;
 	if (cur) /* element found */
 	{ 
-		/* delete tail */
-		tmp = cur->next;
-		if (tmp)
+		if (cur->next)
 		{
 			if (cfgWarnOnMultipleSelection)
 				xplDisplayWarning(parent, BAD_CAST "more nodes follow in command content, deleted");
-			cur->next = NULL;
-			tmp->prev = NULL;
-			xmlFreeNodeList(tmp);
-		}
+			if (cur->prev)
+			{
+				cur->prev->next = cur->next;
+				cur->next->prev = cur->prev;
+			} else {
+				cur->next->prev = NULL;
+				cur->parent->children = cur->next;
+			}
+		} else if (!(cur->parent->last = cur->prev))
+			cur->parent->children = NULL;
+		cur->next = cur->prev = NULL;
 		xplMakeNsSelfContainedTree(cur);
 		cur->parent = NULL;
 		return cur;
@@ -56,5 +54,5 @@ void xplCmdFatalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	while (root && root->type != XML_ELEMENT_NODE)
 		root = root->next;
 	xplMarkAncestorAxisForDeletion(commandInfo->element->parent, root);
-	ASSIGN_RESULT(NULL, false, true);
+	ASSIGN_RESULT(NULL, false, false);
 }
