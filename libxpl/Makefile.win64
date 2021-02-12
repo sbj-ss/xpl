@@ -25,6 +25,7 @@ BIN_EXT = .exe
 
 
 SRC = \
+abstraction/DllMain.c\
 abstraction/xpr_win.c\
 abstraction/xefstart.c\
 abstraction/xpr.c\
