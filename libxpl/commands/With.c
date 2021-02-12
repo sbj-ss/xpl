@@ -69,7 +69,7 @@ typedef enum _NaosCheckResult
 	NAOS_CHECK_RESULT_ANCESTOR_DELETED
 } NaosCheckResult;
 
-static bool _checkNAOS(xmlNodePtr cmd, xmlNodePtr test)
+static NaosCheckResult _checkNAOS(xmlNodePtr cmd, xmlNodePtr test)
 {
 	while (cmd != (xmlNodePtr) cmd->doc)
 	{
@@ -88,67 +88,78 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	xmlNodePtr cur, repl;
 	size_t i;
 	xplResult temp_result;
-	int naos_check_result = NAOS_CHECK_RESULT_OK;
+	NaosCheckResult naos_check_result;
+	int old_type;
 	
+	if (!params->select->nodesetval || !params->select->nodesetval->nodeNr)
+		return;
 	commandInfo->document->iterator_spin++;
-	if (params->select->nodesetval)
+
+	for (i = 0; i < (size_t) params->select->nodesetval->nodeNr; i++)
 	{
-		for (i = 0; i < (size_t) params->select->nodesetval->nodeNr; i++)
+		if (commandInfo->document->fatal_content)
+			break;
+		cur = params->select->nodesetval->nodeTab[i];
+		if (((int) cur->type) & XPL_NODE_DELETION_MASK)
 		{
-			if (commandInfo->document->fatal_content)
-				break;
-			cur = params->select->nodesetval->nodeTab[i];
-			if (((int) cur->type) & XPL_NODE_DELETION_MASK)
-			{
-				if (cfgWarnOnDeletedNodeReference)
-					xplDisplayWarning(commandInfo->element, BAD_CAST "node '%s%s%s' (line %d) post-mortem access attempt",
-							cur->ns && cur->ns->prefix? cur->ns->prefix: BAD_CAST "",
-							cur->ns && cur->ns->prefix? ":": "",
-							cur->name, cur->line);
-				continue;
-			}
-			if ((cur->type != XML_ELEMENT_NODE))
-			{
-				if (cfgWarnOnInvalidNodeType)
-					xplDisplayWarning(commandInfo->element, BAD_CAST "can only process element nodes");
-				continue;
-			}
-			naos_check_result = cfgFoolproofDestructiveCommands? _checkNAOS(commandInfo->element, cur): NAOS_CHECK_RESULT_OK;
-			if (naos_check_result == NAOS_CHECK_RESULT_IS_ANCESTOR)
-			{
-				if (cfgWarnOnAncestorModificationAttempt)
-					xplDisplayWarning(commandInfo->element, BAD_CAST "ancestor/self node '%s%s%s' (line %d) modification attempt denied",
+			if (cfgWarnOnDeletedNodeReference)
+				xplDisplayWarning(commandInfo->element, BAD_CAST "node '%s%s%s' (line %d) post-mortem access attempt",
 						cur->ns && cur->ns->prefix? cur->ns->prefix: BAD_CAST "",
 						cur->ns && cur->ns->prefix? ":": "",
 						cur->name, cur->line);
-				continue;
-			} else if (naos_check_result == NAOS_CHECK_RESULT_ANCESTOR_DELETED)
-				break;
-			repl = xplReplaceContentEntries(commandInfo->document, params->id, cur, commandInfo->element->children, cur->parent);
-			if (params->mode == WITH_MODE_REPLACE)
-			{
-				xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(cur));
-				xplSetChildren(cur, repl);
-				xplNodeApply(commandInfo->document, cur, &temp_result);
-				if ((int) cur->type & XPL_NODE_DELETION_MASK)
-					xmlUnlinkNode(cur);
-				else {
-					xplReplaceWithList(cur, cur->children);
-					cur->children = cur->last = NULL;
-				}
-				xplDocDeferNodeDeletion(commandInfo->document, cur);
-			} else if (params->mode == WITH_MODE_APPEND) {
-				xplAppendChildren(cur, repl);
-				xplNodeListApply(commandInfo->document, repl, &temp_result);
-			} else
-				DISPLAY_INTERNAL_ERROR_MESSAGE();
-		} /* for */
-	} /* if (sel->nodesetval) */
+			continue;
+		}
+		if ((cur->type != XML_ELEMENT_NODE))
+		{
+			if (cfgWarnOnInvalidNodeType)
+				xplDisplayWarning(commandInfo->element, BAD_CAST "can only process element nodes");
+			continue;
+		}
+		naos_check_result = cfgFoolproofDestructiveCommands? _checkNAOS(commandInfo->element, cur): NAOS_CHECK_RESULT_OK;
+		if (naos_check_result == NAOS_CHECK_RESULT_IS_ANCESTOR)
+		{
+			if (cfgWarnOnAncestorModificationAttempt)
+				xplDisplayWarning(commandInfo->element, BAD_CAST "ancestor/self node '%s%s%s' (line %d) modification attempt denied",
+					cur->ns && cur->ns->prefix? cur->ns->prefix: BAD_CAST "",
+					cur->ns && cur->ns->prefix? ":": "",
+					cur->name, cur->line);
+			continue;
+		} else if (naos_check_result == NAOS_CHECK_RESULT_ANCESTOR_DELETED) {
+			if (cfgWarnOnDeletedNodeReference)
+				xplDisplayWarning(commandInfo->element, BAD_CAST "deleted while running, stopping");
+			break;
+		}
+
+		repl = xplReplaceContentEntries(commandInfo->document, params->id, cur, commandInfo->element->children, cur->parent);
+		if (params->mode == WITH_MODE_REPLACE)
+		{
+			xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(cur));
+			xplSetChildren(cur, repl);
+			xplNodeApply(commandInfo->document, cur, &temp_result);
+			if ((int) cur->type & XPL_NODE_DELETION_MASK)
+				xmlUnlinkNode(cur);
+			else {
+				xplReplaceWithList(cur, cur->children);
+				cur->children = cur->last = NULL;
+			}
+			xplDocDeferNodeDeletion(commandInfo->document, cur);
+		} else if (params->mode == WITH_MODE_APPEND) {
+			xplAppendChildren(cur, repl);
+			xplNodeListApply(commandInfo->document, repl, &temp_result);
+		} else
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
+	} /* for */
+
 	commandInfo->document->iterator_spin--;
 	if (params->select->nodesetval)
 		params->select->nodesetval->nodeNr = 0;
-	if (!((int) commandInfo->element->type & XPL_NODE_DELETION_MASK))
-		xplDocDeferNodeDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
+	if (cfgFoolproofDestructiveCommands)
+	{
+		old_type = (int) commandInfo->element->type;
+		xplMarkDOSAxisForDeletion(commandInfo->element, XPL_NODE_DELETION_MASK, false);
+		commandInfo->element->type = (xmlElementType) old_type;
+	}
+	xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 }
 
 void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
