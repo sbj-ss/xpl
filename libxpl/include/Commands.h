@@ -25,7 +25,6 @@ extern xplCommand xplContainerCommand;
 extern xplCommand xplConvertToDefineCommand;
 extern xplCommand xplCurrentMacroCommand;
 extern xplCommand xplDBSessionCommand;
-extern xplCommand xplDebugBreakCommand;
 extern xplCommand xplDebugPrintCommand;
 extern xplCommand xplDefaultCommand;
 extern xplCommand xplDefineCommand;
@@ -128,6 +127,7 @@ extern xplCommand xplFileOpCommand;
 
 #ifdef _DEBUG
 extern xplCommand xplDbGarbageCollectCommand;
+extern xplCommand xplDebugBreakCommand;
 #endif
 
 #ifdef __cplusplus

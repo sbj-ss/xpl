@@ -58,7 +58,6 @@ commands/Container.c\
 commands/ConvertToDefine.c\
 commands/CurrentMacro.c\
 commands/DBSession.c\
-commands/DebugBreak.c\
 commands/DebugPrint.c\
 commands/Default.c\
 commands/Define.c\
@@ -166,7 +165,9 @@ COMMANDS += commands/FileOp.c
 endif
 
 ifeq ($(DEBUG), 1)
-COMMANDS += commands/DbGarbageCollect.c
+COMMANDS +=\
+commands/DbGarbageCollect.c\
+commands/DebugBreak.c
 endif
 
 SRC += $(COMMANDS)

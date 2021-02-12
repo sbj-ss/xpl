@@ -28,7 +28,6 @@ static xplCommandSignature builtinCommands[] =
 	{ BAD_CAST "convert-to-define", &xplConvertToDefineCommand, 0 },
 	{ BAD_CAST "current-macro", &xplCurrentMacroCommand, 0 },
 	{ BAD_CAST "dbsession", &xplDBSessionCommand, 0 },
-	{ BAD_CAST "debug-break", &xplDebugBreakCommand, 0 },
 	{ BAD_CAST "debug-print", &xplDebugPrintCommand, 0 },
 	{ BAD_CAST "default", &xplDefaultCommand, 0 },
 	{ BAD_CAST "define", &xplDefineCommand, 0 },
@@ -128,6 +127,7 @@ static xplCommandSignature builtinCommands[] =
 #endif
 #ifdef _DEBUG
 	{ BAD_CAST "db-garbage-collect", &xplDbGarbageCollectCommand, 0 },
+	{ BAD_CAST "debug-break", &xplDebugBreakCommand, 0 },
 #endif
 };
 
