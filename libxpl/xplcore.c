@@ -129,24 +129,28 @@ void xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur)
 		return;
 	if ((int) cur->type & XPL_NODE_DELETION_DEFERRED_FLAG)
 		return;
+	xmlUnlinkNode(cur);
 	xplMarkDOSAxisForDeletion(cur, XPL_NODE_DELETION_DEFERRED_FLAG, true);
 	rbAddDataToBuf(buf, &cur, sizeof(xmlNodePtr));
 }
 
 void xplDeferNodeListDeletion(rbBufPtr buf, xmlNodePtr cur)
 {
+	xmlNodePtr next;
+
 	if (!buf)
 		return;
 	while (cur)
 	{
+		next = cur->next;
 		xplDeferNodeDeletion(buf, cur);
-		cur = cur->next;
+		cur = next;
 	}
 }
 
 void xplDocDeferNodeDeletion(xplDocumentPtr doc, xmlNodePtr cur)
 {
-	if (!doc)
+	if (!doc || !cur)
 		return;
 	if (cfgFoolproofDestructiveCommands && doc->iterator_spin)
 		xplDeferNodeDeletion(doc->deleted_nodes, cur);
@@ -158,7 +162,7 @@ void xplDocDeferNodeDeletion(xplDocumentPtr doc, xmlNodePtr cur)
 
 void xplDocDeferNodeListDeletion(xplDocumentPtr doc, xmlNodePtr cur)
 {
-	if (!doc)
+	if (!doc || !cur)
 		return;
 	if (cfgFoolproofDestructiveCommands && doc->iterator_spin)
 		xplDeferNodeListDeletion(doc->deleted_nodes, cur);
@@ -170,6 +174,7 @@ void xplDeleteDeferredNodes(rbBufPtr buf)
 {
 	size_t i = 0;
 	xmlNodePtr *p = rbGetBufContent(buf);
+
 	for (i = 0; i < rbGetBufContentSize(buf) / sizeof(xmlNodePtr); i++, p++)
 	{
 		xplMarkDOSAxisForDeletion(*p, XPL_NODE_DELETION_MASK, false);
@@ -965,15 +970,12 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 			if (doc->fatal_content) /* xpl:fatal called */
 			{
 				root_element->type = XML_ELEMENT_NODE;
-				xplDeleteDeferredNodes(doc->deleted_nodes);
 				xmlFreeNodeList(doc->document->children); /* lists don't overlap, DDN calls xmlUnlinkNode() */
 				doc->document->children = doc->document->last = doc->fatal_content;
 				doc->fatal_content->parent = (xmlNodePtr) doc->document;
 				ret = doc->status = XPL_ERR_FATAL_CALLED;
-			} else {
-				xplDeleteDeferredNodes(doc->deleted_nodes);
+			} else
 				ret = doc->status = XPL_ERR_NO_ERROR;
-			}
 			xprInterlockedDecrement(&active_thread_count);
 		} /* if (root_element) */
 	} else {
