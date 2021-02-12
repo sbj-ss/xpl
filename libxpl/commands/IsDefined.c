@@ -1,5 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
 #include <libxpl/xpltree.h>
 
 void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
@@ -41,8 +42,6 @@ xplCommand xplIsDefinedCommand =
 	}
 };
 
-// TODO warning if at evaluates into multiple nodes
-// TODO do we check right at selected elements?
 void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdIsDefinedParamsPtr params = (xplCmdIsDefinedParamsPtr) commandInfo->params;
@@ -61,6 +60,8 @@ void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				if (macro && !macro->disabled_spin)
 					break;
 			}
+			if (cfgWarnOnMultipleSelection && params->at->nodesetval->nodeNr > 1)
+				xplDisplayWarning(commandInfo->element, BAD_CAST "select expression '%s' evaluated to multiple nodes", params->at->user);
 		}
 	} else
 		macro = xplMacroLookupByQName(commandInfo->element->parent, params->name);
