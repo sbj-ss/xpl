@@ -108,7 +108,11 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 				continue;
 			}
 			if ((cur->type != XML_ELEMENT_NODE))
-				continue; // TODO warning
+			{
+				if (cfgWarnOnInvalidNodeType)
+					xplDisplayWarning(commandInfo->element, BAD_CAST "can only process element nodes");
+				continue;
+			}
 			naos_check_result = cfgFoolproofDestructiveCommands? _checkNAOS(commandInfo->element, cur): NAOS_CHECK_RESULT_OK;
 			if (naos_check_result == NAOS_CHECK_RESULT_IS_ANCESTOR)
 			{
