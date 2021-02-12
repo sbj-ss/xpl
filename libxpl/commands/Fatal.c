@@ -14,23 +14,10 @@ static xmlNodePtr _onlyFirstChildElement(xmlNodePtr parent)
 		cur = cur->next;
 	if (cur) /* element found */
 	{ 
-		if (cur->next)
-		{
-			if (cfgWarnOnMultipleSelection)
-				xplDisplayWarning(parent, BAD_CAST "more nodes follow in command content, deleted");
-			if (cur->prev)
-			{
-				cur->prev->next = cur->next;
-				cur->next->prev = cur->prev;
-			} else {
-				cur->next->prev = NULL;
-				cur->parent->children = cur->next;
-			}
-		} else if (!(cur->parent->last = cur->prev))
-			cur->parent->children = NULL;
-		cur->next = cur->prev = NULL;
+		if (cur->next && cfgWarnOnMultipleSelection)
+			xplDisplayWarning(parent, BAD_CAST "more nodes follow in command content, ignored");
 		xplMakeNsSelfContainedTree(cur);
-		cur->parent = NULL;
+		xmlUnlinkNode(cur);
 		return cur;
 	}
 	/* garbage inside, use predefined message */
