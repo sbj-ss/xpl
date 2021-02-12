@@ -26,6 +26,7 @@
     <Input>
       <Header/>
       <xpl:fatal>
+        some text
         <A/>
         <B/>
         <C/>
