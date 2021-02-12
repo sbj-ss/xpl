@@ -629,7 +629,7 @@ xmlNodePtr xplReplaceContentEntries(
 	{
 		cur = content_cmds->nodeTab[i];
 		xplReplaceWithList(cur, (xmlNodePtr) cur->_private);
-		xmlFreeNode(cur);
+		xplDocDeferNodeDeletion(doc, cur);
 	}
 	if (content_cache)
 		xmlHashFree(content_cache, NULL);
@@ -702,7 +702,7 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr resu
 				xplReplaceWithList(c, result->list);
 				/* e.g. :delete removing itself */
 				c->type = (xmlElementType) ((int) c->type & ~XPL_NODE_DELETION_MASK);
-				xmlFreeNode(c);
+				xplDocDeferNodeDeletion(doc, c);
 			} /* otherwise do nothing */
 		} else if (c->type == XML_TEXT_NODE) {
 			tail = c->next;
@@ -775,7 +775,7 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 	macro->return_value = NULL; 
 	if (macro->node_original_content)
 	{
-		xmlFreeNodeList(macro->node_original_content);
+		xplDocDeferNodeListDeletion(doc, macro->node_original_content);
 		macro->node_original_content = NULL;
 	}
 }
