@@ -90,7 +90,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	xplResult temp_result;
 	NaosCheckResult naos_check_result;
 	int old_type;
-	
+
 	if (!params->select->nodesetval || !params->select->nodesetval->nodeNr)
 		return;
 	commandInfo->document->iterator_spin++;
@@ -159,7 +159,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 		xplMarkDOSAxisForDeletion(commandInfo->element, XPL_NODE_DELETION_MASK, false);
 		commandInfo->element->type = (xmlElementType) old_type;
 	}
-	xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
+	xmlFreeNodeList(xplDetachChildren(commandInfo->element));
 }
 
 void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
