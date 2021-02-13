@@ -300,7 +300,7 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aAppPath, xmlChar *aFilename, 
 		strcpy((char*) ret->filename, (const char*) ret->app_path);
 	strcpy((char*) ret->filename + path_len, (const char*) aFilename);
 
-	if (!xprCheckFilePresence(ret->filename))
+	if (!xprCheckFilePresence(ret->filename, false))
 	{
 		ret->error = xplFormatMessage(BAD_CAST "file '%s' not found", ret->filename);
 		return ret;

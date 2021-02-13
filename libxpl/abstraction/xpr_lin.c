@@ -79,7 +79,7 @@ bool xprIsPathAbsolute(const xmlChar *path)
 	return path && path[0] == '/';
 }
 
-bool xprCheckFilePresence(const xmlChar *path)
+bool xprCheckFilePresence(const xmlChar *path, bool mustBeDir)
 {
 	xmlChar *internal_path;
 	struct stat st;
@@ -92,7 +92,7 @@ bool xprCheckFilePresence(const xmlChar *path)
 	stat_ret = stat((char*) path, &st);
 	XPL_FREE(internal_path);
 	/* in EACCES etc error cases file isn't available anyway */
-	return !stat_ret;
+	return !stat_ret && (mustBeDir == !!S_ISDIR(st.st_mode));
 }
 
 bool xprEnsurePathExistence(const xmlChar *path)
@@ -110,7 +110,7 @@ bool xprEnsurePathExistence(const xmlChar *path)
 			slash_pos++;
 		tmp = *slash_pos;
 		*slash_pos = 0;
-		if (!xprCheckFilePresence(internal_path))
+		if (!xprCheckFilePresence(internal_path, true))
 			if (mkdir((char*) internal_path, 0755) != 0)
 			{
 				XPL_FREE(internal_path);

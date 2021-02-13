@@ -45,7 +45,7 @@ XPLPUBFUN int XPLCALL
 XPLPUBFUN bool XPLCALL
 	xprIsPathAbsolute(const xmlChar *path);
 XPLPUBFUN bool XPLCALL
-	xprCheckFilePresence(const xmlChar *path);
+	xprCheckFilePresence(const xmlChar *path, bool mustBeDir);
 XPLPUBFUN bool XPLCALL
 	xprEnsurePathExistence(const xmlChar *path);
 XPLPUBFUN xmlChar* XPLCALL

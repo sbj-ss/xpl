@@ -70,7 +70,16 @@ int xprSOpen(const xmlChar *path, int mode, int sharing, int perms)
 	return ret;
 }
 
-static bool _xprCheckFilePresenceW(WCHAR *path)
+bool xprIsPathAbsolute(const xmlChar *path)
+{
+	return path && (
+		(path[0] == '\\' && path[1] == '\\')  /* UNC path, e.g. \\server\dir */
+		||
+		(isalpha(path[0]) && path[1] == ':' && path[2] == '\\')  /* E.g. X:\dir */
+	);
+}
+
+static bool _xprCheckFilePresenceW(WCHAR *path, bool mustBeDir)
 {
 	struct _stat64 stat_buf;
 	size_t path_len;
@@ -91,19 +100,10 @@ static bool _xprCheckFilePresenceW(WCHAR *path)
 	}
 	if ((path[path_len - 1] == XPR_FS_PATH_DELIM) && ((path_len != 3) || (path[1] != L':')))
 		path[path_len - 1] = 0; /* remove trailing slash */
-	return !_wstat64(path, &stat_buf);
+	return !_wstat64(path, &stat_buf) && (mustBeDir == !!S_ISDIR(stat_buf.st_mode));
 }
 
-bool xprIsPathAbsolute(const xmlChar *path)
-{
-	return path && (
-		(path[0] == '\\' && path[1] == '\\')  /* UNC path, e.g. \\server\dir */
-		||
-		(isalpha(path[0]) && path[1] == ':' && path[2] == '\\')  /* E.g. X:\dir */
-	);
-}
-
-bool xprCheckFilePresence(const xmlChar *path)
+bool xprCheckFilePresence(const xmlChar *path, bool mustBeDir)
 {
 	WCHAR *internal_path = NULL;
 	bool exists;
@@ -112,7 +112,7 @@ bool xprCheckFilePresence(const xmlChar *path)
 		return false;
 	if (!(internal_path = convertToFSPath(path)))
 		return false;
-	exists = _xprCheckFilePresenceW(internal_path);
+	exists = _xprCheckFilePresenceW(internal_path, mustBeDir);
 	XPL_FREE(internal_path);
 	return exists;
 }
@@ -132,7 +132,7 @@ bool xprEnsurePathExistence(const xmlChar *path)
 			slash_pos++;
 		tmp = *slash_pos;
 		*slash_pos = 0;
-		if (!_xprCheckFilePresenceW(internal_path))
+		if (!_xprCheckFilePresenceW(internal_path, true))
 			if (_wmkdir(internal_path) == -1)
 			{
 				XPL_FREE(internal_path);

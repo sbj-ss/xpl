@@ -50,7 +50,7 @@ void xplCmdFileExistsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	else
 		filename = xplFullFilename(params->file, commandInfo->document->app_path);
 
-	if (xprCheckFilePresence(filename))
+	if (xprCheckFilePresence(filename, false))
 		value = BAD_CAST "true";
 	else
 		value = BAD_CAST "false";
