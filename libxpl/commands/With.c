@@ -89,7 +89,6 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	size_t i;
 	xplResult temp_result;
 	NaosCheckResult naos_check_result;
-	int old_type;
 
 	if (!params->select->nodesetval || !params->select->nodesetval->nodeNr)
 		return;
@@ -150,18 +149,11 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 	} /* for */
 
+	if (commandInfo->element->type == XML_ELEMENT_NODE)
+		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 	commandInfo->document->iterator_spin--;
 	if (params->select->nodesetval)
 		params->select->nodesetval->nodeNr = 0;
-	if (cfgFoolproofDestructiveCommands && !commandInfo->document->iterator_spin)
-	{
-		old_type = (int) commandInfo->element->type;
-		xplMarkDOSAxisForDeletion(commandInfo->element, XPL_NODE_DELETION_MASK, false);
-		commandInfo->element->type = (xmlElementType) old_type;
-	}
-	if (!commandInfo->document->iterator_spin)
-		xplDeleteDeferredNodes(commandInfo->document->deleted_nodes);
-	xmlFreeNodeList(xplDetachChildren(commandInfo->element));
 }
 
 void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)

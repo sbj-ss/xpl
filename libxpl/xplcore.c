@@ -681,7 +681,7 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr resu
 		if (c->type == XML_ELEMENT_NODE)
 		{
 			xplNodeApply(doc, c, result);
-			if (!c->parent || (c->parent->type & XPL_NODE_DELETION_MASK))
+			if (c->parent && (c->parent->type & XPL_NODE_DELETION_MASK))
 			{
 				/* parent removed from inside, immediate stop */
 				c->type = (xmlElementType) ((int) c->type & ~XPL_NODE_DELETION_MASK);

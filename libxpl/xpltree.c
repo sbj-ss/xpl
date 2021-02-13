@@ -339,7 +339,13 @@ void xplMarkAncestorAxisForDeletion(xmlNodePtr bottom, xmlNodePtr top)
 void xplMarkDOSAxisForDeletion(xmlNodePtr cur, int bitwiseAttribute, bool doMark)
 {
 	xmlAttrPtr prop;
+	xmlNodePtr next;
 
+	if (((int) cur->type & bitwiseAttribute) && doMark) // already marked
+	{
+		xmlUnlinkNode(cur);
+		return;
+	}
 	cur->type = (xmlElementType) doMark
 		? ((int) cur->type |  bitwiseAttribute)
 		: ((int) cur->type & ~bitwiseAttribute);
@@ -354,8 +360,9 @@ void xplMarkDOSAxisForDeletion(xmlNodePtr cur, int bitwiseAttribute, bool doMark
 	cur = cur->children;
 	while (cur)
 	{
+		next = cur->next;
 		xplMarkDOSAxisForDeletion(cur, bitwiseAttribute, doMark);
-		cur = cur->next;
+		cur = next;
 	}
 }
 
