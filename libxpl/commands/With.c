@@ -153,7 +153,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	commandInfo->document->iterator_spin--;
 	if (params->select->nodesetval)
 		params->select->nodesetval->nodeNr = 0;
-	if (cfgFoolproofDestructiveCommands)
+	if (cfgFoolproofDestructiveCommands && !commandInfo->document->iterator_spin)
 	{
 		old_type = (int) commandInfo->element->type;
 		xplMarkDOSAxisForDeletion(commandInfo->element, XPL_NODE_DELETION_MASK, false);
