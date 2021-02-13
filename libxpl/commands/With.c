@@ -159,6 +159,8 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 		xplMarkDOSAxisForDeletion(commandInfo->element, XPL_NODE_DELETION_MASK, false);
 		commandInfo->element->type = (xmlElementType) old_type;
 	}
+	if (!commandInfo->document->iterator_spin)
+		xplDeleteDeferredNodes(commandInfo->document->deleted_nodes);
 	xmlFreeNodeList(xplDetachChildren(commandInfo->element));
 }
 
