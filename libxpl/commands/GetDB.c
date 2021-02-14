@@ -33,7 +33,7 @@ xplCommand xplGetDBCommand =
 	.parameters = {
 		{
 			.name = BAD_CAST "name",
-			.type = XPL_CMD_PARAM_TYPE_STRING,
+			.type = XPL_CMD_PARAM_TYPE_NCNAME,
 			.value_stencil = &params_stencil.name
 		}, {
 			.name = BAD_CAST "tagname",
