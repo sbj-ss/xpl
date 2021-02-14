@@ -65,6 +65,7 @@ struct _xplDocument
 	XPR_MUTEX thread_landing_lock;	/* ditto */
 	xmlNodePtr landing_point;		/* landing point in spawning document */
 	xplDocumentPtr parent;			/* spawning document */
+	bool async;						/* child running asynchronously */
 	bool has_suspended_threads;		/* ditto */
 	bool discard_suspended_threads;	/* discard threads that weren't ever started */
 	bool thread_was_suspended;		/* current thread with document was suspended */
