@@ -950,11 +950,14 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 			root_element = root_element->next;
 		if (root_element)
 		{
-			if (!xprMutexAcquire(&global_conf_mutex))
-				DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
-			xprInterlockedIncrement(&active_thread_count);
-			if (!xprMutexRelease(&global_conf_mutex))
-				DISPLAY_INTERNAL_ERROR_MESSAGE();
+			if (!doc->parent || doc->async)
+			{
+				if (!xprMutexAcquire(&global_conf_mutex))
+					DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
+				xprInterlockedIncrement(&active_thread_count);
+				if (!xprMutexRelease(&global_conf_mutex))
+					DISPLAY_INTERNAL_ERROR_MESSAGE();
+			}
 			xplCheckRootNs(doc, root_element);
 			xplNodeApply(doc, root_element, &res);
 #ifdef _THREADING_SUPPORT
@@ -976,7 +979,8 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 				ret = doc->status = XPL_ERR_FATAL_CALLED;
 			} else
 				ret = doc->status = XPL_ERR_NO_ERROR;
-			xprInterlockedDecrement(&active_thread_count);
+			if (!doc->parent || doc->async)
+				xprInterlockedDecrement(&active_thread_count);
 		} /* if (root_element) */
 	} else {
 		error_doc = xmlNewDoc(BAD_CAST "1.0");
