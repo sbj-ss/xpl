@@ -64,6 +64,11 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlNodePtr ret;
 	xplQName tagname;
 
+	if (params->tag_name.ncname && params->show_tags)
+	{
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "showtags and tagname can't be used simultaneously"), true, true);
+		return;
+	}
 	if (!xplSessionGetSaMode(commandInfo->document->session))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
