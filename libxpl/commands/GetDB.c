@@ -16,7 +16,7 @@ typedef struct _xplCmdGetDBParams
 static const xplCmdGetDBParams params_stencil =
 {
 	.name = NULL,
-	.tag_name = { NULL, BAD_CAST "Database" },
+	.tag_name = { NULL, NULL },
 	.show_tags = false,
 	.repeat = true
 };
@@ -54,11 +54,15 @@ xplCommand xplGetDBCommand =
 	}
 };
 
+static const xplQName empty_qname = { NULL, NULL };
+static const xplQName default_qname = { NULL, BAD_CAST "database" };
+
 void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdGetDBParamsPtr params = (xplCmdGetDBParamsPtr) commandInfo->params;
 	xplDBListPtr db_list;
 	xmlNodePtr ret;
+	xplQName tagname;
 
 	if (!xplSessionGetSaMode(commandInfo->document->session))
 	{
@@ -76,7 +80,9 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		}
 		ret = xmlNewDocText(commandInfo->element->doc, db_list->conn_string);
 		params->repeat = false;
-	} else
-		ret = xplDatabasesToNodeList(commandInfo->element, params->tag_name, params->show_tags);
+	} else {
+		tagname = params->show_tags? empty_qname: params->tag_name.ncname? params->tag_name: default_qname;
+		ret = xplDatabasesToNodeList(commandInfo->element, tagname);
+	}
 	ASSIGN_RESULT(ret, params->repeat, true);
 }

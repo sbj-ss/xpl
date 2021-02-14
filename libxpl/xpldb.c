@@ -204,9 +204,8 @@ xplDBConfigResult xplChangeDB(xmlChar *name, xmlChar *newConnString, bool withCh
 
 typedef struct _getDBListContext
 {
-	xmlChar *tag_name;
+	xplQName tag_name;
 	xmlDocPtr doc;
-	xmlNsPtr ns;
 	xmlNodePtr head, tail;
 	bool show_tags;
 } getDBListContext, *getDBListContextPtr;
@@ -217,9 +216,13 @@ static void databaseListScanner(void *payload, void *data, XML_HCBNC xmlChar *na
 	xplDBListPtr db = (xplDBListPtr) payload;
 	xmlNodePtr cur;
 
-	cur = xmlNewDocNode(ctxt->doc, ctxt->ns, ctxt->show_tags?name:ctxt->tag_name, db->conn_string);
+	cur = xmlNewDocNode(
+		ctxt->doc,
+		ctxt->show_tags? NULL: ctxt->tag_name.ns,
+		ctxt->show_tags? name: ctxt->tag_name.ncname,
+		db->conn_string);
 	if (!ctxt->show_tags)
-		xmlNewProp(cur, BAD_CAST "Name", name);
+		xmlNewProp(cur, BAD_CAST "name", name);
 	if (ctxt->head)
 	{
 		ctxt->tail->next = cur;
@@ -229,7 +232,7 @@ static void databaseListScanner(void *payload, void *data, XML_HCBNC xmlChar *na
 		ctxt->head = ctxt->tail = cur;
 }
 
-xmlNodePtr xplDatabasesToNodeList(xmlNodePtr parent, const xplQName qname, bool showTags)
+xmlNodePtr xplDatabasesToNodeList(xmlNodePtr parent, const xplQName qname)
 {
 	getDBListContext ctxt;
 
@@ -237,9 +240,8 @@ xmlNodePtr xplDatabasesToNodeList(xmlNodePtr parent, const xplQName qname, bool 
 		return NULL;
 	ctxt.doc = parent->doc;
 	ctxt.head = NULL;
-	ctxt.ns = qname.ns;
-	ctxt.tag_name = qname.ncname;
-	ctxt.show_tags = showTags;
+	ctxt.tag_name = qname;
+	ctxt.show_tags = !qname.ncname;
 	xmlHashScan(databases, databaseListScanner, &ctxt);
 	return ctxt.head;
 }
