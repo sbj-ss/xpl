@@ -10,6 +10,7 @@
 #include <libxpl/xplsave.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
+#include <libxpl/xplversion.h>
 #include "Register.h"
 
 /* internal statics */
@@ -1082,6 +1083,7 @@ typedef struct _ParserStartStopStep
 static ParserStartStopStep start_stop_steps[] =
 {
 	{ _ssLoadableModulesInit, xplLoadableModulesCleanup, "loadable modules" },
+	{ xplInitLibraryVersions, xplCleanupLibraryVersions, "library versions" },
 	{ xplReadConfig, _ssReleaseConfigBasedResources, "config" }, // TODO this should be split into individual steps
 	{ xplInitMessages, xplCleanupMessages, "messages" },
 	{ xplInitCommands, xplCleanupCommands, "commands" },

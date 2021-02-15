@@ -139,37 +139,8 @@
 /* Use zlib for compressed XML */
 #define _USE_ZLIB
 /* Use liblzma in addition to zlib. For compressed XML only. */
-#define _USE_LZMA
+#define _USE_LIBLZMA
 /* Use libidn. Disabling this will break uri-encode and web-include. */
 #define _USE_LIBIDN
-
-/* Version info */
-#define XPL_VERSION_MAJOR 2
-#define XPL_VERSION_MINOR 0
-#define XPL_VERSION ((XPL_VERSION_MAJOR << 8) | XPL_VERSION_MINOR)
-#define XPL_VERSION_BETA
-
-#ifdef XPL_VERSION_BETA
-# define XPL_VERSION_BETA_STRING " beta"
-#else
-# define XPL_VERSION_BETA_STRING ""
-#endif
-
-#ifdef _DEBUG
-#define XPL_VERSION_DEBUG_STRING " (DEBUG)"
-#else
-#define  XPL_VERSION_DEBUG_STRING ""
-#endif
-
-#define STRING_VERSION_VALUE(x) #x
-#define XPL_VERSION_FULL_M(major, minor) BAD_CAST "C XPL interpreter (codename Polaris) v" \
-	STRING_VERSION_VALUE(major) \
-	"." \
-	STRING_VERSION_VALUE(minor) \
-	XPL_VERSION_BETA_STRING \
-	XPL_VERSION_DEBUG_STRING \
-	" built on " \
-	__DATE__
-#define XPL_VERSION_FULL XPL_VERSION_FULL_M(XPL_VERSION_MAJOR, XPL_VERSION_MINOR)
 
 #endif

@@ -40,6 +40,7 @@ xplsession.c\
 xplstart.c\
 xplstring.c\
 xpltree.c\
+xplversion.c\
 xplwrappers.c\
 Register.c
 

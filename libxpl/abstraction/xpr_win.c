@@ -1,5 +1,6 @@
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplstring.h>
+#include <libxpl/xplversion.h>
 
 #include <errno.h>
 #include <objbase.h>
