@@ -229,6 +229,11 @@ static const versionElement version_elements[] =
 #define VERSION_ELEMENT_COUNT (sizeof(version_elements) / sizeof(version_elements[0]))
 #define OFFSET_STR(version, offset) ((const xmlChar**) ((uintptr_t) (version) + (offset)))
 
+int xplVersion()
+{
+	return XPL_VERSION;
+}
+
 xmlChar* xplVersionString()
 {
 	return XPL_VERSION_FULL;

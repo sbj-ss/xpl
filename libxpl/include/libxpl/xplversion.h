@@ -18,20 +18,32 @@ extern "C" {
 /* Version info */
 #define XPL_VERSION_MAJOR 2
 #define XPL_VERSION_MINOR 0
-#define XPL_VERSION ((XPL_VERSION_MAJOR << 8) | XPL_VERSION_MINOR)
 #define XPL_VERSION_BETA
 
+#define XPL_VERSION_FLAG_BETA 0x01
+#define XPL_VERSION_FLAG_DEBUG 0x02
+
 #ifdef XPL_VERSION_BETA
-# define XPL_VERSION_BETA_STRING " beta"
+	#define XPL_VERSION_EFFECTIVE_FLAG_BETA XPL_VERSION_FLAG_BETA
+	#define XPL_VERSION_BETA_STRING " beta"
 #else
-# define XPL_VERSION_BETA_STRING ""
+	#define XPL_VERSION_EFFECTIVE_FLAG_BETA 0
+	#define XPL_VERSION_BETA_STRING ""
+#endif
+#ifdef _DEBUG
+	#define XPL_VERSION_EFFECTIVE_FLAG_DEBUG XPL_VERSION_FLAG_DEBUG
+	#define XPL_VERSION_DEBUG_STRING " (DEBUG)"
+#else
+	#define XPL_VERSION_EFFECTIVE_FLAG_DEBUG 0
+	#define XPL_VERSION_DEBUG_STRING ""
 #endif
 
-#ifdef _DEBUG
-#define XPL_VERSION_DEBUG_STRING " (DEBUG)"
-#else
-#define XPL_VERSION_DEBUG_STRING ""
-#endif
+#define XPL_VERSION (\
+	(XPL_VERSION_MAJOR << 16) \
+	| (XPL_VERSION_MINOR << 8) \
+	| XPL_VERSION_EFFECTIVE_FLAG_BETA \
+	| XPL_VERSION_EFFECTIVE_FLAG_DEBUG \
+)
 
 #define STRING_VERSION_VALUE(x) #x
 #define XPL_VERSION_FULL_M(major, minor) BAD_CAST "C XPL interpreter (codename Polaris) v" \
@@ -59,6 +71,8 @@ typedef struct _xplLibraryVersions
 	xmlChar *z_version;
 } xplLibraryVersions, *xplLibraryVersionsPtr;
 
+XPLPUBFUN int XPLCALL
+	xplVersion(void);
 XPLPUBFUN xmlChar* XPLCALL
 	xplVersionString(void);
 
