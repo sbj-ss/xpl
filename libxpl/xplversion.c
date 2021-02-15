@@ -469,7 +469,7 @@ error:
 
 bool xplInitLibraryVersions()
 {
-	// library names are lazy-loaded on first call
+	// library versions are lazy-loaded on first call
 	return true;
 }
 
