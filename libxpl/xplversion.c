@@ -310,7 +310,6 @@ xmlChar* xplLibraryVersionsToString(xplLibraryVersionsPtr compiled, xplLibraryVe
 		return NULL;
 	for (i = 0; i < VERSION_ELEMENT_COUNT; i++)
 	{
-		result |= rbAddStringToBuf(buf, BAD_CAST "\t");
 		result |= rbAddStringToBuf(buf, version_elements[i].name);
 		result |= rbAddStringToBuf(buf, BAD_CAST ": compiled=");
 		result |= rbAddStringToBuf(buf, *OFFSET_STR(compiled, version_elements[i].offset));
@@ -320,7 +319,7 @@ xmlChar* xplLibraryVersionsToString(xplLibraryVersionsPtr compiled, xplLibraryVe
 		if (result != RB_RESULT_OK)
 			goto error;
 	}
-	if (rbAddStringToBuf(buf, BAD_CAST "") != RB_RESULT_OK)
+	if (rbAddDataToBuf(buf, "", 1) != RB_RESULT_OK)
 		goto error;
 	ret = BAD_CAST rbDetachBufContent(buf);
 	rbFreeBuf(buf);
