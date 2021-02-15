@@ -236,7 +236,7 @@ rbOpResult rbAddDataToBuf(rbBufPtr buf, const void* content, size_t size)
 	rbOpResult rslt;
 	size_t free_space;
 
-	if (!buf)
+	if (!buf || !content)
 		return RB_RESULT_INVALID;
 
 	if (buf->grow_strategy == RB_GROW_FLUSH)
@@ -278,6 +278,13 @@ rbOpResult rbAddDataToBuf(rbBufPtr buf, const void* content, size_t size)
 	memcpy(buf->current, content, size);
 	buf->current = (char*) buf->current + size;
 	return RB_RESULT_OK;
+}
+
+rbOpResult rbAddStringToBuf(rbBufPtr buf, const xmlChar *content)
+{
+	if (!content)
+		return RB_RESULT_INVALID;
+	return rbAddDataToBuf(buf, content, xmlStrlen(content));
 }
 
 rbOpResult rbRewindBuf(rbBufPtr buf)

@@ -94,6 +94,9 @@ XPLPUBFUN void* XPLCALL
 /* Writes data to buffer */
 XPLPUBFUN rbOpResult XPLCALL
 	rbAddDataToBuf(rbBufPtr buf, const void* content, size_t size);
+/* Writes null-terminated string to buffer */
+XPLPUBFUN rbOpResult XPLCALL
+	rbAddStringToBuf(rbBufPtr buf, const xmlChar *content);
 /* Rewinds the content pointer. Memory isn't freed. */
 XPLPUBFUN rbOpResult XPLCALL
 	rbRewindBuf(rbBufPtr buf);
