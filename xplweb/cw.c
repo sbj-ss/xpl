@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include "Configuration.h"
 #include <libxpl/abstraction/xpr.h>
+#include <libxpl/xplversion.h>
 
 /* Set by init_server_name */
 static char g_server_base_name[128];
@@ -364,44 +365,14 @@ void free_system_info(void)
 	free(g_system_info);
 }
 
-int is_path_absolute(const char *path)
+void verify_existence(char **options, const char *optionName, int mustBeDir)
 {
-#if defined(_WIN32)
-	return path != NULL
-	       && ((path[0] == '\\' && path[1] == '\\') || /* UNC path, e.g.
-	                                                      \\server\dir */
-	           (isalpha((unsigned char)path[0]) && path[1] == ':'
-	            && path[2] == '\\')); /* E.g. X:\dir */
-#else
-	return path != NULL && path[0] == '/';
-#endif
-}
+	const char *path = get_option(options, optionName);
 
-void verify_existence(char **options, const char *option_name, int must_be_dir)
-{
-	struct stat st;
-	const char *path = get_option(options, option_name);
-
-#if defined(_WIN32)
-	wchar_t wbuf[1024];
-	char mbbuf[1024];
-	int len;
-
-	if (path)
-	{
-		memset(wbuf, 0, sizeof(wbuf));
-		memset(mbbuf, 0, sizeof(mbbuf));
-		len = MultiByteToWideChar(CP_UTF8, 0, path, -1, wbuf, sizeof(wbuf) / sizeof(wbuf[0]) - 1);
-		wcstombs(mbbuf, wbuf, sizeof(mbbuf) - 1);
-		path = mbbuf;
-		(void) len;
-	}
-#endif
-
-	if (path != NULL && (stat(path, &st) != 0 || ((S_ISDIR(st.st_mode) ? 1 : 0) != must_be_dir)))
+	if (path && !xprCheckFilePresence(BAD_CAST path, mustBeDir))
 		die("Invalid path for %s: [%s]: (%s). Make sure that path is either "
-		    "absolute, or it is relative to civetweb executable.",
-		    option_name,
+		    "absolute, or it is relative to xplweb executable.",
+		    optionName,
 		    path,
 		    strerror(errno));
 }
@@ -417,7 +388,7 @@ void set_absolute_path(char *options[], const char *option_name, const char *pat
 
 	/* If option is already set and it is an absolute path,
 	   leave it as it is -- it's already absolute. */
-	if (option_value != NULL && !is_path_absolute(option_value))
+	if (option_value != NULL && !xprIsPathAbsolute(BAD_CAST option_value))
 	{
 		/* Not absolute. Use the directory where civetweb executable lives
 		   be the relative directory for everything.

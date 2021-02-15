@@ -19,8 +19,7 @@ extern int exit_flag;
 
 void die(const char *fmt, ...);
 char* sdup(const char *str);
-int is_path_absolute(const char *path); // TODO XPR
-void verify_existence(char **options, const char *option_name, int must_be_dir); // TODO XPR
+void verify_existence(char **options, const char *option_name, int must_be_dir);
 void set_absolute_path(char *options[], const char *option_name, const char *path_to_civetweb_exe);
 void sanitize_options(char *options[], const char *arg0);
 

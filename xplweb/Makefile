@@ -4,7 +4,7 @@
 #******************************************
 
 INCLUDE = -I./include -I../libxpl/include -I ../civetweb/include -I/usr/include/libxml2
-LIBS = -lxml2 -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -ldl -lpthread -lcivetweb
+LIBS = -lxml2 -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -ldl -lpthread -lcivetweb -lcurl -lyajl
 WARNINGS = -Wall -Werror
 CFLAGS = -L../libxpl -L../civetweb $(WARNINGS)
 ifeq ($(DEBUG), 1)
