@@ -441,7 +441,13 @@ static int log_message(const struct mg_connection *conn, const char *message)
 
 void print_info(void)
 {
-	fprintf(stdout, "\n%s (%s)\n%s\n", g_server_base_name, g_server_name, g_system_info);
+	xmlChar *libs, *xef;
+
+	libs = xplLibraryVersionsToString(xplGetCompiledLibraryVersions(), xplGetRunningLibraryVersions());
+	xef = xplXefImplementationsToString(xplGetXefImplementations());
+	fprintf(stdout, "\n%s (%s)\n%sLibraries:\n%sXEF:\n%s", g_server_base_name, g_server_name, g_system_info, libs, xef);
+	XPL_FREE(libs);
+	XPL_FREE(xef);
 }
 
 struct mg_context* start_civetweb(int argc, char *argv[], void *user_data, struct mg_callbacks *callbacks)
