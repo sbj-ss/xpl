@@ -12,7 +12,8 @@ typedef enum _xplCmdGetVersionPart
 	XCGV_PART_MAJOR,
 	XCGV_PART_MINOR,
 	XCGV_PART_FULL,
-	XCGV_PART_LIBS
+	XCGV_PART_LIBS,
+	XCGV_PART_XEF
 } xplCmdGetVersionPart;
 
 static xplCmdParamDictValue part_dict[] =
@@ -21,6 +22,7 @@ static xplCmdParamDictValue part_dict[] =
 	{ BAD_CAST "major", XCGV_PART_MAJOR },
 	{ BAD_CAST "full", XCGV_PART_FULL },
 	{ BAD_CAST "libs", XCGV_PART_LIBS },
+	{ BAD_CAST "xef", XCGV_PART_XEF },
 	{ NULL, 0 }
 };
 
@@ -34,7 +36,7 @@ typedef struct _xplCmdGetVersionParams
 static const xplCmdGetVersionParams params_stencil =
 {
 	.part = XCGV_PART_FULL,
-	.tagname = { NULL, BAD_CAST "library" },
+	.tagname = { NULL, NULL },
 	.repeat = true
 };
 
@@ -92,15 +94,24 @@ static xmlNodePtr _getXplVersion(xmlDocPtr doc, xplCmdGetVersionPart part)
 	return ret;
 }
 
+static const xplQName default_library_name = { NULL, BAD_CAST "library" };
+static const xplQName default_xef_name = { NULL, BAD_CAST "feature" };
+
 void xplCmdGetVersionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdGetVersionParamsPtr params = (xplCmdGetVersionParamsPtr) commandInfo->params;
-	xmlNodePtr libs;
+	xplQName tagname;
+	xmlNodePtr nodes;
 
 	if (params->part == XCGV_PART_LIBS)
 	{
-		libs = xplLibraryVersionsToNodeList(commandInfo->element->doc, params->tagname, xplGetCompiledLibraryVersions(), xplGetRunningLibraryVersions());
-		ASSIGN_RESULT(libs, params->repeat, true);
+		tagname = params->tagname.ncname? params->tagname: default_library_name;
+		nodes = xplLibraryVersionsToNodeList(commandInfo->element->doc, tagname, xplGetCompiledLibraryVersions(), xplGetRunningLibraryVersions());
+		ASSIGN_RESULT(nodes, params->repeat, true);
+	} else if (params->part == XCGV_PART_XEF) {
+		tagname = params->tagname.ncname? params->tagname: default_xef_name;
+		nodes = xplXefImplementationsToNodeList(commandInfo->element->doc, tagname, xplGetXefImplementations());
+		ASSIGN_RESULT(nodes, params->repeat, true);
 	} else
 		ASSIGN_RESULT(_getXplVersion(commandInfo->element->doc, params->part), false, true);
 }

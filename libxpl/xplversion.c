@@ -28,6 +28,150 @@
 	#include <zlib.h>
 #endif
 
+int xplVersion()
+{
+	return XPL_VERSION;
+}
+
+xmlChar* xplVersionString()
+{
+	return XPL_VERSION_FULL;
+}
+
+static xefImplementations xef_implementations =
+{
+	.transport =
+#if defined(_XEF_TRANSPORT_WINHTTP)
+		XEF_IMPL_TRANSPORT_WINHTTP,
+#elif defined(_XEF_TRANSPORT_CURL)
+		XEF_IMPL_TRANSPORT_CURL,
+#else
+		XEF_IMPL_TRANSPORT_NONE,
+#endif
+	.database =
+#if defined (_XEF_DB_ADO)
+		XEF_IMPL_DATABASE_ADO,
+#elif defined(_XEF_DB_ODBC)
+		XEF_IMPL_DATABASE_ODBC,
+#else
+		XEF_IMPL_DATABASE_NONE,
+#endif
+	.html_cleaner =
+#if defined(_XEF_HTML_CLEANER_TIDY)
+		XEF_IMPL_HTML_CLEANER_TIDY,
+#else
+		XEF_IMPL_HTML_CLEANER_NONE,
+#endif
+};
+
+const xmlChar* impl_transport_strings[] =
+{
+	[XEF_IMPL_TRANSPORT_NONE] = BAD_CAST "none",
+	[XEF_IMPL_TRANSPORT_WINHTTP] = BAD_CAST "WinHTTP",
+	[XEF_IMPL_TRANSPORT_CURL] = BAD_CAST "curl"
+};
+
+const xmlChar* impl_database_strings[] =
+{
+	[XEF_IMPL_DATABASE_NONE] = BAD_CAST "none",
+	[XEF_IMPL_DATABASE_ADO] = BAD_CAST "ADO",
+	[XEF_IMPL_DATABASE_ODBC] = BAD_CAST "ODBC"
+};
+
+const xmlChar* impl_html_cleaner_strings[] =
+{
+	[XEF_IMPL_HTML_CLEANER_NONE] = BAD_CAST "none",
+	[XEF_IMPL_HTML_CLEANER_TIDY] = BAD_CAST "tidy"
+};
+
+typedef struct _implElement
+{
+	xmlChar *name;
+	ptrdiff_t offset;
+	int max_value;
+	const xmlChar **values;
+} implElement;
+
+#define IMPL_OFFSET(part) (uintptr_t) &xef_implementations.part - (uintptr_t) &xef_implementations
+
+static const implElement impl_elements[] =
+{
+	{ BAD_CAST "transport", IMPL_OFFSET(transport), XEF_IMPL_TRANSPORT_MAX, impl_transport_strings },
+	{ BAD_CAST "database", IMPL_OFFSET(database), XEF_IMPL_DATABASE_MAX, impl_database_strings },
+	{ BAD_CAST "html cleaner", IMPL_OFFSET(html_cleaner), XEF_IMPL_HTML_CLEANER_MAX, impl_html_cleaner_strings }
+};
+
+#define IMPL_ELEMENT_COUNT (sizeof(impl_elements) / sizeof(impl_elements[0]))
+#define OFFSET_IMPL_VALUE(impl, offset) ((int*) ((uintptr_t) (impl) + (offset)))
+
+static const xmlChar* _getImplString(int index, int value)
+{
+	if (value < 0 || value > impl_elements[index].max_value)
+		return BAD_CAST "unknown";
+	return impl_elements[index].values[value];
+}
+
+xefImplementationsPtr xplGetXefImplementations()
+{
+	return &xef_implementations;
+}
+
+xmlNodePtr xplXefImplementationsToNodeList(xmlDocPtr doc, xplQName tagname, xefImplementationsPtr impl)
+{
+	xmlNodePtr ret = NULL, tail = NULL, cur;
+	size_t i;
+
+	for (i = 0; i < IMPL_ELEMENT_COUNT; i++)
+	{
+		if (!(cur = xmlNewDocNode(doc, tagname.ns, tagname.ncname, NULL)))
+			goto oom;
+		if (tail)
+		{
+			tail->next = cur;
+			cur->prev = tail;
+			tail = cur;
+		} else
+			ret = tail = cur;
+		if (!xmlNewProp(cur, BAD_CAST "name", impl_elements[i].name))
+			goto oom;
+		if (!xmlNewProp(cur, BAD_CAST "implementation", _getImplString(i, *OFFSET_IMPL_VALUE(impl, impl_elements[i].offset))))
+			goto oom;
+	}
+	return ret;
+oom:
+	if (ret)
+		xmlFreeNode(ret);
+	return NULL;
+}
+
+xmlChar* xplXefImplementationsToString(xefImplementationsPtr impl)
+{
+	size_t i;
+	rbBufPtr buf;
+	rbOpResult result = 0;
+	xmlChar *ret;
+
+	if (!(buf = rbCreateBufParams(512, RB_GROW_INCREMENT, 128)))
+		return NULL;
+	for (i = 0; i < IMPL_ELEMENT_COUNT; i++)
+	{
+		result |= rbAddStringToBuf(buf, impl_elements[i].name);
+		result |= rbAddStringToBuf(buf, BAD_CAST ": ");
+		result |= rbAddStringToBuf(buf, _getImplString(i, *OFFSET_IMPL_VALUE(impl, impl_elements[i].offset)));
+		result |= rbAddStringToBuf(buf, BAD_CAST "\n");
+		if (result != RB_RESULT_OK)
+			goto error;
+	}
+	if (rbAddDataToBuf(buf, "", 1) != RB_RESULT_OK)
+		goto error;
+	ret = BAD_CAST rbDetachBufContent(buf);
+	rbFreeBuf(buf);
+	return ret;
+error:
+	rbFreeBuf(buf);
+	return NULL;
+}
+
 #define NOT_CHECKABLE (BAD_CAST "not checkable")
 #define NOT_COMPILED_IN (BAD_CAST "not compiled in")
 
@@ -186,7 +330,6 @@ static void _getLibYajlVersion(const xmlChar **str, bool running)
 	}
 }
 
-
 static void _getZlibVersion(const xmlChar **str, bool running)
 {
 #ifndef _USE_ZLIB
@@ -227,17 +370,7 @@ static const versionElement version_elements[] =
 };
 
 #define VERSION_ELEMENT_COUNT (sizeof(version_elements) / sizeof(version_elements[0]))
-#define OFFSET_STR(version, offset) ((const xmlChar**) ((uintptr_t) (version) + (offset)))
-
-int xplVersion()
-{
-	return XPL_VERSION;
-}
-
-xmlChar* xplVersionString()
-{
-	return XPL_VERSION_FULL;
-}
+#define OFFSET_VERSION_STR(version, offset) ((const xmlChar**) ((uintptr_t) (version) + (offset)))
 
 static xplLibraryVersions compiled_versions;
 static xplLibraryVersions running_versions;
@@ -249,8 +382,8 @@ static void _initLibraryVersions()
 
 	for (i = 0; i < VERSION_ELEMENT_COUNT; i++)
 	{
-		version_elements[i].getter(OFFSET_STR(&compiled_versions, version_elements[i].offset), false);
-		version_elements[i].getter(OFFSET_STR(&running_versions, version_elements[i].offset), true);
+		version_elements[i].getter(OFFSET_VERSION_STR(&compiled_versions, version_elements[i].offset), false);
+		version_elements[i].getter(OFFSET_VERSION_STR(&running_versions, version_elements[i].offset), true);
 	}
 }
 
@@ -292,9 +425,9 @@ xmlNodePtr xplLibraryVersionsToNodeList(xmlDocPtr doc, xplQName tagname, xplLibr
 			ret = tail = cur;
 		if (!xmlNewProp(cur, BAD_CAST "name", version_elements[i].name))
 			goto oom;
-		if (!xmlNewProp(cur, BAD_CAST "compiled", *OFFSET_STR(compiled, version_elements[i].offset)))
+		if (!xmlNewProp(cur, BAD_CAST "compiled", *OFFSET_VERSION_STR(compiled, version_elements[i].offset)))
 			goto oom;
-		if (!xmlNewProp(cur, BAD_CAST "running", *OFFSET_STR(running, version_elements[i].offset)))
+		if (!xmlNewProp(cur, BAD_CAST "running", *OFFSET_VERSION_STR(running, version_elements[i].offset)))
 			goto oom;
 	}
 	return ret;
@@ -317,9 +450,9 @@ xmlChar* xplLibraryVersionsToString(xplLibraryVersionsPtr compiled, xplLibraryVe
 	{
 		result |= rbAddStringToBuf(buf, version_elements[i].name);
 		result |= rbAddStringToBuf(buf, BAD_CAST ": compiled=");
-		result |= rbAddStringToBuf(buf, *OFFSET_STR(compiled, version_elements[i].offset));
+		result |= rbAddStringToBuf(buf, *OFFSET_VERSION_STR(compiled, version_elements[i].offset));
 		result |= rbAddStringToBuf(buf, BAD_CAST ", running=");
-		result |= rbAddStringToBuf(buf, *OFFSET_STR(running, version_elements[i].offset));
+		result |= rbAddStringToBuf(buf, *OFFSET_VERSION_STR(running, version_elements[i].offset));
 		result |= rbAddStringToBuf(buf, BAD_CAST "\n");
 		if (result != RB_RESULT_OK)
 			goto error;

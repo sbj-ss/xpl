@@ -57,11 +57,38 @@
     <Expected>libxml2</Expected>
   </MustSucceed>
 
-  <MustSucceed name="pass/no-empty">
+  <MustSucceed name="pass/no-empty-libs">
     <Input>
       <xpl:define name="library"/>
       <xpl:include select="library[@name=''] | library[@compiled=''] | library[@running='']">
         <xpl:get-version part="libs" repeat="false"/>
+      </xpl:include>
+    </Input>
+    <Expected/>
+  </MustSucceed>
+
+  <MustSucceed name="pass/xef">
+    <Input>
+      <xpl:include select="feature[@name='transport']/@name">
+        <xpl:get-version part="xef"/>
+      </xpl:include>
+    </Input>
+    <Expected>transport</Expected>
+  </MustSucceed>
+
+  <MustSucceed name="pass/xef-custom-tag-name">
+    <Input>
+      <xpl:include select="ns-a:impl[@name='database']/@name">
+        <xpl:get-version part="xef" tagname="ns-a:impl"/>
+      </xpl:include>
+    </Input>
+    <Expected>database</Expected>
+  </MustSucceed>
+
+  <MustSucceed name="pass/no-empty-features">
+    <Input>
+      <xpl:include select="feature[@name=''] | feature[@implementation='']">
+        <xpl:get-version part="xef"/>
       </xpl:include>
     </Input>
     <Expected/>

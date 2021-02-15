@@ -56,6 +56,48 @@ extern "C" {
 	__DATE__
 #define XPL_VERSION_FULL XPL_VERSION_FULL_M(XPL_VERSION_MAJOR, XPL_VERSION_MINOR)
 
+XPLPUBFUN int XPLCALL
+	xplVersion(void);
+XPLPUBFUN xmlChar* XPLCALL
+	xplVersionString(void);
+
+typedef enum _xefImplTransport
+{
+	XEF_IMPL_TRANSPORT_NONE,
+	XEF_IMPL_TRANSPORT_WINHTTP,
+	XEF_IMPL_TRANSPORT_CURL,
+	XEF_IMPL_TRANSPORT_MAX = XEF_IMPL_TRANSPORT_CURL
+} xefImplTransport;
+
+typedef enum _xefImplDatabase
+{
+	XEF_IMPL_DATABASE_NONE,
+	XEF_IMPL_DATABASE_ADO,
+	XEF_IMPL_DATABASE_ODBC,
+	XEF_IMPL_DATABASE_MAX = XEF_IMPL_DATABASE_ODBC
+} xefImplDatabase;
+
+typedef enum _xefImplHtmlCleaner
+{
+	XEF_IMPL_HTML_CLEANER_NONE,
+	XEF_IMPL_HTML_CLEANER_TIDY,
+	XEF_IMPL_HTML_CLEANER_MAX = XEF_IMPL_HTML_CLEANER_TIDY
+} xefImplHtmlCleaner;
+
+typedef struct _xefImplementations
+{
+	xefImplTransport transport;
+	xefImplDatabase database;
+	xefImplHtmlCleaner html_cleaner;
+} xefImplementations, *xefImplementationsPtr;
+
+XPLPUBFUN xefImplementationsPtr XPLCALL
+	xplGetXefImplementations(void);
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplXefImplementationsToNodeList(xmlDocPtr doc, xplQName tagname, xefImplementationsPtr impl);
+XPLPUBFUN xmlChar* XPLCALL
+	xplXefImplementationsToString(xefImplementationsPtr impl);
+
 typedef struct _xplLibraryVersions
 {
 	xmlChar *curl_version;
@@ -70,11 +112,6 @@ typedef struct _xplLibraryVersions
 	xmlChar *yajl_version;
 	xmlChar *z_version;
 } xplLibraryVersions, *xplLibraryVersionsPtr;
-
-XPLPUBFUN int XPLCALL
-	xplVersion(void);
-XPLPUBFUN xmlChar* XPLCALL
-	xplVersionString(void);
 
 /* These functions return pointers to singletons which caller must not attempt to free */
 XPLPUBFUN xplLibraryVersionsPtr XPLCALL
