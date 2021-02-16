@@ -94,7 +94,7 @@
 	#define LEAK_DETECTION_START() \
 		do { \
 			__ld_start = xmlMemBlocks(); \
-			__ld_leaked = false; \
+			__ld_leaked = 0; \
 			printf("Leak detection start: %d\n", __ld_start); \
 		} while(0)
 	#define LEAK_DETECTION_STOP_AND_REPORT() \
