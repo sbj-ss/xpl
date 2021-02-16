@@ -80,7 +80,7 @@ static void xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, xmlC
 					*out++ = '`';
 				break;
 			case XPL_EXPECT_PATH:
-				if ((p == data_buf) && ((*p == XPR_FS_PATH_DELIM) || (*p == XPR_FS_PATH_INVERSE_DELIM)))
+				if ((p == data_buf) && ((*p == XPR_PATH_DELIM) || (*p == XPR_PATH_INVERSE_DELIM)))
 					NOOP(); /* skip absolute paths */
 				else if (dot && (*p == '.'))
 					NOOP(); /* skip multiple dots */

@@ -22,11 +22,6 @@ int _scprintf(const char *format, ...);
 #define XPR_PATH_DELIM_STR "/"
 #define XPR_PATH_INVERSE_DELIM_STR "\\"
 
-#define XPR_FS_PATH_DELIM '\\'
-#define XPR_FS_PATH_INVERSE_DELIM '/'
-#define XPR_FS_PATH_DELIM_STR "\\"
-#define XPR_FS_PATH_INVERSE_DELIM_STR "/"
-
 #define XPR_FS_ENCODING "utf-8"
 #define XPR_CONSOLE_ENCODING "utf-8"
 
