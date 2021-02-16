@@ -101,7 +101,7 @@
 		do { \
 			printf("Leak detection end: %d (%d)\n", xmlMemBlocks(), __ld_start - xmlMemBlocks()); \
 			__ld_leaked = !!(__ld_start - xmlMemBlocks()); \
-			if (__ld_start - xmlMemBlocks()) \
+			if (__ld_leaked) \
 			{ \
 				printf("Starting memory dump...\n"); \
 				xmlMemDisplay(stdout); \
