@@ -90,7 +90,7 @@
 #endif
 
 #ifdef _LEAK_DETECTION
-	#define LEAK_DETECTION_PREPARE int __ld_start; bool __ld_leaked;
+	#define LEAK_DETECTION_PREPARE int __ld_start; int __ld_leaked;
 	#define LEAK_DETECTION_START() \
 		do { \
 			__ld_start = xmlMemBlocks(); \
@@ -99,8 +99,8 @@
 		} while(0)
 	#define LEAK_DETECTION_STOP_AND_REPORT() \
 		do { \
-			printf("Leak detection end: %d (%d)\n", xmlMemBlocks(), __ld_start - xmlMemBlocks()); \
-			__ld_leaked = !!(__ld_start - xmlMemBlocks()); \
+			__ld_leaked = __ld_start - xmlMemBlocks(); \
+			printf("Leak detection end: %d (%d)\n", xmlMemBlocks(), __ld_leaked); \
 			if (__ld_leaked) \
 			{ \
 				printf("Starting memory dump...\n"); \
