@@ -8,11 +8,13 @@ void xplCmdSetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 typedef struct _xplCmdSetOptionParams
 {
 	xmlChar *name;
+	bool to_default;
 } xplCmdSetOptionParams, *xplCmdSetOptionParamsPtr;
 
 static const xplCmdSetOptionParams params_stencil =
 {
 	.name = NULL,
+	.to_default = false
 };
 
 xplCommand xplSetOptionCommand =
@@ -29,6 +31,10 @@ xplCommand xplSetOptionCommand =
 			.required = true,
 			.value_stencil = &params_stencil.name
 		}, {
+			.name = BAD_CAST "todefault",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.to_default
+		}, {
 			.name = NULL
 		}
 	}
@@ -37,18 +43,15 @@ xplCommand xplSetOptionCommand =
 void xplCmdSetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdSetOptionParamsPtr params = (xplCmdSetOptionParamsPtr) commandInfo->params;
-	bool by_default = false;
 
 	if (!xplSessionGetSaMode(commandInfo->document->session))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 		return;
 	}
-	if (!commandInfo->content)
-		by_default = true;
 
 	xplLockThreads(true);
-	switch (xplSetOptionValue(params->name, commandInfo->content, by_default))
+	switch (xplSetOptionValue(params->name, commandInfo->content, params->to_default))
 	{
 		case XPL_SET_OPTION_OK:
 			ASSIGN_RESULT(NULL, false, true);
