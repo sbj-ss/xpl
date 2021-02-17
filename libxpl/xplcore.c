@@ -419,6 +419,7 @@ XPR_THREAD_ROUTINE_RESULT XPR_THREAD_ROUTINE_CALL xplDocThreadWrapper(XPR_THREAD
 		if (!xprMutexAcquire(&doc->parent->thread_landing_lock))
 			DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
 		xmlSetListDoc(content, doc->parent->document);
+		xplMergeDocOldNamespaces(doc->document, doc->landing_point>document);
 		xplDocDeferNodeDeletion(doc, xplReplaceWithList(doc->landing_point, content));
 		if (!xprMutexRelease(&doc->parent->thread_landing_lock))
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
