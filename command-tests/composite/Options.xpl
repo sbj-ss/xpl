@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   XPL interpreter high-level test suite
-  :get-option command
+  :get-option and :set-option commands
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl" xmlns:ns-a="http://a.example.com">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
   
-  <MustSucceed name="pass/single">
+  <MustSucceed name="pass/get-single">
     <Input>
       <xpl:get-option name="EnableAssertions"/>
     </Input>
     <Expected>true</Expected>
   </MustSucceed>
 
-  <MustSucceed name="pass/all">
+  <MustSucceed name="pass/get-all">
     <Input>
       <xpl:include select="./option[@name='EnableAssertions']">
         <xpl:get-option/>
@@ -24,7 +24,7 @@
     </Expected>
   </MustSucceed>
 
-  <MustSucceed name="pass/custom-tag-name">
+  <MustSucceed name="pass/get-all-custom-tag-name">
     <Input>
       <Outer>
         <xpl:include select="./*[local-name()='Opt'][@name='EnableAssertions']">
@@ -39,7 +39,7 @@
     </Expected>
   </MustSucceed>
 
-  <MustSucceed name="pass/show-tags">
+  <MustSucceed name="pass/get-all-show-tags">
     <Input>
       <xpl:include select="./EnableAssertions">
         <xpl:get-option showtags="true"/>
@@ -50,7 +50,7 @@
     </Expected>
   </MustSucceed>
 
-  <MustSucceed name="pass/no-repeat">
+  <MustSucceed name="pass/get-all-no-repeat">
     <Input>
       <xpl:define name="option">
         <Processed/>
@@ -62,48 +62,93 @@
     <Expected/>
   </MustSucceed>
 
-<!-- To test this we need :set-option as default ProxyPassword is empty -->
-<!-- 
+  <MustSucceed name="pass/set-get">
+    <Input>
+      <xpl:set-sa-mode password="1111111"/>
+      <xpl:set-option name="ProxyPort">1234</xpl:set-option>
+      <xpl:get-option name="ProxyPort"/>
+      <xpl:set-option name="ProxyPort" todefault="true"/>
+    </Input>
+    <Expected>1234</Expected>
+  </MustSucceed>
+
   <MustSucceed name="pass/show-passwords">
     <Input>
+      <xpl:set-sa-mode password="1111111"/>
+      <xpl:set-option name="ProxyPassword">123</xpl:set-option>
       <Hidden>
-        <xpl:get-option name=""/>
+        <xpl:get-option name="ProxyPassword"/>
       </Hidden>
       <Visible>
-        <xpl:get-option name="" showpasswords="true"/>
+        <xpl:get-option name="ProxyPassword" showpasswords="true"/>
       </Visible>
+      <xpl:set-option name="ProxyPassword" todefault="true"/>
     </Input>
-    <Expected></Expected>
+    <Expected>
+      <Hidden>[hidden]</Hidden>
+      <Visible>123</Visible>
+    </Expected>
   </MustSucceed>
- -->
  
-  <MustFail name="fail/bad-tag-name">
+  <MustFail name="fail/get-bad-tag-name">
     <Input>
       <xpl:get-option tagname="#"/>
     </Input>
   </MustFail>
 
-  <MustFail name="fail/bad-show-tags">
+  <MustFail name="fail/get-bad-show-tags">
     <Input>
       <xpl:get-option showtags="only-short"/>
     </Input>
   </MustFail>
 
-  <MustFail name="fail/bad-repeat">
+  <MustFail name="fail/get-bad-repeat">
     <Input>
       <xpl:get-option repeat="maybe"/>
     </Input>
   </MustFail>
 
-  <MustFail name="fail/bad-show-passwords">
+  <MustFail name="fail/get-bad-show-passwords">
     <Input>
       <xpl:get-option showpasswords="when nobody's watching"/>
     </Input>
   </MustFail>
 
-  <MustFail name="fail/unknown">
+  <MustFail name="fail/get-unknown">
     <Input>
       <xpl:get-option name="HuntHeffalumps"/>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/get-access-denied">
+    <Input>
+      <xpl:get-option showpasswords="true"/>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/set-no-name">
+    <Input>
+      <xpl:set-option/>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/set-access-denied">
+    <Input>
+      <xpl:set-option name="LuciferCompatibility">true</xpl:set-option>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/set-unknown">
+    <Input>
+      <xpl:set-sa-mode password="1111111"/>
+      <xpl:set-option name="HuntHeffalumps">whatever</xpl:set-option>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/set-bad-value">
+    <Input>
+      <xpl:set-sa-mode password="1111111"/>
+      <xpl:set-option name="UseConsoleColors">bright</xpl:set-option>
     </Input>
   </MustFail>
   
