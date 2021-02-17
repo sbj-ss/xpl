@@ -5,6 +5,11 @@
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
+  
+  <xpl:set-sa-mode password="1111111"/>
+  <xpl:set-option name="FoolproofDestructiveCommands">true</xpl:set-option>
+  <xpl:set-option name="WarnOnAncestorModificationAttempt">true</xpl:set-option>
+  <xpl:set-option name="WarnOnDeletedNodeAccess">true</xpl:set-option>
 
   <MustSucceed name="pass/with-self">
     <Input>
