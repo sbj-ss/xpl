@@ -470,7 +470,7 @@ static xmlChar *xplGetOptionValueInner(xplConfigEntryPtr p, bool showPasswords)
 			return BAD_CAST XPL_STRDUP_NO_CHECK(int_buf);
 		case CFG_TYPE_STRING:
 			if ((p->options & CFG_OPTION_IS_PASSWORD) && !showPasswords)
-				return NULL;
+				return BAD_CAST XPL_STRDUP("[hidden]");
 			else
 				return BAD_CAST XPL_STRDUP(*((char**) p->value_ptr));
 		case CFG_TYPE_DEFERRED: /* ToDo */
@@ -553,6 +553,8 @@ xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool b
 		return XPL_SET_OPTION_UNKNOWN_OPTION;
 	if (p->options & CFG_OPTION_DEPRECATED)
 		return XPL_SET_OPTION_OK;
+	if (p->cfg_type == CFG_TYPE_STRING && *((xmlChar**) p->value_ptr))
+		XPL_FREE(*((xmlChar**) p->value_ptr));
 	if (byDefault)
 	{
 		xplAssignDefaultToOption(p);
