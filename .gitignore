@@ -45,6 +45,7 @@ mt.dep
 **/.settings
 **/.cproject
 **/.project
+user.dict
 # core dumps
 **/core
 # parser test configs
