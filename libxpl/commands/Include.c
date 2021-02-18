@@ -240,7 +240,7 @@ static void fetchFileContent(IncludeContextPtr ctxt)
 		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot open file \"%s\"", ctxt->params->uri);
 		return;
 	}
-	fstat(fd, &stat); /* TODO where's stat64? */
+	fstat(fd, &stat); /* stat32/stat64 depending on the platform */
 	file_size = stat.st_size;
 	file_content = (char*) XPL_MALLOC(file_size + 2);
 	ctxt->content = BAD_CAST file_content;
@@ -488,11 +488,7 @@ static void buildDocumentStep(IncludeContextPtr ctxt)
 			(ctxt->params->select || ctxt->params->output_format == OUTPUT_FORMAT_XML)
 		)
 		{ /* we need a document somewhere on the way, let's build it */
-			if (ctxt->content_size > INT_MAX) // TODO do we need this limitation?
-			{
-				ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "input document is bigger than 2 Gb");
-				return;
-			}
+			/* no checks for content_size: we don't know how much memory is available anyway */
 			ctxt->src_node = (xmlNodePtr) xmlReadMemory((char*) ctxt->content, (int) ctxt->content_size, NULL, NULL, XML_PARSE_NODICT);
 			if (!ctxt->src_node)
 			{
