@@ -127,11 +127,13 @@
 /* XEF implementation choice */
 /* HTML cleaner */
 /* #undef _XEF_HTML_CLEANER_TIDY */
-/* HTTP access */
-/* #undef _XEF_TRANSPORT_WINHTTP */
 /* Database access */
 /* #undef _XEF_DB_ADO */
 /* #undef _XEF_DB_ODBC */
+/* HTTP access */
+/* #undef _XEF_TRANSPORT_WINHTTP */
+/* Cryptography */
+/* #undef _XEF_CRYPTO_OPENSSL */
 
 /* Additional features */
 /* Use tcmalloc. Slows down the interpreter on Windows. */

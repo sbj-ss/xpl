@@ -84,11 +84,19 @@ typedef enum _xefImplHtmlCleaner
 	XEF_IMPL_HTML_CLEANER_MAX = XEF_IMPL_HTML_CLEANER_TIDY
 } xefImplHtmlCleaner;
 
+typedef enum _xefImplCrypto
+{
+	XEF_IMPL_CRYPTO_NONE,
+	XEF_IMPL_CRYPTO_OPENSSL,
+	XEF_IMPL_CRYPTO_MAX = XEF_IMPL_CRYPTO_OPENSSL
+} xefImplCrypto;
+
 typedef struct _xefImplementations
 {
 	xefImplTransport transport;
 	xefImplDatabase database;
 	xefImplHtmlCleaner html_cleaner;
+	xefImplCrypto crypto;
 } xefImplementations, *xefImplementationsPtr;
 
 XPLPUBFUN xefImplementationsPtr XPLCALL

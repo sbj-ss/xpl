@@ -62,6 +62,12 @@ static xefImplementations xef_implementations =
 #else
 		XEF_IMPL_HTML_CLEANER_NONE,
 #endif
+	.crypto =
+#if defined (_XEF_CRYPTO_OPENSSL)
+		XEF_IMPL_CRYPTO_OPENSSL,
+#else
+		XEF_IMPL_CRYPTO_NONE,
+#endif
 };
 
 const xmlChar* impl_transport_strings[] =
@@ -84,6 +90,12 @@ const xmlChar* impl_html_cleaner_strings[] =
 	[XEF_IMPL_HTML_CLEANER_TIDY] = BAD_CAST "tidy"
 };
 
+const xmlChar* impl_crypto_strings[] =
+{
+	[XEF_IMPL_CRYPTO_NONE] = BAD_CAST "none",
+	[XEF_IMPL_CRYPTO_OPENSSL] = BAD_CAST "OpenSSL"
+};
+
 typedef struct _implElement
 {
 	xmlChar *name;
@@ -98,7 +110,8 @@ static const implElement impl_elements[] =
 {
 	{ BAD_CAST "transport", IMPL_OFFSET(transport), XEF_IMPL_TRANSPORT_MAX, impl_transport_strings },
 	{ BAD_CAST "database", IMPL_OFFSET(database), XEF_IMPL_DATABASE_MAX, impl_database_strings },
-	{ BAD_CAST "html cleaner", IMPL_OFFSET(html_cleaner), XEF_IMPL_HTML_CLEANER_MAX, impl_html_cleaner_strings }
+	{ BAD_CAST "html_cleaner", IMPL_OFFSET(html_cleaner), XEF_IMPL_HTML_CLEANER_MAX, impl_html_cleaner_strings },
+	{ BAD_CAST "crypto", IMPL_OFFSET(crypto), XEF_IMPL_CRYPTO_MAX, impl_crypto_strings }
 };
 
 #define IMPL_ELEMENT_COUNT (sizeof(impl_elements) / sizeof(impl_elements[0]))

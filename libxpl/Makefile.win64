@@ -11,7 +11,7 @@ LIB += -L$(LIB_ROOT)/lib
 endif
 LIBS = -lxml2 -lonig -ltidy -lcrypto -lidn -lodbc32 -liconv -lz.dll -llzma -lpsapi -lole32 -lwinhttp -lcurl -lyajl
 WARNINGS = -Wall -Wmissing-prototypes -Wshadow -Werror -Wextra
-FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_TRANSPORT_CURL -D_XEF_DB_ODBC
+FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_DB_ODBC -D_XEF_TRANSPORT_CURL -D_XEF_CRYPTO_OPENSSL
 CFLAGS = -fpic -D_IN_DLL $(FEATURES) $(WARNINGS)
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -D_DEBUG
@@ -30,8 +30,9 @@ abstraction/xpr_win.c\
 abstraction/xefstart.c\
 abstraction/xpr.c\
 abstraction/xefhtmlcleanertidy.c\
-abstraction/xeftransportcurl.c\
 abstraction/xefdbodbc.c\
+abstraction/xeftransportcurl.c\
+abstraction/xefcryptoopenssl.c\
 xplcommand.c\
 xplcore.c\
 xpldb.c\

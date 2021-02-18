@@ -34,9 +34,13 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN void XPLCALL
 	xefShutdown(void);
 
-/* regular expressions will be added here later */
+/* ============================================ *
+ * regular expressions will be added here later *
+ * ============================================ */
 
-/* High-level transport protocols (mostly HTTP(S)? for now) */
+/* ======================================================== *
+ * High-level transport protocols (mostly HTTP(S)? for now) *
+ * ======================================================== */
 typedef struct _xefFetchDocumentParams
 {
 	/* input */
@@ -57,7 +61,9 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN void XPLCALL
 	xefFetchParamsClear(xefFetchDocumentParamsPtr params);
 
-/* databases */
+/* ========= *
+ * databases *
+ * ========= */
 XPLPUBFUN void XPLCALL
 	xefDbDeallocateDb(void *db_handle);
 XPLPUBFUN bool XPLCALL
@@ -133,7 +139,9 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN void XPLCALL
 	xefDbFreeParams(xefDbQueryParamsPtr params, bool freeCarrier);
 
-/* HTML -> XHTML */
+/* ============= *
+ * HTML -> XHTML *
+ * ============= */
 typedef struct _xefCleanHtmlParams
 {
 	/* input */
@@ -147,7 +155,54 @@ typedef struct _xefCleanHtmlParams
 XPLPUBFUN bool XPLCALL
 	xefCleanHtml(xefCleanHtmlParamsPtr params);
 
-/* sanity checks */
+/* ======================== *
+ * Cryptographic primitives *
+ * ======================== */
+typedef enum _xefCryptoDigestMethod
+{
+	XEF_CRYPTO_DIGEST_METHOD_MD4,
+	XEF_CRYPTO_DIGEST_METHOD_MD5,
+	XEF_CRYPTO_DIGEST_METHOD_RIPEMD160,
+	XEF_CRYPTO_DIGEST_METHOD_SHA1,
+	XEF_CRYPTO_DIGEST_METHOD_SHA224,
+	XEF_CRYPTO_DIGEST_METHOD_SHA256,
+	XEF_CRYPTO_DIGEST_METHOD_SHA384,
+	XEF_CRYPTO_DIGEST_METHOD_SHA512,
+	XEF_CRYPTO_DIGEST_METHOD_WHIRLPOOL,
+	XEF_CRYPTO_DIGEST_METHOD_MAX = XEF_CRYPTO_DIGEST_METHOD_WHIRLPOOL
+} xefCryptoDigestMethod;
+
+typedef struct _xefCryptoDigestParams
+{
+	/* input */
+	void *input;
+	size_t input_size;
+	xefCryptoDigestMethod digest_method;
+	/* output */
+	xmlChar *error; /* must be freed */
+	unsigned char *digest; /* RAW, not hex/base64/etc. Must be freed */
+	size_t digest_size;
+} xefCryptoDigestParams, *xefCryptoDigestParamsPtr;
+
+XPLPUBFUN bool XPLCALL
+	xefCryptoDigest(xefCryptoDigestParamsPtr params);
+
+typedef struct _xefCryptoRandomParams
+{
+	/* input */
+	bool secure;
+	size_t size;
+	/* output */
+	unsigned char *bytes; /* RAW, not hex/base64/etc. Must be freed */
+	xmlChar *error; /* must be freed */
+} xefCryptoRandomParams, *xefCryptoRandomParamsPtr;
+
+XPLPUBFUN bool XPLCALL
+	xefCryptoRandom(xefCryptoRandomParamsPtr params);
+
+/* ============= *
+ * sanity checks *
+ * ============= */
 #ifdef _XEF_HTML_CLEANER_TIDY
 	#ifdef _XEF_HAS_HTML_CLEANER
 		#error XEF: another html cleaner is used already
@@ -200,6 +255,21 @@ XPLPUBFUN bool XPLCALL
 	#pragma message("WARNING: no database module, xpl:sql is unusable")
 #endif
 
+#ifdef _XEF_CRYPTO_OPENSSL
+	#ifdef _XEF_HAS_CRYPTO
+		#error XEF: another cryptography library is used already
+	#else
+		#define _XEF_HAS_CRYPTO
+	#endif
+#endif
+
+#ifndef _XEF_HAS_CRYPTO
+	#error XPL core functionality requires a XEF cryptography implementation
+#endif
+
+/* ================ *
+ * startup/shutdown *
+ * ================ */
 #ifdef _XEF_HAS_REGEX
 bool xefStartupRegex(xefStartupParamsPtr params);
 void xefShutdownRegex(void);
@@ -218,6 +288,11 @@ void xefShutdownDatabase(void);
 #ifdef _XEF_HAS_HTML_CLEANER
 bool xefStartupHtmlCleaner(xefStartupParamsPtr params);
 void xefShutdownHtmlCleaner(void);
+#endif
+
+#ifdef _XEF_HAS_CRYPTO
+bool xefStartupCrypto(xefStartupParamsPtr params);
+void xefShutdownCrypto(void);
 #endif
 
 #ifdef __cplusplus

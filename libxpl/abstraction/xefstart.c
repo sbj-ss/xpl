@@ -28,9 +28,14 @@ static xefStartStopStep xef_start_stop_steps[] =
 	{ NULL, NULL },
 #endif
 #ifdef _XEF_HAS_HTML_CLEANER
-	{ xefStartupHtmlCleaner, xefShutdownHtmlCleaner }
+	{ xefStartupHtmlCleaner, xefShutdownHtmlCleaner },
 #else
-	{ NULL, NULL }
+	{ NULL, NULL },
+#endif
+#ifdef _XEF_HAS_CRYPTO
+	{ xefStartupCrypto, xefShutdownCrypto },
+#else
+	{ NULL, NULL },
 #endif
 };
 

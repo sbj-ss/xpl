@@ -2,63 +2,32 @@
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
-#include "openssl/md4.h"
-#include "openssl/md5.h"
-#include "openssl/ripemd.h"
-#include "openssl/sha.h"
-#include "openssl/whrlpool.h"
+#include <libxpl/abstraction/xef.h>
 
 void xplCmdDigestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
-typedef unsigned char* (*xplCmdDigestFunc)(const unsigned char *d, size_t n, unsigned char *md);
-
-typedef struct _xplCmdDigestMethodDesc
-{
-	xmlChar *name;
-	xplCmdDigestFunc fn;
-	size_t size;
-} xplCmdDigestMethodDesc, *xplCmdDigestMethodDescPtr;
-
-static xplCmdDigestMethodDesc digest_methods[] =
-{
-	{ BAD_CAST "md4", MD4, MD4_DIGEST_LENGTH },
-	{ BAD_CAST "md5", MD5, MD5_DIGEST_LENGTH },
-	{ BAD_CAST "ripemd-160", RIPEMD160, RIPEMD160_DIGEST_LENGTH },
-	{ BAD_CAST "sha1", SHA1, SHA_DIGEST_LENGTH },
-	{ BAD_CAST "sha-224", SHA224, SHA224_DIGEST_LENGTH },
-	{ BAD_CAST "sha-256", SHA256, SHA256_DIGEST_LENGTH },
-	{ BAD_CAST "sha-384", SHA384, SHA384_DIGEST_LENGTH },
-	{ BAD_CAST "sha-512", SHA512, SHA512_DIGEST_LENGTH },
-	{ BAD_CAST "whirlpool", (xplCmdDigestFunc) WHIRLPOOL, WHIRLPOOL_DIGEST_LENGTH },
-	{ NULL, NULL, 0 }
-};
-
 typedef struct _xplCmdDigestParams
 {
-	xplCmdDigestMethodDescPtr method;
+	xefCryptoDigestMethod method;
 } xplCmdDigestParams, *xplCmdDigestParamsPtr;
 
 static const xplCmdDigestParams params_stencil =
 {
-	.method = NULL
+	.method = 0
 };
 
-static xmlChar* _getMethod(xplCommandInfoPtr info, const xmlChar* raw_value, void **result)
-{
-	xplCmdDigestMethodDescPtr desc = digest_methods;
-
-	UNUSED_PARAM(info);
-	while (desc->name)
-	{
-		if (!xmlStrcasecmp(desc->name, raw_value))
-		{
-			*result = desc;
-			return NULL;
-		}
-		desc++;
-	}
-	return xplFormatMessage(BAD_CAST "unknown digest method '%s'", raw_value);
-}
+static xplCmdParamDictValue method_dict[] = {
+	{ BAD_CAST "md4", XEF_CRYPTO_DIGEST_METHOD_MD4 },
+	{ BAD_CAST "md5", XEF_CRYPTO_DIGEST_METHOD_MD5 },
+	{ BAD_CAST "ripemd-160", XEF_CRYPTO_DIGEST_METHOD_RIPEMD160 },
+	{ BAD_CAST "sha1", XEF_CRYPTO_DIGEST_METHOD_SHA1 },
+	{ BAD_CAST "sha-224", XEF_CRYPTO_DIGEST_METHOD_SHA224 },
+	{ BAD_CAST "sha-256", XEF_CRYPTO_DIGEST_METHOD_SHA256 },
+	{ BAD_CAST "sha-384", XEF_CRYPTO_DIGEST_METHOD_SHA384 },
+	{ BAD_CAST "sha-512", XEF_CRYPTO_DIGEST_METHOD_SHA512 },
+	{ BAD_CAST "whirlpool", XEF_CRYPTO_DIGEST_METHOD_WHIRLPOOL },
+	{ NULL, 0 }
+};
 
 xplCommand xplDigestCommand =
 {
@@ -70,13 +39,8 @@ xplCommand xplDigestCommand =
 	.parameters = {
 		{
 			.name = BAD_CAST "method",
-			.type = XPL_CMD_PARAM_TYPE_PTR_CUSTOM_GETTER,
-			.extra = {
-				.ptr_fn = {
-					.getter = _getMethod,
-					.deallocator = NULL
-				}
-			},
+			.type = XPL_CMD_PARAM_TYPE_DICT,
+			.extra.dict_values = method_dict,
 			.required = true,
 			.value_stencil = &params_stencil.method
 		}, {
@@ -89,10 +53,22 @@ void xplCmdDigestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdDigestParamsPtr params = (xplCmdDigestParamsPtr) commandInfo->params;
 	xmlNodePtr ret;
-	unsigned char *digest;
+	xefCryptoDigestParams dp;
 
-	digest = params->method->fn(commandInfo->content, xmlStrlen(commandInfo->content), NULL);
+	if (!(dp.input = commandInfo->content))
+	{
+		ASSIGN_RESULT(NULL, false, true);
+		return;
+	}
+	dp.input_size = xmlStrlen(dp.input);
+	dp.digest_method = params->method;
+	if (!xefCryptoDigest(&dp))
+	{
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "digest error: %s", dp.error? dp.error: BAD_CAST "unknown error"), true, true);
+		return;
+	}
 	ret = xmlNewDocText(commandInfo->document->document, NULL);
-	ret->content = xstrBufferToHex(digest, params->method->size, false);
+	ret->content = xstrBufferToHex(dp.digest, dp.digest_size, false);
+	XPL_FREE(dp.digest);
 	ASSIGN_RESULT(ret, false, true);
 }
