@@ -192,6 +192,7 @@ typedef struct _xefCryptoRandomParams
 	/* input */
 	bool secure;
 	size_t size;
+	bool alloc_bytes;
 	/* output */
 	unsigned char *bytes; /* RAW, not hex/base64/etc. Must be freed */
 	xmlChar *error; /* must be freed */

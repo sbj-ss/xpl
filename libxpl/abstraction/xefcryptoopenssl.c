@@ -72,7 +72,17 @@ bool xefCryptoRandom(xefCryptoRandomParamsPtr params)
 		params->error = BAD_CAST XPL_STRDUP("params->size must be non-zero");
 		return false;
 	}
-	if (!(params->bytes = (unsigned char*) XPL_MALLOC(params->size)))
+	if (params->alloc_bytes && params->bytes)
+	{
+		params->error = BAD_CAST XPL_STRDUP("alloc_bytes is set but bytes is not NULL");
+		return false;
+	}
+	if (!params->alloc_bytes && !params->bytes)
+	{
+		params->error = BAD_CAST XPL_STRDUP("alloc_bytes is not set but bytes is NULL");
+		return false;
+	}
+	if (params->alloc_bytes && !(params->bytes = (unsigned char*) XPL_MALLOC(params->size)))
 	{
 		params->error = BAD_CAST XPL_STRDUP("out of memory");
 		return false;
@@ -85,5 +95,6 @@ bool xefCryptoRandom(xefCryptoRandomParamsPtr params)
 		params->error = BAD_CAST XPL_STRDUP(ERR_error_string(ERR_get_error(), NULL));
 		return false;
 	}
+	params->error = NULL;
 	return true;
 }
