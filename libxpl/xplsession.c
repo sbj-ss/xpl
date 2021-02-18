@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include <openssl/ripemd.h>
+#include <libxpl/abstraction/xef.h>
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
@@ -364,9 +364,9 @@ bool xplSessionGetSaMode(xplSessionPtr session)
 
 bool xplSessionSetSaMode(xplSessionPtr session, bool enable, xmlChar *password)
 {
-	unsigned char* digest;
 	xmlChar* digest_str;
 	bool ret;
+	xefCryptoDigestParams dp;
 
 	if (!session)
 		return false;
@@ -377,14 +377,27 @@ bool xplSessionSetSaMode(xplSessionPtr session, bool enable, xmlChar *password)
 	}
 	if (session->sa_mode)
 		return true; /* already set */
-	digest = RIPEMD160((const unsigned char*) password, xmlStrlen(password), NULL);
-	digest_str = xstrBufferToHex(digest, RIPEMD160_DIGEST_LENGTH, false);
+	if ((!cfgSaPassword || !*cfgSaPassword) && (!password || !*password))
+	{
+		session->sa_mode = true;
+		return true;
+	}
+	dp.input = password;
+	dp.input_size = xmlStrlen(password);
+	dp.digest_method = XEF_CRYPTO_DIGEST_METHOD_RIPEMD160;
+	if (!xefCryptoDigest(&dp))
+	{
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return false;
+	}
+	digest_str = xstrBufferToHex(dp.digest, dp.digest_size, false);
 	if (!strcmp((const char*) cfgSaPassword, (const char*) digest_str))
 	{
 		session->sa_mode = true;
 		ret = true;
 	} else
 		ret = false;
+	XPL_FREE(dp.digest);
 	XPL_FREE(digest_str);
 	return ret;
 }
