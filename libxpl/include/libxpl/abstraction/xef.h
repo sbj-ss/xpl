@@ -47,7 +47,7 @@ typedef struct _xefFetchDocumentParams
 	xmlChar *document;			/* must be freed. May contain zeros inside */
 	size_t document_size;		/* in bytes including terminating zero */
 	xmlChar *real_uri;			/* must be freed */
-	int status_code;			/* may be undefined - TODO ??? */
+	int status_code;			/* may be undefined due to errors before actual fetching */
 	xmlChar *error;				/* must be freed */
 } xefFetchDocumentParams, *xefFetchDocumentParamsPtr;
 
