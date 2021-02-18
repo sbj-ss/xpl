@@ -205,7 +205,7 @@ $(TEST_BIN): libxpl$(SO_EXT) $(TEST_OBJS)
 	$(CC) $(CFLAGS) $(TEST_OBJS) -o $@ -L../xts -L. $(LIBS) -lxts
 
 test: $(TEST_BIN)
-	LD_LIBRARY_PATH=. $(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
+	LD_LIBRARY_PATH=.:$$LD_LIBRARY_PATH $(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
 	
 clean:
 	rm -rf $(BUILD_DIR) *$(SO_EXT)
