@@ -1,4 +1,4 @@
-#include <openssl/ripemd.h>
+#include <libxpl/abstraction/xef.h>
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
@@ -546,7 +546,7 @@ xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool b
 {
 	xplConfigEntryPtr p;
 	int int_value = 0;
-	unsigned char *digest;
+	xefCryptoDigestParams dp;
 
 	p = (xplConfigEntryPtr) xmlHashLookup(config_entries_hash, optionName);
 	if (!p)
@@ -565,8 +565,18 @@ xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool b
 		case CFG_TYPE_STRING:
 			if (p->options & CFG_OPTION_STORED_AS_HASH)
 			{
-				digest = RIPEMD160((unsigned char*) value, xmlStrlen(value), NULL);
-				value = xstrBufferToHex(digest, RIPEMD160_DIGEST_LENGTH, false);
+				if (value)
+				{
+					dp.input = value;
+					dp.input_size = xmlStrlen(value);
+					dp.digest_method = XEF_CRYPTO_DIGEST_METHOD_RIPEMD160;
+					if (!xefCryptoDigest(&dp))
+						return XPL_SET_OPTION_INTERNAL_ERROR;
+				} else
+					dp.digest = NULL;
+				value = xstrBufferToHex(dp.digest, dp.digest_size, false);
+				if (dp.digest)
+					XPL_FREE(dp.digest);
 				*((xmlChar**) p->value_ptr) = value;
 			} else
 				*((xmlChar**) p->value_ptr) = BAD_CAST XPL_STRDUP((char*) value);
