@@ -88,7 +88,7 @@ void xplSessionManagerCleanup()
 }
 
 /* manager-level */
-static xplSessionPtr _sessionCreateInner(const xmlChar *id)
+static xplSessionPtr _sessionCreateInner(xmlChar *id)
 {
 	xplSessionPtr ret;
 	xmlNodePtr root;
@@ -108,14 +108,14 @@ static xplSessionPtr _sessionCreateInner(const xmlChar *id)
 	(void) xmlNewProp(root, BAD_CAST "id", id);
 	xplSetChildren((xmlNodePtr) ret->doc, root);
 	time(&ret->init_ts);
-	ret->id = BAD_CAST XPL_STRDUP((char*) id);
+	ret->id = id;
 	ret->valid = true;
 	ret->just_created = true;
 	xmlHashAddEntry(session_mgr, id, (void*) ret);
 	return ret;
 }
 
-static xplSessionPtr _sessionLookupInternal(const xmlChar *id)
+static xplSessionPtr _sessionLookupInternal(const xmlChar *id) // eats id
 {
 	xplSessionPtr ret;
 
@@ -135,6 +135,7 @@ static xplSessionPtr _sessionLookupInternal(const xmlChar *id)
 xplSessionPtr xplSessionCreate(const xmlChar *id)
 {
 	xplSessionPtr s;
+	xmlChar *id_copy;
 
 	if (!session_mgr)
 		return NULL;
@@ -145,7 +146,10 @@ xplSessionPtr xplSessionCreate(const xmlChar *id)
 	}
 	s = _sessionLookupInternal(id);
 	if (!s)
-		s = _sessionCreateInner(id);
+	{
+		id_copy = BAD_CAST XPL_STRDUP((char*) id);
+		s = _sessionCreateInner(id_copy);
+	}
 	if (!xprMutexRelease(&session_interlock))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	return s;
@@ -153,9 +157,11 @@ xplSessionPtr xplSessionCreate(const xmlChar *id)
 
 xplSessionPtr xplSessionCreateWithAutoId()
 {
-	xmlChar id[XPL_SESSION_ID_SIZE + 1];
+	xmlChar *id;
+	unsigned char raw_id[XPL_SESSION_ID_SIZE];
 	bool flag = true;
 	xplSessionPtr ret;
+	xefCryptoRandomParams rp;
 
 	if (!session_mgr)
 		return NULL;
@@ -164,15 +170,16 @@ xplSessionPtr xplSessionCreateWithAutoId()
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		return NULL;
 	}
+	rp.secure = true;
+	rp.alloc_bytes = false;
+	rp.size = XPL_SESSION_ID_SIZE;
+	rp.bytes = raw_id;
 	while (flag)
 	{
-// TODO move this to XPR
-#if defined(_MSC_VER) || defined (__MINGW32__)
-		snprintf((char*) id, sizeof(id), "%08X", rand());
-#else
-		snprintf((char*) id, sizeof(id), "%08X", (unsigned int) lrand48());
-#endif
-		flag = (_sessionLookupInternal(id) != NULL);
+		xefCryptoRandom(&rp); // TODO: check result
+		id = xstrBufferToHex(rp.bytes, rp.size, false);
+		if ((flag = !!_sessionLookupInternal(id)))
+			XPL_FREE(id);
 	}
 	ret = _sessionCreateInner(id);
 	if (!xprMutexRelease(&session_interlock))

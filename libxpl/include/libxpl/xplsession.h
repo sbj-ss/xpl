@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 /* session object */
-#define XPL_SESSION_ID_SIZE 8
+#define XPL_SESSION_ID_SIZE 16
 typedef struct _xplSession* xplSessionPtr;
 /* start/stop */
 XPLPUBFUN bool XPLCALL
