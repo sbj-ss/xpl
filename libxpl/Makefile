@@ -4,7 +4,7 @@
 #******************************************
 
 INCLUDE = -I./include -I./tests/include -I../xts/include -I/usr/include/libxml2
-LIBS = -lxml2 -lxpl -lonig -ltidy -lcrypto -lidn -lodbc
+LIBS = -lxml2 -lxpl -lonig -ltidy -lcrypto -lidn -lodbc -lcurl -lyajl
 WARNINGS = -Wall -Wmissing-prototypes -Wshadow -Werror -Wextra 
 FEATURES = -D_XEF_TRANSPORT_CURL -D_XEF_HTML_CLEANER_TIDY -D_XEF_DB_ODBC
 CFLAGS = -fpic -D_IN_DLL $(FEATURES) $(WARNINGS)
@@ -205,7 +205,7 @@ $(TEST_BIN): libxpl$(SO_EXT) $(TEST_OBJS)
 	$(CC) $(CFLAGS) $(TEST_OBJS) -o $@ -L../xts -L. $(LIBS) -lxts
 
 test: $(TEST_BIN)
-	$(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
+	LD_LIBRARY_PATH=. $(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
 	
 clean:
 	rm -rf $(BUILD_DIR) *$(SO_EXT)

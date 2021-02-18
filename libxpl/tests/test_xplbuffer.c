@@ -11,7 +11,7 @@
 static int flush_calls = 0;
 static xmlChar *flush_buf = NULL;
 
-static int _flushToDevNullAndSucceed(void *data, size_t size)
+static int _flushToDevNullAndSucceed(const void *data, size_t size)
 {
 	UNUSED_PARAM(data);
 	UNUSED_PARAM(size);
@@ -20,7 +20,7 @@ static int _flushToDevNullAndSucceed(void *data, size_t size)
 	return 0;
 }
 
-static int _flushToDevNullAndFail(void *data, size_t size)
+static int _flushToDevNullAndFail(const void *data, size_t size)
 {
 	UNUSED_PARAM(data);
 	UNUSED_PARAM(size);
@@ -28,7 +28,7 @@ static int _flushToDevNullAndFail(void *data, size_t size)
 	return -1;
 }
 
-static int _flushToStrcat(void *data, size_t size)
+static int _flushToStrcat(const void *data, size_t size)
 {
 	if (flush_buf)
 		flush_buf = xmlStrncat(flush_buf, data, size);
