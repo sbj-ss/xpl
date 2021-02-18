@@ -33,7 +33,7 @@ typedef struct _ParseFormCtxt
 	xmlChar *file_name;
 } ParseFormCtxt, *ParseFormCtxtPtr;
 
-static int field_found(const char *key, const char *filename, char *path, size_t pathlen, void *user_data)
+static int _fieldFound(const char *key, const char *filename, char *path, size_t pathlen, void *user_data)
 {
 	ParseFormCtxtPtr parse_ctxt = (ParseFormCtxtPtr) user_data;
 
@@ -47,7 +47,7 @@ static int field_found(const char *key, const char *filename, char *path, size_t
 		return MG_FORM_FIELD_STORAGE_GET; /* regular parameter */
 }
 
-static int field_get(const char *key, const char *value, size_t valuelen, void *user_data)
+static int _fieldGet(const char *key, const char *value, size_t valuelen, void *user_data)
 {
 	ParseFormCtxtPtr parse_ctxt = (ParseFormCtxtPtr) user_data;
 
@@ -55,7 +55,7 @@ static int field_get(const char *key, const char *value, size_t valuelen, void *
 	return MG_FORM_FIELD_HANDLE_NEXT; /* TODO how do we determine there're more chunks? */
 }
 
-static int field_store(const char *path, long long file_size, void *user_data)
+static int _fieldStore(const char *path, long long file_size, void *user_data)
 {
 	ParseFormCtxtPtr parse_ctxt = (ParseFormCtxtPtr) user_data;
 
@@ -79,9 +79,9 @@ xplParamsPtr buildParams(struct mg_connection *conn, const struct mg_request_inf
 	xplParamsPtr params;
 	ParseFormCtxt parse_ctxt;
 	struct mg_form_data_handler fdh = {
-		.field_found = field_found,
-		.field_get = field_get,
-		.field_store = field_store,
+		.field_found = _fieldFound,
+		.field_get = _fieldGet,
+		.field_store = _fieldStore,
 	};
 	int i;
 
@@ -345,10 +345,6 @@ int serveXpl(struct mg_connection *conn, void *user_data)
 			http_code = 500;
 	}
 done:
-	if (doc && doc->prologue)
-		xplDocumentFree(doc->prologue);
-	if (doc && doc->epilogue)
-		xplDocumentFree(doc->epilogue);
 	if (doc)
 		xplDocumentFree(doc);
 	if (params)

@@ -8,11 +8,11 @@ LIBS = -lxml2 -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -ldl -lpthread -lcivetwe
 WARNINGS = -Wall -Werror
 CFLAGS = -L../libxpl -L../civetweb $(WARNINGS)
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=address -fsanitize=undefined -fno-sanitize-recover -fstack-protector
+CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=undefined -fno-sanitize-recover -fstack-protector
 endif
 
 BUILD_DIR = build
-SRC = cw.c glue.c main.c
+SRC = cw_wrapper.c glue.c main.c
 OBJS = $(SRC:%.c=$(BUILD_DIR)/%.o)
 
 .DEFAULT_GOAL = all

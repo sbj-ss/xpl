@@ -5,20 +5,10 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xplstart.h>
+#include <cw_wrapper.h>
 #include <glue.h>
-#include <cw.h>
 
 static struct mg_context *ctx;
-
-#ifdef _WIN32
-// TODO move to cw.c
-static BOOL WINAPI win_signal_handler(DWORD reason)
-{
-	exit_flag = reason;
-	shutdownServer();
-	return TRUE;
-}
-#endif
 
 static xmlChar* getAppType(void)
 {
@@ -43,26 +33,26 @@ void handle_non_cw_args(int argc, char **argv)
 	 * This is very useful for diagnosis. */
 	if (argc > 1 && !strcmp(argv[1], "-I"))
 	{
-		print_info();
+		cwPrintInfo();
 		exit(EXIT_SUCCESS);
 	}
 	/* Edit passwords file: Add user or change password, if -A option is specified */
 	if (argc > 1 && !strcmp(argv[1], "-A"))
 	{
 		if (argc != 6)
-			show_usage_and_exit(argv[0]);
+			cwShowUsageAndExit(argv[0]);
 		exit(mg_modify_passwords_file(argv[2], argv[3], argv[4], argv[5])? EXIT_SUCCESS: EXIT_FAILURE);
 	}
 	/* Edit passwords file: Remove user, if -R option is specified */
 	if (argc > 1 && !strcmp(argv[1], "-R"))
 	{
 		if (argc != 5)
-			show_usage_and_exit(argv[0]);
+			cwShowUsageAndExit(argv[0]);
 		exit(mg_modify_passwords_file(argv[2], argv[3], argv[4], NULL)? EXIT_SUCCESS: EXIT_FAILURE);
 	}
 	/* Show usage if -h or --help options are specified */
 	if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "-H") || !strcmp(argv[1], "--help")))
-		show_usage_and_exit(argv[0]);
+		cwShowUsageAndExit(argv[0]);
 }
 
 int main(int argc, char* argv[])
@@ -71,8 +61,8 @@ int main(int argc, char* argv[])
 	struct mg_callbacks callbacks;
 
 	xplInitMemory(xplDefaultDebugAllocation, xplDefaultUseTcmalloc);
-	init_server_name();
-	init_system_info();
+	cwInitServerName();
+	cwInitSystemInfo();
 	mg_init_library(0);
 	handle_non_cw_args(argc, argv);
 
@@ -84,14 +74,11 @@ int main(int argc, char* argv[])
 		mg_exit_library();
 		exit(EXIT_FAILURE);
 	}
-#ifdef _WIN32
-	SetConsoleCtrlHandler(&win_signal_handler, TRUE);
-#endif
 	xprSetShutdownFunc(shutdownServer);
 	xplSetGetAppTypeFunc(getAppType);
 
 	memset(&callbacks, 0, sizeof(callbacks));
-	if (!(ctx = start_civetweb(argc, argv, NULL, &callbacks)))
+	if (!(ctx = cwStart(argc, argv, NULL, &callbacks)))
 	{
 		xplDisplayMessage(XPL_MSG_ERROR, BAD_CAST "Cannot initialize CivetWeb context");
 		xplShutdownEngine();
@@ -114,7 +101,7 @@ int main(int argc, char* argv[])
 		xprSleep(100);
 	shutdownServer();
 	xprSleep(1000);
-	free_system_info();
+	cwFreeSystemInfo();
 	mg_exit_library();
 	xplCleanupMemory();
 	return (EXIT_SUCCESS);
