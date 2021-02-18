@@ -283,8 +283,7 @@ cleanup:
 	return ok;
 }
 
-// TODO rbAddStringToBuf
-#define ADD_DATA(s) rbAddDataToBuf(buf, s, xmlStrlen(BAD_CAST s))
+#define ADD_DATA(s) rbAddStringToBuf(buf, BAD_CAST (s))
 
 static bool _testFlush(xtsContextPtr ctxt)
 {
