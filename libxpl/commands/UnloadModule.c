@@ -37,7 +37,7 @@ void xplCmdUnloadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 	xplCmdUnloadModuleParamsPtr params = (xplCmdUnloadModuleParamsPtr) commandInfo->params;
 
 	xplLockThreads(true);
-	xplUnloadModule(params->name); // TODO check if loaded
+	xplUnloadModule(params->name); // ignore modules that haven't been loaded
 	xplLockThreads(false);
 	ASSIGN_RESULT(NULL, false, true);
 }
