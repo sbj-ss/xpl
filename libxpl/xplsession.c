@@ -176,7 +176,14 @@ xplSessionPtr xplSessionCreateWithAutoId()
 	rp.bytes = raw_id;
 	while (flag)
 	{
-		xefCryptoRandom(&rp); // TODO: check result
+		/* We don't ask for allocation so the only reason for xefCryptoRandom() to fail
+		   is lack of entropy. Keep retrying until the function succeeds. */
+		while (!xefCryptoRandom(&rp))
+		{
+			if (rp.error)
+				XPL_FREE(rp.error);
+			xprSleep(10);
+		}
 		id = xstrBufferToHex(rp.bytes, rp.size, false);
 		if ((flag = !!_sessionLookupInternal(id)))
 			XPL_FREE(id);
