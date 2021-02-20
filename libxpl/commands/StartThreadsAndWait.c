@@ -1,4 +1,6 @@
 #include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
 
 void xplCmdStartThreadsAndWaitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
@@ -34,8 +36,11 @@ void xplCmdStartThreadsAndWaitEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 {
 	xplCmdStartThreadsAndWaitParamsPtr params = (xplCmdStartThreadsAndWaitParamsPtr) commandInfo->params;
 
-	if (commandInfo->document->has_suspended_threads)
+	if (!commandInfo->document->suspended_thread_docs)
 	{
+		if (cfgWarnOnNoAwaitableThreads)
+			xplDisplayWarning(commandInfo->element, BAD_CAST "no suspended threads to start");
+	} else {
 		xplStartDelayedThreads(commandInfo->document);
 		xplWaitForChildThreads(commandInfo->document);
 	}

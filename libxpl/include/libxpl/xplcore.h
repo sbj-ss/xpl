@@ -45,35 +45,33 @@ typedef struct _xplDocument xplDocument, *xplDocumentPtr;
 /* XPL document */
 struct _xplDocument
 {
-	xmlChar *app_path;				/* "application" root */
-	xmlChar *filename;				/* full path to file the document was created from */
-	xmlChar *origin;				/* initial document text if it was created from memory */
-	xmlChar *error;					/* early parsing error */
-	xplParamsPtr environment;		/* external parameters */
-	xplSessionPtr session;			/* session variables */
-	xmlDocPtr document;				/* underlying XML document */
-	bool expand;					/* current expansion mode */
-	int recursion_level;			/* protection from infinite loops in macros */
-	xmlXPathContextPtr xpath_ctxt;	/* reusable XPath context */
-	xmlNodePtr fatal_content;		/* for xpl:fatal */
-	xplMacroPtr current_macro;		/* ditto */
-	xplError status;				/* processing status */
-	xmlChar *response;				/* for :set-response and app using the interpreter */
-	xmlNodePtr stack;				/* for :stack-xx */
-									/* threading support */
-	rbBufPtr threads;				/* spawned threads */
-	XPR_MUTEX thread_landing_lock;	/* ditto */
-	xmlNodePtr landing_point;		/* landing point in spawning document */
-	xplDocumentPtr parent;			/* spawning document */
-	bool async;						/* child running asynchronously */
-	bool has_suspended_threads;		/* ditto */
-	bool discard_suspended_threads;	/* discard threads that weren't ever started */
-	bool thread_was_suspended;		/* current thread with document was suspended */
-	int indent_spin;				/* for :text */
-	xmlNsPtr root_xpl_ns;			/* for fast XPL namespace checking */
-	XPR_TIME profile_start_time;	/* for execution timing */
-	rbBufPtr deleted_nodes;			/* for deferred node deletion */
-	int iterator_spin;				/* for :with */
+	xmlChar *app_path;					/* "application" root */
+	xmlChar *filename;					/* full path to file the document was created from */
+	xmlChar *origin;					/* initial document text if it was created from memory */
+	xmlChar *error;						/* early parsing error */
+	xplParamsPtr environment;			/* external parameters */
+	xplSessionPtr session;				/* session variables */
+	xmlDocPtr document;					/* underlying XML document */
+	bool expand;						/* current expansion mode */
+	int recursion_level;				/* protection from infinite loops in macros */
+	xmlXPathContextPtr xpath_ctxt;		/* reusable XPath context */
+	xmlNodePtr fatal_content;			/* for xpl:fatal */
+	xplMacroPtr current_macro;			/* ditto */
+	xplError status;					/* processing status */
+	xmlChar *response;					/* for :set-response and app using the interpreter */
+	xmlNodePtr stack;					/* for :stack-xx */
+										/* threading support */
+	rbBufPtr thread_handles;			/* spawned threads */
+	rbBufPtr suspended_thread_docs; 	/* sub-documents waiting to be spawned */
+	XPR_MUTEX thread_landing_lock;		/* the "master" doc owns this */
+	xmlNodeSetPtr landing_point_path;	/* xmlNodePtr[] from landing point to doc root */
+	xplDocumentPtr parent;				/* spawning document */
+	bool async;							/* child running asynchronously */
+	int indent_spin;					/* for :text */
+	xmlNsPtr root_xpl_ns;				/* for fast XPL namespace checking */
+	XPR_TIME profile_start_time;		/* for execution timing */
+	rbBufPtr deleted_nodes;				/* for deferred node deletion */
+	int iterator_spin;					/* for :with */
 };
 
 XPLPUBFUN xplDocumentPtr XPLCALL
@@ -95,8 +93,12 @@ XPLPUBFUN void XPLCALL
 	xplWaitForChildThreads(xplDocumentPtr doc);
 XPLPUBFUN bool XPLCALL
 	xplStartChildThread(xplDocumentPtr doc, xplDocumentPtr child, bool immediateStart);
-XPLPUBFUN void XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplStartDelayedThreads(xplDocumentPtr doc);
+XPLPUBFUN void XPLCALL
+	xplDiscardSuspendedThreadDocs(xplDocumentPtr doc);
+XPLPUBFUN void XPLCALL
+	xplFinalizeDocThreads(xplDocumentPtr doc, bool force_mutex_cleanup);
 #endif
 
 /* per-document node stack (for :stack-xx) */

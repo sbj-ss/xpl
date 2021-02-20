@@ -149,13 +149,22 @@ void xplDeferNodeListDeletion(rbBufPtr buf, xmlNodePtr cur)
 	}
 }
 
+static bool _ensureDeletedNodesSupport(xplDocumentPtr doc)
+{
+	if (doc->deleted_nodes)
+		return true;
+	return !!(doc->deleted_nodes = rbCreateBufParams(32, RB_GROW_DOUBLE, 2));
+}
+
 void xplDocDeferNodeDeletion(xplDocumentPtr doc, xmlNodePtr cur)
 {
 	if (!doc || !cur)
 		return;
 	if (cfgFoolproofDestructiveCommands && doc->iterator_spin)
+	{
+		_ensureDeletedNodesSupport(doc);
 		xplDeferNodeDeletion(doc->deleted_nodes, cur);
-	else {
+	} else {
 		xmlUnlinkNode(cur);
 		xmlFreeNode(cur);
 	}
@@ -166,8 +175,10 @@ void xplDocDeferNodeListDeletion(xplDocumentPtr doc, xmlNodePtr cur)
 	if (!doc || !cur)
 		return;
 	if (cfgFoolproofDestructiveCommands && doc->iterator_spin)
+	{
+		_ensureDeletedNodesSupport(doc);
 		xplDeferNodeListDeletion(doc->deleted_nodes, cur);
-	else
+	} else
 		xmlFreeNodeList(cur);
 }
 
@@ -267,12 +278,6 @@ xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xpl
 		return NULL;
 	}
 	doc->xpath_ctxt->error = _xpathDummyError;
-	doc->deleted_nodes = rbCreateBufParams(32, RB_GROW_DOUBLE, 2);
-	if (!doc->deleted_nodes)
-	{
-		xplDocumentFree(doc);
-		return NULL;
-	}
 	doc->expand = true;
 	doc->session = aSession;
 	doc->environment = aEnvironment;
@@ -338,44 +343,59 @@ void xplDocumentFree(xplDocumentPtr doc)
 	if (!doc)
 		return;
 #ifdef _THREADING_SUPPORT
-	if (doc->threads)
-	{
-		/* better safe than sorry */
-		doc->discard_suspended_threads = true;
-		xplStartDelayedThreads(doc);
-		xplWaitForChildThreads(doc);
-		rbFreeBuf(doc->threads);
-		if (!xprMutexCleanup(&doc->thread_landing_lock))
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-	}
+	xplFinalizeDocThreads(doc, false);
 #endif
-	if (doc->app_path) XPL_FREE(doc->app_path);
-	if (doc->filename) XPL_FREE(doc->filename);
-	if (doc->error) XPL_FREE(doc->error);
-	if (doc->xpath_ctxt) xmlXPathFreeContext(doc->xpath_ctxt);
-	if (doc->response) XPL_FREE(doc->response);
+	if (doc->app_path)
+		XPL_FREE(doc->app_path);
+	if (doc->filename)
+		XPL_FREE(doc->filename);
+	if (doc->error)
+		XPL_FREE(doc->error);
+	if (doc->async && doc->environment)
+		xplParamsFree(doc->environment);
+	if (doc->xpath_ctxt)
+		xmlXPathFreeContext(doc->xpath_ctxt);
+	if (doc->response)
+		XPL_FREE(doc->response);
 	xplClearDocStack(doc);
-	xplDeleteDeferredNodes(doc->deleted_nodes);
-	rbFreeBuf(doc->deleted_nodes);
-	if (doc->document) xmlFreeDoc(doc->document);
+	if (doc->landing_point_path)
+		xmlXPathFreeNodeSet(doc->landing_point_path);
+	if (doc->deleted_nodes)
+	{
+		xplDeleteDeferredNodes(doc->deleted_nodes);
+		rbFreeBuf(doc->deleted_nodes);
+	}
+	if (doc->document)
+		xmlFreeDoc(doc->document);
 	XPL_FREE(doc);
 }
 
 #ifdef _THREADING_SUPPORT
-void xplEnsureDocThreadSupport(xplDocumentPtr doc)
+bool xplEnsureDocThreadSupport(xplDocumentPtr doc)
 {
-	if (doc->threads)
-		return;
+	if (doc->thread_handles)
+		return true;
 	if (!xprMutexInit(&doc->thread_landing_lock))
 	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		return false;
 	}
-	doc->threads = rbCreateBufParams(2*sizeof(XPR_THREAD_HANDLE), RESZ_BUF_GROW_INCREMENT, 2*sizeof(XPR_THREAD_HANDLE));
-	if (!doc_threads)
+	if (!xprMutexAcquire(&doc->thread_landing_lock))
 	{
-		if (!xprMutexCleanup(&doc->thread_landing_lock))
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		xplFinalizeDocThreads(doc, true);
+		return false;
+	}
+	doc->thread_handles = rbCreateBufParams(2*sizeof(XPR_THREAD_HANDLE), RB_GROW_INCREMENT, 2*sizeof(XPR_THREAD_HANDLE));
+	if (!doc->thread_handles)
+	{
+		xplFinalizeDocThreads(doc, true);
+		return false;
+	}
+	doc->suspended_thread_docs = rbCreateBufParams(2*sizeof(xplDocumentPtr), RB_GROW_INCREMENT, 2*sizeof(xplDocumentPtr));
+	if (!doc->suspended_thread_docs)
+	{
+		xplFinalizeDocThreads(doc, false);
 		return false;
 	}
 	return true;
@@ -386,17 +406,26 @@ void xplWaitForChildThreads(xplDocumentPtr doc)
 	XPR_THREAD_HANDLE *handles;
 	size_t count;
 
-	if (!doc->threads)
+	if (!doc->thread_handles)
 		return;
-	handles = (XPR_THREAD_HANDLE*) rbGetBufContent(doc->threads);
-	count = rbGetBufContentSize(doc->threads) / sizeof(XPR_THREAD_HANDLE);
+	handles = (XPR_THREAD_HANDLE*) rbGetBufContent(doc->thread_handles);
+	count = rbGetBufContentSize(doc->thread_handles) / sizeof(XPR_THREAD_HANDLE);
 	if (count)
+	{
+		if (!xprMutexRelease(&doc->thread_landing_lock))
+		{
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
+			return; /* threads won't be unable to land */
+		}
 		xprWaitForThreads(handles, (int) count);
-	rbRewindBuf(doc->threads);
+		if (!xprMutexAcquire(&doc->thread_landing_lock))
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
+	}
+	rbRewindBuf(doc->thread_handles);
 }
 
 /* Thread wrapper */
-XPR_THREAD_ROUTINE_RESULT XPR_THREAD_ROUTINE_CALL xplDocThreadWrapper(XPR_THREAD_ROUTINE_PARAM p)
+static XPR_DECLARE_THREAD_ROUTINE(xplDocThreadWrapper, p)
 {
 	xplDocumentPtr doc = (xplDocumentPtr) p;
 	xmlNodePtr content;
@@ -405,67 +434,112 @@ XPR_THREAD_ROUTINE_RESULT XPR_THREAD_ROUTINE_CALL xplDocThreadWrapper(XPR_THREAD
 	if (!doc)
 	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		XPR_EXIT_THREAD(-1);
+		xprExitThread((XPR_THREAD_RETVAL) -1);
 	}
-	if (!(doc->parent->discard_suspended_threads && doc->thread_was_suspended))
+	err = xplDocumentApply(doc);
+	if ((err != XPL_ERR_NO_ERROR) && (err != XPL_ERR_FATAL_CALLED))
+		/* this shouldn't happen, but… */
+		content = xplCreateErrorNode(doc->landing_point_path->nodeTab[0], BAD_CAST "error processing child document: \"%s\"", xplErrorToString(err));
+	else {
+		/* root element is a stub */
+		xplMergeDocOldNamespaces(doc->document, doc->landing_point_path->nodeTab[0]->doc);
+		content = xplDetachChildren(doc->document->children);
+	}
+	xmlSetListDoc(content, doc->parent->document);
+	if (!xprMutexAcquire(&doc->parent->thread_landing_lock))
+		DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
+	if (xplVerifyAncestorOrSelfAxis(xplFirstElementNode(doc->parent->document->children), doc->landing_point_path))
+		xplDocDeferNodeDeletion(doc->parent, xplReplaceWithList(doc->landing_point_path->nodeTab[0], content));
+	else {
+		if (cfgWarnOnDeletedThreadLandingPoint)
+			xplDisplayWarning(xplFirstElementNode(doc->document->children), BAD_CAST "thread landing point deleted");
+		xmlFreeNodeList(content);
+	}
+	if (!xprMutexRelease(&doc->parent->thread_landing_lock))
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	if (doc->environment)
 	{
-		err = xplDocumentApply(doc);
-		if ((err != XPL_ERR_NO_ERROR) && (err != XPL_ERR_FATAL_CALLED))
-			/* this shouldn't happen, but… */
-			content = xplCreateErrorNode(doc->landing_point, BAD_CAST "error processing child document: \"%s\"", xplErrorToString(err));
-		else {
-			/* root element is a stub */
-			xplMergeDocOldNamespaces(doc->document, doc->landing_point>document);
-			content = xplDetachChildren((xmlNodePtr) doc->document->children);
-		}
-		if (!xprMutexAcquire(&doc->parent->thread_landing_lock))
-			DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
-		xmlSetListDoc(content, doc->parent->document);
-		xplDocDeferNodeDeletion(doc, xplReplaceWithList(doc->landing_point, content));
-		if (!xprMutexRelease(&doc->parent->thread_landing_lock))
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-	} else {
-		xmlUnlinkNode(doc->landing_point);
-		xmlFreeNode(doc->landing_point);
+		xplParamsFree(doc->environment);
+		doc->environment = NULL;
 	}
-done:
-	xplParamsFree(doc->environment);
 	doc->document->intSubset = NULL;
 	xplDocumentFree(doc);
-	XPR_EXIT_THREAD(0);
+	xprExitThread((XPR_THREAD_RETVAL) 0);
+	return (XPR_THREAD_RETVAL) 0; // make compiler happy
 }
 
 bool xplStartChildThread(xplDocumentPtr doc, xplDocumentPtr child, bool immediateStart)
 {
 	XPR_THREAD_HANDLE handle;
+
 	if (!doc || !child) 
 		return false;
 	if (!xplEnsureDocThreadSupport(doc))
 		return false;
-	XPR_START_THREAD_SUSPENDED(handle, xplDocThreadWrapper, (XPR_THREAD_ROUTINE_PARAM) child);
-	if (!handle)
-		return false;
-	rbAddDataToBuf(doc->threads, &handle, sizeof(XPR_THREAD_HANDLE));
-	child->thread_was_suspended = !immediateStart;
 	if (immediateStart)
-		XPR_RESUME_THREAD(handle);
-	else
-		doc->has_suspended_threads = true;
+	{
+		if (!(handle = xprStartThread(xplDocThreadWrapper, (XPR_THREAD_PARAM) child)))
+			return false;
+		return rbAddDataToBuf(doc->thread_handles, &handle, sizeof(XPR_THREAD_HANDLE)) == RB_RESULT_OK;
+	} else
+		return rbAddDataToBuf(doc->suspended_thread_docs, &child, sizeof(xplDocumentPtr)) == RB_RESULT_OK;
 	return true;
 }
 
-void xplStartDelayedThreads(xplDocumentPtr doc)
+bool xplStartDelayedThreads(xplDocumentPtr doc)
 {
 	size_t pool_size, i;
-	XPR_THREAD_HANDLE *handles;
-	if (!doc || !doc->threads || !doc->has_suspended_threads)
-		return;
-	pool_size = rbGetBufContentSize(doc->threads) / sizeof(XPR_THREAD_HANDLE);
-	for (i = 0, handles = rbGetBufContent(doc->threads); i < pool_size; i++, handles++)
+	xplDocumentPtr *docs;
+
+	if (!doc)
+		return false;
+	if (!doc->suspended_thread_docs)
+		return true;
+	pool_size = rbGetBufContentSize(doc->suspended_thread_docs) / sizeof(xplDocumentPtr);
+	for (i = 0, docs = rbGetBufContent(doc->suspended_thread_docs); i < pool_size; i++)
 	{
-		XPR_RESUME_THREAD(*handles);
+		// TODO minimize leaks if some threads fail to start
+		xplStartChildThread(doc, docs[i], true);
 	}
-	doc->has_suspended_threads = false;
+	rbRewindBuf(doc->suspended_thread_docs);
+	return true;
+}
+
+void xplDiscardSuspendedThreadDocs(xplDocumentPtr doc)
+{
+	size_t pool_size, i;
+	xplDocumentPtr *docs;
+
+	pool_size = rbGetBufContentSize(doc->suspended_thread_docs) / sizeof(xplDocumentPtr);
+	if (pool_size && cfgWarnOnNeverLaunchedThreads)
+		xplDisplayWarning(xplFirstElementNode(doc->document->children), BAD_CAST "%d suspended threads were never launched", pool_size);
+	for (i = 0, docs = rbGetBufContent(doc->suspended_thread_docs); i < pool_size; i++)
+		xplDocumentFree(docs[i]);
+	rbRewindBuf(doc->suspended_thread_docs);
+}
+
+void xplFinalizeDocThreads(xplDocumentPtr doc, bool force_mutex_cleanup)
+{
+	bool has_thread_support = doc->thread_handles || doc->suspended_thread_docs;
+
+	if (doc->thread_handles)
+	{
+		xplWaitForChildThreads(doc);
+		rbFreeBuf(doc->thread_handles);
+		doc->thread_handles = NULL;
+	}
+	if (doc->suspended_thread_docs)
+	{
+		xplDiscardSuspendedThreadDocs(doc);
+		rbFreeBuf(doc->suspended_thread_docs);
+		doc->suspended_thread_docs = NULL;
+	}
+	if (has_thread_support || force_mutex_cleanup)
+	{
+		xprMutexRelease(&doc->thread_landing_lock); // this may fail due to previous errors
+		if (!xprMutexCleanup(&doc->thread_landing_lock))
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
+	}
 }
 #endif
 
@@ -948,10 +1022,7 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 		return XPL_ERR_NO_PARSER;
 	if (doc->document)
 	{
-		root_element = doc->document->children;
-		while (root_element && root_element->type != XML_ELEMENT_NODE)
-			root_element = root_element->next;
-		if (root_element)
+		if ((root_element = xplFirstElementNode(doc->document->children)))
 		{
 			if (!doc->parent || doc->async)
 			{
@@ -964,14 +1035,7 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 			xplCheckRootNs(doc, root_element);
 			xplNodeApply(doc, root_element, &res);
 #ifdef _THREADING_SUPPORT
-			if (doc->threads)
-			{
-				doc->discard_suspended_threads = true;
-				xplStartDelayedThreads(doc);
-				xplWaitForChildThreads(doc);
-				rbFreeBuf(doc->threads);
-				doc->threads = NULL;
-			}
+			xplFinalizeDocThreads(doc, false);
 #endif
 			if (doc->fatal_content) /* xpl:fatal called */
 			{
