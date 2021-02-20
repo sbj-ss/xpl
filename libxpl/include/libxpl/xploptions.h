@@ -70,6 +70,7 @@ XPLPUBVAR int cfgUseConsoleColors;
 XPLPUBVAR int cfgUseWrappers;
 XPLPUBVAR int cfgWarnOnAncestorModificationAttempt;
 XPLPUBVAR int cfgWarnOnDeletedNodeReference;
+XPLPUBVAR int cfgWarnOnDeletedThreadLandingPoint;
 XPLPUBVAR int cfgWarnOnExpandedMacroContent;
 XPLPUBVAR int cfgWarnOnFatalErrorsInIsolatedDocuments;
 XPLPUBVAR int cfgWarnOnInvalidNodeType;
@@ -105,6 +106,7 @@ XPLPUBVAR xmlChar *cfgXplNsUri;
 #define DEFAULT_USE_WRAPPERS false
 #define DEFAULT_WARN_ON_ANCESTOR_MODIFICATION_ATTEMPT false
 #define DEFAULT_WARN_ON_DELETED_NODE_REFERENCE false
+#define DEFAULT_WARN_ON_DELETED_THREAD_LANDING_POINT false
 #define DEFAULT_WARN_ON_FATAL_ERRORS_IN_ISOLATED_DOCUMENTS false
 #define DEFAULT_WARN_ON_EXPANDED_MACRO_CONTENT false
 #define DEFAULT_WARN_ON_INVALID_NODE_TYPE false

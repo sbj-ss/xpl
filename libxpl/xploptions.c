@@ -32,6 +32,7 @@ int cfgUseConsoleColors;
 int cfgUseWrappers;
 int cfgWarnOnAncestorModificationAttempt;
 int cfgWarnOnDeletedNodeReference;
+int cfgWarnOnDeletedThreadLandingPoint;
 int cfgWarnOnExpandedMacroContent;
 int cfgWarnOnFatalErrorsInIsolatedDocuments;
 int cfgWarnOnInvalidXplNsUri;
@@ -218,6 +219,11 @@ xplConfigEntry config_entries[] =
 		.value_ptr = &cfgWarnOnDeletedNodeReference,
 		.name = BAD_CAST "WarnOnDeletedNodeReference",
 		.default_value = (void*) DEFAULT_WARN_ON_DELETED_NODE_REFERENCE
+	}, {
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnDeletedThreadLandingPoint,
+		.name = BAD_CAST "WarnOnDeletedThreadLandingPoint",
+		.default_value = (void*) DEFAULT_WARN_ON_DELETED_THREAD_LANDING_POINT
 	}, {
 		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgWarnOnExpandedMacroContent,
