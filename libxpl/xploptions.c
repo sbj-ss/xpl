@@ -42,6 +42,8 @@ int cfgWarnOnMacroRedefinition;
 int cfgWarnOnMissingInheritBase;
 int cfgWarnOnMissingMacroContent;
 int cfgWarnOnMultipleSelection;
+int cfgWarnOnNeverLaunchedThreads;
+int cfgWarnOnNoAwaitableThreads;
 int cfgWarnOnNoExpectParam;
 int cfgWarnOnUninitializedTimer;
 int cfgWarnOnUnknownCommand;
@@ -269,6 +271,16 @@ xplConfigEntry config_entries[] =
 		.value_ptr = &cfgWarnOnMultipleSelection,
 		.name = BAD_CAST "WarnOnMultipleSelection",
 		.default_value = (void*) DEFAULT_WARN_ON_MULTIPLE_SELECTION
+	}, {
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnNeverLaunchedThreads,
+		.name = BAD_CAST "WarnOnNeverLaunchedThreads",
+		.default_value = (void*) DEFAULT_WARN_ON_NEVER_LAUNCHED_THREADS
+	}, {
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgWarnOnNoAwaitableThreads,
+		.name = BAD_CAST "WarnOnNoAwaitableThreads",
+		.default_value = (void*) DEFAULT_WARN_ON_NO_AWAITABLE_THREADS
 	}, {
 		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgWarnOnNoExpectParam,

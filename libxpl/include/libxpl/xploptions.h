@@ -80,6 +80,8 @@ XPLPUBVAR int cfgWarnOnMacroRedefinition;
 XPLPUBVAR int cfgWarnOnMissingInheritBase;
 XPLPUBVAR int cfgWarnOnMissingMacroContent;
 XPLPUBVAR int cfgWarnOnMultipleSelection;
+XPLPUBVAR int cfgWarnOnNeverLaunchedThreads;
+XPLPUBVAR int cfgWarnOnNoAwaitableThreads;
 XPLPUBVAR int cfgWarnOnNoExpectParam;
 XPLPUBVAR int cfgWarnOnUninitializedTimer;
 XPLPUBVAR int cfgWarnOnUnknownCommand;
@@ -116,6 +118,8 @@ XPLPUBVAR xmlChar *cfgXplNsUri;
 #define DEFAULT_WARN_ON_MISSING_MACRO_CONTENT false
 #define DEFAULT_WARN_ON_MISSING_INHERIT_BASE false
 #define DEFAULT_WARN_ON_MULTIPLE_SELECTION false
+#define DEFAULT_WARN_ON_NEVER_LAUNCHED_THREADS false
+#define DEFAULT_WARN_ON_NO_AWAITABLE_THREADS false
 #define DEFAULT_WARN_ON_NO_EXPECT_PARAM true
 #define DEFAULT_WARN_ON_UNINITIALIZED_TIMER false
 #define DEFAULT_WARN_ON_UNKNOWN_COMMAND false
