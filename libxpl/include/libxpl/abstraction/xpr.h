@@ -77,10 +77,16 @@ XPLPUBFUN void XPLCALL
 	xprInterlockedIncrement(volatile int *value);
 
 /* threads */
+#define XPR_DECLARE_THREAD_ROUTINE(name, param) XPR_THREAD_RETVAL name(XPR_THREAD_PARAM param)
+
 XPLPUBFUN void XPLCALL
 	xprWaitForThreads(XPR_THREAD_HANDLE *handles, int count);
 XPLPUBFUN XPR_THREAD_ID XPLCALL
 	xprGetCurrentThreadId(void);
+XPLPUBFUN XPR_THREAD_HANDLE XPLCALL
+	xprStartThread(XPR_THREAD_ROUTINE(f), XPR_THREAD_PARAM p);
+XPLPUBFUN void XPLCALL
+	xprExitThread(XPR_THREAD_RETVAL code);
 
 /* processes */
 XPLPUBFUN XPR_PROCESS_ID XPLCALL

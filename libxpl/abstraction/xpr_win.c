@@ -255,6 +255,16 @@ XPR_THREAD_ID xprGetCurrentThreadId()
 	return GetCurrentThreadId();
 }
 
+XPR_THREAD_HANDLE xprStartThread(XPR_THREAD_ROUTINE(f), XPR_THREAD_PARAM p)
+{
+	return CreateThread(NULL, 0, f, p, 0, NULL);
+}
+
+void xprExitThread(XPR_THREAD_RETVAL code)
+{
+	ExitThread(code);
+}
+
 /* processes */
 XPR_PROCESS_ID xprGetPid()
 {

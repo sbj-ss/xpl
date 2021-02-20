@@ -43,6 +43,9 @@ int _scprintf(const char *format, ...);
 #define XPR_THREAD_HANDLE pthread_t
 #define XPR_THREAD_ID pthread_t
 #define XPR_THREAD_ID_FORMAT "%08lX"
+#define XPR_THREAD_ROUTINE(func) void* (*func)(void*)
+#define XPR_THREAD_PARAM void*
+#define XPR_THREAD_RETVAL void*
 
 /* processes */
 #define XPR_PROCESS_ID pid_t

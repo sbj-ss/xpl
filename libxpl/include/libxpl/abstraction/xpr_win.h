@@ -72,14 +72,9 @@
 #define XPR_THREAD_ID DWORD
 #define XPR_THREAD_ID_FORMAT "%08lX"
 
-#define XPR_THREAD_ROUTINE_CALL WINAPI
-#define XPR_THREAD_ROUTINE_PARAM LPVOID
-#define XPR_THREAD_ROUTINE_RESULT DWORD
-#define XPR_START_THREAD(handle, thr_func, param) handle = CreateThread(NULL, 0, thr_func, param, 0, NULL)
-#define XPR_START_THREAD_SUSPENDED(handle, thr_func, param) handle = CreateThread(NULL, 0, thr_func, param, CREATE_SUSPENDED, NULL)
-#define XPR_SUSPEND_THREAD(tid) SuspendThread(tid)
-#define XPR_RESUME_THREAD(tid) ResumeThread(tid)
-#define XPR_EXIT_THREAD(code) ExitThread(code)
+#define XPR_THREAD_ROUTINE(func) DWORD (*func)(LPVOID)
+#define XPR_THREAD_PARAM LPVOID
+#define XPR_THREAD_RETVAL DWORD
 
 /* processes */
 #define XPR_PROCESS_ID DWORD
