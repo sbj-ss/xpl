@@ -62,13 +62,16 @@
 
 #define XPR_GET_OS_ERROR() GetLastError()
 */
-#define XPR_SHARED_OBJECT_EXT (BAD_CAST ".dll")
-#define XPR_SHARED_OBJECT_HANDLE HMODULE
 
+/* sync */
 #define XPR_MUTEX HANDLE
 #define XPR_SEMAPHORE HANDLE
 
+/* threads */
 #define XPR_THREAD_HANDLE HANDLE
+#define XPR_THREAD_ID DWORD
+#define XPR_THREAD_ID_FORMAT "%08lX"
+
 #define XPR_THREAD_ROUTINE_CALL WINAPI
 #define XPR_THREAD_ROUTINE_PARAM LPVOID
 #define XPR_THREAD_ROUTINE_RESULT DWORD
@@ -78,7 +81,16 @@
 #define XPR_RESUME_THREAD(tid) ResumeThread(tid)
 #define XPR_EXIT_THREAD(code) ExitThread(code)
 
-#define XPR_THREAD_ID DWORD
-#define XPR_THREAD_ID_FORMAT "%08lX"
+/* processes */
+#define XPR_PROCESS_ID DWORD
+#define XPR_PROCESS_ID_FORMAT "%08lX"
 
+/* shared objects */
+#define XPR_SHARED_OBJECT_EXT (BAD_CAST ".dll")
+#define XPR_SHARED_OBJECT_HANDLE HMODULE
+
+/* time */
 #define XPR_TIME struct timespec
+
+/* OS error */
+#define XPR_SYS_ERROR DWORD

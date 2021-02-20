@@ -36,7 +36,8 @@ XPLPUBFUN xprShutdownFunc XPLCALL
 XPLPUBFUN void XPLCALL
 	xprShutdownApp(void);
 
-/* //////////////////// xpr_<platform/>.c //////////////////////// */
+/*//////////////////// xpr_<platform/>.c ////////////////////// */
+/* files */
 XPLPUBFUN FILE* XPLCALL
 	xprFOpen(const xmlChar *path, const char *mode);
 XPLPUBFUN int XPLCALL
@@ -51,6 +52,7 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN xmlChar* XPLCALL
 	xprGetProgramPath(void);
 
+/* sync */
 XPLPUBFUN bool XPLCALL
 	xprMutexInit(XPR_MUTEX *m);
 XPLPUBFUN bool XPLCALL
@@ -74,9 +76,23 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN void XPLCALL
 	xprInterlockedIncrement(volatile int *value);
 
+/* threads */
+XPLPUBFUN void XPLCALL
+	xprWaitForThreads(XPR_THREAD_HANDLE *handles, int count);
 XPLPUBFUN XPR_THREAD_ID XPLCALL
 	xprGetCurrentThreadId(void);
 
+/* processes */
+XPLPUBFUN XPR_PROCESS_ID XPLCALL
+	xprGetPid(void);
+XPLPUBFUN bool XPLCALL
+	xprCheckPid(XPR_PROCESS_ID pid);
+XPLPUBFUN bool XPLCALL
+	xprParseCommandLine(void);
+XPLPUBFUN void XPLCALL
+	xprSpawnProcessCopy(void);
+
+/* shared objects */
 XPLPUBFUN XPR_SHARED_OBJECT_HANDLE XPLCALL
 	xprLoadSharedObject(xmlChar *path);
 XPLPUBFUN void XPLCALL
@@ -84,21 +100,7 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN void* XPLCALL
 	xprGetProcAddress(XPR_SHARED_OBJECT_HANDLE handle, char *name);
 
-XPLPUBFUN void XPLCALL 
-	xprSleep(int ms);
-
-/* OS error text. Result must be freed. */
-XPLPUBFUN xmlChar* XPLCALL
-	xprFormatSysError(int error);
-
-XPLPUBFUN bool XPLCALL
-	xprParseCommandLine(void);
-
-XPLPUBFUN void XPLCALL
-	xprSpawnProcessCopy(void);
-XPLPUBFUN void XPLCALL
-	xprWaitForThreads(XPR_THREAD_HANDLE *handles, int count);
-
+/* console */
 #define XPR_DEFAULT_CONSOLE_COLOR 0x07
 
 XPLPUBFUN void XPLCALL
@@ -106,26 +108,31 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN void XPLCALL
 	xprResetConsoleColor(void);
 
-XPLPUBFUN int XPLCALL
-	xprGetPid(void);
-XPLPUBFUN bool XPLCALL
-	xprCheckPid(int pid);
-
+/* debugger interaction */
 XPLPUBFUN void XPLCALL
 	xprDebugBreak(void);
 XPLPUBFUN bool XPLCALL
 	xprIsDebuggerPresent(void);
 
+/* time */
 XPLPUBFUN void XPLCALL
 	xprGetTime(XPR_TIME *t);
 XPLPUBFUN long XPLCALL
 	xprTimeDelta(XPR_TIME *after, XPR_TIME *before);
 XPLPUBFUN bool XPLCALL
 	xprTimeIsEmpty(XPR_TIME *t);
+XPLPUBFUN void XPLCALL
+	xprSleep(int ms);
 
+/* low-level error handling */
+XPLPUBFUN XPR_SYS_ERROR XPLCALL
+	xprGetSysError(void);
+XPLPUBFUN xmlChar* XPLCALL
+	xprFormatSysError(XPR_SYS_ERROR error); /* result must be freed */
+
+/* init/stop */
 #define XPR_STARTSTOP_LOW_LEVEL 0x01
 #define XPR_STARTSTOP_CONSOLE 0x02
-#define XPR_STARTSTOP_PHOENIX_TECH 0x04
 #define XPR_STARTSTOP_EVERYTHING 0xFFFFFFFF
 
 XPLPUBFUN bool XPLCALL

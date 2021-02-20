@@ -76,8 +76,6 @@
 /* #undef _DYNACONF_SUPPORT */
 /* Enable threading support */
 /* #undef _THREADING_SUPPORT */
-/* Enable automatic restarts on crash. Session isn't saved for now so it's better to keep this off. */
-/* #undef _USE_PHOENIX_TECH */
 /* Enable :crash (for PhoenixTech debugging) */
 /* #undef _USE_CRASH_COMMAND */
 /* Enable :file-op. This command needs to be rewritten. */

@@ -15,6 +15,7 @@ static HANDLE console_output_handle = 0;
 static DWORD old_console_mode;
 static int active_subsystems = 0;
 
+/* files */
 static WCHAR *convertToFSPath(const xmlChar *path)
 {
 	WCHAR *internal_path = NULL, *s;
@@ -168,6 +169,7 @@ xmlChar* xprGetProgramPath()
 	return ret;
 }
 
+/* sync */
 bool xprMutexInit(XPR_MUTEX *m)
 {
 	if (!m)
@@ -242,46 +244,47 @@ void xprInterlockedIncrement(volatile int *value)
 	__atomic_fetch_add(value, 1, __ATOMIC_ACQ_REL);
 }
 
+/* threads */
+void xprWaitForThreads(XPR_THREAD_HANDLE *handles, int count)
+{
+	WaitForMultipleObjects((DWORD) count, handles, true, INFINITE);
+}
+
 XPR_THREAD_ID xprGetCurrentThreadId()
 {
 	return GetCurrentThreadId();
 }
 
-XPR_SHARED_OBJECT_HANDLE xprLoadSharedObject(xmlChar *path)
+/* processes */
+XPR_PROCESS_ID xprGetPid()
 {
-	WCHAR *internal_path;
-
-	if (!path)
-		return (XPR_SHARED_OBJECT_HANDLE) -1;
-	if (!(internal_path = convertToFSPath(path)))
-		return (XPR_SHARED_OBJECT_HANDLE) -1;
-	return LoadLibraryW(internal_path);
+	return GetCurrentProcessId();
 }
 
-void xprUnloadSharedObject(XPR_SHARED_OBJECT_HANDLE handle)
+bool xprCheckPid(XPR_PROCESS_ID pid)
 {
-	FreeLibrary(handle);
-}
+	HANDLE process, self_process;
+	WCHAR process_fn[MAX_PATH + 1], self_process_fn[MAX_PATH + 1];
 
-void* xprGetProcAddress(XPR_SHARED_OBJECT_HANDLE handle, char *name)
-{
-	return GetProcAddress(handle, name);
-}
-
-void xprSleep(int ms)
-{
-	Sleep(ms);
-}
-
-xmlChar *xprFormatSysError(int error)
-{
-	LPWSTR	lpwszBuffer;
-	xmlChar *ret = NULL;
-
-	FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,	NULL, (DWORD) error, 0, (LPWSTR) &lpwszBuffer, 0, NULL);
-	xstrIconvString("utf-8", "utf-16le", (const char*) lpwszBuffer, (const char*) lpwszBuffer + wcslen(lpwszBuffer)*sizeof(WCHAR), (char**) &ret, NULL);
-	LocalFree(lpwszBuffer);
-	return ret;
+	printf("* checking pid. ours is %08lX, input is "XPR_PROCESS_ID_FORMAT"\n", GetCurrentProcessId(), pid);
+	if (pid == GetCurrentProcessId())
+		return false;
+	process = OpenProcess(SYNCHRONIZE | PROCESS_QUERY_INFORMATION, false, (DWORD) pid);
+	if (process) /* if the function failed, we assume the process isn't ours */
+	{
+		printf("* mapped handle to alive process %p\n", process);
+		if (!GetProcessImageFileNameW(process, process_fn, sizeof(process_fn)/sizeof(WCHAR)))
+		{
+			CloseHandle(process);
+			return false; /* already exited?.. */
+		}
+		self_process = GetCurrentProcess();
+		GetProcessImageFileNameW(self_process, self_process_fn, sizeof(self_process_fn)/sizeof(WCHAR));
+		CloseHandle(process);
+		if (!wcscmp(process_fn, self_process_fn))
+			return true;
+	}
+	return false;
 }
 
 bool xprParseCommandLine()
@@ -344,12 +347,29 @@ void xprSpawnProcessCopy()
 	CloseHandle(proc_info.hProcess);
 }
 
-void xprWaitForThreads(XPR_THREAD_HANDLE *handles, int count)
+/* shared objects */
+XPR_SHARED_OBJECT_HANDLE xprLoadSharedObject(xmlChar *path)
 {
-	WaitForMultipleObjects((DWORD) count, handles, true, INFINITE);
+	WCHAR *internal_path;
+
+	if (!path)
+		return (XPR_SHARED_OBJECT_HANDLE) -1;
+	if (!(internal_path = convertToFSPath(path)))
+		return (XPR_SHARED_OBJECT_HANDLE) -1;
+	return LoadLibraryW(internal_path);
 }
 
+void xprUnloadSharedObject(XPR_SHARED_OBJECT_HANDLE handle)
+{
+	FreeLibrary(handle);
+}
 
+void* xprGetProcAddress(XPR_SHARED_OBJECT_HANDLE handle, char *name)
+{
+	return GetProcAddress(handle, name);
+}
+
+/* console */
 void xprSetConsoleColor(int color)
 {
 	if (console_output_handle)
@@ -361,37 +381,7 @@ void xprResetConsoleColor()
 	xprSetConsoleColor(XPR_DEFAULT_CONSOLE_COLOR);
 }
 
-int xprGetPid()
-{
-	return (int) GetCurrentProcessId();
-}
-
-bool xprCheckPid(int pid)
-{
-	HANDLE process, self_process;
-	WCHAR process_fn[MAX_PATH + 1], self_process_fn[MAX_PATH + 1];
-
-	printf("* checking pid. ours is %08lX, input is %08X\n", GetCurrentProcessId(), pid);
-	if (pid == (int) GetCurrentProcessId())
-		return false;
-	process = OpenProcess(SYNCHRONIZE | PROCESS_QUERY_INFORMATION, false, (DWORD) pid);
-	if (process) /* if the function failed, we assume the process isn't ours */
-	{
-		printf("* mapped handle to alive process %p\n", process);
-		if (!GetProcessImageFileNameW(process, process_fn, sizeof(process_fn)/sizeof(WCHAR)))
-		{
-			CloseHandle(process);
-			return false; /* already exited?.. */
-		}
-		self_process = GetCurrentProcess();
-		GetProcessImageFileNameW(self_process, self_process_fn, sizeof(self_process_fn)/sizeof(WCHAR));
-		CloseHandle(process);
-		if (!wcscmp(process_fn, self_process_fn))
-			return true;
-	}
-	return false;
-}
-
+/* debugger interface */
 void xprDebugBreak(void)
 {
 	__debugbreak();
@@ -402,7 +392,7 @@ bool xprIsDebuggerPresent(void)
 	return !!IsDebuggerPresent();
 }
 
-//struct timespec { long tv_sec; long tv_nsec; };    //header part
+/* time */
 static int clock_gettime(int clock_id, struct timespec *spec)
 {
 	LONGLONG wintime;
@@ -433,6 +423,28 @@ bool xprTimeIsEmpty(XPR_TIME *t)
 	return !t || (!t->tv_sec && !t->tv_nsec);
 }
 
+void xprSleep(int ms)
+{
+	Sleep(ms);
+}
+
+/* OS error */
+XPR_SYS_ERROR xprGetSysError()
+{
+	return GetLastError();
+}
+
+xmlChar *xprFormatSysError(XPR_SYS_ERROR error)
+{
+	LPWSTR	lpwszBuffer;
+	xmlChar *ret = NULL;
+
+	FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,	NULL, (DWORD) error, 0, (LPWSTR) &lpwszBuffer, 0, NULL);
+	xstrIconvString("utf-8", "utf-16le", (const char*) lpwszBuffer, (const char*) lpwszBuffer + wcslen(lpwszBuffer)*sizeof(WCHAR), (char**) &ret, NULL);
+	LocalFree(lpwszBuffer);
+	return ret;
+}
+
 static void _invalid_crt_param_handler(
 	const WCHAR *expression,
 	const WCHAR *function,
@@ -444,15 +456,6 @@ static void _invalid_crt_param_handler(
 	UNUSED_PARAM(pReserved);
 	wprintf(L"CRT error in expression '%s', function '%s', file '%s', line %d\n", expression, function, file, line);
 }
-
-#ifdef _USE_PHOENIX_TECH
-static LONG WINAPI xprUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* exceptionInfo)
-{
-	xprSpawnProcessCopy();
-	//ExitProcess(-1);
-	return EXCEPTION_EXECUTE_HANDLER;
-}
-#endif
 
 bool xprStartup(int what)
 {
@@ -481,13 +484,6 @@ bool xprStartup(int what)
 		GetConsoleMode(console_input_handle, &old_console_mode);
 		SetConsoleMode(console_input_handle, ENABLE_QUICK_EDIT_MODE | ENABLE_WINDOW_INPUT);
 	}
-	if (what & XPR_STARTSTOP_PHOENIX_TECH)
-	{
-		/* ToDo: this is unstable */
-#ifdef _USE_PHOENIX_TECH
-		SetUnhandledExceptionFilter(xprUnhandledExceptionFilter);
-#endif
-	}
 	active_subsystems |= what;
 	return true;
 }
@@ -508,10 +504,6 @@ void xprShutdown(int what)
 	{
 		SetConsoleMode(console_input_handle, old_console_mode);
 		console_input_handle = console_output_handle = 0;
-	}
-	if (what & XPR_STARTSTOP_PHOENIX_TECH)
-	{
-		SetUnhandledExceptionFilter(NULL);
 	}
 	active_subsystems &= ~what;
 }

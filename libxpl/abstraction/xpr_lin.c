@@ -1,18 +1,19 @@
 #include <libxpl/abstraction/xpr.h>
+#include <sys/ptrace.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <signal.h>
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <sys/ptrace.h>
-#include <libxml/xmlmemory.h>
 #include <libxml/xmlerror.h>
+#include <libxml/xmlmemory.h>
 
 static int active_subsystems = 0;
 
+/* windows CRT polyfill */
 int _vscprintf (const char *format, va_list pargs)
 {
 	int retval;
@@ -35,6 +36,7 @@ int _scprintf(const char *format, ...)
 	return retval;
 }
 
+/* files */
 static xmlChar *convertToFSPath(const xmlChar *path)
 {
 	xmlChar *internal_path;
@@ -129,7 +131,7 @@ xmlChar* xprGetProgramPath(void)
     char buf[FILENAME_MAX], *last_slash;
     xmlChar *ret;
 
-    *buf = 0;
+    *buf = 0; /* TODO other *nix */
     ssize_t size = readlink("/proc/self/exe", buf, FILENAME_MAX - 1);
     if (size == -1)
     	return NULL;
@@ -145,6 +147,7 @@ xmlChar* xprGetProgramPath(void)
     return ret;
 }
 
+/* sync */
 bool xprMutexInit(XPR_MUTEX *m)
 {
 	return !pthread_mutex_init(m, NULL);
@@ -195,11 +198,43 @@ void xprInterlockedIncrement(volatile int *value)
 	__atomic_fetch_add(value, 1, __ATOMIC_ACQ_REL);
 }
 
+/* threads */
+void xprWaitForThreads(XPR_THREAD_HANDLE *handles, int count)
+{
+	UNUSED_PARAM(handles);
+	UNUSED_PARAM(count);
+	// TODO
+}
+
 XPR_THREAD_ID xprGetCurrentThreadId()
 {
 	return pthread_self();
 }
 
+/* processes */
+XPR_PROCESS_ID xprGetPid(void)
+{
+	return getpid();
+}
+
+bool xprCheckPid(XPR_PROCESS_ID pid)
+{
+	UNUSED_PARAM(pid);
+	return false; // TODO
+}
+
+bool xprParseCommandLine()
+{
+	return true;
+	// TODO
+}
+
+void xprSpawnProcessCopy()
+{
+	// TODO
+}
+
+/* shared objects */
 XPR_SHARED_OBJECT_HANDLE xprLoadSharedObject(xmlChar *path)
 {
 	return dlopen((char*) path, RTLD_NOW);
@@ -215,41 +250,10 @@ void* xprGetProcAddress(XPR_SHARED_OBJECT_HANDLE handle, char *name)
 	return dlsym(handle, name);
 }
 
-void xprSleep(int ms)
-{
-    struct timespec ts;
-    int res;
-
-    if (ms < 0)
-        return;
-    ts.tv_sec = ms / 1000;
-    ts.tv_nsec = (ms % 1000) * 1000000;
-    do {
-        res = nanosleep(&ts, &ts);
-    } while (res && errno == EINTR);
-}
-
-bool xprParseCommandLine(void)
-{
-	// TODO
-	return true;
-}
-
-void xprSpawnProcessCopy(void)
-{
-	// TODO
-}
-
-void xprWaitForThreads(XPR_THREAD_HANDLE *handles, int count)
-{
-	UNUSED_PARAM(handles);
-	UNUSED_PARAM(count);
-	// TODO
-}
-
+/* console */
 void xprSetConsoleColor(int color)
 {
-	// TODO check terminal type
+	// TODO terminfo
 	color = color & 0x0F;
 	if (color > 7)
 		xmlGenericError(xmlGenericErrorContext, "\e[3%d;1m", color & 0x07);
@@ -262,6 +266,7 @@ void xprResetConsoleColor()
 	xmlGenericError(xmlGenericErrorContext, "\e[0m");
 }
 
+/* debugger interaction */
 void xprDebugBreak(void)
 {
 	raise(SIGTRAP);
@@ -284,6 +289,7 @@ bool xprIsDebuggerPresent(void)
    return debugged;
 }
 
+/* time */
 void xprGetTime(XPR_TIME *t)
 {
     clock_gettime(CLOCK_MONOTONIC, t);
@@ -302,6 +308,45 @@ bool xprTimeIsEmpty(XPR_TIME *t)
 	return !t || (!t->tv_sec && !t->tv_nsec);
 }
 
+void xprSleep(int ms)
+{
+    struct timespec ts;
+    int res;
+
+    if (ms < 0)
+        return;
+    ts.tv_sec = ms / 1000;
+    ts.tv_nsec = (ms % 1000) * 1000000;
+    do {
+        res = nanosleep(&ts, &ts);
+    } while (res && errno == EINTR);
+}
+
+/* low-level error handling */
+XPR_SYS_ERROR xprGetSysError(void)
+{
+	return errno;
+}
+
+xmlChar* xprFormatSysError(XPR_SYS_ERROR error)
+{
+	char buf[256];
+
+#ifdef __USE_XOPEN2K
+#ifndef __USE_GNU
+	if (!strerror_r(error, buf, sizeof(buf))) // XSI-compliant function returns int
+#else
+	if (strerror_r(error, buf, sizeof(buf))) // GNU extension returns char*
+#endif
+#else
+#error "XPL requires strerror_r()"
+#endif
+		return BAD_CAST XPL_STRDUP_NO_CHECK(buf);
+	else
+		return BAD_CAST XPL_STRDUP_NO_CHECK("failed to get error");
+}
+
+/* init/stop */
 bool xprStartup(int what)
 {
 	what &= ~active_subsystems;
@@ -310,10 +355,6 @@ bool xprStartup(int what)
 		NOOP();
 	}
 	if (what & XPR_STARTSTOP_CONSOLE)
-	{
-		NOOP();
-	}
-	if (what & XPR_STARTSTOP_PHOENIX_TECH)
 	{
 		NOOP();
 	}
@@ -334,10 +375,6 @@ void xprShutdown(int what)
 		NOOP();
 	}
 	if (what & XPR_STARTSTOP_CONSOLE)
-	{
-		NOOP();
-	}
-	if (what & XPR_STARTSTOP_PHOENIX_TECH)
 	{
 		NOOP();
 	}
