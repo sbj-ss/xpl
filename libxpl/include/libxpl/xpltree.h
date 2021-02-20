@@ -42,6 +42,9 @@ XPLPUBFUN void XPLCALL
 /* locates node list tail */
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplFindTail(xmlNodePtr cur);
+/* ditto */
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplFirstElementNode(xmlNodePtr list);
 /* checks if maybeAncestor is ancestor of maybeChild */
 XPLPUBFUN bool XPLCALL
 	xplIsAncestor(xmlNodePtr maybeChild, xmlNodePtr maybeAncestor);
@@ -146,6 +149,11 @@ XPLPUBFUN xmlXPathObjectPtr XPLCALL
 
 XPLPUBFUN xmlAttrPtr XPLCALL
 	xplCreateAttribute(xmlNodePtr dst, xplQName qname, xmlChar *value, bool allowReplace);
+
+XPLPUBFUN xmlNodeSetPtr XPLCALL
+	xplGetNodeAncestorOrSelfAxis(xmlNodePtr cur);
+XPLPUBFUN bool XPLCALL
+	xplVerifyAncestorOrSelfAxis(xmlNodePtr root, xmlNodeSetPtr axis);
 
 #ifdef __cplusplus
 }

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <libxml/xpathInternals.h>
 #include <libxpl/abstraction/xpr.h>
 
 xplParseQNameResult xplParseQName(xmlChar *str, xmlNodePtr element, xplQName *qname)
@@ -67,6 +68,17 @@ xmlNodePtr xplFindTail(xmlNodePtr cur)
 	while (cur->next)
 		cur = cur->next;
 	return cur;
+}
+
+xmlNodePtr xplFirstElementNode(xmlNodePtr list)
+{
+	while (list)
+	{
+		if (list->type == XML_ELEMENT_NODE)
+			return list;
+		list = list->next;
+	}
+	return NULL;
 }
 
 bool xplIsAncestor(xmlNodePtr maybeChild, xmlNodePtr maybeAncestor)
@@ -1374,4 +1386,48 @@ xmlAttrPtr xplCreateAttribute(xmlNodePtr dst, xplQName qname, xmlChar *value, bo
 		return xmlNewNsProp(dst, ns, qname.ncname, value);
 	}
 	return xmlNewProp(dst, qname.ncname, value);
+}
+
+xmlNodeSetPtr xplGetNodeAncestorOrSelfAxis(xmlNodePtr cur)
+{
+	xmlNodeSetPtr ret;
+
+	if (!cur)
+		return NULL;
+	ret = xmlXPathNodeSetCreate(cur);
+	cur = cur->parent;
+	while (cur && cur->type == XML_ELEMENT_NODE)
+	{
+		xmlXPathNodeSetAddUnique(ret, cur);
+		cur = cur->parent;
+	}
+	return ret;
+}
+
+bool xplVerifyAncestorOrSelfAxis(xmlNodePtr root, xmlNodeSetPtr axis)
+{
+	ssize_t i;
+	bool found;
+	xmlNodePtr cur;
+
+	if (!root || !axis)
+		return false;
+	cur = root;
+	for (i = axis->nodeNr - 1; i >= 0; i--)
+	{
+		found = false;
+		while (cur)
+		{
+			if (cur == axis->nodeTab[i])
+			{
+				found = true;
+				break;
+			}
+			cur = cur->next;
+		}
+		if (!found)
+			return false;
+		cur = cur->children;
+	}
+	return true;
 }
