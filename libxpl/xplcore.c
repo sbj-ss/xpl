@@ -457,12 +457,6 @@ static XPR_DECLARE_THREAD_ROUTINE(xplDocThreadWrapper, p)
 	}
 	if (!xprMutexRelease(&doc->parent->thread_landing_lock))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	if (doc->environment)
-	{
-		xplParamsFree(doc->environment);
-		doc->environment = NULL;
-	}
-	doc->document->intSubset = NULL;
 	xplDocumentFree(doc);
 	xprExitThread((XPR_THREAD_RETVAL) 0);
 	return (XPR_THREAD_RETVAL) 0; // make compiler happy
