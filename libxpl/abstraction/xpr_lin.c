@@ -201,9 +201,11 @@ void xprInterlockedIncrement(volatile int *value)
 /* threads */
 void xprWaitForThreads(XPR_THREAD_HANDLE *handles, int count)
 {
-	UNUSED_PARAM(handles);
-	UNUSED_PARAM(count);
-	// TODO
+	int i;
+	void *thread_ret;
+
+	for (i = 0; i < count; i++)
+		pthread_join(handles[i], &thread_ret);
 }
 
 XPR_THREAD_ID xprGetCurrentThreadId()
