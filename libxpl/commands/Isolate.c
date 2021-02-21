@@ -150,7 +150,6 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			ASSIGN_RESULT(NULL, false, false);
 		} else {
 			xplDocumentFree(child);
-			xplParamsFree(env);
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "couldn't spawn child thread"), true, true);
 		}
 		/* we don't need #else here - this was handled above */
