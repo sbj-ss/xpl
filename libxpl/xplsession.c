@@ -289,20 +289,17 @@ int xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlCh
 
 xmlNodePtr xplSessionGetObject(const xplSessionPtr session, const xmlChar *name)
 {
-	xmlNodePtr carrier = NULL;
+	xmlNodePtr carrier;
 
-	if (!session)
+	if (!session || !session->valid)
 		return NULL;
 	if (!xprMutexAcquire(&session->locker))
 	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		return NULL;
 	}
-	if (session->valid)
-	{
-		carrier = (xmlNodePtr) xmlHashLookup(session->items, name);
-		time(&session->init_ts);
-	}
+	carrier = (xmlNodePtr) xmlHashLookup(session->items, name);
+	time(&session->init_ts);
 	if (!xprMutexRelease(&session->locker))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	return carrier;
@@ -312,7 +309,7 @@ xmlNodePtr xplSessionGetAllObjects(const xplSessionPtr session)
 {
 	xmlNodePtr ret;
 
-	if (!session)
+	if (!session || !session->valid)
 		return NULL;
 	if (!xprMutexAcquire(&session->locker))
 	{
