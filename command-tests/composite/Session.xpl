@@ -155,6 +155,12 @@
     </Input>
   </MustFail>
 
+  <MustFail name="fail/set-object-bad-name">
+    <Input>
+      <xpl:session-set-object name="#"/>
+    </Input>
+  </MustFail>
+
   <MustFail name="fail/set-object-bad-thread-local">
     <Input>
       <xpl:session-set-object threadlocal="if supported"/>
@@ -164,6 +170,12 @@
   <MustFail name="fail/contains-object-bad-thread-local">
     <Input>
       <xpl:session-contains-object threadlocal="maybe"/>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/contains-object-bad-name">
+    <Input>
+      <xpl:session-contains-object name="#"/>
     </Input>
   </MustFail>
 
@@ -185,9 +197,27 @@
     </Input>
   </MustFail>
 
+  <MustFail name="fail/get-object-bad-name">
+    <Input>
+      <xpl:session-get-object name="#"/>
+    </Input>
+  </MustFail>
+
   <MustFail name="fail/remove-object-bad-thread-local">
     <Input>
       <xpl:session-remove-object threadlocal="partially"/>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/remove-object-missing-name">
+    <Input>
+      <xpl:session-remove-object/>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/remove-object-bad-name">
+    <Input>
+      <xpl:session-remove-object name="#"/>
     </Input>
   </MustFail>
   
