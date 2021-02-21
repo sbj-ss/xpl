@@ -302,12 +302,14 @@ void* rbGetBufPosition(rbBufPtr buf)
 	return NULL;
 }
 
-rbOpResult rbAdvanceBufPosition(rbBufPtr buf, size_t delta)
+rbOpResult rbAdvanceBufPosition(rbBufPtr buf, ssize_t delta)
 {
 	if (!buf)
 		return RB_RESULT_INVALID;
 	if ((size_t)((char*) buf->current + delta - (char*) buf->start) > buf->size)
 		return RB_RESULT_NO_MEMORY;
+	if ((char*) buf->current + delta < (char*) buf->start)
+		return RB_RESULT_INVALID;
 	buf->current = (char*) buf->current + delta;
 	return RB_RESULT_OK;
 }

@@ -105,7 +105,7 @@ XPLPUBFUN void* XPLCALL
 	rbGetBufPosition(rbBufPtr buf);
 /* Moves buffer position forward (within allocated size) */
 XPLPUBFUN rbOpResult XPLCALL
-	rbAdvanceBufPosition(rbBufPtr buf, size_t delta);
+	rbAdvanceBufPosition(rbBufPtr buf, ssize_t delta);
 /* Ensures there's enough place in buffer for direct writing */
 XPLPUBFUN rbOpResult XPLCALL
 	rbEnsureBufFreeSize(rbBufPtr buf, size_t minfree);
