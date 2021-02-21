@@ -395,7 +395,7 @@ bool xplEnsureDocThreadSupport(xplDocumentPtr doc)
 	doc->suspended_thread_docs = rbCreateBufParams(2*sizeof(xplDocumentPtr), RB_GROW_INCREMENT, 2*sizeof(xplDocumentPtr));
 	if (!doc->suspended_thread_docs)
 	{
-		xplFinalizeDocThreads(doc, false);
+		xplFinalizeDocThreads(doc, true);
 		return false;
 	}
 	return true;
@@ -415,7 +415,7 @@ void xplWaitForChildThreads(xplDocumentPtr doc)
 		if (!xprMutexRelease(&doc->thread_landing_lock))
 		{
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
-			return; /* threads won't be unable to land */
+			return; /* threads won't be able to land */
 		}
 		xprWaitForThreads(handles, (int) count);
 		if (!xprMutexAcquire(&doc->thread_landing_lock))
@@ -472,18 +472,20 @@ bool xplStartChildThread(xplDocumentPtr doc, xplDocumentPtr child, bool immediat
 		return false;
 	if (immediateStart)
 	{
+		if (rbEnsureBufFreeSize(doc->thread_handles, sizeof(XPR_THREAD_HANDLE)) != RB_RESULT_OK)
+			return false;
 		if (!(handle = xprStartThread(xplDocThreadWrapper, (XPR_THREAD_PARAM) child)))
 			return false;
 		return rbAddDataToBuf(doc->thread_handles, &handle, sizeof(XPR_THREAD_HANDLE)) == RB_RESULT_OK;
 	} else
 		return rbAddDataToBuf(doc->suspended_thread_docs, &child, sizeof(xplDocumentPtr)) == RB_RESULT_OK;
-	return true;
 }
 
 bool xplStartDelayedThreads(xplDocumentPtr doc)
 {
 	size_t pool_size, i;
 	xplDocumentPtr *docs;
+	bool ret = true;
 
 	if (!doc)
 		return false;
@@ -492,11 +494,14 @@ bool xplStartDelayedThreads(xplDocumentPtr doc)
 	pool_size = rbGetBufContentSize(doc->suspended_thread_docs) / sizeof(xplDocumentPtr);
 	for (i = 0, docs = rbGetBufContent(doc->suspended_thread_docs); i < pool_size; i++)
 	{
-		// TODO minimize leaks if some threads fail to start
-		xplStartChildThread(doc, docs[i], true);
+		if (!xplStartChildThread(doc, docs[i], true)) // here we're almost sure that launch failed. delete the doc to prevent memory leak
+		{
+			ret = false;
+			xplDocumentFree(docs[i]);
+		}
 	}
 	rbRewindBuf(doc->suspended_thread_docs);
-	return true;
+	return ret;
 }
 
 void xplDiscardSuspendedThreadDocs(xplDocumentPtr doc)

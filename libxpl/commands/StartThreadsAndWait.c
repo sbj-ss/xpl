@@ -35,14 +35,19 @@ xplCommand xplStartThreadsAndWaitCommand =
 void xplCmdStartThreadsAndWaitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdStartThreadsAndWaitParamsPtr params = (xplCmdStartThreadsAndWaitParamsPtr) commandInfo->params;
+	bool launch_ok = true;
 
 	if (!commandInfo->document->suspended_thread_docs)
 	{
 		if (cfgWarnOnNoAwaitableThreads)
 			xplDisplayWarning(commandInfo->element, BAD_CAST "no suspended threads to start");
 	} else {
-		xplStartDelayedThreads(commandInfo->document);
+		launch_ok = xplStartDelayedThreads(commandInfo->document);
 		xplWaitForChildThreads(commandInfo->document);
 	}
-	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
+	if (launch_ok)
+		ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
+	else
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "launching some threads failed"), true, true);
+
 }
