@@ -7,12 +7,9 @@ void xplCmdFatalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 static xmlNodePtr _onlyFirstChildElement(xmlNodePtr parent)
 {
-	xmlNodePtr cur = parent->children;
+	xmlNodePtr cur;
 
-	/* skip all non-elements */
-	while (cur && cur->type != XML_ELEMENT_NODE)
-		cur = cur->next;
-	if (cur) /* element found */
+	if ((cur = xplFirstElementNode(parent->children)))
 	{ 
 		if (cur->next && cfgWarnOnMultipleSelection)
 			xplDisplayWarning(parent, BAD_CAST "more nodes follow in command content, ignored");
@@ -37,9 +34,7 @@ void xplCmdFatalEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlNodePtr root;
 
 	commandInfo->document->fatal_content = _onlyFirstChildElement(commandInfo->element);
-	root = commandInfo->element->doc->children;
-	while (root && root->type != XML_ELEMENT_NODE)
-		root = root->next;
+	root = xplFirstElementNode(commandInfo->element->doc->children);
 	xplMarkAncestorAxisForDeletion(commandInfo->element->parent, root);
 	ASSIGN_RESULT(NULL, false, false);
 }

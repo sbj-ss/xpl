@@ -1038,7 +1038,7 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 #endif
 			if (doc->fatal_content) /* xpl:fatal called */
 			{
-				root_element->type = XML_ELEMENT_NODE;
+				root_element->type &= ~XPL_NODE_DELETION_MASK;
 				xmlFreeNodeList(doc->document->children); /* lists don't overlap, DDN calls xmlUnlinkNode() */
 				doc->document->children = doc->document->last = doc->fatal_content;
 				doc->fatal_content->parent = (xmlNodePtr) doc->document;

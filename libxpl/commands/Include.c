@@ -526,17 +526,12 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 			ctxt->ret = xplDetachChildren(ctxt->command_element);
 		else {
 			xplMergeDocOldNamespaces(ctxt->src_node->doc, ctxt->command_element->doc);
-			cur = ctxt->ret = xplDetachChildren(ctxt->src_node);
-			while (cur) /* doc may start with a comment */
+			ctxt->ret = xplFirstElementNode(ctxt->src_node->children);
+			if (ctxt->ret)
 			{
-				if (cur->type == XML_ELEMENT_NODE)
-					break;
-				ctxt->ret = cur->next;
-				xmlUnlinkNode(cur);
-				xmlFreeNode(cur);
-				cur = ctxt->ret;
+				xmlUnlinkNode(ctxt->ret);
+				xmlSetTreeDoc(ctxt->ret, ctxt->command_element->doc);
 			}
-			xmlSetTreeDoc(ctxt->ret, ctxt->command_element->doc);
 		}
 		if (ctxt->params->tag_name.ncname)
 		{
@@ -556,11 +551,8 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 	/* select nodes */
 	if (ctxt->input_source == INPUT_SOURCE_LOCAL)
 		cur = ctxt->src_node;
-	else {
-		cur = ctxt->src_node->children;
-		while (cur && (cur->type != XML_ELEMENT_NODE)) /* skip comments */
-			cur = cur->next;
-	}
+	else
+		cur = xplFirstElementNode(ctxt->src_node->children);
 	sel = xplSelectNodesWithCtxt(ctxt->doc->xpath_ctxt, cur, ctxt->params->select);
 	if (sel)
 	{

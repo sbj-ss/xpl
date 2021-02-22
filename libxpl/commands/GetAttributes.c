@@ -155,10 +155,7 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 				xplDisplayWarning(commandInfo->element, BAD_CAST "gets attributes only from the first selected element but more elements follow, select '%s'", params->select->user);
 		}
 	} else if (!params->select) {
-		src = commandInfo->element->children;
-		while (src && (src->type != XML_ELEMENT_NODE))
-			src = src->next;
-		if (!src)
+		if (!(src = xplFirstElementNode(commandInfo->element->children)))
 		{
 			ASSIGN_RESULT(NULL, false, true);
 			return;

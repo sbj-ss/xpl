@@ -1090,18 +1090,8 @@ bool xplMergeDocOldNamespaces(xmlDocPtr from, xmlDocPtr to)
 		}
 		ns_from = ns_from->next;
 	}
-	if (pairs.count)
-	{
-		root = from->children;
-		while (root)
-		{
-			if (root->type == XML_ELEMENT_NODE)
-				break;
-			root = root->next;
-		}
-		if (root)
-			_relinkNodeListNamespaces(&pairs, root);
-	}
+	if (pairs.count && (root = xplFirstElementNode(from->children)))
+		_relinkNodeListNamespaces(&pairs, root);
 	_clearNsPairs(&pairs, false);
 	return true;
 }

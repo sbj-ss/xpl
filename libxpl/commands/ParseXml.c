@@ -38,7 +38,7 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplCmdParseXmlParamsPtr params = (xplCmdParseXmlParamsPtr) commandInfo->params;
 	xmlDocPtr doc = NULL;
 	xmlChar *parse_error;
-	xmlNodePtr ret, root;
+	xmlNodePtr ret;
 
 	if (!commandInfo->content)
 	{
@@ -53,15 +53,12 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		XPL_FREE(parse_error);
 	} else {
 		xplMergeDocOldNamespaces(doc, commandInfo->element->doc);
-		root = ret = xplDetachChildren((xmlNodePtr) doc);
-		while (root)
+		if ((ret = xplFirstElementNode(doc->children)))
 		{
-			if (root->type == XML_ELEMENT_NODE)
-				break;
+			xmlUnlinkNode(ret);
+			xplLiftNsDefs(commandInfo->element->parent, ret, ret->children);
+			xmlSetTreeDoc(ret, commandInfo->element->doc);
 		}
-		if (root)
-			xplLiftNsDefs(commandInfo->element->parent, root, root->children);
-		xmlSetTreeDoc(ret, commandInfo->element->doc);
 		xmlFreeDoc(doc);
 		ASSIGN_RESULT(ret, params->repeat, true);
 	}
