@@ -1398,7 +1398,7 @@ bool xplVerifyAncestorOrSelfAxis(xmlNodePtr root, xmlNodeSetPtr axis)
 {
 	ssize_t i;
 	bool found;
-	xmlNodePtr cur;
+	xmlNodePtr cur, first;
 
 	if (!root || !axis)
 		return false;
@@ -1406,6 +1406,7 @@ bool xplVerifyAncestorOrSelfAxis(xmlNodePtr root, xmlNodeSetPtr axis)
 	for (i = axis->nodeNr - 1; i >= 0; i--)
 	{
 		found = false;
+		first = cur;
 		while (cur)
 		{
 			if (cur == axis->nodeTab[i])
@@ -1415,9 +1416,10 @@ bool xplVerifyAncestorOrSelfAxis(xmlNodePtr root, xmlNodeSetPtr axis)
 			}
 			cur = cur->next;
 		}
-		if (!found)
-			return false;
-		cur = cur->children;
+		if (found)
+			cur = cur->children;
+		else
+			cur = first;
 	}
-	return true;
+	return found;
 }
