@@ -1,7 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
-#include <libxpl/xplsession.h>
 
 void xplCmdSetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
@@ -44,7 +43,7 @@ void xplCmdSetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdSetOptionParamsPtr params = (xplCmdSetOptionParamsPtr) commandInfo->params;
 
-	if (!xplSessionGetSaMode(commandInfo->document->session))
+	if (!xplDocSessionGetSaMode(commandInfo->document))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 		return;

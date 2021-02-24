@@ -145,7 +145,7 @@ XPLPUBFUN bool XPLCALL
 	xplCompareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool checkEquality);
 
 XPLPUBFUN xmlXPathObjectPtr XPLCALL
-	xplSelectNodesWithCtxt(xmlXPathContextPtr ctxt, xmlNodePtr src, xmlChar *expr);
+	xplSelectNodesWithCtxt(xmlXPathContextPtr ctxt, const xmlNodePtr src, const xmlChar *expr);
 
 XPLPUBFUN xmlAttrPtr XPLCALL
 	xplCreateAttribute(xmlNodePtr dst, xplQName qname, xmlChar *value, bool allowReplace);

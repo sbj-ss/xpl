@@ -77,11 +77,6 @@ XPLPUBFUN size_t XPLCALL
 XPLPUBFUN void XPLCALL
 	xstrComposeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **normalizedPath, xmlChar **normalizedFilename);
 
-/* Reallocates str appending id decimal representation to its end. */
-/* TODO remove */
-XPLPUBFUN xmlChar* XPLCALL
-	xstrAppendThreadIdToString(xmlChar *str, XPR_THREAD_ID id);
-
 #ifdef __cplusplus
 }
 #endif

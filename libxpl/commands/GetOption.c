@@ -1,7 +1,6 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
-#include <libxpl/xplsession.h>
 #include <libxpl/xpltree.h>
 
 void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
@@ -69,7 +68,7 @@ void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	bool found;
 	xmlChar *value;
 
-	if (params->show_passwords && !xplSessionGetSaMode(commandInfo->document->session))
+	if (params->show_passwords && !xplDocSessionGetSaMode(commandInfo->document))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 		return;

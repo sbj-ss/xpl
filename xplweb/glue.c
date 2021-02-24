@@ -238,7 +238,7 @@ void setSessionCookie(struct mg_connection *conn, xplSessionPtr session)
 			}
 			mg_printf(conn, "\r\n");
 		}
-		xplMarkSessionAsSeen(session);
+		xplSessionMarkAsSeen(session);
 	}
 }
 
@@ -273,7 +273,7 @@ int serveXpl(struct mg_connection *conn, void *user_data)
 	/* session */
 	cookies = mg_get_header(conn, "Cookie");
 	if (cookies && mg_get_cookie(cookies, SESSION_ID_COOKIE, session_id, sizeof(session_id)) > 0)
-			session = xplSessionCreate(BAD_CAST session_id);
+			session = xplSessionCreateOrGetShared(BAD_CAST session_id);
 	if (!session)
 		session = xplSessionCreateWithAutoId();
 	/* params */

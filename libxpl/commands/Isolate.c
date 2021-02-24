@@ -99,7 +99,9 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplSessionPtr session;
 	xplError status;
 	xmlNodePtr content;
+#ifdef _THREADING_SUPPORT
 	xmlNodeSetPtr landing_point_path;
+#endif
 
 #ifndef _THREADING_SUPPORT
 	if (params->parallel)
@@ -128,9 +130,8 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	env = xplParamsCopy(commandInfo->document->environment);
 	if (params->share_session)
 	{
-		if (!commandInfo->document->session)
-			commandInfo->document->session = xplSessionCreateWithAutoId();
-		session = commandInfo->document->session;
+		xplDocSessionGetOrCreate(commandInfo->document, false);
+		session = commandInfo->document->shared_session;
 	} else
 		session = NULL;
 	if (!(child = _createChildDoc(commandInfo->document, commandInfo->element, params->inherit_macros, env, session)))
@@ -170,9 +171,9 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		} else
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "error \"%s\" processing child document", xplErrorToString(status)), true, true);
 		if (params->share_session)
-			child->session = NULL;
-		else if (child->session)
-			xplDeleteSession(xplSessionGetId(child->session));
+			child->shared_session = NULL;
+		else if (child->shared_session)
+			xplSessionDeleteShared(xplSessionGetId(child->shared_session));
 		xplDocumentFree(child);
 		xplParamsFree(env);
 	}

@@ -50,7 +50,8 @@ struct _xplDocument
 	xmlChar *origin;					/* initial document text if it was created from memory */
 	xmlChar *error;						/* early parsing error */
 	xplParamsPtr environment;			/* external parameters */
-	xplSessionPtr session;				/* session variables */
+	xplSessionPtr shared_session;		/* session variables */
+	xplSessionPtr local_session;		/* -//- */
 	xmlDocPtr document;					/* underlying XML document */
 	bool expand;						/* current expansion mode */
 	int recursion_level;				/* protection from infinite loops in macros */
@@ -101,7 +102,7 @@ XPLPUBFUN void XPLCALL
 	xplFinalizeDocThreads(xplDocumentPtr doc, bool force_mutex_cleanup);
 #endif
 
-/* per-document node stack (for :stack-xx) */
+/* per-document node stack (for :stack-*) */
 XPLPUBFUN void XPLCALL
 	xplPushToDocStack(xplDocumentPtr doc, xmlNodePtr node);
 XPLPUBFUN xmlNodePtr XPLCALL
@@ -110,6 +111,40 @@ XPLPUBFUN void XPLCALL
 	xplClearDocStack(xplDocumentPtr doc);
 XPLPUBFUN bool XPLCALL
 	xplDocStackIsEmpty(xplDocumentPtr doc);
+
+/* safe deletion for fool-proof mode */
+XPLPUBFUN void XPLCALL
+	xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur);
+XPLPUBFUN void XPLCALL
+	xplDeferNodeListDeletion(rbBufPtr buf, xmlNodePtr cur);
+XPLPUBFUN void XPLCALL
+	xplDocDeferNodeDeletion(xplDocumentPtr doc, xmlNodePtr cur);
+XPLPUBFUN void XPLCALL
+	xplDocDeferNodeListDeletion(xplDocumentPtr doc, xmlNodePtr cur);
+XPLPUBFUN void XPLCALL
+	xplDeleteDeferredNodes(rbBufPtr buf);
+
+/* session wrappers */
+XPLPUBFUN xplSessionPtr XPLCALL
+	xplDocSessionGetOrCreate(xplDocumentPtr doc, bool local);
+XPLPUBFUN bool XPLCALL
+	xplDocSessionExists(xplDocumentPtr doc, bool local);
+XPLPUBFUN xmlChar* XPLCALL
+	xplDocSessionGetId(xplDocumentPtr doc, bool local);
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplDocSessionGetObject(xplDocumentPtr doc, bool local, const xmlChar *name, const xmlNodePtr parent, const xmlChar *select, bool *ok);
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplDocSessionGetAllObjects(xplDocumentPtr doc, bool local, const xmlNodePtr parent, const xmlChar *select, bool *ok);
+XPLPUBFUN bool XPLCALL
+	xplDocSessionSetObject(xplDocumentPtr doc, bool local, const xmlNodePtr cur, const xmlChar *name);
+XPLPUBFUN void XPLCALL
+	xplDocSessionRemoveObject(xplDocumentPtr doc, bool local, const xmlChar *name);
+XPLPUBFUN void XPLCALL
+	xplDocSessionClear(xplDocumentPtr doc, bool local);
+XPLPUBFUN bool XPLCALL
+	xplDocSessionGetSaMode(xplDocumentPtr doc); // no local param here: any session will do
+XPLPUBFUN bool XPLCALL
+	xplDocSessionSetSaMode(xplDocumentPtr doc, bool local, bool enable, xmlChar *password);
 
 XPLPUBFUN bool XPLCALL
 	xplCheckNodeForXplNs(xplDocumentPtr doc, xmlNodePtr element);
@@ -136,19 +171,7 @@ XPLPUBFUN xplMacroPtr XPLCALL
 		xmlChar *id
 	);
 
-XPLPUBFUN void XPLCALL
-	xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur);
-XPLPUBFUN void XPLCALL
-	xplDeferNodeListDeletion(rbBufPtr buf, xmlNodePtr cur);
-XPLPUBFUN void XPLCALL
-	xplDocDeferNodeDeletion(xplDocumentPtr doc, xmlNodePtr cur);
-XPLPUBFUN void XPLCALL
-	xplDocDeferNodeListDeletion(xplDocumentPtr doc, xmlNodePtr cur);
-XPLPUBFUN void XPLCALL 
-	xplDeleteDeferredNodes(rbBufPtr buf);
-
 /* application hooks */
-
 XPLPUBFUN void XPLCALL
 	xplLockThreads(bool doLock);
 

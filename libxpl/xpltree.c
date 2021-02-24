@@ -1332,7 +1332,7 @@ bool xplCompareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool ch
 	}
 }
 
-xmlXPathObjectPtr xplSelectNodesWithCtxt(xmlXPathContextPtr ctxt, xmlNodePtr src, xmlChar *expr)
+xmlXPathObjectPtr xplSelectNodesWithCtxt(xmlXPathContextPtr ctxt, const xmlNodePtr src, const xmlChar *expr)
 {
     xmlXPathObjectPtr ret;
 

@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
 
 cleanup:
 	if (session)
-		xplDeleteSession(xplSessionGetId(session));
+		xplSessionDeleteShared(xplSessionGetId(session));
 	if (env)
 		xplParamsFree(env);
 	xplShutdownEngine();

@@ -23,6 +23,7 @@ typedef struct _xplSession
 	bool valid;
 	bool sa_mode;
 	bool just_created;
+	bool local;
 	XPR_MUTEX locker;
 } xplSession;
 
@@ -58,9 +59,11 @@ static void _sessionFree(xplSessionPtr session)
 		/* we don't specify a deallocator here because items are doc children */
 		xmlHashFree(session->items, NULL);
 		xmlFreeDoc(session->doc);
-		XPL_FREE(session->id);
-		if (!xprMutexCleanup(&session->locker))
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
+		if (session->id)
+			XPL_FREE(session->id);
+		if (!session->local)
+			if (!xprMutexCleanup(&session->locker))
+				DISPLAY_INTERNAL_ERROR_MESSAGE();
 		XPL_FREE(session);
 	}
 }
@@ -88,7 +91,7 @@ void xplSessionManagerCleanup()
 }
 
 /* manager-level */
-static xplSessionPtr _sessionCreateInner(xmlChar *id)
+static xplSessionPtr _sessionCreateInternal(xmlChar *id, bool local)
 {
 	xplSessionPtr ret;
 	xmlNodePtr root;
@@ -97,7 +100,7 @@ static xplSessionPtr _sessionCreateInner(xmlChar *id)
 	if (!ret)
 		return NULL;
 	memset(ret, 0, sizeof(xplSession));
-	if (!xprMutexInit(&ret->locker))
+	if (!local && !xprMutexInit(&ret->locker))
 	{
 		XPL_FREE(ret);
 		return NULL;
@@ -105,13 +108,16 @@ static xplSessionPtr _sessionCreateInner(xmlChar *id)
 	ret->items = xmlHashCreate(16);
 	ret->doc = xmlNewDoc(BAD_CAST "1.0");
 	root = xmlNewDocNode(ret->doc, NULL, BAD_CAST "Root", NULL);
-	(void) xmlNewProp(root, BAD_CAST "id", id);
+	if (id)
+		(void) xmlNewProp(root, BAD_CAST "id", id);
 	xplSetChildren((xmlNodePtr) ret->doc, root);
 	time(&ret->init_ts);
 	ret->id = id;
 	ret->valid = true;
 	ret->just_created = true;
-	xmlHashAddEntry(session_mgr, id, (void*) ret);
+	ret->local = local;
+	if (!local)
+		xmlHashAddEntry(session_mgr, id, (void*) ret);
 	return ret;
 }
 
@@ -132,9 +138,9 @@ static xplSessionPtr _sessionLookupInternal(const xmlChar *id) // eats id
 	return ret;
 }
 
-xplSessionPtr xplSessionCreate(const xmlChar *id)
+xplSessionPtr xplSessionCreateOrGetShared(const xmlChar *id)
 {
-	xplSessionPtr s;
+	xplSessionPtr ret;
 	xmlChar *id_copy;
 
 	if (!session_mgr)
@@ -144,15 +150,14 @@ xplSessionPtr xplSessionCreate(const xmlChar *id)
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		return NULL;
 	}
-	s = _sessionLookupInternal(id);
-	if (!s)
+	if (!(ret = _sessionLookupInternal(id)))
 	{
-		id_copy = BAD_CAST XPL_STRDUP((char*) id);
-		s = _sessionCreateInner(id_copy);
+		id_copy = id? BAD_CAST XPL_STRDUP((char*) id): NULL;
+		ret = _sessionCreateInternal(id_copy, false);
 	}
 	if (!xprMutexRelease(&session_interlock))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	return s;
+	return ret;
 }
 
 xplSessionPtr xplSessionCreateWithAutoId()
@@ -188,10 +193,15 @@ xplSessionPtr xplSessionCreateWithAutoId()
 		if ((flag = !!_sessionLookupInternal(id)))
 			XPL_FREE(id);
 	}
-	ret = _sessionCreateInner(id);
+	ret = _sessionCreateInternal(id, false);
 	if (!xprMutexRelease(&session_interlock))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	return ret;
+}
+
+xplSessionPtr xplSessionCreateLocal()
+{
+	return _sessionCreateInternal(NULL, true);
 }
 
 xplSessionPtr xplSessionLookup(const xmlChar *id)
@@ -211,7 +221,17 @@ xplSessionPtr xplSessionLookup(const xmlChar *id)
 	return ret;
 }
 
-void xplDeleteSession(const xmlChar *id)
+void xplSessionFreeLocal(xplSessionPtr session)
+{
+	if (!session->local)
+	{
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return;
+	}
+	_sessionFree(session);
+}
+
+void xplSessionDeleteShared(const xmlChar *id)
 {
 	if (!session_mgr)
 		return;
@@ -247,18 +267,18 @@ void xplCleanupStaleSessions()
 }
 
 /* session-level */
-int xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlChar *name)
+bool xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlChar *name)
 {
 	xmlNodePtr prev;
 	int ret;
 	xmlNodePtr new_parent;
 
 	if (!session)
-		return -1;
+		return false;
 	if (!xprMutexAcquire(&session->locker))
 	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return -1;
+		return false;
 	}
 	new_parent = xmlNewDocNode(session->doc, NULL, name, NULL);
 	xplSetChildren(new_parent, cur->children);
@@ -277,9 +297,9 @@ int xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlCh
 	{
 		xmlUnlinkNode(prev);
 		xmlFreeNode(prev);
-		ret = xmlHashUpdateEntry(session->items, name, (void*) new_parent, NULL);
+		ret = !xmlHashUpdateEntry(session->items, name, (void*) new_parent, NULL);
 	} else
-		ret = xmlHashAddEntry(session->items, name, (void*) new_parent);
+		ret = !xmlHashAddEntry(session->items, name, (void*) new_parent);
 	time(&session->init_ts);
 	session->valid = true;
 	if (!xprMutexRelease(&session->locker))
@@ -289,8 +309,14 @@ int xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlCh
 
 xmlNodePtr xplSessionGetObject(const xplSessionPtr session, const xmlChar *name)
 {
-	xmlNodePtr carrier;
+	if (!session || !session->valid)
+		return NULL;
+	time(&session->init_ts);
+	return (xmlNodePtr) xmlHashLookup(session->items, name);
+}
 
+xmlNodePtr xplSessionAccessObject(const xplSessionPtr session, const xmlChar *name)
+{
 	if (!session || !session->valid)
 		return NULL;
 	if (!xprMutexAcquire(&session->locker))
@@ -298,17 +324,19 @@ xmlNodePtr xplSessionGetObject(const xplSessionPtr session, const xmlChar *name)
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		return NULL;
 	}
-	carrier = (xmlNodePtr) xmlHashLookup(session->items, name);
-	time(&session->init_ts);
-	if (!xprMutexRelease(&session->locker))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	return carrier;
+	return xplSessionGetObject(session, name);
 }
 
 xmlNodePtr xplSessionGetAllObjects(const xplSessionPtr session)
 {
-	xmlNodePtr ret;
+	if (!session || !session->valid)
+		return NULL;
+	time(&session->init_ts);
+	return session->doc->children;
+}
 
+xmlNodePtr xplSessionAccessAllObjects(const xplSessionPtr session)
+{
 	if (!session || !session->valid)
 		return NULL;
 	if (!xprMutexAcquire(&session->locker))
@@ -316,11 +344,14 @@ xmlNodePtr xplSessionGetAllObjects(const xplSessionPtr session)
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		return NULL;
 	}
-	time(&session->init_ts);
-	ret = session->doc->children;
-	if (!xprMutexRelease(&session->locker))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	return ret;
+	return xplSessionGetAllObjects(session);
+}
+
+void xplSessionUnaccess(const xplSessionPtr session)
+{
+	if (session && session->valid)
+		if (!xprMutexRelease(&session->locker))
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
 }
 
 void xplSessionRemoveObject(xplSessionPtr session, const xmlChar *name)
@@ -350,7 +381,7 @@ void xplSessionClear(xplSessionPtr session)
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 }
 
-xmlChar *xplSessionGetId(xplSessionPtr session)
+xmlChar* xplSessionGetId(xplSessionPtr session)
 {
 	if (!session)
 		return NULL;
@@ -420,7 +451,7 @@ bool xplSessionIsJustCreated(xplSessionPtr session)
 	return session->just_created;
 }
 
-void xplMarkSessionAsSeen(xplSessionPtr session)
+void xplSessionMarkAsSeen(xplSessionPtr session)
 {
 	if (session)
 		session->just_created = false;

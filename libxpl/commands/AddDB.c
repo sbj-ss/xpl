@@ -1,6 +1,5 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplsession.h>
 #include <libxpl/xpltree.h>
 
 void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
@@ -51,7 +50,7 @@ void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplCmdAddDBParamsPtr params = (xplCmdAddDBParamsPtr) commandInfo->params;
 	xplDBConfigResult cfg_result;
 
-	if (!xplSessionGetSaMode(commandInfo->document->session))
+	if (!xplDocSessionGetSaMode(commandInfo->document))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 		return;

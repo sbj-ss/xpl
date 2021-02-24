@@ -1,20 +1,18 @@
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplcore.h>
-#include <libxpl/xplsession.h>
-#include <libxpl/xplstring.h>
 
 void xplCmdSessionContainsObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
 typedef struct _xplCmdSessionContainsObjectParams
 {
 	xmlChar *name;
-	bool thread_local;
+	bool local;
 } xplCmdSessionContainsObjectParams, *xplCmdSessionContainsObjectParamsPtr;
 
 static const xplCmdSessionContainsObjectParams params_stencil =
 {
 	.name = NULL,
-	.thread_local = false
+	.local = false
 };
 
 xplCommand xplSessionContainsObjectCommand =
@@ -30,9 +28,9 @@ xplCommand xplSessionContainsObjectCommand =
 			.type = XPL_CMD_PARAM_TYPE_NCNAME,
 			.value_stencil = &params_stencil.name
 		}, {
-			.name = BAD_CAST "threadlocal",
+			.name = BAD_CAST "local",
 			.type = XPL_CMD_PARAM_TYPE_BOOL,
-			.value_stencil = &params_stencil.thread_local
+			.value_stencil = &params_stencil.local
 		}, {
 			.name = NULL
 		}
@@ -45,13 +43,9 @@ void xplCmdSessionContainsObjectEpilogue(xplCommandInfoPtr commandInfo, xplResul
 	bool ret_value;
 	xmlNodePtr ret;
 
-	ret_value = (commandInfo->document->session && xplSessionIsValid(commandInfo->document->session));
-	if (params->name)
-	{
-		if (params->thread_local)
-			params->name = xstrAppendThreadIdToString(params->name, xprGetCurrentThreadId());
-		ret_value = ret_value && xplSessionGetObject(commandInfo->document->session, params->name);
-	}
+	ret_value = xplDocSessionExists(commandInfo->document, params->local);
+	if (ret_value && params->name)
+		ret_value = xplSessionGetObject(xplDocSessionGetOrCreate(commandInfo->document, params->local), params->name);
 	ret = xmlNewDocText(commandInfo->document->document, ret_value? BAD_CAST "true": BAD_CAST "false");
 	ASSIGN_RESULT(ret, false, true);	
 }

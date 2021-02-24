@@ -1,5 +1,4 @@
 #include <libxpl/xplcore.h>
-#include <libxpl/xplsession.h>
 
 void xplCmdGetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
@@ -16,7 +15,7 @@ void xplCmdGetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlNodePtr ret;
 	xmlChar *txt;
 
-	if (xplSessionGetSaMode(commandInfo->document->session))
+	if (xplDocSessionGetSaMode(commandInfo->document))
 		txt = BAD_CAST "true";
 	else 
 		txt = BAD_CAST "false";

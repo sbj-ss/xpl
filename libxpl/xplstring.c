@@ -517,17 +517,3 @@ void xstrComposeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar *
 	if (*normalizedPath)
 		xprConvertSlashes(*normalizedPath);
 }
-
-xmlChar* xstrAppendThreadIdToString(xmlChar *str, XPR_THREAD_ID id)
-{
-	size_t len;
-	char buf[17];
-
-	len = xmlStrlen(str);
-	str = (xmlChar*) XPL_REALLOC(str, len + sizeof(buf));
-	if (!str)
-		return NULL;
-	snprintf(buf, sizeof(buf), XPR_THREAD_ID_FORMAT, id);
-	strcpy((char*) (str+len), buf);
-	return str;
-}

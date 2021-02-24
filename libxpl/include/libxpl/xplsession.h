@@ -19,29 +19,42 @@ extern "C" {
 /* session object */
 #define XPL_SESSION_ID_SIZE 16
 typedef struct _xplSession* xplSessionPtr;
+
 /* start/stop */
 XPLPUBFUN bool XPLCALL
 	xplSessionManagerInit(time_t max_lifetime);
 XPLPUBFUN void XPLCALL
 	xplSessionManagerCleanup(void);
+
 /* manager-level functions */
 XPLPUBFUN xplSessionPtr XPLCALL
-	xplSessionCreate(const xmlChar *id);
+	xplSessionCreateOrGetShared(const xmlChar *id);
 XPLPUBFUN xplSessionPtr XPLCALL
 	xplSessionCreateWithAutoId(void);
 XPLPUBFUN xplSessionPtr XPLCALL
 	xplSessionLookup(const xmlChar *id);
 XPLPUBFUN void XPLCALL
-	xplDeleteSession(const xmlChar *id);
+	xplSessionDeleteShared(const xmlChar *id);
 XPLPUBFUN void XPLCALL
 	xplCleanupStaleSessions(void);
+
 /* session-level functions */
-XPLPUBFUN int XPLCALL
+XPLPUBFUN xplSessionPtr XPLCALL
+	xplSessionCreateLocal(void);
+XPLPUBFUN void XPLCALL
+	xplSessionFreeLocal(xplSessionPtr session);
+XPLPUBFUN bool XPLCALL
 	xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlChar *name);
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplSessionGetObject(const xplSessionPtr session, const xmlChar *name);
 XPLPUBFUN xmlNodePtr XPLCALL
+	xplSessionAccessObject(const xplSessionPtr session, const xmlChar *name);
+XPLPUBFUN xmlNodePtr XPLCALL
 	xplSessionGetAllObjects(const xplSessionPtr session);
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplSessionAccessAllObjects(const xplSessionPtr session);
+XPLPUBFUN void XPLCALL
+	xplSessionUnaccess(const xplSessionPtr session);
 XPLPUBFUN void XPLCALL
 	xplSessionRemoveObject(xplSessionPtr session, const xmlChar *name);
 XPLPUBFUN void XPLCALL
@@ -57,7 +70,7 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN bool XPLCALL
 	xplSessionIsJustCreated(xplSessionPtr session);
 XPLPUBFUN void XPLCALL
-	xplMarkSessionAsSeen(xplSessionPtr session);
+	xplSessionMarkAsSeen(xplSessionPtr session);
 
 #ifdef __cplusplus
 }

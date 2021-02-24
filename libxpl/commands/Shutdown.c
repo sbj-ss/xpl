@@ -1,7 +1,6 @@
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplsession.h>
 
 void xplCmdShutdownEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
 
@@ -15,7 +14,7 @@ xplCommand xplShutdownCommand =
 
 void xplCmdShutdownEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	if (xplSessionGetSaMode(commandInfo->document->session))
+	if (xplDocSessionGetSaMode(commandInfo->document))
 		xprShutdownApp();
 	else
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);

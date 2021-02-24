@@ -43,7 +43,7 @@ void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplCmdRemoveDBParamsPtr params = (xplCmdRemoveDBParamsPtr) commandInfo->params;
 	xplDBConfigResult cfg_result;
 
-	if (!xplSessionGetSaMode(commandInfo->document->session))
+	if (!xplDocSessionGetSaMode(commandInfo->document))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 		return;

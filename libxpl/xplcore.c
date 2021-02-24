@@ -72,162 +72,7 @@ const xmlChar* xplErrorToShortString(xplError error)
 	}
 }
 
-/* per-document node stack (for xpl:stack-xxx) */
-void xplPushToDocStack(xplDocumentPtr doc, xmlNodePtr node)
-{
-	xmlNodePtr new_parent;
-
-	if (!doc)
-		return;
-	new_parent = xmlNewDocNode(doc->document, NULL, BAD_CAST "carrier", NULL);
-	xplSetChildren(new_parent, node->children);
-	xplSetChildren(node, new_parent);
-	xplMakeNsSelfContainedTree(new_parent);
-	xplSetChildren(node, NULL);
-	new_parent->prev = doc->stack;
-	new_parent->parent = NULL;
-	doc->stack = new_parent;
-}
-
-xmlNodePtr xplPopFromDocStack(xplDocumentPtr doc, xmlNodePtr parent)
-{
-	xmlNodePtr ret, carrier;
-
-	if (!doc || !doc->stack)
-		return NULL;
-	carrier = doc->stack;
-	doc->stack = carrier->prev;
-	carrier->prev = NULL;
-	ret = xplDetachChildren(carrier);
-	xplLiftNsDefs(parent, carrier, ret);
-	xmlFreeNode(carrier);
-	return ret;
-}
-
-void xplClearDocStack(xplDocumentPtr doc)
-{
-	if (!doc || !doc->stack)
-		return;
-	while (doc->stack->prev)
-		doc->stack = doc->stack->prev;
-	xmlFreeNodeList(doc->stack);
-	doc->stack = NULL;
-}
-
-bool xplDocStackIsEmpty(xplDocumentPtr doc)
-{
-	if (!doc)
-		return true;
-	if (!doc->stack)
-		return true;
-	return false;
-}
-
-/* Node deferred deletion */
-void xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur)
-{
-	if (!buf || !cur)
-		return;
-	if ((int) cur->type & XPL_NODE_DELETION_DEFERRED_FLAG)
-		return;
-	xmlUnlinkNode(cur);
-	xplMarkDOSAxisForDeletion(cur, XPL_NODE_DELETION_DEFERRED_FLAG, true);
-	rbAddDataToBuf(buf, &cur, sizeof(xmlNodePtr));
-}
-
-void xplDeferNodeListDeletion(rbBufPtr buf, xmlNodePtr cur)
-{
-	xmlNodePtr next;
-
-	if (!buf)
-		return;
-	while (cur)
-	{
-		next = cur->next;
-		xplDeferNodeDeletion(buf, cur);
-		cur = next;
-	}
-}
-
-static bool _ensureDeletedNodesSupport(xplDocumentPtr doc)
-{
-	if (doc->deleted_nodes)
-		return true;
-	return !!(doc->deleted_nodes = rbCreateBufParams(32, RB_GROW_DOUBLE, 2));
-}
-
-void xplDocDeferNodeDeletion(xplDocumentPtr doc, xmlNodePtr cur)
-{
-	if (!doc || !cur)
-		return;
-	if (cfgFoolproofDestructiveCommands && doc->iterator_spin)
-	{
-		_ensureDeletedNodesSupport(doc);
-		xplDeferNodeDeletion(doc->deleted_nodes, cur);
-	} else {
-		xmlUnlinkNode(cur);
-		xmlFreeNode(cur);
-	}
-}
-
-void xplDocDeferNodeListDeletion(xplDocumentPtr doc, xmlNodePtr cur)
-{
-	if (!doc || !cur)
-		return;
-	if (cfgFoolproofDestructiveCommands && doc->iterator_spin)
-	{
-		_ensureDeletedNodesSupport(doc);
-		xplDeferNodeListDeletion(doc->deleted_nodes, cur);
-	} else
-		xmlFreeNodeList(cur);
-}
-
-void xplDeleteDeferredNodes(rbBufPtr buf)
-{
-	size_t i = 0;
-	xmlNodePtr *p = rbGetBufContent(buf);
-
-	for (i = 0; i < rbGetBufContentSize(buf) / sizeof(xmlNodePtr); i++, p++)
-	{
-		xplMarkDOSAxisForDeletion(*p, XPL_NODE_DELETION_MASK, false);
-		xmlUnlinkNode(*p);
-		xmlFreeNode(*p);
-	}
-	rbRewindBuf(buf);
-}
-
-void xplLockThreads(bool doLock)
-{
-	if (doLock)
-	{
-		xprInterlockedDecrement(&active_thread_count);
-		if (!xprMutexAcquire(&global_conf_mutex))
-			DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
-		while (active_thread_count)
-			xprSleep(100);
-	} else {
-		xprInterlockedIncrement(&active_thread_count);
-		if (!xprMutexRelease(&global_conf_mutex))
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-	}
-}
-
-xplGetAppTypeFunc xplSetGetAppTypeFunc(xplGetAppTypeFunc f)
-{
-	xplGetAppTypeFunc tmp = get_app_type_func;
-	get_app_type_func = f;
-	return tmp;
-}
-
-xmlChar* xplGetAppType()
-{
-	if (get_app_type_func)
-		return get_app_type_func();
-	return BAD_CAST "unknown";
-}
-
 /* common document initialization part */
-
 static void _xpathDummyError(void *data, xmlErrorPtr error)
 {
 	UNUSED_PARAM(data);
@@ -279,7 +124,7 @@ xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xpl
 	}
 	doc->xpath_ctxt->error = _xpathDummyError;
 	doc->expand = true;
-	doc->session = aSession;
+	doc->shared_session = aSession;
 	doc->environment = aEnvironment;
 	doc->status = XPL_ERR_NOT_YET_REACHED;
 	return doc;
@@ -353,6 +198,8 @@ void xplDocumentFree(xplDocumentPtr doc)
 		XPL_FREE(doc->error);
 	if (doc->async && doc->environment)
 		xplParamsFree(doc->environment);
+	if (doc->local_session)
+		xplSessionFreeLocal(doc->local_session);
 	if (doc->xpath_ctxt)
 		xmlXPathFreeContext(doc->xpath_ctxt);
 	if (doc->response)
@@ -542,6 +389,302 @@ void xplFinalizeDocThreads(xplDocumentPtr doc, bool force_mutex_cleanup)
 }
 #endif
 
+/* per-document node stack (for xpl:stack-xxx) */
+void xplPushToDocStack(xplDocumentPtr doc, xmlNodePtr node)
+{
+	xmlNodePtr new_parent;
+
+	if (!doc)
+		return;
+	new_parent = xmlNewDocNode(doc->document, NULL, BAD_CAST "carrier", NULL);
+	xplSetChildren(new_parent, node->children);
+	xplSetChildren(node, new_parent);
+	xplMakeNsSelfContainedTree(new_parent);
+	xplSetChildren(node, NULL);
+	new_parent->prev = doc->stack;
+	new_parent->parent = NULL;
+	doc->stack = new_parent;
+}
+
+xmlNodePtr xplPopFromDocStack(xplDocumentPtr doc, xmlNodePtr parent)
+{
+	xmlNodePtr ret, carrier;
+
+	if (!doc || !doc->stack)
+		return NULL;
+	carrier = doc->stack;
+	doc->stack = carrier->prev;
+	carrier->prev = NULL;
+	ret = xplDetachChildren(carrier);
+	xplLiftNsDefs(parent, carrier, ret);
+	xmlFreeNode(carrier);
+	return ret;
+}
+
+void xplClearDocStack(xplDocumentPtr doc)
+{
+	if (!doc || !doc->stack)
+		return;
+	while (doc->stack->prev)
+		doc->stack = doc->stack->prev;
+	xmlFreeNodeList(doc->stack);
+	doc->stack = NULL;
+}
+
+bool xplDocStackIsEmpty(xplDocumentPtr doc)
+{
+	if (!doc)
+		return true;
+	if (!doc->stack)
+		return true;
+	return false;
+}
+
+/* Node deferred deletion */
+void xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur)
+{
+	if (!buf || !cur)
+		return;
+	if ((int) cur->type & XPL_NODE_DELETION_DEFERRED_FLAG)
+		return;
+	xmlUnlinkNode(cur);
+	xplMarkDOSAxisForDeletion(cur, XPL_NODE_DELETION_DEFERRED_FLAG, true);
+	rbAddDataToBuf(buf, &cur, sizeof(xmlNodePtr));
+}
+
+void xplDeferNodeListDeletion(rbBufPtr buf, xmlNodePtr cur)
+{
+	xmlNodePtr next;
+
+	if (!buf)
+		return;
+	while (cur)
+	{
+		next = cur->next;
+		xplDeferNodeDeletion(buf, cur);
+		cur = next;
+	}
+}
+
+static bool _ensureDeletedNodesSupport(xplDocumentPtr doc)
+{
+	if (doc->deleted_nodes)
+		return true;
+	return !!(doc->deleted_nodes = rbCreateBufParams(32, RB_GROW_DOUBLE, 2));
+}
+
+void xplDocDeferNodeDeletion(xplDocumentPtr doc, xmlNodePtr cur)
+{
+	if (!doc || !cur)
+		return;
+	if (cfgFoolproofDestructiveCommands && doc->iterator_spin)
+	{
+		_ensureDeletedNodesSupport(doc);
+		xplDeferNodeDeletion(doc->deleted_nodes, cur);
+	} else {
+		xmlUnlinkNode(cur);
+		xmlFreeNode(cur);
+	}
+}
+
+void xplDocDeferNodeListDeletion(xplDocumentPtr doc, xmlNodePtr cur)
+{
+	if (!doc || !cur)
+		return;
+	if (cfgFoolproofDestructiveCommands && doc->iterator_spin)
+	{
+		_ensureDeletedNodesSupport(doc);
+		xplDeferNodeListDeletion(doc->deleted_nodes, cur);
+	} else
+		xmlFreeNodeList(cur);
+}
+
+void xplDeleteDeferredNodes(rbBufPtr buf)
+{
+	size_t i = 0;
+	xmlNodePtr *p = rbGetBufContent(buf);
+
+	for (i = 0; i < rbGetBufContentSize(buf) / sizeof(xmlNodePtr); i++, p++)
+	{
+		xplMarkDOSAxisForDeletion(*p, XPL_NODE_DELETION_MASK, false);
+		xmlUnlinkNode(*p);
+		xmlFreeNode(*p);
+	}
+	rbRewindBuf(buf);
+}
+
+/* session wrappers */
+static xmlNodePtr _selectAndCopyNodes(
+	const xplDocumentPtr doc,
+	const xmlNodePtr src,
+	const xmlChar *select,
+	const xmlNodePtr parent,
+	bool *ok
+)
+{
+	xmlXPathObjectPtr sel;
+	xmlNodePtr cur, head, tail;
+	size_t i;
+
+	*ok = true;
+	sel = xplSelectNodesWithCtxt(doc->xpath_ctxt, src, select);
+	if (!sel)
+	{
+		*ok = false;
+		return xplCreateErrorNode(parent, BAD_CAST "invalid select XPath expression '%s'", select);
+	}
+	head = tail = NULL;
+	if ((sel->type == XPATH_NODESET) && sel->nodesetval)
+	{
+		for (i = 0; i < (size_t) sel->nodesetval->nodeNr; i++)
+		{
+			cur = xplCloneAsNodeChild(sel->nodesetval->nodeTab[i], parent);
+			if (head)
+			{
+				tail->next = cur;
+				cur->prev = tail;
+				tail = cur;
+			} else
+				head = tail = cur;
+		}
+	} else if (sel->type != XPATH_UNDEFINED) {
+		head = xmlNewDocText(parent->doc, NULL);
+		head->content = xmlXPathCastToString(sel);
+	} else {
+		*ok = false;
+		head = xplCreateErrorNode(parent, BAD_CAST "select XPath expression '%s' evaluated to undef", select);
+	}
+	xmlXPathFreeObject(sel);
+	return head;
+}
+
+xplSessionPtr xplDocSessionGetOrCreate(xplDocumentPtr doc, bool local)
+{
+	if (local)
+	{
+		if (!doc->local_session)
+			doc->local_session = xplSessionCreateLocal();
+		return doc->local_session;
+	} else {
+		if (!doc->shared_session)
+			doc->shared_session = xplSessionCreateWithAutoId();
+		return doc->shared_session;
+	}
+}
+
+bool xplDocSessionExists(xplDocumentPtr doc, bool local)
+{
+	if (local)
+		return doc->local_session && xplSessionIsValid(doc->local_session);
+	return doc->shared_session && xplSessionIsValid(doc->shared_session);
+}
+
+xmlChar* xplDocSessionGetId(xplDocumentPtr doc, bool local)
+{
+	xmlChar *id;
+	xplSessionPtr session;
+
+	session = local? doc->local_session: doc->shared_session;
+	if (!session)
+		return NULL;
+	id = xplSessionGetId(session);
+	return id? BAD_CAST XPL_STRDUP(id): NULL;
+}
+
+xmlNodePtr xplDocSessionGetObject(xplDocumentPtr doc, bool local, const xmlChar *name, const xmlNodePtr parent, const xmlChar *select, bool *ok)
+{
+	xplSessionPtr session;
+	xmlNodePtr obj, ret;
+
+	*ok = true;
+	session = local? doc->local_session: doc->shared_session;
+	if (!session)
+		return NULL;
+	if (local)
+		obj = xplSessionGetObject(session, name);
+	else
+		obj = xplSessionAccessObject(session, name);
+	if (select)
+		ret = obj? _selectAndCopyNodes(doc, obj, select, parent, ok): NULL;
+	else if (obj)
+		ret = xplCloneNodeList(obj->children, parent, parent->doc);
+	else
+		ret = NULL;
+	if (!local)
+		xplSessionUnaccess(session);
+	return ret;
+}
+
+xmlNodePtr xplDocSessionGetAllObjects(xplDocumentPtr doc, bool local, const xmlNodePtr parent, const xmlChar *select, bool *ok)
+{
+	xplSessionPtr session;
+	xmlNodePtr obj, ret, cur;
+
+	*ok = true;
+	session = local? doc->local_session: doc->shared_session;
+	if (!session)
+		return NULL;
+	if (local)
+		obj = xplSessionGetAllObjects(session);
+	else
+		obj = xplSessionAccessAllObjects(session);
+	if (select)
+		ret = obj? _selectAndCopyNodes(doc, obj, select, parent, ok): NULL;
+	else {
+		cur = ret = obj? xplCloneNodeList(obj->children, parent, parent->doc): NULL;
+		while (cur)
+		{
+			xplLiftNsDefs(parent, cur, cur->children);
+			cur = cur->next;
+		}
+	}
+	if (!local)
+		xplSessionUnaccess(session);
+	return ret;
+}
+
+bool xplDocSessionSetObject(xplDocumentPtr doc, bool local, const xmlNodePtr cur, const xmlChar *name)
+{
+	xplSessionPtr session;
+
+	session = xplDocSessionGetOrCreate(doc, local);
+	return xplSessionSetObject(session, cur, name);
+}
+
+void xplDocSessionRemoveObject(xplDocumentPtr doc, bool local, const xmlChar *name)
+{
+	xplSessionPtr session;
+
+	session = local? doc->local_session: doc->shared_session;
+	if (session)
+		xplSessionRemoveObject(session, name);
+}
+
+void xplDocSessionClear(xplDocumentPtr doc, bool local)
+{
+	xplSessionPtr session;
+
+	session = local? doc->local_session: doc->shared_session;
+	if (session)
+		xplSessionClear(session);
+}
+
+bool xplDocSessionGetSaMode(xplDocumentPtr doc)
+{
+	if (doc->local_session && xplSessionGetSaMode(doc->local_session))
+		return true;
+	if (doc->shared_session)
+		return xplSessionGetSaMode(doc->shared_session);
+	return false;
+}
+
+bool xplDocSessionSetSaMode(xplDocumentPtr doc, bool local, bool enable, xmlChar *password)
+{
+	xplSessionPtr session;
+
+	session = xplDocSessionGetOrCreate(doc, local);
+	return xplSessionSetSaMode(session, enable, password);
+}
 
 bool xplCheckNodeForXplNs(xplDocumentPtr doc, xmlNodePtr element)
 {
@@ -660,7 +803,7 @@ xmlNodePtr xplReplaceContentEntries(
 					new_content = xplCloneNodeList(new_content, parent, oldElement->doc);
 			} else
 				new_content = NULL;
-			if (!new_content) /* get new content by selector */
+			if (!new_content) /* get new content by selector */ /* TODO _selectAndCopyNodes() */
 			{
 				sel = xplSelectNodesWithCtxt(doc->xpath_ctxt, oldElement, select_attr);
 				if (sel)
@@ -1062,6 +1205,36 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "Cannot save debug output to \"%s\", check that the file location exists and is writable", cfgDebugSaveFile);
 	}
 	return ret;
+}
+
+void xplLockThreads(bool doLock)
+{
+	if (doLock)
+	{
+		xprInterlockedDecrement(&active_thread_count);
+		if (!xprMutexAcquire(&global_conf_mutex))
+			DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
+		while (active_thread_count)
+			xprSleep(100);
+	} else {
+		xprInterlockedIncrement(&active_thread_count);
+		if (!xprMutexRelease(&global_conf_mutex))
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
+	}
+}
+
+xplGetAppTypeFunc xplSetGetAppTypeFunc(xplGetAppTypeFunc f)
+{
+	xplGetAppTypeFunc tmp = get_app_type_func;
+	get_app_type_func = f;
+	return tmp;
+}
+
+xmlChar* xplGetAppType()
+{
+	if (get_app_type_func)
+		return get_app_type_func();
+	return BAD_CAST "unknown";
 }
 
 bool xplReadConfig()

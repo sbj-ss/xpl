@@ -1,25 +1,45 @@
 #include <libxpl/xplcore.h>
-#include <libxpl/xplsession.h>
 
 void xplCmdSessionGetIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
+
+typedef struct _xplCmdSessionGetIdParams
+{
+	bool local;
+} xplCmdSessionGetIdParams, *xplCmdSessionGetIdParamsPtr;
+
+static const xplCmdSessionGetIdParams params_stencil =
+{
+	.local = false
+};
 
 xplCommand xplSessionGetIdCommand =
 {
 	.prologue = NULL,
 	.epilogue = xplCmdSessionGetIdEpilogue,
-	.flags = 0,
-	.params_stencil = NULL
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
+	.params_stencil = &params_stencil,
+	.stencil_size = sizeof(xplCmdSessionGetIdParams),
+	.parameters = {
+		{
+			.name = BAD_CAST "local",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.local
+		}, {
+			.name = NULL
+		}
+	}
 };
 
 void xplCmdSessionGetIdEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xmlNodePtr ret;
+	xplCmdSessionGetIdParamsPtr params = (xplCmdSessionGetIdParamsPtr) commandInfo->params;
+	xmlNodePtr ret = NULL;
 	xmlChar *id;
 
-	id = xplSessionGetId(commandInfo->document->session);
-	if (id)
-		ret = xmlNewDocText(commandInfo->document->document, id);
-	else
-		ret = NULL;
+	if ((id = xplDocSessionGetId(commandInfo->document, params->local)))
+	{
+		ret = xmlNewDocText(commandInfo->document->document, NULL);
+		ret->content = id;
+	}
 	ASSIGN_RESULT(ret, false, true);
 }

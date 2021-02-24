@@ -13,7 +13,7 @@ xplCommand xplRehashCommand =
 
 void xplCmdRehashEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	if (!xplSessionGetSaMode(commandInfo->document->session))
+	if (!xplDocSessionGetSaMode(commandInfo->document))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 		return;

@@ -1,6 +1,5 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
-#include <libxpl/xplsession.h>
 #include <libxpl/xpltree.h>
 
 void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
@@ -69,7 +68,7 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "showtags and tagname can't be used simultaneously"), true, true);
 		return;
 	}
-	if (!xplSessionGetSaMode(commandInfo->document->session))
+	if (!xplDocSessionGetSaMode(commandInfo->document))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
 		return;
