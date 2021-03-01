@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <libxpl/abstraction/xpr.h>
 
 void xprConvertSlashes(xmlChar* path)
@@ -19,8 +20,10 @@ xprShutdownFunc xprSetShutdownFunc(xprShutdownFunc f)
 	return tmp;
 }
 
-void xprShutdownApp()
+void xprShutdownApp(int code)
 {
 	if (shutdown_func)
 		shutdown_func();
+	else
+		exit(code);
 }

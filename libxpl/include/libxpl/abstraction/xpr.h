@@ -34,7 +34,7 @@ typedef void (*xprShutdownFunc)(void);
 XPLPUBFUN xprShutdownFunc XPLCALL
 	xprSetShutdownFunc(xprShutdownFunc f);
 XPLPUBFUN void XPLCALL
-	xprShutdownApp(void);
+	xprShutdownApp(int code);
 
 /*//////////////////// xpr_<platform/>.c ////////////////////// */
 /* files */

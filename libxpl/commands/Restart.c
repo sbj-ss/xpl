@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "libxpl/abstraction/xpr.h"
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
@@ -21,5 +22,5 @@ void xplCmdRestartEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	xplLockThreads(true);
 	xprSpawnProcessCopy();
-	xprShutdownApp();
+	xprShutdownApp(EXIT_SUCCESS);
 }
