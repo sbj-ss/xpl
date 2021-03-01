@@ -219,6 +219,85 @@
     </Expected>
   </MustSucceed>
 
+  <MustSucceed name="pass/threads-local-session">
+    <Input>
+      <xpl:start-threads-and-wait>
+        <xpl:replicate beforecount="32">
+          <xpl:isolate parallel="true" delaystart="true">
+            <xpl:no-expand>
+              <xpl:session-set-object name="a" local="true">1</xpl:session-set-object>
+              <xpl:session-get-object local="true"/>
+            </xpl:no-expand>
+          </xpl:isolate>
+        </xpl:replicate>
+      </xpl:start-threads-and-wait>
+    </Input>
+    <Expected>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+      <a>1</a>
+    </Expected>
+  </MustSucceed>
+
+  <xpl:comment>
+    This will probably never work as it requires transactions.
+    Kept there only for reference.
+  </xpl:comment> 
+  <!-- 
+  <MustSucceed name="pass/threads-shared-session">
+    <Input>
+      <xpl:session-set-object name="a">0</xpl:session-set-object>
+      <xpl:start-threads-and-wait>
+        <xpl:replicate beforecount="32">
+          <xpl:isolate parallel="true" sharesession="true" delaystart="true">
+            <xpl:no-expand>
+              <xpl:session-set-object name="a">
+                <xpl:value-of>
+                  <xpl:attribute name="select"><xpl:session-get-object name="a"/> + 1</xpl:attribute>
+                </xpl:value-of>
+              </xpl:session-set-object>
+            </xpl:no-expand>
+          </xpl:isolate>
+        </xpl:replicate>
+      </xpl:start-threads-and-wait>
+      <xpl:session-get-object/>
+      <xpl:session-clear/>
+    </Input>
+    <Expected>
+      <a>32</a>
+    </Expected>
+  </MustSucceed>
+  -->
+   
   <MustFail name="fail/set-object-missing-name">
     <Input>
       <xpl:session-set-object/>
