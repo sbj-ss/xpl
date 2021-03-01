@@ -30,7 +30,7 @@ extern "C" {
 XPLPUBFUN void XPLCALL
 	xprConvertSlashes(xmlChar* path);
 
-typedef void (*xprShutdownFunc)(void);
+typedef void (*xprShutdownFunc)(int code);
 XPLPUBFUN xprShutdownFunc XPLCALL
 	xprSetShutdownFunc(xprShutdownFunc f);
 XPLPUBFUN void XPLCALL

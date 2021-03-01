@@ -15,7 +15,7 @@ static xmlChar* getAppType(void)
 	return APP_TYPE;
 }
 
-void shutdownServer(void)
+void shutdownServer(int code)
 {
 	xplShutdownEngine();
 	// TODO actually wait for threads!
@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
 
 	while (exit_flag == 0)
 		xprSleep(100);
-	shutdownServer();
+	shutdownServer(EXIT_SUCCESS);
 	xprSleep(1000);
 	cwFreeSystemInfo();
 	mg_exit_library();

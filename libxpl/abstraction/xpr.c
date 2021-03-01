@@ -23,7 +23,7 @@ xprShutdownFunc xprSetShutdownFunc(xprShutdownFunc f)
 void xprShutdownApp(int code)
 {
 	if (shutdown_func)
-		shutdown_func();
+		shutdown_func(code);
 	else
 		exit(code);
 }

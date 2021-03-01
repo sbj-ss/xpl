@@ -325,7 +325,7 @@ int serveXpl(struct mg_connection *conn, void *user_data)
 				mg_printf(conn, "%s\n", doc->response);
 			else
 				mg_printf(conn, "HTTP/1.1 200 OK\r\nContent-Type: %s; charset=%s\r\n", content_type, encoding);
-			setSessionCookie(conn, doc->session);
+			setSessionCookie(conn, doc->shared_session);
 			if (!doc->response)
 				serializeDoc(conn, doc->document, encoding, om);
 			else
