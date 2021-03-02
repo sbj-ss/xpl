@@ -39,6 +39,17 @@ XPLPUBFUN xmlChar* XPLCALL
 XPLPUBFUN void XPLCALL
 	xplClearQName(xplQNamePtr qname);
 
+#define APPEND_NODE_TO_LIST(head, tail, cur) \
+	do { \
+		if ((tail)) \
+		{ \
+			(tail)->next = (cur); \
+			(cur)->prev = (tail); \
+			(tail) = (cur); \
+		} else \
+			(head) = (tail) = (cur); \
+	} while(0)
+
 /* locates node list tail */
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplFindTail(xmlNodePtr cur);
