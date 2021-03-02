@@ -85,8 +85,8 @@ void xplDisplayMessage(xplMsgType msgType, const xmlChar *fmt, ... )
 	if (log_file)
 	{
 		fprintf(log_file, "[%s] %s: %s\n", now, what, msg);
-		/* ToDo: setting?.. */
-		fflush(log_file);
+		if (cfgFlushLogFile)
+			fflush(log_file);
 	}
 
 	encoded_msg = NULL;

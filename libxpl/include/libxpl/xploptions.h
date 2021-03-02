@@ -51,6 +51,7 @@ XPLPUBVAR xmlChar *cfgDefaultEncoding;
 XPLPUBVAR xmlChar *cfgDocRoot;
 XPLPUBVAR int cfgEnableAssertions;
 XPLPUBVAR int cfgErrorsToConsole;
+XPLPUBVAR int cfgFlushLogFile;
 XPLPUBVAR int cfgFoolproofDestructiveCommands;
 XPLPUBVAR int cfgInitialMacroTableSize;
 XPLPUBVAR xmlChar *cfgLogFileName;
@@ -94,6 +95,7 @@ XPLPUBVAR xmlChar *cfgXplNsUri;
 #define DEFAULT_DEFAULT_ENCODING (BAD_CAST "utf-8")
 #define DEFAULT_ENABLE_ASSERTIONS false
 #define DEFAULT_ERRORS_TO_CONSOLE false
+#define DEFAULT_FLUSH_LOG_FILE false
 #define DEFAULT_FOOLPROOF_DESTRUCTIVE_COMMANDS false
 #define DEFAULT_INITIAL_MACRO_TABLE_SIZE 16
 #define DEFAULT_LUCIFER_COMPAT true

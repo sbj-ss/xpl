@@ -13,6 +13,7 @@ xmlChar *cfgDefaultEncoding;
 xmlChar *cfgDocRoot;
 int cfgEnableAssertions;
 int cfgErrorsToConsole;
+int cfgFlushLogFile;
 int cfgFoolproofDestructiveCommands;
 int cfgInitialMacroTableSize;
 xmlChar *cfgLogFileName;
@@ -124,6 +125,11 @@ xplConfigEntry config_entries[] =
 		.value_ptr = &cfgErrorsToConsole,
 		.name = BAD_CAST "ErrorsToConsole",
 		.default_value = (void*) DEFAULT_ERRORS_TO_CONSOLE
+	}, {
+		.cfg_type = CFG_TYPE_BOOL,
+		.value_ptr = &cfgFlushLogFile,
+		.name = BAD_CAST "FlushLogFile",
+		.default_value = (void*) DEFAULT_FLUSH_LOG_FILE
 	}, {
 		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgFoolproofDestructiveCommands,
