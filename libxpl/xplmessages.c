@@ -24,7 +24,7 @@ xplMsgType xplMsgTypeFromString(const xmlChar *severity, bool allowInternalError
 	return XPL_MSG_UNKNOWN;
 }
 
-xmlChar* xplFormatMessage(xmlChar *fmt, ...)
+xmlChar* xplFormatMessage(const xmlChar *fmt, ...)
 {
 	xmlChar *ret;
 	size_t ret_size;
@@ -39,7 +39,7 @@ xmlChar* xplFormatMessage(xmlChar *fmt, ...)
 	return ret;
 }
 
-xmlChar* xplVFormatMessage(xmlChar *fmt, va_list args)
+xmlChar* xplVFormatMessage(const xmlChar *fmt, va_list args)
 {
 	xmlChar *ret;
 	size_t ret_size;
@@ -52,7 +52,7 @@ xmlChar* xplVFormatMessage(xmlChar *fmt, va_list args)
 	return ret;
 }
 
-void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
+void xplDisplayMessage(xplMsgType msgType, const xmlChar *fmt, ... )
 {
 	char *encoded_msg;
 	xmlChar *msg;
@@ -118,7 +118,7 @@ void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
 	XPL_FREE(msg);
 }
 
-void xplDisplayWarning(xmlNodePtr carrier, xmlChar *fmt, ...)
+void xplDisplayWarning(const xmlNodePtr carrier, const xmlChar *fmt, ...)
 {
 	va_list arg_list;
 	xmlChar *inner_message;
@@ -141,14 +141,14 @@ void xplDisplayWarning(xmlNodePtr carrier, xmlChar *fmt, ...)
 }
 
 
-xmlNodePtr xplCreateSimpleErrorNode(xmlDocPtr doc, xmlChar *msg, const xmlChar *src)
+xmlNodePtr xplCreateSimpleErrorNode(const xmlDocPtr doc, const xmlChar *msg, const xmlChar *src)
 {
 	xmlNodePtr txt, ret;
 	ret = xmlNewDocNode(doc, NULL, ERROR_NODE_NAME, NULL);
 	if (msg)
 	{
 		txt = xmlNewDocText(doc, NULL);
-		txt->content = msg;
+		txt->content = BAD_CAST msg;
 		txt->parent = ret;
 		ret->children = ret->last = txt;
 	}
@@ -156,31 +156,26 @@ xmlNodePtr xplCreateSimpleErrorNode(xmlDocPtr doc, xmlChar *msg, const xmlChar *
 	return ret;
 }
 
-xmlNodePtr xplCreateErrorNode(const xmlNodePtr cmd, const xmlChar *fmt_msg, ...)
+xmlNodePtr xplCreateErrorNode(const xmlNodePtr cmd, const xmlChar *fmt, ...)
 {
 	xmlNodePtr ret;
-	xmlChar *fmt, *msg;
+	xmlChar *orig_msg, *full_msg;
 	va_list arg_list;
 
-	if (cmd->ns)
-		fmt = xplFormatMessage(BAD_CAST "%s:%s: %s (file \"%s\", line %d)",
-			cmd->ns->prefix,
-			cmd->name,
-			fmt_msg,
-			cmd->doc->URL,
-			cmd->line);
-	else
-		fmt = xplFormatMessage(BAD_CAST "%s: %s (file \"%s\", line %d)",
-			cmd->name,
-			fmt_msg,
-			cmd->doc->URL,
-			cmd->line);
-	va_start(arg_list, fmt_msg);
-	msg = xplVFormatMessage(fmt, arg_list);
-	XPL_FREE(fmt);
-	ret = xplCreateSimpleErrorNode(cmd->doc, msg, cmd->name);
+	va_start(arg_list, fmt);
+	orig_msg = xplVFormatMessage(fmt, arg_list);
+	full_msg = xplFormatMessage(
+		BAD_CAST "%s%s%s: %s (file \"%s\", line %d)",
+		cmd->ns && cmd->ns->prefix? cmd->ns->prefix: BAD_CAST "",
+		cmd->ns && cmd->ns->prefix? ":": "",
+		cmd->name,
+		orig_msg,
+		cmd->doc->URL,
+		cmd->line);
+	XPL_FREE(orig_msg);
+	ret = xplCreateSimpleErrorNode(cmd->doc, full_msg, cmd->name);
 	if (cfgErrorsToConsole)
-		xplDisplayMessage(XPL_MSG_ERROR, msg);
+		xplDisplayMessage(XPL_MSG_ERROR, full_msg);
 	if (cfgStackTrace)
 		xplStackTrace(cmd);
 	return ret;
@@ -196,25 +191,36 @@ void xplStackTrace(const xmlNodePtr startPoint)
 	cur = startPoint;
 	while (cur && (cur->type != XML_DOCUMENT_NODE))
 	{
-		if (cur->ns)
-			xmlGenericError(xmlGenericErrorContext, "at <%s:%s", cur->ns->prefix, cur->name);
-		else
-			xmlGenericError(xmlGenericErrorContext, "at <%s", cur->name);
+		xmlGenericError(
+			xmlGenericErrorContext,
+			"at <%s%s%s",
+			cur->ns && cur->ns->prefix? cur->ns->prefix: BAD_CAST "",
+			cur->ns && cur->ns->prefix? ":": "",
+			cur->name);
 		ns = cur->nsDef;
 		while (ns)
 		{
-			xmlGenericError(xmlGenericErrorContext, " xmlns:%s=\"%s\"", ns->prefix, ns->href);
+			xmlGenericError(
+				xmlGenericErrorContext,
+				" xmlns%s%s=\"%s\"",
+				ns->prefix? ns->prefix: BAD_CAST "",
+				ns->prefix? ":": "",
+				ns->href);
 			ns = ns->next;
 		}
 		attr = cur->properties;
 		while (attr)
 		{
 			attr_value = xplGetPropValue(attr);
-			if (attr->ns)
-				xmlGenericError(xmlGenericErrorContext, " %s:%s=\"%s\"", attr->ns->prefix, attr->name, attr_value);
-			else
-				xmlGenericError(xmlGenericErrorContext, " %s=\"%s\"", attr->name, attr_value);
-			if (attr_value) XPL_FREE(attr_value);
+			xmlGenericError(
+				xmlGenericErrorContext,
+				" %s%s%s=\"%s\"",
+				attr->ns && attr->ns->prefix? attr->ns->prefix: BAD_CAST "",
+				attr->ns && attr->ns->prefix? ":": "",
+				attr->name,
+				attr_value);
+			if (attr_value)
+				XPL_FREE(attr_value);
 			attr = attr->next;
 		}
 		xmlGenericError(xmlGenericErrorContext, ">\n");
@@ -234,15 +240,13 @@ static void xplCleanupLogger()
 
 static bool xplInitLogger()
 {
-	xmlChar *log_file_full_name = NULL, *executable_path;
+	xmlChar *log_file_full_name, *executable_path;
 
 	xplCleanupLogger();
 	if (cfgLogFileName)
 	{
 		executable_path = xprGetProgramPath();
-		log_file_full_name = xmlStrcat(log_file_full_name, executable_path);
-		log_file_full_name = xmlStrcat(log_file_full_name, BAD_CAST XPR_PATH_DELIM_STR);
-		log_file_full_name = xmlStrcat(log_file_full_name, cfgLogFileName);
+		log_file_full_name = xplFormatMessage(BAD_CAST "%s%s%s", executable_path, BAD_CAST XPR_PATH_DELIM_STR, cfgLogFileName);
 		log_file = xprFOpen(log_file_full_name, "a");
 		if (!log_file)
 			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "cannot open log file \"%s\" for writing", log_file_full_name);

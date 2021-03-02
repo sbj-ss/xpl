@@ -27,17 +27,17 @@ typedef enum _xplMsgType
 XPLPUBFUN xplMsgType XPLCALL
 	xplMsgTypeFromString(const xmlChar *severity, bool allowInternalError);
 XPLPUBFUN xmlChar* XPLCALL
-	xplFormatMessage(xmlChar *fmt, ...);
+	xplFormatMessage(const xmlChar *fmt, ...);
 /* The same via va_list - for wrappers */
 XPLPUBFUN xmlChar* XPLCALL
-	xplVFormatMessage(xmlChar *fmt, va_list args);
+	xplVFormatMessage(const xmlChar *fmt, va_list args);
 XPLPUBFUN void XPLCALL
-	xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ...);
+	xplDisplayMessage(xplMsgType msgType, const xmlChar *fmt, ...);
 XPLPUBFUN void XPLCALL
-	xplDisplayWarning(xmlNodePtr carrier, xmlChar *fmt, ...);
+	xplDisplayWarning(const xmlNodePtr carrier, const xmlChar *fmt, ...);
 /* eats msg */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplCreateSimpleErrorNode(xmlDocPtr doc, xmlChar *msg, const xmlChar *src);
+	xplCreateSimpleErrorNode(const xmlDocPtr doc, const xmlChar *msg, const xmlChar *src);
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplCreateErrorNode(const xmlNodePtr cmd, const xmlChar *fmt_msg, ...);
 XPLPUBFUN void XPLCALL
