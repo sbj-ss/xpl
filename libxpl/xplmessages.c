@@ -223,7 +223,10 @@ void xplStackTrace(const xmlNodePtr startPoint)
 static void xplCleanupLogger()
 {
 	if (log_file)
+	{
 		fclose(log_file);
+		log_file = NULL;
+	}
 }
 
 static bool xplInitLogger()
