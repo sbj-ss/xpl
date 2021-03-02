@@ -360,7 +360,7 @@ void xplParamValuesFree(xplParamValuesPtr values)
 
 xmlChar* xplParamValuesToString(const xplParamValuesPtr values, bool unique, const xmlChar *delim, xplExpectType expect)
 {
-	xmlChar *ret, *cur, *tail = NULL;
+	xmlChar *ret, *start, *end = NULL;
 	int delim_len;
 	int total_len = 0;
 	int i;
@@ -377,38 +377,38 @@ xmlChar* xplParamValuesToString(const xplParamValuesPtr values, bool unique, con
 	total_len += (values->param_nr - 1)*delim_len;
 	if (!total_len)
 		return NULL;
-	cur = ret = (xmlChar*) XPL_MALLOC(total_len + 1);
+	start = ret = (xmlChar*) XPL_MALLOC(total_len + 1);
 	if (!ret)
 		return NULL;
 	if (unique)
 		unique_table = xmlHashCreate(values->param_nr);
 	for (i = 0; i < values->param_nr; i++)
 	{
-		xplCleanTextValueInner((xmlChar*) values->param_tab[i], expect, cur);
-		if (!unique_table || !xmlHashLookup(unique_table, cur))
+		xplCleanTextValueInner((xmlChar*) values->param_tab[i], expect, start);
+		if (!unique_table || !xmlHashLookup(unique_table, start))
 		{
 			if (unique_table)
-				xmlHashAddEntry(unique_table, cur, (void*) 1);
-			cur += xmlStrlen(cur);
-			tail = cur;
+				xmlHashAddEntry(unique_table, start, (void*) 1);
+			start += xmlStrlen(start);
+			end = start;
 			if (delim_len)
 			{
-				memcpy(cur, delim, delim_len);
-				cur += delim_len;
+				memcpy(start, delim, delim_len);
+				start += delim_len;
 			}
 		}
 	}
-	if (tail)
-		*tail = 0;
+	if (end)
+		*end = 0;
 	if (unique_table)
 		xmlHashFree(unique_table, NULL);
-	*cur = 0;
+	*start = 0;
 	return ret;
 }
 
 xmlNodePtr xplParamValuesToList(const xplParamValuesPtr values, bool unique, xplExpectType expect, const xplQName qname, xmlNodePtr parent)
 {
-	xmlNodePtr ret = NULL, tail, cur, txt;
+	xmlNodePtr ret = NULL, tail = NULL, cur, txt;
 	xmlHashTablePtr unique_table = NULL;
 	xplParamFileInfoPtr file_info;
 	xmlChar *clean_value;
@@ -448,15 +448,7 @@ xmlNodePtr xplParamValuesToList(const xplParamValuesPtr values, bool unique, xpl
 		} else
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 		if (cur)
-		{
-			if (!ret)
-				ret = tail = cur;
-			else {
-				tail->next = cur;
-				cur->prev = tail;
-				tail = cur;
-			}			
-		}
+			APPEND_NODE_TO_LIST(ret, tail, cur);
 	}
 	if (unique_table)
 		xmlHashFree(unique_table, NULL);
@@ -669,8 +661,7 @@ typedef struct _xplParamsToListCtxt
 	xmlNodePtr ret;
 	xmlNodePtr tail;
 	xplExpectType expect;
-	xmlChar const *node_name;
-	xmlNsPtr ns;
+	xplQName qname;
 	xmlNodePtr parent;
 	int type_mask;
 } xplParamsToListCtxt;
@@ -689,17 +680,11 @@ static void xplParamsToListScanner(void *payload, void *data, XML_HCBNC xmlChar 
 	if (!(values->type & ctxt->type_mask))
 		return;
 	vals = xplParamValuesToList(values, ctxt->unique, ctxt->expect, qname, ctxt->parent);
-	cur = xmlNewDocNode(ctxt->parent->doc, ctxt->ns, ctxt->node_name? ctxt->node_name: name, NULL);
-	if (ctxt->node_name)
+	cur = xmlNewDocNode(ctxt->parent->doc, ctxt->qname.ns, ctxt->qname.ncname? ctxt->qname.ncname: name, NULL);
+	if (ctxt->qname.ncname)
 		xmlNewProp(cur, BAD_CAST "name", name);
 	xplSetChildren(cur, vals);
-	if (!ctxt->ret)
-		ctxt->ret = ctxt->tail = cur;
-	else {
-		ctxt->tail->next = cur;
-		cur->prev = ctxt->tail;
-		ctxt->tail = cur;
-	}
+	APPEND_NODE_TO_LIST(ctxt->ret, ctxt->tail, cur);
 }
 
 xmlNodePtr xplParamsToList(const xplParamsPtr params, bool unique, xplExpectType expect, const xplQName qname, xmlNodePtr parent, int typeMask)
@@ -709,14 +694,7 @@ xmlNodePtr xplParamsToList(const xplParamsPtr params, bool unique, xplExpectType
 	if (!params)
 		return NULL;
 	ctxt.expect = expect;
-	if (qname.ncname)
-	{
-		ctxt.ns = qname.ns;
-		ctxt.node_name = qname.ncname;
-	} else {
-		ctxt.node_name = NULL;
-		ctxt.ns = NULL;
-	}
+	ctxt.qname = qname;
 	ctxt.parent = parent;
 	ctxt.ret = ctxt.tail = NULL;
 	ctxt.unique = unique;

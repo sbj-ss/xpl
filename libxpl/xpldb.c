@@ -11,6 +11,7 @@ static xmlHashTablePtr databases = NULL;
 xplDBPtr xplDBCreate(const xplDBPtr aNext, const xplDBDeallocator aDealloc)
 {
 	xplDBPtr db = (xplDBPtr) XPL_MALLOC(sizeof(xplDB));
+
 	if (!db)
 		return NULL;
 	memset(db, 0, sizeof(xplDB));
@@ -29,6 +30,7 @@ void xplDBFree(xplDBPtr cur)
 xplDBListPtr xplDBListCreate(const xmlChar *connString)
 {
 	xplDBListPtr ret = (xplDBListPtr) XPL_MALLOC(sizeof(xplDBList));
+
 	if (!ret)
 		return NULL;
 	memset(ret, 0, sizeof(xplDBList));
@@ -77,6 +79,7 @@ xplDBListPtr xplLocateDBList(const xmlChar *name)
 xplDBPtr xplLocateAvailDB(xplDBListPtr list)
 {
 	xplDBPtr db, ret = NULL;
+
 	if (!list)
 		return NULL;
 	if (!xprMutexAcquire(&list->lock))
@@ -223,13 +226,7 @@ static void databaseListScanner(void *payload, void *data, XML_HCBNC xmlChar *na
 		db->conn_string);
 	if (!ctxt->show_tags)
 		xmlNewProp(cur, BAD_CAST "name", name);
-	if (ctxt->head)
-	{
-		ctxt->tail->next = cur;
-		cur->prev = ctxt->tail;
-		ctxt->tail = cur;
-	} else
-		ctxt->head = ctxt->tail = cur;
+	APPEND_NODE_TO_LIST(ctxt->head, ctxt->tail, cur);
 }
 
 xmlNodePtr xplDatabasesToNodeList(xmlNodePtr parent, const xplQName qname)
@@ -239,7 +236,7 @@ xmlNodePtr xplDatabasesToNodeList(xmlNodePtr parent, const xplQName qname)
 	if (!databases)
 		return NULL;
 	ctxt.doc = parent->doc;
-	ctxt.head = NULL;
+	ctxt.head = ctxt.tail = NULL;
 	ctxt.tag_name = qname;
 	ctxt.show_tags = !qname.ncname;
 	xmlHashScan(databases, databaseListScanner, &ctxt);
@@ -252,7 +249,7 @@ bool xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors)
 	xmlChar *dbname;
 	bool ok = true;
 	const xplMsgType msg_type = warningsAsErrors? XPL_MSG_ERROR: XPL_MSG_WARNING;
-	const xmlChar *tail = BAD_CAST (warningsAsErrors? "stopping": "ignored");
+	const xmlChar *action = BAD_CAST (warningsAsErrors? "stopping": "ignored");
 
 	xplCleanupDatabases();
 	databases = xmlHashCreate(16);
@@ -274,20 +271,20 @@ bool xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors)
 						db = xplDBListCreate(cur->children->content);
 						if (xmlHashAddEntry(databases, dbname, (void*) db))
 						{
-							xplDisplayMessage(msg_type, BAD_CAST "duplicate database name in config file (line %d), %s", cur->line, tail);
+							xplDisplayMessage(msg_type, BAD_CAST "duplicate database name in config file (line %d), %s", cur->line, action);
 							ok = false;
 						}
 					} else {
-						xplDisplayMessage(msg_type, BAD_CAST "non-text connection string in config file (line %d), %s", cur->line, tail);
+						xplDisplayMessage(msg_type, BAD_CAST "non-text connection string in config file (line %d), %s", cur->line, action);
 						ok = false;
 					}
 					XPL_FREE(dbname);
 				} else {
-					xplDisplayMessage(msg_type, BAD_CAST "missing dbname attribute in Database element in config file (line %d), %s", cur->line, tail);
+					xplDisplayMessage(msg_type, BAD_CAST "missing dbname attribute in Database element in config file (line %d), %s", cur->line, action);
 					ok = false;
 				}
 			} else {
-				xplDisplayMessage(msg_type, BAD_CAST "unknown node \"%s\" in Databases section in config file (line %d), %s", cur->name, cur->line, tail);
+				xplDisplayMessage(msg_type, BAD_CAST "unknown node \"%s\" in Databases section in config file (line %d), %s", cur->name, cur->line, action);
 				ok = false;
 			}
 		}

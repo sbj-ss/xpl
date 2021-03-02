@@ -138,13 +138,7 @@ xmlNodePtr xplXefImplementationsToNodeList(xmlDocPtr doc, xplQName tagname, xefI
 	{
 		if (!(cur = xmlNewDocNode(doc, tagname.ns, tagname.ncname, NULL)))
 			goto oom;
-		if (tail)
-		{
-			tail->next = cur;
-			cur->prev = tail;
-			tail = cur;
-		} else
-			ret = tail = cur;
+		APPEND_NODE_TO_LIST(ret, tail, cur);
 		if (!xmlNewProp(cur, BAD_CAST "name", impl_elements[i].name))
 			goto oom;
 		if (!xmlNewProp(cur, BAD_CAST "implementation", _getImplString(i, *OFFSET_IMPL_VALUE(impl, impl_elements[i].offset))))
@@ -429,13 +423,7 @@ xmlNodePtr xplLibraryVersionsToNodeList(xmlDocPtr doc, xplQName tagname, xplLibr
 	{
 		if (!(cur = xmlNewDocNode(doc, tagname.ns, tagname.ncname, NULL)))
 			goto oom;
-		if (tail)
-		{
-			tail->next = cur;
-			cur->prev = tail;
-			tail = cur;
-		} else
-			ret = tail = cur;
+		APPEND_NODE_TO_LIST(ret, tail, cur);
 		if (!xmlNewProp(cur, BAD_CAST "name", version_elements[i].name))
 			goto oom;
 		if (!xmlNewProp(cur, BAD_CAST "compiled", *OFFSET_VERSION_STR(compiled, version_elements[i].offset)))

@@ -525,7 +525,7 @@ xmlChar *xplGetOptionValue(xmlChar *optionName, bool showPasswords, bool *found)
 xmlNodePtr xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showPasswords)
 {
 	unsigned int i;
-	xmlNodePtr ret = NULL, tail, cur, value;
+	xmlNodePtr ret = NULL, tail = NULL, cur, value;
 
 	for (i = 0; i < CONFIG_ENTRIES_COUNT; i++)
 	{
@@ -556,13 +556,7 @@ xmlNodePtr xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showPasswo
 			xmlNewProp(cur, BAD_CAST "ispassword", BAD_CAST "true");
 		if (config_entries[i].options & CFG_OPTION_RESTART_REQUIRED)
 			xmlNewProp(cur, BAD_CAST "restartrequired", BAD_CAST "true");
-		if (ret)
-		{
-			tail->next = cur;
-			cur->prev = tail;
-			tail = cur;
-		} else
-			ret = tail = cur;
+		APPEND_NODE_TO_LIST(ret, tail, cur);
 	}
 	return ret;
 }

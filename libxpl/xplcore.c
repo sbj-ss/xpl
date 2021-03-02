@@ -523,7 +523,7 @@ static xmlNodePtr _selectAndCopyNodes(
 )
 {
 	xmlXPathObjectPtr sel;
-	xmlNodePtr cur, head, tail;
+	xmlNodePtr cur, head = NULL, tail = NULL;
 	size_t i;
 
 	*ok = true;
@@ -533,19 +533,12 @@ static xmlNodePtr _selectAndCopyNodes(
 		*ok = false;
 		return xplCreateErrorNode(parent, BAD_CAST "invalid select XPath expression '%s'", select);
 	}
-	head = tail = NULL;
 	if ((sel->type == XPATH_NODESET) && sel->nodesetval)
 	{
 		for (i = 0; i < (size_t) sel->nodesetval->nodeNr; i++)
 		{
 			cur = xplCloneAsNodeChild(sel->nodesetval->nodeTab[i], parent);
-			if (head)
-			{
-				tail->next = cur;
-				cur->prev = tail;
-				tail = cur;
-			} else
-				head = tail = cur;
+			APPEND_NODE_TO_LIST(head, tail, cur);
 		}
 	} else if (sel->type != XPATH_UNDEFINED) {
 		head = xmlNewDocText(parent->doc, NULL);

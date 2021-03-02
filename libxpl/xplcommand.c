@@ -159,13 +159,7 @@ static void commandListScanner(void *payload, void *data, XML_HCBNC xmlChar *nam
 		cur = xmlNewDocNode(ctxt->doc, ctxt->tagname.ns, ctxt->tagname.ncname, name);
 	else
 		cur = xmlNewDocNode(ctxt->doc, NULL, name, NULL);
-	if (ctxt->head)
-	{
-		ctxt->tail->next = cur;
-		cur->prev = ctxt->tail;
-		ctxt->tail = cur;
-	} else
-		ctxt->head = ctxt->tail = cur;
+	APPEND_NODE_TO_LIST(ctxt->head, ctxt->tail, cur);
 }
 
 xmlNodePtr xplSupportedCommandsToList(xmlNodePtr parent, const xplQName tagname)
@@ -175,7 +169,7 @@ xmlNodePtr xplSupportedCommandsToList(xmlNodePtr parent, const xplQName tagname)
 
 	ctxt.doc = parent->doc;
 	ctxt.tagname = tagname;
-	ctxt.head = NULL;
+	ctxt.head = ctxt.tail = NULL;
 	for (i = 0; i < sizeof(builtins) / sizeof(builtins[0]); i++)
 		commandListScanner(NULL, &ctxt, BAD_CAST builtins[i]);
 	xmlHashScan(commands, commandListScanner, &ctxt);
