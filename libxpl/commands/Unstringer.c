@@ -152,7 +152,7 @@ static xmlChar *_getNextMulti(xmlChar *str, xmlChar *delim, size_t *delimLen)
 
 static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 {
-	xmlNodePtr ret, cur, tail;
+	xmlNodePtr ret = NULL, cur, tail = NULL;
 	xmlChar *start;
 	xmlChar *cur_end = NULL;
 	size_t delim_len;
@@ -160,18 +160,7 @@ static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 	xmlChar tmp;
 	char marker;
 
-#define APPEND_NODE() do {\
-		if (!ret) \
-			ret = tail = cur; \
-		else { \
-			tail->next = cur; \
-			cur->prev = tail; \
-			tail = cur; \
-		}\
-	} while(0);
-
 	start = ctxt->input_str;
-	ret = tail = NULL;
 	delim_len = ctxt->params->delimiter? (size_t) xmlStrlen(ctxt->params->delimiter): 0;
 	while (*start)
 	{
@@ -190,14 +179,14 @@ static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 					if (!ctxt->params->unique || (xmlHashAddEntry(ctxt->unique_hash, start, &marker) != -1))
 					{ 
 						cur = xmlNewDocNode(ctxt->doc, ctxt->params->tag_name.ns, ctxt->params->tag_name.ncname, start);
-						APPEND_NODE();
+						APPEND_NODE_TO_LIST(ret, tail, cur);
 					} 
 					*cur_end = tmp;
 				} else if (ctxt->params->keep_empty_tags) {
 					if (!ctxt->params->unique || (xmlHashAddEntry(ctxt->unique_hash, NULL, &marker) != -1))
 					{ 
 						cur = xmlNewDocNode(ctxt->doc, ctxt->params->tag_name.ns, ctxt->params->tag_name.ncname, NULL);
-						APPEND_NODE();
+						APPEND_NODE_TO_LIST(ret, tail, cur);
 					} 
 				}
 				if (ctxt->params->keep_delimiter)
@@ -206,7 +195,7 @@ static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 					cur->children = cur->last = xmlNewDocText(ctxt->doc, NULL);
 					cur->children->parent = cur;
 					cur->children->content = xmlStrndup(cur_end, (ctxt->params->multi_delimiter)? (int) multi_delim_len: (int) delim_len);
-					APPEND_NODE();
+					APPEND_NODE_TO_LIST(ret, tail, cur);
 				}
 				start = cur_end + ((ctxt->params->multi_delimiter)? multi_delim_len: delim_len);
 				if (!*start && ctxt->params->keep_empty_tags)
@@ -214,14 +203,14 @@ static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 					if (!ctxt->params->unique || (xmlHashAddEntry(ctxt->unique_hash, NULL, &marker) != -1))
 					{ 
 						cur = xmlNewDocNode(ctxt->doc, ctxt->params->tag_name.ns, ctxt->params->tag_name.ncname, NULL);
-						APPEND_NODE();
+						APPEND_NODE_TO_LIST(ret, tail, cur);
 					} 
 				}
 			} else {
 				if (!ctxt->params->unique || (xmlHashAddEntry(ctxt->unique_hash, start, &marker) != -1))
 				{ 
 					cur = xmlNewDocNode(ctxt->doc, ctxt->params->tag_name.ns, ctxt->params->tag_name.ncname, start);
-					APPEND_NODE();
+					APPEND_NODE_TO_LIST(ret, tail, cur);
 				} 
 				start = _getEnd(start);
 			}
@@ -232,7 +221,7 @@ static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 			if (!ctxt->params->unique || (xmlHashAddEntry(ctxt->unique_hash, start, &marker) != -1))
 			{ 
 				cur = xmlNewDocNode(ctxt->doc, ctxt->params->tag_name.ns, ctxt->params->tag_name.ncname, start);
-				APPEND_NODE();
+				APPEND_NODE_TO_LIST(ret, tail, cur);
 			} 
 			*cur_end = tmp;
 			start = cur_end;

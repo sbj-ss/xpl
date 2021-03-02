@@ -51,7 +51,7 @@ void xplCmdForEachPrologue(xplCommandInfoPtr commandInfo)
 {
 	xplCmdForEachParamsPtr params = (xplCmdForEachParamsPtr) commandInfo->params;
 	size_t i;
-	xmlNodePtr cur, tail, repl, ret = NULL;
+	xmlNodePtr cur, tail = NULL, repl, ret = NULL;
 	
 	if (params->select->nodesetval)
 	{

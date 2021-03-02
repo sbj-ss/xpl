@@ -84,17 +84,6 @@ xplCommand xplRegexSplitCommand =
 
 void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-#define APPEND() \
-	do {\
-		if (!ret)\
-			ret = tail = cur;\
-		else {\
-			tail->next = cur;\
-			cur->prev = tail;\
-			tail = cur;\
-		}\
-	} while (0)
-
 	xplCmdRegexSplitParamsPtr params = (xplCmdRegexSplitParamsPtr) commandInfo->params;
 	OnigOptionType options = 0;
 	xmlChar tmp;
@@ -160,7 +149,7 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 			if (!params->unique || (xmlHashAddEntry(unique_hash, prev_boundary, &marker) != -1))
 			{
 				cur = xmlNewDocNode(commandInfo->element->doc, params->tagname.ns, params->tagname.ncname, prev_boundary);
-				APPEND();
+				APPEND_NODE_TO_LIST(ret, tail, cur);
 			}
 			*end = tmp;
 		}
@@ -172,7 +161,7 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 			*end = 0;
 			cur = xmlNewDocNode(commandInfo->element->doc, params->delimiter_tagname.ns, params->delimiter_tagname.ncname, start);
 			*end = tmp;
-			APPEND();
+			APPEND_NODE_TO_LIST(ret, tail, cur);
 		}
 		if ((region->beg[0] == region->end[0]) && *start) /* zero-length match */
 			start = end + xstrGetOffsetToNextUTF8Char(end);
@@ -188,7 +177,7 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		if (!params->unique || (xmlHashAddEntry(unique_hash, prev_boundary, &marker) != -1))
 		{
 			cur = xmlNewDocNode(commandInfo->element->doc, params->tagname.ns, params->tagname.ncname, prev_boundary);
-			APPEND();
+			APPEND_NODE_TO_LIST(ret, tail, cur);
 		}
 	}
 	ASSIGN_RESULT(ret, params->repeat, true);

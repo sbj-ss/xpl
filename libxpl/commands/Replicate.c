@@ -48,7 +48,7 @@ xplCommand xplReplicateCommand =
 
 static xmlNodePtr _replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
 {
-	xmlNodePtr cur, tail, ret = NULL;
+	xmlNodePtr cur, tail = NULL, ret = NULL;
 	int i;
 
 	if (!src)
@@ -56,13 +56,7 @@ static xmlNodePtr _replicateNodes(xmlNodePtr src, int count, xmlNodePtr parent)
 	for (i = 0; i < count; i++)
 	{
 		cur = xplCloneNodeList(src, parent, src->doc);
-		if (!ret) 
-		{
-			ret = tail = cur;
-		} else {
-			tail->next = cur;
-			cur->prev = tail;
-		}
+		APPEND_NODE_TO_LIST(ret, tail, cur);
 		tail = xplFindTail(tail);
 	}
 	return ret;

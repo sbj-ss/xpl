@@ -55,66 +55,62 @@ xplCommand xplGetAttributesCommand =
 	}
 };
 
-static xmlNodePtr _wrapAttributes(xmlAttrPtr prop, xplQName tagname)
+static xmlNodePtr _wrapAttributes(const xmlAttrPtr prop, const xplQName tagname)
 {
-	xmlNodePtr ret = NULL, tail, cur;
+	xmlNodePtr ret = NULL, tail = NULL, cur;
 	xmlChar *name;
-	xmlAttrPtr name_prop;
+	xmlAttrPtr cur_prop = prop, name_prop;
 	xmlNsPtr ns;
 
-	while (prop)
+	while (cur_prop)
 	{
 		if (!tagname.ncname)
 		{
-			cur = xmlNewDocNode(prop->doc, prop->ns, prop->name, NULL);
-			if (prop->ns)
+			cur = xmlNewDocNode(cur_prop->doc, cur_prop->ns, cur_prop->name, NULL);
+			if (cur_prop->ns)
 			{
-				ns = xmlSearchNsByHref(prop->doc, prop->parent->parent, prop->ns->href);
+				ns = xmlSearchNsByHref(cur_prop->doc, cur_prop->parent->parent, cur_prop->ns->href);
 				if (!ns)
-					cur->ns = cur->nsDef = xmlNewNs(cur, prop->ns->href, prop->ns->prefix);
+					cur->ns = cur->nsDef = xmlNewNs(cur, cur_prop->ns->href, cur_prop->ns->prefix);
 			}
 		} else {
-			cur = xmlNewDocNode(prop->doc, tagname.ns, tagname.ncname, NULL);
-			if (prop->ns && prop->ns->prefix)
+			cur = xmlNewDocNode(cur_prop->doc, tagname.ns, tagname.ncname, NULL);
+			if (cur_prop->ns && cur_prop->ns->prefix)
 			{
-				name = (xmlChar*) XPL_MALLOC((size_t) xmlStrlen(prop->ns->prefix) + xmlStrlen(prop->name) + 2);
-				strcpy((char*) name, (char*) prop->ns->prefix);
+				name = (xmlChar*) XPL_MALLOC((size_t) xmlStrlen(cur_prop->ns->prefix) + xmlStrlen(cur_prop->name) + 2);
+				strcpy((char*) name, (char*) cur_prop->ns->prefix);
 				strcat((char*) name, ":");
-				strcat((char*) name, (char*) prop->name);
+				strcat((char*) name, (char*) cur_prop->name);
 			} else
-				name = BAD_CAST XPL_STRDUP((char*) prop->name);
+				name = BAD_CAST XPL_STRDUP((char*) cur_prop->name);
 			name_prop = xmlNewProp(cur, BAD_CAST "name", NULL);
-			name_prop->children = name_prop->last = xmlNewDocText(prop->doc, NULL);
+			name_prop->children = name_prop->last = xmlNewDocText(cur_prop->doc, NULL);
 			name_prop->children->parent = (xmlNodePtr) name_prop;
 			name_prop->children->content = name;
 		}
-		cur->children = cur->last = xmlNewDocText(prop->doc, NULL);
+		cur->children = cur->last = xmlNewDocText(cur_prop->doc, NULL);
 		cur->children->parent = cur;
-		cur->children->content = xplGetPropValue(prop);
-		if (!ret)
-			ret = tail = cur;
-		else {
-			tail->next = cur;
-			cur->prev = tail;
-			tail = cur;
-		}
-		prop = prop->next;
+		cur->children->content = xplGetPropValue(cur_prop);
+		APPEND_NODE_TO_LIST(ret, tail, cur);
+		cur_prop = cur_prop->next;
 	}
 	return ret;
 }
 
-static bool _hasElementTail(xmlNodePtr tail)
+static bool _hasElementTail(const xmlNodePtr maybeTail)
 {
-	while (tail)
+	xmlNodePtr cur = maybeTail;
+
+	while (cur)
 	{
-		if (tail->type == XML_ELEMENT_NODE)
+		if (cur->type == XML_ELEMENT_NODE)
 			return true;
-		tail = tail->next;
+		cur = cur->next;
 	}
 	return false;
 }
 
-static bool _hasMoreElements(xmlNodeSetPtr nodes, ssize_t i)
+static bool _hasMoreElements(const xmlNodeSetPtr nodes, ssize_t i)
 {
 	while (i < nodes->nodeNr)
 	{
