@@ -7,6 +7,7 @@
 
 static FILE *log_file = NULL;
 static XPR_MUTEX console_interlock;
+bool messages_initialized = false;
 
 xplMsgType xplMsgTypeFromString(const xmlChar *severity, bool allowInternalError)
 {
@@ -61,7 +62,7 @@ void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
 	time_t tnow;
 	char *what;
 	int color;
-	static char encoding_msg[] = "[cannot display message using console encoding]";
+	static char encoding_error_msg[] = "[cannot display message using console encoding]";
 
 	switch (msgType)
 	{
@@ -90,9 +91,10 @@ void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
 
 	encoded_msg = NULL;
 	if (xstrIconvString(XPR_CONSOLE_ENCODING, "utf-8", (const char*) msg, (const char*) msg + xmlStrlen(msg), &encoded_msg, NULL) == -1)
-		encoded_msg = encoding_msg;
-	/* xplDisplayMessage() should be working even after the interpreter shutdown */
-	(void) xprMutexAcquire(&console_interlock);
+		encoded_msg = encoding_error_msg;
+	if (messages_initialized && !xprMutexAcquire(&console_interlock))
+		/* prefer garbled messages over no messages at all */
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	if (cfgUseConsoleColors)
 	{
 		switch (msgType)
@@ -109,8 +111,9 @@ void xplDisplayMessage(xplMsgType msgType, xmlChar *fmt, ... )
 	xmlGenericError(xmlGenericErrorContext, "[%s] %s: %s\n", now, what, encoded_msg);
 	if (cfgUseConsoleColors)
 		xprResetConsoleColor();
-	(void) xprMutexRelease(&console_interlock);
-	if (encoded_msg != encoding_msg)
+	if (messages_initialized && !xprMutexRelease(&console_interlock))
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	if (encoded_msg != encoding_error_msg)
 		XPL_FREE(encoded_msg);
 	XPL_FREE(msg);
 }
@@ -252,14 +255,22 @@ static bool xplInitLogger()
 
 bool xplInitMessages()
 {
+	if (messages_initialized)
+		return true;
 	if (!xprMutexInit(&console_interlock))
 		return false;
-	return xplInitLogger();
+	if (!xplInitLogger())
+		return false;
+	messages_initialized = true;
+	return true;
 }
 
 void xplCleanupMessages()
 {
+	if (!messages_initialized)
+		return;
 	if (!xprMutexCleanup(&console_interlock))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	xplCleanupLogger();
+	messages_initialized = false;
 }
