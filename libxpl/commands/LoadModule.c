@@ -1,4 +1,5 @@
 #include <libxpl/xplcommand.h>
+#include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 
 void xplCmdLoadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);
@@ -45,7 +46,7 @@ void xplCmdLoadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	xmlNodePtr ret = NULL;
 	xplModuleCmdResult code;
 
-	/* we aren't using xplLockThreads here : locking inside xplLoadModule() should be enough */
+	xplLockThreads(true);
 	code = xplLoadModule(params->name, &error);
 	if ((code != XPL_MODULE_CMD_OK) || (code != XPL_MODULE_CMD_MODULE_ALREADY_LOADED))
 	{
@@ -54,5 +55,6 @@ void xplCmdLoadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 			XPL_FREE(error);
 	} else if (code == XPL_MODULE_CMD_MODULE_ALREADY_LOADED && params->fail_if_already_loaded)
 		ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "module '%s' already loaded", params->name);
+	xplLockThreads(false);
 	ASSIGN_RESULT(ret, true, true);
 }

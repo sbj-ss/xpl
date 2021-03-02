@@ -6,7 +6,6 @@
 
 static xmlHashTablePtr commands = NULL;
 static xmlHashTablePtr loaded_modules = NULL;
-static XPR_MUTEX module_locker;
 
 bool xplInitCommands()
 {
@@ -528,8 +527,7 @@ static void FreeModulesCallback(void *payload, XML_HCBNC xmlChar *name)
 void xplLoadableModulesCleanup(void)
 {
 	xmlHashFree(loaded_modules, FreeModulesCallback);
-	if (!xprMutexCleanup(&module_locker))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	loaded_modules = NULL;
 }
 
 xplModuleCmdResult xplLoadableModulesInit(void)
@@ -539,8 +537,6 @@ xplModuleCmdResult xplLoadableModulesInit(void)
 	loaded_modules = xmlHashCreate(16);
 	if (!loaded_modules)
 		return XPL_MODULE_CMD_INSUFFICIENT_MEMORY;
-	if (!xprMutexInit(&module_locker))
-		return XPL_MODULE_CMD_LOCK_ERROR;
 	return XPL_MODULE_CMD_OK;
 }
 
@@ -561,18 +557,7 @@ xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 		ASSIGN_ERR_DATA(BAD_CAST XPL_STRDUP("XPL interpreter not initialized"));
 		return XPL_MODULE_CMD_NO_PARSER;
 	}
-	if (!xprMutexAcquire(&module_locker))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		ASSIGN_ERR_DATA(BAD_CAST XPL_STRDUP("locking error"));
-		return XPL_MODULE_CMD_LOCK_ERROR;
-	}
 	prev = xmlHashLookup(loaded_modules, name);
-	if (!xprMutexRelease(&module_locker))
-	{
-		// don't fail here
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	}
 	if (prev)
 	{
 		ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "module %s is already loaded", name));
@@ -623,21 +608,12 @@ xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 		return XPL_MODULE_CMD_VERSION_TOO_OLD;
 	}
 	cmds->handle = (void*) hmodule;
-	if (!xprMutexAcquire(&module_locker))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		ASSIGN_ERR_DATA(BAD_CAST XPL_STRDUP("locking error"));
-		xprUnloadSharedObject(hmodule);
-		return XPL_MODULE_CMD_LOCK_ERROR;
-	}
 	for (i = 0; i < cmds->count; i++)
 	{
 		if (cmds->commands[i].magic != PLUGGABLE_MODULE_MAGIC)
 		{
 			ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "command #%d: wrong signature", i));
 			xplUnloadModule(name);
-			if (!xprMutexRelease(&module_locker))
-				DISPLAY_INTERNAL_ERROR_MESSAGE();
 			return XPL_MODULE_CMD_INVALID_COMMAND_FORMAT;
 		}
 		if ((ret = xplRegisterCommand((const xmlChar*) cmds->commands[i].name, cmds->commands[i].cmd, &cmd_error)) != XPL_MODULE_CMD_OK)
@@ -646,17 +622,10 @@ xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 			if (cmd_error)
 				XPL_FREE(cmd_error);
 			xplUnloadModule(name);
-			if (!xprMutexRelease(&module_locker))
-				DISPLAY_INTERNAL_ERROR_MESSAGE();
 			return ret;
 		}
 	}
 	xmlHashAddEntry(loaded_modules, name, cmds);
-	if (!xprMutexRelease(&module_locker))
-	{
-		// don't fail here
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	}
 	ASSIGN_ERR_DATA(BAD_CAST XPL_STRDUP("no error"));
 	return XPL_MODULE_CMD_OK;
 #undef ASSIGN_ERR_DATA
@@ -670,14 +639,10 @@ void xplUnloadModule(const xmlChar *name)
 	cmds = (xplExternalCommandsPtr) xmlHashLookup(loaded_modules, name);
 	if (!cmds)
 		return;
-	if (!xprMutexAcquire(&module_locker))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	for (i = 0; i < cmds->count; i++)
 		xplUnregisterCommand((const xmlChar*) cmds->commands[i].name);
 	xprUnloadSharedObject(cmds->handle);
 	xmlHashRemoveEntry(loaded_modules, name, NULL);
-	if (!xprMutexRelease(&module_locker))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
 }
 
 bool xplIsModuleLoaded(const xmlChar *name)
@@ -731,24 +696,11 @@ xmlChar* xplLoadedModulesToString(const xmlChar *delimiter)
 		return NULL;
 	count_ctxt.len = 0;
 	count_ctxt.delim_len = delimiter? xmlStrlen(delimiter): 0;
-	if (!xprMutexAcquire(&module_locker))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return BAD_CAST XPL_STRDUP("lock error");
-	}
 	xmlHashScan(loaded_modules, loadedModulesCountScanner, &count_ctxt);
-	if (!count_ctxt.len)
-	{
-		if (!xprMutexRelease(&module_locker))
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return NULL; /* empty hash */
-	}
 	string_ctxt.delimiter = delimiter;
 	string_ctxt.delim_len = count_ctxt.delim_len;
 	ret = string_ctxt.string_pos = (xmlChar*) XPL_MALLOC(count_ctxt.len + 1);
 	xmlHashScan(loaded_modules, loadedModulesStringScanner, &string_ctxt);
-	if (!xprMutexRelease(&module_locker))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	*(string_ctxt.string_pos - count_ctxt.delim_len) = 0;
 	return ret;
 }
