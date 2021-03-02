@@ -250,7 +250,7 @@ xmlNodePtr xplMacroToNode(xplMacroPtr macro, xplQName tagname, xmlNodePtr parent
 	xmlNewProp(ret, BAD_CAST "namespaceuri", macro->qname.ns? macro->qname.ns->href: NULL);
 	xmlNewProp(ret, BAD_CAST "prefix", macro->qname.ns? macro->qname.ns->prefix: NULL);
 	xmlNewProp(ret, BAD_CAST "name", macro->qname.ncname);
-	snprintf(num_buf, 12, "%d", macro->line);
+	snprintf(num_buf, sizeof(num_buf), "%d", macro->line);
 	xmlNewProp(ret, BAD_CAST "line", BAD_CAST num_buf);
 	if (macro->parent->ns && macro->parent->ns->href)
 	{
@@ -260,13 +260,13 @@ xmlNodePtr xplMacroToNode(xplMacroPtr macro, xplQName tagname, xmlNodePtr parent
 	parent_name = xmlStrcat(parent_name, macro->parent->name);
 	xmlNewProp(ret, BAD_CAST "parentname", parent_name);
 	XPL_FREE(parent_name);
-	snprintf(num_buf, 12, "%d", macro->parent->line);
+	snprintf(num_buf, sizeof(num_buf), "%d", macro->parent->line);
 	xmlNewProp(ret, BAD_CAST "parentline", BAD_CAST num_buf);
-	snprintf(num_buf, 12, "%d", macro->times_encountered);
+	snprintf(num_buf, sizeof(num_buf), "%d", macro->times_encountered);
 	xmlNewProp(ret, BAD_CAST "timesencountered", BAD_CAST num_buf);
-	snprintf(num_buf, 12, "%d", macro->times_called);
+	snprintf(num_buf, sizeof(num_buf), "%d", macro->times_called);
 	xmlNewProp(ret, BAD_CAST "timescalled", BAD_CAST num_buf);
-	snprintf(num_buf, 12, "%d", macro->disabled_spin);
+	snprintf(num_buf, sizeof(num_buf), "%d", macro->disabled_spin);
 	xmlNewProp(ret, BAD_CAST "disabledspin", BAD_CAST num_buf);
 	switch (macro->expansion_state)
 	{
