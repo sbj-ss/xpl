@@ -12,7 +12,11 @@ xplParseQNameResult xplParseQName(xmlChar *str, xmlNodePtr element, xplQName *qn
 	xmlChar *prefix;
 
 	if (xmlValidateQName(str, 0))
+	{
+		qname->ncname = NULL;
+		qname->ns = NULL;
 		return XPL_PARSE_QNAME_INVALID_QNAME;
+	}
 	qname->ncname = xmlSplitQName2(str, &prefix);
 	if (!qname->ncname) /* not a QName */
 	{
