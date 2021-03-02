@@ -426,7 +426,7 @@ typedef struct _xplTdsDocRowContext
 {
 	rbBufPtr buf;
 	bool out_of_memory;
-	bool buf_needs_reallocation;
+	bool must_ensure_buf_size;
 	xmlNodePtr parent;
 	ssize_t row_count;
 } xplTdsDocRowContext, *xplTdsDocRowContextPtr;
@@ -442,7 +442,7 @@ static bool _TdsDocRowScanner(xefDbRowPtr row, void *payload)
 	if (row->fields[0].is_null)
 		return false;
 
-	if (ctxt->buf_needs_reallocation)
+	if (ctxt->must_ensure_buf_size)
 	{
 		if (ctxt->row_count == 1)
 			buf_size = row->fields[0].value_size;
@@ -454,7 +454,7 @@ static bool _TdsDocRowScanner(xefDbRowPtr row, void *payload)
 			ctxt->out_of_memory = true;
 			return false;
 		}
-		ctxt->buf_needs_reallocation = false;
+		ctxt->must_ensure_buf_size = false;
 	}
 	part = row->fields[0].value;
 	if (!part || !*part)
@@ -472,58 +472,20 @@ static bool _TdsDocRowScanner(xefDbRowPtr row, void *payload)
 	return true;
 }
 
-static xmlNodePtr _buildDocFromUnknownSizeTds(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_ctxt,	bool *repeat)
+static xmlNodePtr _buildDocFromTds(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_ctxt, bool *repeat)
 {
 	rbBufPtr buf;
 	xmlNodePtr ret;
 	xmlChar *error = NULL;
 
-	buf = rbCreateBufParams(4096, RB_GROW_DOUBLE, 0);
+	buf = rbCreateBufParams(4096, row_ctxt->row_count == -1? RB_GROW_DOUBLE: RB_GROW_EXACT, 0);
 	if (!buf)
 		goto oom;
 	if (rbAddDataToBuf(buf, DOC_START, xmlStrlen(DOC_START)) != RB_RESULT_OK)
 		goto oom;
 	row_ctxt->buf = buf;
 	row_ctxt->out_of_memory = false;
-	row_ctxt->buf_needs_reallocation = false;
-	xefDbEnumRows(db_ctxt, _TdsDocRowScanner, row_ctxt);
-	if ((error = xefDbGetError(db_ctxt)))
-	{
-		*repeat = true;
-		ret = xplCreateErrorNode(row_ctxt->parent, error);
-		goto done;
-	}
-	if (row_ctxt->out_of_memory)
-		goto oom;
-	if (rbAddDataToBuf(buf, DOC_END, xmlStrlen(DOC_END) + 1) != RB_RESULT_OK)
-		goto oom;
-	ret = _buildDocFromMemory(rbGetBufContent(buf), rbGetBufContentSize(buf), row_ctxt->parent, repeat);
-	goto done;
-oom:
-	ret = xplCreateErrorNode(row_ctxt->parent, BAD_CAST "out of memory");
-	*repeat = true;
-done:
-	if (error)
-		XPL_FREE(error);
-	if (buf)
-		rbFreeBuf(buf);
-	return ret;
-}
-
-static xmlNodePtr _buildDocFromKnownSizeTds(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_ctxt, bool *repeat)
-{
-	rbBufPtr buf;
-	xmlNodePtr ret;
-	xmlChar *error = NULL;
-
-	buf = rbCreateBufParams(4096, RB_GROW_EXACT, 0);
-	if (!buf)
-		goto oom;
-	if (rbAddDataToBuf(buf, DOC_START, xmlStrlen(DOC_START)) != RB_RESULT_OK)
-		goto oom;
-	row_ctxt->buf = buf;
-	row_ctxt->out_of_memory = false;
-	row_ctxt->buf_needs_reallocation = true;
+	row_ctxt->must_ensure_buf_size = (row_ctxt->row_count != -1);
 	xefDbEnumRows(db_ctxt, _TdsDocRowScanner, row_ctxt);
 	if ((error = xefDbGetError(db_ctxt)))
 	{
@@ -564,12 +526,10 @@ static xmlNodePtr _buildDoc(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_
 		*repeat = true;
 		ret = xplCreateErrorNode(row_ctxt->parent, error);
 		XPL_FREE(error);
-	} else if (row_ctxt->row_count == -1) /* driver doesn't know */
-		ret = _buildDocFromUnknownSizeTds(db_ctxt, row_ctxt, repeat);
-	else if (!row_ctxt->row_count)
+	} else if (!row_ctxt->row_count)
 		ret = NULL;
 	else
-		ret = _buildDocFromKnownSizeTds(db_ctxt, row_ctxt, repeat);
+		ret = _buildDocFromTds(db_ctxt, row_ctxt, repeat);
 	return ret;
 }
 
@@ -603,13 +563,13 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (!dbs)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "dbsession not found"), true, true);
-		goto done;
+		return;
 	}
 	dbname_attr = xmlGetNoNsProp(dbs, BAD_CAST "dbname");
 	if (!dbname_attr)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no dbname found in %s:dbsession", dbs->ns? dbs->ns->prefix: BAD_CAST ""), true, true);
-		goto done;
+		return;
 	}
 	db_list = xplLocateDBList(dbname_attr);
 	if (!db_list)
@@ -640,11 +600,11 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		if (cmd_params->tag_name)
 			row_tag_names = _createRowTagNames(cmd_params->tag_name);
 		frag_ctxt.as_attributes = cmd_params->as_attributes;
+		frag_ctxt.default_column_qname = cmd_params->default_column_name;
 		frag_ctxt.keep_nulls = cmd_params->keep_nulls;
 		frag_ctxt.show_nulls = cmd_params->show_nulls;
 		frag_ctxt.head = frag_ctxt.tail = NULL;
 		frag_ctxt.parent = commandInfo->element;
-		frag_ctxt.default_column_qname = cmd_params->default_column_name;
 		frag_ctxt.xml_desc = NULL;
 		ASSIGN_RESULT(_buildFragmentFromTds(db_ctxt, &frag_ctxt, row_tag_names, &cmd_params->repeat), cmd_params->repeat, true);
 	}
