@@ -103,14 +103,6 @@ typedef struct _xplSqlRowTagNames
 	xmlChar **names;
 } xplSqlRowTagNames, *xplSqlRowTagNamesPtr;
 
-typedef enum _xplSqlTokenizerState {
-	XS_TS_INITIAL,
-	XS_TS_DELIMITER,
-	XS_TS_WHITESPACE,
-	XS_TS_VALUE,
-	XS_TS_END
-} xplSqlTokenizerState;
-
 static void _freeRowTagNames(xplSqlRowTagNamesPtr names)
 {
 	size_t i;
@@ -127,75 +119,56 @@ static void _freeRowTagNames(xplSqlRowTagNamesPtr names)
 	XPL_FREE(names);
 }
 
-static xplSqlRowTagNamesPtr _createRowTagNames(xmlChar *list)
+static xplSqlRowTagNamesPtr _createRowTagNames(xmlChar *names)
 {
-	xplSqlTokenizerState state = XS_TS_INITIAL;
 	xmlChar *value_start = NULL, *p;
-	xplSqlRowTagNamesPtr ret = (xplSqlRowTagNamesPtr) XPL_MALLOC(sizeof(xplSqlRowTagNames));
+	xplSqlRowTagNamesPtr ret;
+	bool stop = false;
 
-	if (!ret)
+	if (!(ret = (xplSqlRowTagNamesPtr) XPL_MALLOC(sizeof(xplSqlRowTagNames))))
 		return NULL;
-	ret->count = 1;
 	ret->pos = 0;
-	p = list;
-	if (p)
+	if (!names)
 	{
-		while (*p)
-		{
-			if (*p == ',')
-				ret->count++;
-			p++;
-		}
+		ret->count = 0;
+		ret->names = NULL;
+		return ret;
 	}
+	ret->count = 1;
+	p = names;
+	while (*p)
+		if (*p++ == ',')
+			ret->count++;
 	ret->names = (xmlChar**) XPL_MALLOC(ret->count * sizeof(xmlChar*));
 	if (!ret->names)
 	{
 		XPL_FREE(ret);
 		return NULL;
 	}
-	if (!list)
-	{
-		ret->names[0] = DEFAULT_RESPONSE_TAG_NAME;
-		return ret;
-	}
-	while (state != XS_TS_END)
-	{
-		switch (*list)
+	p = names;
+	do {
+		if (!*p)
+			stop = true;
+		switch (*p)
 		{
-		case ' ': 
-			state = XS_TS_WHITESPACE;
-			break;
-		case ',':
-			state = XS_TS_DELIMITER;
-			break;
-		case 0:
-			state = XS_TS_END;
-			break;
-		default:
-			state = XS_TS_VALUE;
+			case ' ':
+			case '\t':
+				break;
+			case 0:
+			case ',':
+				if (value_start)
+					ret->names[ret->pos] = xmlStrndup(value_start, (int) (p - value_start));
+				else
+					ret->names[ret->pos] = BAD_CAST XPL_STRDUP("");
+				ret->pos++;
+				value_start = NULL;
+				break;
+			default:
+				if (!value_start)
+					value_start = p;
 		}
-		switch (state)
-		{
-		case XS_TS_WHITESPACE:
-			break;
-		case XS_TS_DELIMITER:
-		case XS_TS_END:
-			if (value_start)
-				ret->names[ret->pos] = xmlStrndup(value_start, (int) (list - value_start));
-			else
-				ret->names[ret->pos] = BAD_CAST XPL_STRDUP("");
-			ret->pos++;
-			value_start = NULL;
-			break;
-		case XS_TS_VALUE:
-			if (!value_start)
-				value_start = list;
-			break;
-		default:
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-		}
-		list++;
-	}
+		p++;
+	} while (!stop);
 	ret->pos = 0;
 	return ret;
 }
@@ -255,8 +228,8 @@ static xplSqlXmlRowDescPtr _createXmlRowDesc(xefDbRowPtr row, xmlNodePtr parent,
 
 typedef struct _xplTdsFragmentRowContext
 {
-	xmlNodePtr first;
-	xmlNodePtr cur;
+	xmlNodePtr head;
+	xmlNodePtr tail;
 	xmlNodePtr parent;
 	xplSqlXmlRowDescPtr xml_desc;
 	xplQName row_qname;
@@ -267,21 +240,9 @@ typedef struct _xplTdsFragmentRowContext
 	bool copy_data;
 } xplTdsFragmentRowContext, *xplTdsFragmentRowContextPtr;
 
-static void _appendErrorToRowContext(xplTdsFragmentRowContextPtr ctxt, xmlNodePtr error)
-{
-	if (!ctxt->first)
-		ctxt->first = error;
-	if (ctxt->cur)
-	{
-		ctxt->cur->next = error;
-		error->prev = ctxt->cur;
-	}
-	ctxt->cur = error;
-}
-
 static bool _TdsFragmentRowScanner(xefDbRowPtr row, void *payload)
 {
-	xmlNodePtr row_el = NULL, tail = NULL, col, error = NULL;
+	xmlNodePtr row_el = NULL, col, error = NULL;
 	xplTdsFragmentRowContextPtr ctxt = (xplTdsFragmentRowContextPtr) payload;
 	ssize_t i;
 
@@ -289,7 +250,9 @@ static bool _TdsFragmentRowScanner(xefDbRowPtr row, void *payload)
 		ctxt->xml_desc = _createXmlRowDesc(row, ctxt->parent, ctxt->default_column_qname, &error);
 	if (error)
 	{
-		_appendErrorToRowContext(ctxt, error);
+		if (ctxt->head)
+			xmlFreeNodeList(ctxt->head);
+		ctxt->head = ctxt->tail = error;
 		return false;
 	}
 	if (ctxt->row_qname.ncname && *(ctxt->row_qname.ncname))
@@ -304,25 +267,12 @@ static bool _TdsFragmentRowScanner(xefDbRowPtr row, void *payload)
 			col = xmlNewDocNode(ctxt->parent->doc, ctxt->xml_desc->qnames[i].ns, ctxt->xml_desc->qnames[i].ncname, NULL);
 			if (row->fields[i].is_null && ctxt->show_nulls)
 				xmlNewProp(col, NULL_ATTRIBUTE_NAME, BAD_CAST "true");
-			if (ctxt->row_qname.ncname && *(ctxt->row_qname.ncname))
+			if (row_el)
 			{
 				col->parent = row_el;
-				if (row_el->last)
-				{
-					row_el->last->next = col;
-					col->prev = row_el->last;
-					row_el->last = col;
-				} else
-					row_el->children = row_el->last = col;
-			} else {
-				if (tail)
-				{
-					tail->next = col;
-					col->prev = tail;
-					tail = col;
-				} else
-					row_el = tail = col;
-			}
+				APPEND_NODE_TO_LIST(row_el->children, row_el->last, col);
+			} else
+				APPEND_NODE_TO_LIST(ctxt->head, ctxt->tail, col);
 		}
 		if (row->fields[i].value)
 		{
@@ -336,16 +286,44 @@ static bool _TdsFragmentRowScanner(xefDbRowPtr row, void *payload)
 		}
 	}
 	if (row_el)
-	{
-		if (ctxt->cur)
-		{
-			ctxt->cur->next = row_el;
-			row_el->prev = ctxt->cur;
-		} else 
-			ctxt->first = row_el;
-		ctxt->cur = tail? tail: row_el;
-	}
+		APPEND_NODE_TO_LIST(ctxt->head, ctxt->tail, row_el);
 	return true;
+}
+
+static xmlNodePtr _getNextRTN(xplTdsFragmentRowContextPtr row_ctxt, xplSqlRowTagNamesPtr tag_names)
+{
+	xmlChar *name;
+
+	if (tag_names && (tag_names->pos < tag_names->count))
+	{
+		name = tag_names->names[tag_names->pos++];
+		if (name && *name)
+		{
+			if (xplParseQName(name, row_ctxt->parent, &(row_ctxt->row_qname)) != XPL_PARSE_QNAME_OK)
+				return xplCreateErrorNode(row_ctxt->parent, BAD_CAST "invalid row name '%s'", name);
+		} else if (row_ctxt->as_attributes)
+			(void) xplParseQName(DEFAULT_RESPONSE_TAG_NAME, row_ctxt->parent, &row_ctxt->row_qname);
+		else {
+			row_ctxt->row_qname.ns = NULL;
+			row_ctxt->row_qname.ncname = NULL;
+		}
+	} else
+		(void) xplParseQName(DEFAULT_RESPONSE_TAG_NAME, row_ctxt->parent, &row_ctxt->row_qname);
+	return NULL;
+}
+
+static bool _checkDbStatus(xefDbContextPtr db_ctxt, xplTdsFragmentRowContextPtr row_ctxt, bool *repeat)
+{
+	xmlChar *error = NULL;
+
+	if ((error = xefDbGetError(db_ctxt)))
+	{
+		if (row_ctxt->head)
+			xmlFreeNodeList(row_ctxt->head);
+		*repeat = true;
+		row_ctxt->head = row_ctxt->tail = xplCreateErrorNode(row_ctxt->parent, error);
+	}
+	return !error;
 }
 
 static xmlNodePtr _buildFragmentFromTds(
@@ -355,53 +333,33 @@ static xmlNodePtr _buildFragmentFromTds(
 	bool *repeat
 )
 {
-	xmlChar *error = NULL, *name;
+	xmlNodePtr error_node;
 
 	while (xefDbHasRecordset(db_ctxt))
 	{
-		if (tag_names && (tag_names->pos < tag_names->count))
+		if ((error_node = _getNextRTN(row_ctxt, tag_names)))
 		{
-			name = tag_names->names[tag_names->pos];
-			if (name && *name)
-			{
-				if (xplParseQName(name, row_ctxt->parent, &(row_ctxt->row_qname)) != XPL_PARSE_QNAME_OK)
-					return xplCreateErrorNode(row_ctxt->parent, BAD_CAST "invalid row name '%s'", name);
-			} else if (row_ctxt->as_attributes)
-				(void) xplParseQName(DEFAULT_RESPONSE_TAG_NAME, row_ctxt->parent, &row_ctxt->row_qname);
-			else {
-				row_ctxt->row_qname.ns = NULL;
-				row_ctxt->row_qname.ncname = NULL;
-			}
-			tag_names->pos++;
-		} else
-			(void) xplParseQName(DEFAULT_RESPONSE_TAG_NAME, row_ctxt->parent, &row_ctxt->row_qname);
+			if (row_ctxt->head)
+				xmlFreeNodeList(row_ctxt->head);
+			row_ctxt->head = row_ctxt->tail = error_node;
+			break;
+		}
+		// row_ctxt->xml_desc is created on demand in _TdsFragmentRowScanner
 		xefDbEnumRows(db_ctxt, _TdsFragmentRowScanner, row_ctxt);
-		_freeXmlRowDesc(row_ctxt->xml_desc);
-		row_ctxt->xml_desc = NULL;
-		if ((error = xefDbGetError(db_ctxt)))
+		if (row_ctxt->xml_desc)
 		{
-			if (row_ctxt->first)
-				xmlFreeNodeList(row_ctxt->first);
-			*repeat = true;
-			_appendErrorToRowContext(row_ctxt, xplCreateErrorNode(row_ctxt->parent, error));
-			goto done;
+			_freeXmlRowDesc(row_ctxt->xml_desc);
+			row_ctxt->xml_desc = NULL;
 		}
+		if (!_checkDbStatus(db_ctxt, row_ctxt, repeat))
+			break;
 		xefDbNextRowset(db_ctxt);
-		if ((error = xefDbGetError(db_ctxt)))
-		{
-			if (row_ctxt->first)
-				xmlFreeNodeList(row_ctxt->first);
-			*repeat = true;
-			_appendErrorToRowContext(row_ctxt, xplCreateErrorNode(row_ctxt->parent, error));
-			goto done;
-		}
+		if (!_checkDbStatus(db_ctxt, row_ctxt, repeat))
+			break;
 		xplClearQName(&row_ctxt->row_qname);
 	}
-done:
-	if (error)
-		XPL_FREE(error);
 	xplClearQName(&row_ctxt->row_qname);
-	return row_ctxt->first;
+	return row_ctxt->head;
 }
 
 static xmlNodePtr _buildDocFromMemory(xmlChar *src, size_t size, xmlNodePtr parent, bool *repeat)
@@ -690,7 +648,7 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		frag_ctxt.as_attributes = cmd_params->as_attributes;
 		frag_ctxt.keep_nulls = cmd_params->keep_nulls;
 		frag_ctxt.show_nulls = cmd_params->show_nulls;
-		frag_ctxt.first = frag_ctxt.cur = NULL;
+		frag_ctxt.head = frag_ctxt.tail = NULL;
 		frag_ctxt.parent = commandInfo->element;
 		frag_ctxt.default_column_qname = cmd_params->default_column_name;
 		frag_ctxt.xml_desc = NULL;
