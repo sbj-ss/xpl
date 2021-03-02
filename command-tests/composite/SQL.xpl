@@ -5,7 +5,7 @@
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl" xmlns:ns-a="http://a.example.com">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
- 
+
   <MustSucceed name="pass/defaults">
     <Input>
       <xpl:dbsession dbname="pg-xpl-test">
@@ -142,7 +142,7 @@
   <MustSucceed name="pass/multiple-recordsets">
     <Input>
       <xpl:dbsession dbname="pg-xpl-test">
-        <xpl:sql responsetagname="A,B">
+        <xpl:sql responsetagname="A,B,C">
           SELECT 1 AS "Value";
           SELECT 2 AS "Value";
           SELECT 3 AS "Value";
@@ -156,27 +156,12 @@
       <B>
         <Value>2</Value>
       </B>
-      <Row>
+      <C>
         <Value>3</Value>
-      </Row>
+      </C>
     </Expected>
   </MustSucceed>
-  
-  <MustSucceed name="pass/as-attributes-without-row">
-    <Input>
-      <xpl:dbsession dbname="pg-xpl-test">
-        <xpl:sql asattributes="true" responsetagname="A,">
-          SELECT 1 AS attr;
-          SELECT 2 AS attr;
-        </xpl:sql>
-      </xpl:dbsession>
-    </Input>
-    <Expected>
-      <A attr="1"/>
-      <Row attr="2"/>
-    </Expected>
-  </MustSucceed>
-  
+   
   <MustSucceed name="pass/as-attributes-keep-nulls">
     <Input>
       <xpl:dbsession dbname="pg-xpl-test">
@@ -372,6 +357,27 @@
         </xpl:sql>
       </xpl:dbsession>
     </Input>  
+  </MustFail>
+
+  <MustFail name="fail/as-attributes-without-row">
+    <Input>
+      <xpl:dbsession dbname="pg-xpl-test">
+        <xpl:sql asattributes="true" responsetagname="">
+          SELECT 1 AS attr;
+        </xpl:sql>
+      </xpl:dbsession>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/too-many-recordsets">
+    <Input>
+      <xpl:dbsession dbname="pg-xpl-test">
+        <xpl:sql tagname="A">
+          SELECT 1;
+          SELECT 2;
+        </xpl:sql>
+      </xpl:dbsession>
+    </Input>
   </MustFail>
   
   <xpl:db-garbage-collect/>
