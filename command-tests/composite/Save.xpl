@@ -102,6 +102,24 @@
     </Expected>
   </MustSucceed>
 
+  <MustSucceed name="pass/selected-content-omit-root">
+    <Input>
+      <Src xmlns:ns-b="http://b.com">
+        <ns-b:A/>
+        <B/>
+      </Src>
+      <xpl:save file="save/SelectedContent.xml" select="../Src/*[1]"/>
+      <xpl:include select="/Root/node()" file="save/SelectedContent.xml"/>    
+    </Input>
+    <Expected>
+      <Src xmlns:ns-b="http://b.com">
+        <ns-b:A/>
+        <B/>
+      </Src>
+      <ns-b:A xmlns:ns-b="http://b.com"/>
+    </Expected>
+  </MustSucceed>
+
   <MustSucceed name="pass/selected-scalar">
     <Input>
       <xpl:save file="save/SelectedScalar.xml" select="2+2"/>
