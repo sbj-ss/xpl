@@ -96,7 +96,6 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		filename = xplFullFilename(params->file, commandInfo->document->app_path);
 	if (params->format)
 		options |= XML_SAVE_FORMAT;
-	xprConvertSlashes(filename); // TODO not here
 
 	doc = xmlNewDoc(BAD_CAST "1.0");
 	if (!params->omit_root)
@@ -167,7 +166,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			xplSetChildren(commandInfo->element, root);
 		}
 		xplMakeNsSelfContainedTree(root);
-		xmlAddChild((xmlNodePtr) doc, xplDetachChildren(commandInfo->element));
+		xmlAddChild((xmlNodePtr) doc, xplDetachChildren(commandInfo->element)); /* this line is correct. trace commandInfo->element->children before fixing what isn't broken. */
 	}
 
 	if (params->create_destination)
