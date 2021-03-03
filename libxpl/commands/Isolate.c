@@ -144,7 +144,6 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 #ifdef _THREADING_SUPPORT
 		child->landing_point_path = landing_point_path;
 		child->async = true;
-		xplEnsureDocThreadSupport(commandInfo->document);
 		if (xplStartChildThread(commandInfo->document, child, !params->delay_start))
 		{
 			commandInfo->element->ns = NULL; /* don't process the command multiple times */
