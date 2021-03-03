@@ -228,16 +228,17 @@ static xplSqlXmlRowDescPtr _createXmlRowDesc(xefDbRowPtr row, xmlNodePtr parent,
 
 typedef struct _xplTdsFragmentRowContext
 {
+	/* set by caller */
 	xmlNodePtr head;
 	xmlNodePtr tail;
 	xmlNodePtr parent;
-	xplSqlXmlRowDescPtr xml_desc;
-	xplQName row_qname;
 	xplQName default_column_qname;
 	bool as_attributes;
 	bool keep_nulls;
 	bool show_nulls;
-	bool copy_data;
+	/* used internally */
+	xplSqlXmlRowDescPtr xml_desc;
+	xplQName row_qname;
 } xplTdsFragmentRowContext, *xplTdsFragmentRowContextPtr;
 
 static bool _TdsFragmentRowScanner(xefDbRowPtr row, void *payload)
@@ -584,7 +585,6 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	dbq_params.db_list = db_list;
 	dbq_params.query = commandInfo->content;
 	dbq_params.desired_stream_type = cmd_params->merge_table_as_xml? XEF_DB_STREAM_XML: XEF_DB_STREAM_TDS;
-	dbq_params.error = NULL;
 	db_ctxt = xefDbQuery(&dbq_params);
 	if (!db_ctxt || dbq_params.error)
 	{
@@ -605,7 +605,6 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		frag_ctxt.show_nulls = cmd_params->show_nulls;
 		frag_ctxt.head = frag_ctxt.tail = NULL;
 		frag_ctxt.parent = commandInfo->element;
-		frag_ctxt.xml_desc = NULL;
 		ASSIGN_RESULT(_buildFragmentFromTds(db_ctxt, &frag_ctxt, row_tag_names, &cmd_params->repeat), cmd_params->repeat, true);
 	}
 done:
