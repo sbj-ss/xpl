@@ -250,16 +250,11 @@ bool xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlC
 	if (!session)
 		return false;
 	new_parent = xmlNewDocNode(session->doc, NULL, name, NULL);
-	xplSetChildren(new_parent, cur->children);
+	xplSetChildren(new_parent, xplDetachChildren(cur));
 	xplSetChildren(cur, new_parent);
 	xplMakeNsSelfContainedTree(new_parent);
 	xplSetChildren(cur, NULL);
-	prev = new_parent->children;
-	while (prev)
-	{
-		xmlSetTreeDoc(prev, session->doc); // TODO
-		prev = prev->next;
-	}
+	xmlSetListDoc(new_parent->children, session->doc);
 	SUCCEED_OR_DIE(xprMutexAcquire(&session->locker));
 	xmlAddChild(session->doc->children, new_parent);
 	prev = (xmlNodePtr) xmlHashLookup(session->items, name);
