@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <libxpl/abstraction/xpr.h>
 
@@ -20,8 +21,15 @@ xprShutdownFunc xprSetShutdownFunc(xprShutdownFunc f)
 	return tmp;
 }
 
+static bool in_shutdown = false;
+
 void xprShutdownApp(int code)
 {
+	if (in_shutdown)
+	{
+		fprintf(stderr, "Attempted to call %s from %s. Exiting immediately.\n", __FUNCTION__, __FUNCTION__);
+		exit(EXIT_FAILURE);
+	}
 	if (shutdown_func)
 		shutdown_func(code);
 	else
