@@ -382,7 +382,7 @@ void xplFinalizeDocThreads(xplDocumentPtr doc, bool force_mutex_cleanup)
 }
 #endif
 
-/* per-document node stack (for xpl:stack-xxx) */
+/* per-document node stack (for xpl:stack-*) */
 void xplPushToDocStack(xplDocumentPtr doc, xmlNodePtr node)
 {
 	xmlNodePtr new_parent;
