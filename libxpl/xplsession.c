@@ -80,7 +80,7 @@ void xplSessionManagerCleanup()
 {
 	if (!session_mgr)
 		return;
-	if (!xprMutexAcquire(&session_interlock)) /* TODO what should we do here? */
+	if (!xprMutexAcquire(&session_interlock)) /* don't crush on failure as we're exiting anyway */
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	xmlHashFree(session_mgr, _freeSessionCallback);
 	session_mgr = NULL;
@@ -100,11 +100,7 @@ static xplSessionPtr _sessionCreateInternal(xmlChar *id, bool local)
 	if (!ret)
 		return NULL;
 	memset(ret, 0, sizeof(xplSession));
-	if (!local && !xprMutexInit(&ret->locker))
-	{
-		XPL_FREE(ret);
-		return NULL;
-	}
+	SUCCEED_OR_DIE(local || xprMutexInit(&ret->locker));
 	ret->items = xmlHashCreate(16);
 	ret->doc = xmlNewDoc(BAD_CAST "1.0");
 	root = xmlNewDocNode(ret->doc, NULL, BAD_CAST "Root", NULL);
@@ -145,18 +141,13 @@ xplSessionPtr xplSessionCreateOrGetShared(const xmlChar *id)
 
 	if (!session_mgr)
 		return NULL;
-	if (!xprMutexAcquire(&session_interlock))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return NULL;
-	}
+	SUCCEED_OR_DIE(xprMutexAcquire(&session_interlock));
 	if (!(ret = _sessionLookupInternal(id)))
 	{
 		id_copy = id? BAD_CAST XPL_STRDUP((char*) id): NULL;
 		ret = _sessionCreateInternal(id_copy, false);
 	}
-	if (!xprMutexRelease(&session_interlock))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexRelease(&session_interlock));
 	return ret;
 }
 
@@ -170,15 +161,11 @@ xplSessionPtr xplSessionCreateWithAutoId()
 
 	if (!session_mgr)
 		return NULL;
-	if (!xprMutexAcquire(&session_interlock))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return NULL;
-	}
 	rp.secure = true;
 	rp.alloc_bytes = false;
 	rp.size = XPL_SESSION_ID_SIZE;
 	rp.bytes = raw_id;
+	SUCCEED_OR_DIE(xprMutexAcquire(&session_interlock));
 	while (flag)
 	{
 		/* We don't ask for allocation so the only reason for xefCryptoRandom() to fail
@@ -194,8 +181,7 @@ xplSessionPtr xplSessionCreateWithAutoId()
 			XPL_FREE(id);
 	}
 	ret = _sessionCreateInternal(id, false);
-	if (!xprMutexRelease(&session_interlock))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexRelease(&session_interlock));
 	return ret;
 }
 
@@ -210,14 +196,9 @@ xplSessionPtr xplSessionLookup(const xmlChar *id)
 
 	if (!session_mgr)
 		return NULL;
-	if (!xprMutexAcquire(&session_interlock))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return NULL;
-	}
+	SUCCEED_OR_DIE(xprMutexAcquire(&session_interlock));
 	ret = (xplSessionPtr) _sessionLookupInternal(id);
-	if (!xprMutexRelease(&session_interlock))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexRelease(&session_interlock));
 	return ret;
 }
 
@@ -235,11 +216,9 @@ void xplSessionDeleteShared(const xmlChar *id)
 {
 	if (!session_mgr)
 		return;
-	if (!xprMutexAcquire(&session_interlock)) /* TODO what should we do here? */
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexAcquire(&session_interlock));
 	xmlHashRemoveEntry(session_mgr, id, _freeSessionCallback);
-	if (!xprMutexRelease(&session_interlock))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexRelease(&session_interlock));
 }
 
 static void _enumStaleSessionsCallback(void *payload, void *data, XML_HCBNC xmlChar *name)
@@ -256,14 +235,9 @@ void xplCleanupStaleSessions()
 {
 	if (!session_mgr)
 		return;
-	if (!xprMutexAcquire(&session_interlock))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return;
-	}
+	SUCCEED_OR_DIE(xprMutexAcquire(&session_interlock));
 	xmlHashScan(session_mgr, _enumStaleSessionsCallback, NULL);
-	if (!xprMutexRelease(&session_interlock))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexRelease(&session_interlock));
 }
 
 /* session-level */
@@ -275,11 +249,6 @@ bool xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlC
 
 	if (!session)
 		return false;
-	if (!xprMutexAcquire(&session->locker))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return false;
-	}
 	new_parent = xmlNewDocNode(session->doc, NULL, name, NULL);
 	xplSetChildren(new_parent, cur->children);
 	xplSetChildren(cur, new_parent);
@@ -288,9 +257,10 @@ bool xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlC
 	prev = new_parent->children;
 	while (prev)
 	{
-		xmlSetTreeDoc(prev, session->doc);
+		xmlSetTreeDoc(prev, session->doc); // TODO
 		prev = prev->next;
 	}
+	SUCCEED_OR_DIE(xprMutexAcquire(&session->locker));
 	xmlAddChild(session->doc->children, new_parent);
 	prev = (xmlNodePtr) xmlHashLookup(session->items, name);
 	if (prev)
@@ -302,8 +272,7 @@ bool xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlC
 		ret = !xmlHashAddEntry(session->items, name, (void*) new_parent);
 	time(&session->init_ts);
 	session->valid = true;
-	if (!xprMutexRelease(&session->locker))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexRelease(&session->locker));
 	return ret;
 }
 
@@ -319,11 +288,7 @@ xmlNodePtr xplSessionAccessObject(const xplSessionPtr session, const xmlChar *na
 {
 	if (!session || !session->valid)
 		return NULL;
-	if (!xprMutexAcquire(&session->locker))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return NULL;
-	}
+	SUCCEED_OR_DIE(xprMutexAcquire(&session->locker));
 	return xplSessionGetObject(session, name);
 }
 
@@ -339,46 +304,37 @@ xmlNodePtr xplSessionAccessAllObjects(const xplSessionPtr session)
 {
 	if (!session || !session->valid)
 		return NULL;
-	if (!xprMutexAcquire(&session->locker))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return NULL;
-	}
+	SUCCEED_OR_DIE(xprMutexAcquire(&session->locker));
 	return xplSessionGetAllObjects(session);
 }
 
 void xplSessionUnaccess(const xplSessionPtr session)
 {
 	if (session && session->valid)
-		if (!xprMutexRelease(&session->locker))
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
+		SUCCEED_OR_DIE(xprMutexRelease(&session->locker));
 }
 
 void xplSessionRemoveObject(xplSessionPtr session, const xmlChar *name)
 {
 	if (!session)
 		return;
-	if (!xprMutexAcquire(&session->locker)) /* TODO what should we do here? */
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexAcquire(&session->locker));
 	if (xmlHashLookup(session->items, name))
 		xmlHashRemoveEntry(session->items, name, _freeObjectCallback);
 	time(&session->init_ts);
-	if (!xprMutexRelease(&session->locker))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexRelease(&session->locker));
 }
 
 void xplSessionClear(xplSessionPtr session)
 {
 	if (!session)
 		return;
-	if (!xprMutexAcquire(&session->locker)) /* TODO what should we do here? */
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexAcquire(&session->locker));
 	xmlHashFree(session->items, _freeObjectCallback);
 	time(&session->init_ts);
 	session->items = xmlHashCreate(16);
 	session->valid = false;
-	if (!xprMutexRelease(&session->locker))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexRelease(&session->locker));
 }
 
 xmlChar* xplSessionGetId(xplSessionPtr session)

@@ -107,11 +107,7 @@ xmlChar* xplMapDocWrapper(xmlChar *filename)
 	if (!region)
 		return NULL;
 	fn_end = filename + xmlStrlen(filename);
-	if (!xprMutexAcquire(&mapper_interlock)) /* regex isn't thread safe */
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return NULL;
-	}
+	SUCCEED_OR_DIE(xprMutexAcquire(&mapper_interlock)); /* regex isn't thread safe */
 	while (cur)
 	{
 		if (onig_match(cur->regex, filename, fn_end, filename, region, 0) != ONIG_MISMATCH)
@@ -121,8 +117,7 @@ xmlChar* xplMapDocWrapper(xmlChar *filename)
 		}
 		cur = cur->next;
 	}
-	if (!xprMutexRelease(&mapper_interlock))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexRelease(&mapper_interlock));
 	onig_region_free(region, 1);
 	return ret;
 }

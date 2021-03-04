@@ -262,7 +262,10 @@ bool xplInitMessages()
 	if (messages_initialized)
 		return true;
 	if (!xprMutexInit(&console_interlock))
+	{
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		return false;
+	}
 	if (!xplInitLogger())
 		return false;
 	messages_initialized = true;

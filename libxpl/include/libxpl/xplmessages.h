@@ -47,6 +47,19 @@ XPLPUBFUN void XPLCALL
 	BAD_CAST "please contact the developer. Function %s, file %s, line %d",\
 	__FUNCTION__, __FILE__, __LINE__);
 
+#define SUCCEED_OR_DIE(f) \
+	do { \
+		if (!(f)) \
+		{ \
+			xplDisplayMessage( \
+				XPL_MSG_INTERNAL_ERROR, \
+				BAD_CAST "please contact the developer. Function %s, file %s, line %d. Exiting", \
+				__FUNCTION__, __FILE__, __LINE__ \
+			); \
+			xprShutdownApp(7); \
+		} \
+	} while (0)
+
 XPLPUBFUN bool XPLCALL
 	xplInitMessages(void);
 XPLPUBFUN void XPLCALL

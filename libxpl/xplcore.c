@@ -259,14 +259,9 @@ void xplWaitForChildThreads(xplDocumentPtr doc)
 	count = rbGetBufContentSize(doc->thread_handles) / sizeof(XPR_THREAD_HANDLE);
 	if (count)
 	{
-		if (!xprMutexRelease(&doc->thread_landing_lock))
-		{
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-			return; /* threads won't be able to land */
-		}
+		SUCCEED_OR_DIE(xprMutexRelease(&doc->thread_landing_lock));
 		xprWaitForThreads(handles, (int) count);
-		if (!xprMutexAcquire(&doc->thread_landing_lock))
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
+		SUCCEED_OR_DIE(xprMutexAcquire(&doc->thread_landing_lock));
 	}
 	rbRewindBuf(doc->thread_handles);
 }
@@ -293,8 +288,7 @@ static XPR_DECLARE_THREAD_ROUTINE(xplDocThreadWrapper, p)
 		content = xplDetachChildren(doc->document->children);
 	}
 	xmlSetListDoc(content, doc->parent->document);
-	if (!xprMutexAcquire(&doc->parent->thread_landing_lock))
-		DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
+	SUCCEED_OR_DIE(xprMutexAcquire(&doc->parent->thread_landing_lock));
 	if (xplVerifyAncestorOrSelfAxis(xplFirstElementNode(doc->parent->document->children), doc->landing_point_path))
 		xplDocDeferNodeDeletion(doc->parent, xplReplaceWithList(doc->landing_point_path->nodeTab[0], content));
 	else {
@@ -302,8 +296,7 @@ static XPR_DECLARE_THREAD_ROUTINE(xplDocThreadWrapper, p)
 			xplDisplayWarning(xplFirstElementNode(doc->document->children), BAD_CAST "thread landing point deleted");
 		xmlFreeNodeList(content);
 	}
-	if (!xprMutexRelease(&doc->parent->thread_landing_lock))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexRelease(&doc->parent->thread_landing_lock));
 	xplDocumentFree(doc);
 	xprExitThread((XPR_THREAD_RETVAL) 0);
 	return (XPR_THREAD_RETVAL) 0; // make compiler happy
@@ -1161,11 +1154,10 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 		{
 			if (!doc->parent || doc->async)
 			{
-				if (!xprMutexAcquire(&global_conf_mutex))
-					DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
-				xprInterlockedIncrement(&active_thread_count);
-				if (!xprMutexRelease(&global_conf_mutex))
-					DISPLAY_INTERNAL_ERROR_MESSAGE();
+				/* don't change this to a call to xprInterlockedIncrement(). global_conf_mutex must be acquired here. */
+				SUCCEED_OR_DIE(xprMutexAcquire(&global_conf_mutex));
+				active_thread_count++;
+				SUCCEED_OR_DIE(xprMutexRelease(&global_conf_mutex));
 			}
 			xplCheckRootNs(doc, root_element);
 			xplNodeApply(doc, root_element, &res);
@@ -1205,14 +1197,12 @@ void xplLockThreads(bool doLock)
 	if (doLock)
 	{
 		xprInterlockedDecrement(&active_thread_count);
-		if (!xprMutexAcquire(&global_conf_mutex))
-			DISPLAY_INTERNAL_ERROR_MESSAGE(); // TODO crash?..
+		SUCCEED_OR_DIE(xprMutexAcquire(&global_conf_mutex));
 		while (active_thread_count)
 			xprSleep(100);
 	} else {
 		xprInterlockedIncrement(&active_thread_count);
-		if (!xprMutexRelease(&global_conf_mutex))
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
+		SUCCEED_OR_DIE(xprMutexRelease(&global_conf_mutex));
 	}
 }
 
@@ -1344,6 +1334,8 @@ xplError xplInitParser(xmlChar *cfgFile, bool verbose)
 		{
 			if (verbose)
 				printf("FAILED!\n");
+			else
+				printf("Failed to initialize %s!\n", start_stop_steps[i].name);
 			for (j = i - 1; j >= 0; j--)
 			{
 				if (!start_stop_steps[j].stop_fn)

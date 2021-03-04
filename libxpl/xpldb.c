@@ -82,11 +82,7 @@ xplDBPtr xplLocateAvailDB(xplDBListPtr list)
 
 	if (!list)
 		return NULL;
-	if (!xprMutexAcquire(&list->lock))
-	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return NULL;
-	}
+	SUCCEED_OR_DIE(xprMutexAcquire(&list->lock));
 	db = list->first;
 	while (db)
 	{
@@ -99,8 +95,7 @@ xplDBPtr xplLocateAvailDB(xplDBListPtr list)
 	}
 	if (ret)
 		ret->busy = true;
-	if (!xprMutexRelease(&list->lock))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexRelease(&list->lock));
 	return ret;
 }
 
@@ -108,15 +103,13 @@ void xplAddDBToDBList(xplDBListPtr list, xplDBPtr db)
 {
 	if (!list || !db)
 		return;
-	if (!xprMutexAcquire(&list->lock)) /* TODO what should we do here? */
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexAcquire(&list->lock));
 	if (list->last)
 		list->last->next = db;
 	list->last = db;
 	if (!list->first)
 		list->first = db;
-	if (!xprMutexRelease(&list->lock))
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	SUCCEED_OR_DIE(xprMutexRelease(&list->lock));
 }
 
 const xmlChar* xplDecodeDBConfigResult(xplDBConfigResult result)
