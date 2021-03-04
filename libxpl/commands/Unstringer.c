@@ -11,8 +11,6 @@ typedef struct _xplCmdUnstringerParams
 {
 	xmlXPathObjectPtr select;
 	xmlChar* delimiter;
-	xmlChar* start_delimiter;
-	xmlChar* end_delimiter;
 	xplQName tag_name;
 	xplQName delimiter_tag_name;
 	bool unique;
@@ -26,8 +24,6 @@ static const xplCmdUnstringerParams params_stencil =
 {
 	.select = NULL,
 	.delimiter = NULL,
-	.start_delimiter = NULL,
-	.end_delimiter = NULL,
 	.tag_name = { NULL, NULL },
 	.delimiter_tag_name = { NULL, NULL },
 	.unique = false,
@@ -38,8 +34,6 @@ static const xplCmdUnstringerParams params_stencil =
 };
 
 static xmlChar* delimiter_aliases[] = { BAD_CAST "delim", BAD_CAST "delimeter", NULL };
-static xmlChar* start_delimiter_aliases[] = { BAD_CAST "startdelimeter", NULL };
-static xmlChar* end_delimiter_aliases[] = { BAD_CAST "enddelimeter", NULL };
 static xmlChar* keep_delimiter_aliases[] = { BAD_CAST "keepdelimeter", NULL };
 static xmlChar* multi_delimiter_aliases[] = { BAD_CAST "multidelimeter", NULL };
 static xmlChar* delimiter_tag_name_aliases[] = { BAD_CAST "delimetertagname", NULL };
@@ -62,16 +56,6 @@ xplCommand xplUnstringerCommand =
 			.type = XPL_CMD_PARAM_TYPE_STRING,
 			.aliases = delimiter_aliases,
 			.value_stencil = &params_stencil.delimiter
-		}, {
-			.name = BAD_CAST "startdelimiter",
-			.type = XPL_CMD_PARAM_TYPE_STRING,
-			.aliases = start_delimiter_aliases,
-			.value_stencil = &params_stencil.start_delimiter
-		}, {
-			.name = BAD_CAST "enddelimiter",
-			.type = XPL_CMD_PARAM_TYPE_STRING,
-			.aliases = end_delimiter_aliases,
-			.value_stencil = &params_stencil.end_delimiter,
 		}, {
 			.name = BAD_CAST "tagname",
 			.type = XPL_CMD_PARAM_TYPE_QNAME,
@@ -231,13 +215,6 @@ static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 #undef APPEND_NODE
 }
 
-static xmlNodePtr _splitByCouple(UnstringerContextPtr ctxt)
-{
-	/* ToDo */
-	UNUSED_PARAM(ctxt);
-	return NULL;
-}
-
 void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xmlXPathObjectPtr sel = NULL;
@@ -247,17 +224,6 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 
 	memset(&ctxt, 0, sizeof(UnstringerContext));
 	ctxt.params = (xplCmdUnstringerParamsPtr) commandInfo->params;
-
-	if (ctxt.params->delimiter && (ctxt.params->start_delimiter || ctxt.params->end_delimiter))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "can't perform single delimiter and coupled delimiter splitting at the same time"), true, true);
-		return;
-	}
-	if (ctxt.params->multi_delimiter && ctxt.params->start_delimiter && ctxt.params->end_delimiter && (xmlStrlen(ctxt.params->start_delimiter) != xmlStrlen(ctxt.params->end_delimiter)))
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "multi-delimiter splitting is requested, but lengths of start and end delimiters differ"), true, true);
-		return;
-	}
 
 	if (!ctxt.params->select && (!commandInfo->content || !*commandInfo->content))
 	{
@@ -284,10 +250,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 				ret = xmlNewDocNode(commandInfo->element->doc, ctxt.params->tag_name.ns, ctxt.params->tag_name.ncname, NULL);
 		} else if (ctxt.params->select->type == XPATH_STRING) {
 			ctxt.input_str = sel->stringval;
-			if (ctxt.params->start_delimiter && ctxt.params->end_delimiter)
-				ret = _splitByCouple(&ctxt);
-			else
-				ret = _splitBySingle(&ctxt);
+			ret = _splitBySingle(&ctxt);
 		} else
 			ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath expression '%s' evaluated to unsupported type", ctxt.params->select->user);
 	} else
@@ -305,10 +268,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		}
 		if (!ctxt.input_str)
 			continue;
-		if (ctxt.params->start_delimiter && ctxt.params->end_delimiter)
-			out = _splitByCouple(&ctxt);
-		else
-			out = _splitBySingle(&ctxt);
+		out = _splitBySingle(&ctxt);
 		if (!ret)
 			ret = out;
 		else
