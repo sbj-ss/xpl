@@ -43,15 +43,6 @@ bool xplSessionManagerInit(time_t max_lifetime)
 	return true;
 }
 
-static void _freeObjectCallback(void *payload, XML_HCBNC xmlChar *name)
-{
-	xmlNodePtr node = (xmlNodePtr) payload;
-	UNUSED_PARAM(name);
-
-	xmlUnlinkNode(node);
-	xmlFreeNode(node);
-}
-
 static void _sessionFree(xplSessionPtr session)
 {
 	if (session)
@@ -185,11 +176,6 @@ xplSessionPtr xplSessionCreateWithAutoId()
 	return ret;
 }
 
-xplSessionPtr xplSessionCreateLocal()
-{
-	return _sessionCreateInternal(NULL, true);
-}
-
 xplSessionPtr xplSessionLookup(const xmlChar *id)
 {
 	xplSessionPtr ret;
@@ -202,14 +188,27 @@ xplSessionPtr xplSessionLookup(const xmlChar *id)
 	return ret;
 }
 
-void xplSessionFreeLocal(xplSessionPtr session)
+xplSessionPtr xplSessionCopy(xplSessionPtr src, bool local_dest)
 {
-	if (!session->local)
+	xplSessionPtr ret;
+	xmlNodePtr cur;
+
+	if (!src || !session_mgr)
+		return NULL;
+	if (local_dest)
+		ret = xplSessionCreateLocal();
+	else
+		ret = xplSessionCreateWithAutoId();
+	if (!ret)
+		return NULL;
+	xplSetChildren(ret->doc->children, xplCloneNodeList(src->doc->children->children, ret->doc->children, ret->doc));
+	cur = ret->doc->children;
+	while (cur)
 	{
-		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		return;
+		xmlHashAddEntry(ret->items, cur->name, (void*) cur);
+		cur = cur->next;
 	}
-	_sessionFree(session);
+	return ret;
 }
 
 void xplSessionDeleteShared(const xmlChar *id)
@@ -241,6 +240,21 @@ void xplCleanupStaleSessions()
 }
 
 /* session-level */
+xplSessionPtr xplSessionCreateLocal()
+{
+	return _sessionCreateInternal(NULL, true);
+}
+
+void xplSessionFreeLocal(xplSessionPtr session)
+{
+	if (!session->local)
+	{
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return;
+	}
+	_sessionFree(session);
+}
+
 bool xplSessionSetObject(xplSessionPtr session, const xmlNodePtr cur, const xmlChar *name)
 {
 	xmlNodePtr prev;
@@ -307,6 +321,15 @@ void xplSessionUnaccess(const xplSessionPtr session)
 {
 	if (session && session->valid)
 		SUCCEED_OR_DIE(xprMutexRelease(&session->locker));
+}
+
+static void _freeObjectCallback(void *payload, XML_HCBNC xmlChar *name)
+{
+	xmlNodePtr node = (xmlNodePtr) payload;
+	UNUSED_PARAM(name);
+
+	xmlUnlinkNode(node);
+	xmlFreeNode(node);
 }
 
 void xplSessionRemoveObject(xplSessionPtr session, const xmlChar *name)

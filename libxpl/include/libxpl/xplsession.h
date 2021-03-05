@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 /* session object */
-#define XPL_SESSION_ID_SIZE 16
+#define XPL_SESSION_ID_SIZE 16 /* in raw bytes */
 typedef struct _xplSession* xplSessionPtr;
 
 /* start/stop */
@@ -33,6 +33,8 @@ XPLPUBFUN xplSessionPtr XPLCALL
 	xplSessionCreateWithAutoId(void);
 XPLPUBFUN xplSessionPtr XPLCALL
 	xplSessionLookup(const xmlChar *id);
+XPLPUBFUN xplSessionPtr XPLCALL
+	xplSessionCopy(xplSessionPtr src, bool local_dest);
 XPLPUBFUN void XPLCALL
 	xplSessionDeleteShared(const xmlChar *id);
 XPLPUBFUN void XPLCALL
