@@ -32,7 +32,7 @@
 	#define XPLCALL
 #else
 	#define XPLPUBFUN SHARED_IMPORT
-	#define XPLPUBVAR SHARED_IMPORT
+	#define XPLPUBVAR extern SHARED_IMPORT
 	#define XPLCALL
 #endif
 

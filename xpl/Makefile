@@ -6,7 +6,7 @@
 INCLUDE = -I../libxpl/include -I/usr/include/libxml2
 LIBS = -lxml2 -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -lcurl -lyajl
 WARNINGS = -Wall -Werror
-CFLAGS = -L../libxpl $(WARNINGS)
+CFLAGS = -fno-common -L../libxpl $(WARNINGS)
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=undefined -fno-sanitize-recover -fstack-protector
 # -fsanitize=address 

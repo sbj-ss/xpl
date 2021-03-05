@@ -11,7 +11,7 @@ LIB += -L$(LIB_ROOT)/lib
 endif
 LIBS = -lxml2 -lxpl_dll -lonig -lcrypto -ltidy -lidn -lodbc32 -lyajl
 WARNINGS = -Wall -Werror
-CFLAGS = -L../libxpl $(WARNINGS)
+CFLAGS = -fno-common -L../libxpl $(WARNINGS)
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -D_DEBUG
 endif

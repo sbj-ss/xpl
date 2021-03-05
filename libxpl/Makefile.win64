@@ -12,7 +12,7 @@ endif
 LIBS = -lxml2 -lonig -ltidy -lcrypto -lidn -lodbc32 -liconv -lz.dll -llzma -lpsapi -lole32 -lwinhttp -lcurl -lyajl
 WARNINGS = -Wall -Wmissing-prototypes -Wshadow -Werror -Wextra
 FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_DB_ODBC -D_XEF_TRANSPORT_CURL -D_XEF_CRYPTO_OPENSSL
-CFLAGS = -fpic -D_IN_DLL $(FEATURES) $(WARNINGS)
+CFLAGS = -fpic -fno-common -D_IN_DLL $(FEATURES) $(WARNINGS)
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -D_DEBUG
 else
