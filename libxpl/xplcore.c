@@ -553,7 +553,12 @@ xplSessionPtr xplDocSessionGetOrCreate(xplDocumentPtr doc, bool local)
 		return doc->local_session;
 	} else {
 		if (!doc->shared_session)
-			doc->shared_session = xplSessionCreateWithAutoId();
+		{
+			if (!doc->parent)
+				doc->shared_session = xplSessionCreateWithAutoId();
+			else /* derived sessions are short-lived and don't need to be registered with session manager */
+				doc->shared_session = xplSessionCreateLocal();
+		}
 		return doc->shared_session;
 	}
 }

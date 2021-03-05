@@ -172,7 +172,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		if (params->share_session)
 			child->shared_session = NULL;
 		else if (child->shared_session)
-			xplSessionDeleteShared(xplSessionGetId(child->shared_session));
+			xplSessionFreeLocal(child->shared_session);
 		xplDocumentFree(child);
 		xplParamsFree(env);
 	}

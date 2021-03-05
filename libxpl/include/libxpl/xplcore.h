@@ -142,7 +142,7 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN void XPLCALL
 	xplDocSessionClear(xplDocumentPtr doc, bool local);
 XPLPUBFUN bool XPLCALL
-	xplDocSessionGetSaMode(xplDocumentPtr doc); // no local param here: any session will do
+	xplDocSessionGetSaMode(xplDocumentPtr doc); /* no local param here: any session will do */
 XPLPUBFUN bool XPLCALL
 	xplDocSessionSetSaMode(xplDocumentPtr doc, bool local, bool enable, xmlChar *password);
 
