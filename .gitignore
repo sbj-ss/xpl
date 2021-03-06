@@ -28,6 +28,7 @@
 *.user
 *.vsp
 # top dirs
+/docs
 /plugins
 /sql_sp
 /test_anything
