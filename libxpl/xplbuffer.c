@@ -155,7 +155,10 @@ void *rbDetachBufContent(rbBufPtr buf)
 
 	if (!buf)
 		return NULL;
-	ret = buf->start;
+	if (buf->grow_strategy != RB_GROW_EXACT)
+		ret = XPL_REALLOC(buf->start, buf->size);
+	else
+		ret = buf->start;
 	buf->start = buf->current = NULL;
 	buf->original_size = buf->size;
 	buf->size = 0;
