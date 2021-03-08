@@ -1,6 +1,5 @@
 #include <errno.h>
 #include <stdio.h>
-#include <libxpl/xplbuffer.h>
 #include <libxpl/xplversion.h>
 
 #ifdef _XEF_TRANSPORT_CURL
@@ -154,29 +153,27 @@ oom:
 xmlChar* xplXefImplementationsToString(xefImplementationsPtr impl)
 {
 	size_t i;
-	rbBufPtr buf;
-	rbOpResult result = 0;
-	xmlChar *ret;
+	xmlBufferPtr buf;
+	int result = 0;
+	xmlChar *ret = NULL;
 
-	if (!(buf = rbCreateBufParams(512, RB_GROW_INCREMENT, 128)))
+	if (!(buf = xmlBufferCreateSize(512)))
 		return NULL;
 	for (i = 0; i < IMPL_ELEMENT_COUNT; i++)
 	{
-		result |= rbAddStringToBuf(buf, impl_elements[i].name);
-		result |= rbAddStringToBuf(buf, BAD_CAST ": ");
-		result |= rbAddStringToBuf(buf, _getImplString(i, *OFFSET_IMPL_VALUE(impl, impl_elements[i].offset)));
-		result |= rbAddStringToBuf(buf, BAD_CAST "\n");
-		if (result != RB_RESULT_OK)
-			goto error;
+		result += xmlBufferCat(buf, impl_elements[i].name);
+		result += xmlBufferCat(buf, BAD_CAST ": ");
+		result += xmlBufferCat(buf, _getImplString(i, *OFFSET_IMPL_VALUE(impl, impl_elements[i].offset)));
+		result += xmlBufferCat(buf, BAD_CAST "\n");
+		if (result < 0)
+			goto done;
 	}
-	if (rbAddDataToBuf(buf, "", 1) != RB_RESULT_OK)
-		goto error;
-	ret = BAD_CAST rbDetachBufContent(buf);
-	rbFreeBuf(buf);
+	if (xmlBufferAdd(buf, BAD_CAST "", 1) < 0)
+		goto done;
+	ret = BAD_CAST xmlBufferDetach(buf);
+done:
+	xmlBufferFree(buf);
 	return ret;
-error:
-	rbFreeBuf(buf);
-	return NULL;
 }
 
 #define NOT_CHECKABLE (BAD_CAST "not checkable")
@@ -441,31 +438,29 @@ oom:
 xmlChar* xplLibraryVersionsToString(xplLibraryVersionsPtr compiled, xplLibraryVersionsPtr running)
 {
 	size_t i;
-	rbBufPtr buf;
-	rbOpResult result = 0;
-	xmlChar *ret;
+	xmlBufferPtr buf;
+	int result = 0;
+	xmlChar *ret = NULL;
 
-	if (!(buf = rbCreateBufParams(512, RB_GROW_INCREMENT, 128)))
+	if (!(buf = xmlBufferCreateSize(512)))
 		return NULL;
 	for (i = 0; i < VERSION_ELEMENT_COUNT; i++)
 	{
-		result |= rbAddStringToBuf(buf, version_elements[i].name);
-		result |= rbAddStringToBuf(buf, BAD_CAST ": compiled=");
-		result |= rbAddStringToBuf(buf, *OFFSET_VERSION_STR(compiled, version_elements[i].offset));
-		result |= rbAddStringToBuf(buf, BAD_CAST ", running=");
-		result |= rbAddStringToBuf(buf, *OFFSET_VERSION_STR(running, version_elements[i].offset));
-		result |= rbAddStringToBuf(buf, BAD_CAST "\n");
-		if (result != RB_RESULT_OK)
-			goto error;
+		result += xmlBufferCat(buf, version_elements[i].name);
+		result += xmlBufferCat(buf, BAD_CAST ": compiled=");
+		result += xmlBufferCat(buf, *OFFSET_VERSION_STR(compiled, version_elements[i].offset));
+		result += xmlBufferCat(buf, BAD_CAST ", running=");
+		result += xmlBufferCat(buf, *OFFSET_VERSION_STR(running, version_elements[i].offset));
+		result += xmlBufferCat(buf, BAD_CAST "\n");
+		if (result < 0)
+			goto done;
 	}
-	if (rbAddDataToBuf(buf, "", 1) != RB_RESULT_OK)
-		goto error;
-	ret = BAD_CAST rbDetachBufContent(buf);
-	rbFreeBuf(buf);
+	if (xmlBufferAdd(buf, BAD_CAST "", 1) < 0)
+		goto done;
+	ret = xmlBufferDetach(buf);
+done:
+	xmlBufferFree(buf);
 	return ret;
-error:
-	rbFreeBuf(buf);
-	return NULL;
 }
 
 bool xplInitLibraryVersions()

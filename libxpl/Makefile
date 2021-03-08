@@ -35,7 +35,6 @@ xplmacro.c\
 xplmessages.c\
 xploptions.c\
 xplparams.c\
-xplbuffer.c\
 xplsave.c\
 xplsession.c\
 xplstart.c\
@@ -175,7 +174,6 @@ endif
 SRC += $(COMMANDS)
 
 TEST_SRC=tests/Runner.c\
-tests/test_xplbuffer.c\
 tests/test_xpldb.c\
 tests/test_xplsave.c
 

@@ -1,8 +1,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winhttp.h>
+#include <libxml/tree.h>
 #include <libxpl/abstraction/xef.h>
-#include <libxpl/xplbuffer.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xplstring.h>
@@ -64,7 +64,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	DWORD extra_query_len;
 	DWORD options;
 	DWORD dwSize = 0, dwRead, dwTotal;
-	rbBufPtr buf = NULL;
+	xmlBufferPtr buf = NULL;
 	unsigned short zero = 0;
 
 	params->document = NULL;
@@ -238,7 +238,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 			}
 		} /* if status queried */
 
-		buf = rbCreateBufParams(16384, RB_GROW_DOUBLE, 2);
+		buf = xmlBufferCreateSize(16384);
 		dwTotal = 0;
 		do
 		{
@@ -252,12 +252,12 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 				} else
 					continue; /* next try */
 			}
-			if (rbEnsureBufFreeSize(buf, (size_t) dwSize) != RB_RESULT_OK)
+			if (xmlBufferGrow(buf, (size_t) dwSize) < 0)
 			{
 				params->error = BAD_CAST XPL_STRDUP("insufficient memory");
 				goto done;
 			}
-			params->document = rbGetBufPosition(buf);
+			params->document = xmlBufferContent(buf) + xmlBufferLength(buf);
 			if (!WinHttpReadData(hRequest, params->document, dwSize, &dwRead))
 			{
 				if (iRetryTimes == INT_RETRYTIMES)
@@ -267,13 +267,13 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 				} else
 					continue; /* next try */
 			}
-			rbAdvanceBufPosition(buf, (size_t) dwRead);
+			xmlBufferAdd(buf, params->document, (size_t) dwRead); // TODO this is ineffective
 			dwTotal += dwRead;
 		} while (dwSize > 0); /* reading cycle */
 		bResponseSucceeded = true;
 	} // while
-	rbAddDataToBuf(buf, &zero, sizeof(zero));
-	params->document = (xmlChar*) rbDetachBufContent(buf);
+	xmlBufferAdd(buf, BAD_CAST &zero, sizeof(zero));
+	params->document = (xmlChar*) xmlBufferDetach(buf);
 	params->document_size = (size_t) dwTotal;
 	params->error = NULL;
 	/* ToDo: set this field */
@@ -292,7 +292,7 @@ done:
 	if (wszProxyUser) XPL_FREE(wszProxyUser);
 	if (wszProxyPassword) XPL_FREE(wszProxyPassword);
 
-	if (buf) rbFreeBuf(buf);
+	if (buf) xmlBufferFree(buf);
 
 	return (params->error)? false: true;
 }

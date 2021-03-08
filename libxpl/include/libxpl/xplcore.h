@@ -9,7 +9,6 @@
 #include "Configuration.h"
 #include <libxml/xpath.h>
 #include <libxpl/abstraction/xpr.h>
-#include <libxpl/xplbuffer.h>
 #include <libxpl/xplcommand.h>
 #include <libxpl/xpldb.h>
 #include <libxpl/xplmacro.h>
@@ -62,8 +61,8 @@ struct _xplDocument
 	xmlChar *response;					/* for :set-response and app using the interpreter */
 	xmlNodePtr stack;					/* for :stack-xx */
 										/* threading support */
-	rbBufPtr thread_handles;			/* spawned threads */
-	rbBufPtr suspended_thread_docs; 	/* sub-documents waiting to be spawned */
+	xmlBufferPtr thread_handles;		/* spawned threads */
+	xmlBufferPtr suspended_thread_docs;	/* sub-documents waiting to be spawned */
 	XPR_MUTEX thread_landing_lock;		/* the "master" doc owns this */
 	xmlNodeSetPtr landing_point_path;	/* xmlNodePtr[] from landing point to doc root */
 	xplDocumentPtr parent;				/* spawning document */
@@ -71,7 +70,7 @@ struct _xplDocument
 	int indent_spin;					/* for :text */
 	xmlNsPtr root_xpl_ns;				/* for fast XPL namespace checking */
 	XPR_TIME profile_start_time;		/* for execution timing */
-	rbBufPtr deleted_nodes;				/* for deferred node deletion */
+	xmlBufferPtr deleted_nodes;			/* for deferred node deletion */
 	int iterator_spin;					/* for :with */
 };
 
@@ -114,15 +113,15 @@ XPLPUBFUN bool XPLCALL
 
 /* safe deletion for fool-proof mode */
 XPLPUBFUN void XPLCALL
-	xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur);
+	xplDeferNodeDeletion(xmlBufferPtr buf, xmlNodePtr cur);
 XPLPUBFUN void XPLCALL
-	xplDeferNodeListDeletion(rbBufPtr buf, xmlNodePtr cur);
+	xplDeferNodeListDeletion(xmlBufferPtr buf, xmlNodePtr cur);
 XPLPUBFUN void XPLCALL
 	xplDocDeferNodeDeletion(xplDocumentPtr doc, xmlNodePtr cur);
 XPLPUBFUN void XPLCALL
 	xplDocDeferNodeListDeletion(xplDocumentPtr doc, xmlNodePtr cur);
 XPLPUBFUN void XPLCALL
-	xplDeleteDeferredNodes(rbBufPtr buf);
+	xplDeleteDeferredNodes(xmlBufferPtr buf);
 
 /* session wrappers */
 XPLPUBFUN xplSessionPtr XPLCALL

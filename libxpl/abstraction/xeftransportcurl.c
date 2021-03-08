@@ -1,6 +1,6 @@
 #include <curl/curl.h>
+#include <libxml/tree.h>
 #include <libxpl/abstraction/xef.h>
-#include <libxpl/xplbuffer.h>
 #include <libxpl/xploptions.h>
 
 #define USER_AGENT_STRING "User-Agent: Mozilla/5.0 (X11; Linux x86_64) " \
@@ -85,10 +85,10 @@ bool xefStartupTransport(xefStartupParamsPtr params)
 
 static size_t _writeCallback(char *ptr, size_t size, size_t nItems, void *userData)
 {
-    rbBufPtr buf = (rbBufPtr) userData;
+    xmlBufferPtr buf = (xmlBufferPtr) userData;
     size_t total_size = size * nItems;
 
-    if (rbAddDataToBuf(buf, ptr, total_size) == RB_RESULT_OK)
+    if (xmlBufferAdd(buf, BAD_CAST ptr, total_size) >= 0)
         return total_size;
     else
         return 0;
@@ -118,7 +118,7 @@ static size_t _readCallback(char *ptr, size_t size, size_t nItems, void *userDat
 bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 {
 	CURL *curl;
-	rbBufPtr buf;
+	xmlBufferPtr buf;
 	uploadData post_data;
 	CURLcode res;
 	long status;
@@ -135,11 +135,12 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 		params->error = BAD_CAST XPL_STRDUP("setting SSL options failed");
 		goto done;
 	}
-	if (!(buf = rbCreateBufParams(0x10000, RB_GROW_DOUBLE, 0)))
+	if (!(buf = xmlBufferCreateSize(0x10000)))
 	{
-		params->error = BAD_CAST XPL_STRDUP("rbCreateBufParams() failed");
+		params->error = BAD_CAST XPL_STRDUP("xmlBufferCreateSize() failed");
 		goto done;
 	}
+	xmlBufferSetAllocationScheme(buf, XML_BUFFER_ALLOC_DOUBLEIT);
 	curl_headers = curl_slist_append(curl_headers, USER_AGENT_STRING);
 	curl_easy_setopt(curl, CURLOPT_URL, (char*) params->uri);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _writeCallback);
@@ -175,13 +176,13 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 		params->error = BAD_CAST XPL_STRDUP(curl_easy_strerror(res));
 		goto done;
 	}
-	if (rbAddDataToBuf(buf, "", 1) != RB_RESULT_OK)
+	if (xmlBufferAdd(buf, BAD_CAST "", 1) < 0)
 	{
 		params->error = BAD_CAST XPL_STRDUP("Out of memory");
 		goto done;
 	}
-	params->document_size = rbGetBufContentSize(buf);
-	params->document = rbDetachBufContent(buf);
+	params->document_size = xmlBufferLength(buf);
+	params->document = xmlBufferDetach(buf);
 	curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, (char**) &params->real_uri);
 	params->real_uri = BAD_CAST XPL_STRDUP((char*) params->real_uri);
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &status);
@@ -195,7 +196,7 @@ done:
 	if (curl)
 		curl_easy_cleanup(curl);
 	if (buf)
-		rbFreeBuf(buf);
+		xmlBufferFree(buf);
 	if (curl_headers)
 		curl_slist_free_all(curl_headers);
 	return !params->error;

@@ -5,7 +5,6 @@
 #include <yajl/yajl_common.h>
 #include <yajl/yajl_gen.h>
 #include <yajl/yajl_parse.h>
-#include <libxpl/xplbuffer.h>
 #include <libxpl/xpljsonx.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
@@ -59,7 +58,7 @@ typedef struct _jsonxSerializeContext {
 	bool strict_tag_names;
 	bool value_type_check;
 	yajl_gen gen;
-	rbBufPtr buf;
+	xmlBufferPtr buf;
 	/* will be changed by serializer */
 	xmlNsPtr jsonx_ns;
 	jsonxElementType container_type;
@@ -309,7 +308,7 @@ static void _yajlPrint(void *ctx, const char *str, size_t len)
 
 	if (!str)
 		return;
-	if (rbAddDataToBuf(jctxt->buf, str, len) != RB_RESULT_OK)
+	if (xmlBufferAdd(jctxt->buf, BAD_CAST str, len) < 0)
 		jctxt->out_of_memory = true;
 }
 
@@ -319,11 +318,12 @@ xmlNodePtr xplJsonXSerializeNodeList(xmlNodePtr list, bool strictTagNames, bool 
 	xmlNodePtr ret;
 
 	memset(&ctxt, 0, sizeof(ctxt));
-	if (!(ctxt.buf = rbCreateBufParams(2048, RB_GROW_DOUBLE, 0)))
+	if (!(ctxt.buf = xmlBufferCreateSize(2048)))
 	{
-		ret = xplCreateErrorNode(list->parent, BAD_CAST "%s(): rbCreateBufParams() failed", __FUNCTION__);
+		ret = xplCreateErrorNode(list->parent, BAD_CAST "%s(): xmlBufferCreateSize() failed", __FUNCTION__);
 		goto done;
 	}
+	xmlBufferSetAllocationScheme(ctxt.buf, XML_BUFFER_ALLOC_HYBRID);
 	if (!(ctxt.gen = yajl_gen_alloc(yajl_mem_funcs_ptr)))
 	{
 		ret = xplCreateErrorNode(list->parent, BAD_CAST "%s(): yajl_gen_alloc() failed", __FUNCTION__);
@@ -348,17 +348,17 @@ xmlNodePtr xplJsonXSerializeNodeList(xmlNodePtr list, bool strictTagNames, bool 
 
 	if ((ret = _jsonxSerializeNodeList(list, &ctxt)))
 		goto done;
-	if (rbAddDataToBuf(ctxt.buf, "", 1) != RB_RESULT_OK) // null-terminate
+	if (xmlBufferAdd(ctxt.buf, BAD_CAST "", 1) < 0) // null-terminate
 	{
 		ret = xplCreateErrorNode(list->parent, BAD_CAST "%s(): out of memory", __FUNCTION__);
 		goto done;
 	}
 
 	ret = xmlNewDocText(list->doc, NULL);
-	ret->content = rbDetachBufContent(ctxt.buf);
+	ret->content = xmlBufferDetach(ctxt.buf);
 done:
 	if (ctxt.buf)
-		rbFreeBuf(ctxt.buf);
+		xmlBufferFree(ctxt.buf);
 	if (ctxt.gen)
 		yajl_gen_free(ctxt.gen);
 	return ret;

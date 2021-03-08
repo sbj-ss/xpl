@@ -210,7 +210,7 @@ void xplDocumentFree(xplDocumentPtr doc)
 	if (doc->deleted_nodes)
 	{
 		xplDeleteDeferredNodes(doc->deleted_nodes);
-		rbFreeBuf(doc->deleted_nodes);
+		xmlBufferFree(doc->deleted_nodes);
 	}
 	if (doc->document)
 		xmlFreeDoc(doc->document);
@@ -233,18 +233,18 @@ bool xplEnsureDocThreadSupport(xplDocumentPtr doc)
 		xplFinalizeDocThreads(doc, true);
 		return false;
 	}
-	doc->thread_handles = rbCreateBufParams(2*sizeof(XPR_THREAD_HANDLE), RB_GROW_INCREMENT, 2*sizeof(XPR_THREAD_HANDLE));
-	if (!doc->thread_handles)
+	if (!(doc->thread_handles = xmlBufferCreateSize(2*sizeof(XPR_THREAD_HANDLE))))
 	{
 		xplFinalizeDocThreads(doc, true);
 		return false;
 	}
-	doc->suspended_thread_docs = rbCreateBufParams(2*sizeof(xplDocumentPtr), RB_GROW_INCREMENT, 2*sizeof(xplDocumentPtr));
-	if (!doc->suspended_thread_docs)
+	xmlBufferSetAllocationScheme(doc->thread_handles, XML_BUFFER_ALLOC_HYBRID);
+	if (!(doc->suspended_thread_docs = xmlBufferCreateSize(2*sizeof(xplDocumentPtr))))
 	{
 		xplFinalizeDocThreads(doc, true);
 		return false;
 	}
+	xmlBufferSetAllocationScheme(doc->suspended_thread_docs, XML_BUFFER_ALLOC_HYBRID);
 	return true;
 }
 
@@ -255,15 +255,15 @@ void xplWaitForChildThreads(xplDocumentPtr doc)
 
 	if (!doc->thread_handles)
 		return;
-	handles = (XPR_THREAD_HANDLE*) rbGetBufContent(doc->thread_handles);
-	count = rbGetBufContentSize(doc->thread_handles) / sizeof(XPR_THREAD_HANDLE);
+	handles = (XPR_THREAD_HANDLE*) xmlBufferContent(doc->thread_handles);
+	count = xmlBufferLength(doc->thread_handles) / sizeof(XPR_THREAD_HANDLE);
 	if (count)
 	{
 		SUCCEED_OR_DIE(xprMutexRelease(&doc->thread_landing_lock));
 		xprWaitForThreads(handles, (int) count);
 		SUCCEED_OR_DIE(xprMutexAcquire(&doc->thread_landing_lock));
 	}
-	rbRewindBuf(doc->thread_handles);
+	xmlBufferEmpty(doc->thread_handles);
 }
 
 /* Thread wrapper */
@@ -312,13 +312,13 @@ bool xplStartChildThread(xplDocumentPtr doc, xplDocumentPtr child, bool immediat
 		return false;
 	if (immediateStart)
 	{
-		if (rbEnsureBufFreeSize(doc->thread_handles, sizeof(XPR_THREAD_HANDLE)) != RB_RESULT_OK)
+		if (xmlBufferGrow(doc->thread_handles, sizeof(XPR_THREAD_HANDLE)) < 0)
 			return false;
 		if (!(handle = xprStartThread(xplDocThreadWrapper, (XPR_THREAD_PARAM) child)))
 			return false;
-		return rbAddDataToBuf(doc->thread_handles, &handle, sizeof(XPR_THREAD_HANDLE)) == RB_RESULT_OK;
+		return xmlBufferAdd(doc->thread_handles, BAD_CAST &handle, sizeof(XPR_THREAD_HANDLE)) >= 0;
 	} else
-		return rbAddDataToBuf(doc->suspended_thread_docs, &child, sizeof(xplDocumentPtr)) == RB_RESULT_OK;
+		return xmlBufferAdd(doc->suspended_thread_docs, BAD_CAST &child, sizeof(xplDocumentPtr)) >= 0;
 }
 
 bool xplStartDelayedThreads(xplDocumentPtr doc)
@@ -331,8 +331,8 @@ bool xplStartDelayedThreads(xplDocumentPtr doc)
 		return false;
 	if (!doc->suspended_thread_docs)
 		return true;
-	pool_size = rbGetBufContentSize(doc->suspended_thread_docs) / sizeof(xplDocumentPtr);
-	for (i = 0, docs = rbGetBufContent(doc->suspended_thread_docs); i < pool_size; i++)
+	pool_size = xmlBufferLength(doc->suspended_thread_docs) / sizeof(xplDocumentPtr);
+	for (i = 0, docs = (xplDocumentPtr*) xmlBufferContent(doc->suspended_thread_docs); i < pool_size; i++)
 	{
 		if (!xplStartChildThread(doc, docs[i], true)) // here we're almost sure that launch failed. delete the doc to prevent memory leak
 		{
@@ -340,7 +340,7 @@ bool xplStartDelayedThreads(xplDocumentPtr doc)
 			xplDocumentFree(docs[i]);
 		}
 	}
-	rbRewindBuf(doc->suspended_thread_docs);
+	xmlBufferEmpty(doc->suspended_thread_docs);
 	return ret;
 }
 
@@ -349,12 +349,12 @@ void xplDiscardSuspendedThreadDocs(xplDocumentPtr doc)
 	size_t pool_size, i;
 	xplDocumentPtr *docs;
 
-	pool_size = rbGetBufContentSize(doc->suspended_thread_docs) / sizeof(xplDocumentPtr);
+	pool_size = xmlBufferLength(doc->suspended_thread_docs) / sizeof(xplDocumentPtr);
 	if (pool_size && cfgWarnOnNeverLaunchedThreads)
 		xplDisplayWarning(xplFirstElementNode(doc->document->children), BAD_CAST "%d suspended threads were never launched", pool_size);
-	for (i = 0, docs = rbGetBufContent(doc->suspended_thread_docs); i < pool_size; i++)
+	for (i = 0, docs = (xplDocumentPtr*) xmlBufferContent(doc->suspended_thread_docs); i < pool_size; i++)
 		xplDocumentFree(docs[i]);
-	rbRewindBuf(doc->suspended_thread_docs);
+	xmlBufferEmpty(doc->suspended_thread_docs);
 }
 
 void xplFinalizeDocThreads(xplDocumentPtr doc, bool force_mutex_cleanup)
@@ -364,13 +364,13 @@ void xplFinalizeDocThreads(xplDocumentPtr doc, bool force_mutex_cleanup)
 	if (doc->thread_handles)
 	{
 		xplWaitForChildThreads(doc);
-		rbFreeBuf(doc->thread_handles);
+		xmlBufferFree(doc->thread_handles);
 		doc->thread_handles = NULL;
 	}
 	if (doc->suspended_thread_docs)
 	{
 		xplDiscardSuspendedThreadDocs(doc);
-		rbFreeBuf(doc->suspended_thread_docs);
+		xmlBufferFree(doc->suspended_thread_docs);
 		doc->suspended_thread_docs = NULL;
 	}
 	if (has_thread_support || force_mutex_cleanup)
@@ -434,7 +434,7 @@ bool xplDocStackIsEmpty(xplDocumentPtr doc)
 }
 
 /* Node deferred deletion */
-void xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur)
+void xplDeferNodeDeletion(xmlBufferPtr buf, xmlNodePtr cur)
 {
 	if (!buf || !cur)
 		return;
@@ -442,10 +442,10 @@ void xplDeferNodeDeletion(rbBufPtr buf, xmlNodePtr cur)
 		return;
 	xmlUnlinkNode(cur);
 	xplMarkDOSAxisForDeletion(cur, XPL_NODE_DELETION_DEFERRED_FLAG, true);
-	rbAddDataToBuf(buf, &cur, sizeof(xmlNodePtr));
+	xmlBufferAdd(buf, BAD_CAST &cur, sizeof(xmlNodePtr));
 }
 
-void xplDeferNodeListDeletion(rbBufPtr buf, xmlNodePtr cur)
+void xplDeferNodeListDeletion(xmlBufferPtr buf, xmlNodePtr cur)
 {
 	xmlNodePtr next;
 
@@ -463,7 +463,10 @@ static bool _ensureDeletedNodesSupport(xplDocumentPtr doc)
 {
 	if (doc->deleted_nodes)
 		return true;
-	return !!(doc->deleted_nodes = rbCreateBufParams(32, RB_GROW_DOUBLE, 2));
+	if (!(doc->deleted_nodes = xmlBufferCreateSize(8 * sizeof(xmlNodePtr))))
+		return false;
+	xmlBufferSetAllocationScheme(doc->deleted_nodes, XML_BUFFER_ALLOC_DOUBLEIT);
+	return true;
 }
 
 void xplDocDeferNodeDeletion(xplDocumentPtr doc, xmlNodePtr cur)
@@ -492,18 +495,18 @@ void xplDocDeferNodeListDeletion(xplDocumentPtr doc, xmlNodePtr cur)
 		xmlFreeNodeList(cur);
 }
 
-void xplDeleteDeferredNodes(rbBufPtr buf)
+void xplDeleteDeferredNodes(xmlBufferPtr buf)
 {
 	size_t i = 0;
-	xmlNodePtr *p = rbGetBufContent(buf);
+	xmlNodePtr *p = (xmlNodePtr*) xmlBufferContent(buf);
 
-	for (i = 0; i < rbGetBufContentSize(buf) / sizeof(xmlNodePtr); i++, p++)
+	for (i = 0; i < xmlBufferLength(buf) / sizeof(xmlNodePtr); i++, p++)
 	{
 		xplMarkDOSAxisForDeletion(*p, XPL_NODE_DELETION_MASK, false);
 		xmlUnlinkNode(*p);
 		xmlFreeNode(*p);
 	}
-	rbRewindBuf(buf);
+	xmlBufferEmpty(buf);
 }
 
 /* session wrappers */

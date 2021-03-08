@@ -1,6 +1,5 @@
 #include <string.h>
 #include <libxpl/abstraction/xef.h>
-#include <libxpl/xplbuffer.h>
 #include <libxpl/xplcore.h>
 #include <libxpl/xpldb.h>
 #include <libxpl/xplmessages.h>
@@ -356,7 +355,7 @@ done:
 	return row_ctxt->head;
 }
 
-static xmlNodePtr _buildDocFromMemory(xmlChar *src, size_t size, xmlNodePtr parent, bool *repeat)
+static xmlNodePtr _buildDocFromMemory(const xmlChar *src, size_t size, xmlNodePtr parent, bool *repeat)
 {
 	xmlDocPtr doc;
 	xmlChar *error = NULL;
@@ -425,7 +424,7 @@ done:
 
 typedef struct _xplTdsDocRowContext
 {
-	rbBufPtr buf;
+	xmlBufferPtr buf;
 	bool out_of_memory;
 	bool must_ensure_buf_size;
 	xmlNodePtr parent;
@@ -450,7 +449,7 @@ static bool _TdsDocRowScanner(xefDbRowPtr row, void *payload)
 		else
 			buf_size = ctxt->row_count * (row->fields[0].value_size + 3);
 		buf_size += xmlStrlen(DOC_END) + 1; /* DOC_START is already in buffer */
-		if (rbEnsureBufFreeSize(ctxt->buf, buf_size) != RB_RESULT_OK)
+		if (xmlBufferResize(ctxt->buf, buf_size) < 0)
 		{
 			ctxt->out_of_memory = true;
 			return false;
@@ -460,7 +459,7 @@ static bool _TdsDocRowScanner(xefDbRowPtr row, void *payload)
 	part = row->fields[0].value;
 	if (!part || !*part)
 		return false;
-	if (rbAddDataToBuf(ctxt->buf, part, row->fields[0].value_size) != RB_RESULT_OK)
+	if (xmlBufferAdd(ctxt->buf, part, row->fields[0].value_size) < 0)
 	{
 		ctxt->out_of_memory = true;
 		return false;
@@ -475,14 +474,15 @@ static bool _TdsDocRowScanner(xefDbRowPtr row, void *payload)
 
 static xmlNodePtr _buildDocFromTds(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_ctxt, bool *repeat)
 {
-	rbBufPtr buf;
+	xmlBufferPtr buf;
 	xmlNodePtr ret;
 	xmlChar *error = NULL;
 
-	buf = rbCreateBufParams(4096, row_ctxt->row_count == -1? RB_GROW_DOUBLE: RB_GROW_EXACT, 0);
-	if (!buf)
+
+	if (!(buf = xmlBufferCreateSize(4096)))
 		goto oom;
-	if (rbAddDataToBuf(buf, DOC_START, xmlStrlen(DOC_START)) != RB_RESULT_OK)
+	xmlBufferSetAllocationScheme(buf, row_ctxt->row_count == -1? XML_BUFFER_ALLOC_DOUBLEIT: XML_BUFFER_ALLOC_EXACT);
+	if (xmlBufferCat(buf, DOC_START) < 0)
 		goto oom;
 	row_ctxt->buf = buf;
 	row_ctxt->out_of_memory = false;
@@ -496,9 +496,9 @@ static xmlNodePtr _buildDocFromTds(xefDbContextPtr db_ctxt, xplTdsDocRowContextP
 	}
 	if (row_ctxt->out_of_memory)
 		goto oom;
-	if (rbAddDataToBuf(buf, DOC_END, xmlStrlen(DOC_END) + 1) != RB_RESULT_OK)
+	if (xmlBufferCat(buf, DOC_END) < 0)
 		goto oom;
-	ret = _buildDocFromMemory(rbGetBufContent(buf), rbGetBufContentSize(buf), row_ctxt->parent, repeat);
+	ret = _buildDocFromMemory(xmlBufferContent(buf), xmlBufferLength(buf), row_ctxt->parent, repeat);
 	goto done;
 oom:
 	ret = xplCreateErrorNode(row_ctxt->parent, BAD_CAST "out of memory");
@@ -507,7 +507,7 @@ done:
 	if (error)
 		XPL_FREE(error);
 	if (buf)
-		rbFreeBuf(buf);
+		xmlBufferFree(buf);
 	return ret;
 }
 
