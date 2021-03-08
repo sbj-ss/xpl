@@ -88,7 +88,7 @@ static size_t _writeCallback(char *ptr, size_t size, size_t nItems, void *userDa
     xmlBufferPtr buf = (xmlBufferPtr) userData;
     size_t total_size = size * nItems;
 
-    if (xmlBufferAdd(buf, BAD_CAST ptr, total_size) >= 0)
+    if (xmlBufferAdd(buf, BAD_CAST ptr, total_size) == 0)
         return total_size;
     else
         return 0;
@@ -124,6 +124,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	long status;
 	char *content_type, *encoding;
 	struct curl_slist* curl_headers = NULL;
+	const short zero = 0;
 
 	if (!(curl = curl_easy_init()))
 	{
@@ -176,7 +177,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 		params->error = BAD_CAST XPL_STRDUP(curl_easy_strerror(res));
 		goto done;
 	}
-	if (xmlBufferAdd(buf, BAD_CAST "", 1) < 0)
+	if (xmlBufferAdd(buf, BAD_CAST &zero, sizeof(zero)) != 0)
 	{
 		params->error = BAD_CAST XPL_STRDUP("Out of memory");
 		goto done;

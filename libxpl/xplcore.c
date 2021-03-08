@@ -316,9 +316,9 @@ bool xplStartChildThread(xplDocumentPtr doc, xplDocumentPtr child, bool immediat
 			return false;
 		if (!(handle = xprStartThread(xplDocThreadWrapper, (XPR_THREAD_PARAM) child)))
 			return false;
-		return xmlBufferAdd(doc->thread_handles, BAD_CAST &handle, sizeof(XPR_THREAD_HANDLE)) >= 0;
+		return xmlBufferAdd(doc->thread_handles, BAD_CAST &handle, sizeof(XPR_THREAD_HANDLE)) == 0;
 	} else
-		return xmlBufferAdd(doc->suspended_thread_docs, BAD_CAST &child, sizeof(xplDocumentPtr)) >= 0;
+		return xmlBufferAdd(doc->suspended_thread_docs, BAD_CAST &child, sizeof(xplDocumentPtr)) == 0;
 }
 
 bool xplStartDelayedThreads(xplDocumentPtr doc)
@@ -442,7 +442,7 @@ void xplDeferNodeDeletion(xmlBufferPtr buf, xmlNodePtr cur)
 		return;
 	xmlUnlinkNode(cur);
 	xplMarkDOSAxisForDeletion(cur, XPL_NODE_DELETION_DEFERRED_FLAG, true);
-	xmlBufferAdd(buf, BAD_CAST &cur, sizeof(xmlNodePtr));
+	xmlBufferAdd(buf, BAD_CAST &cur, sizeof(xmlNodePtr)); // TODO possible OOM
 }
 
 void xplDeferNodeListDeletion(xmlBufferPtr buf, xmlNodePtr cur)

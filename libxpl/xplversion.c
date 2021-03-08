@@ -161,15 +161,13 @@ xmlChar* xplXefImplementationsToString(xefImplementationsPtr impl)
 		return NULL;
 	for (i = 0; i < IMPL_ELEMENT_COUNT; i++)
 	{
-		result += xmlBufferCat(buf, impl_elements[i].name);
-		result += xmlBufferCat(buf, BAD_CAST ": ");
-		result += xmlBufferCat(buf, _getImplString(i, *OFFSET_IMPL_VALUE(impl, impl_elements[i].offset)));
-		result += xmlBufferCat(buf, BAD_CAST "\n");
-		if (result < 0)
+		result |= xmlBufferCat(buf, impl_elements[i].name);
+		result |= xmlBufferCat(buf, BAD_CAST ": ");
+		result |= xmlBufferCat(buf, _getImplString(i, *OFFSET_IMPL_VALUE(impl, impl_elements[i].offset)));
+		result |= xmlBufferCat(buf, BAD_CAST "\n");
+		if (result)
 			goto done;
 	}
-	if (xmlBufferAdd(buf, BAD_CAST "", 1) < 0)
-		goto done;
 	ret = BAD_CAST xmlBufferDetach(buf);
 done:
 	xmlBufferFree(buf);
@@ -446,17 +444,15 @@ xmlChar* xplLibraryVersionsToString(xplLibraryVersionsPtr compiled, xplLibraryVe
 		return NULL;
 	for (i = 0; i < VERSION_ELEMENT_COUNT; i++)
 	{
-		result += xmlBufferCat(buf, version_elements[i].name);
-		result += xmlBufferCat(buf, BAD_CAST ": compiled=");
-		result += xmlBufferCat(buf, *OFFSET_VERSION_STR(compiled, version_elements[i].offset));
-		result += xmlBufferCat(buf, BAD_CAST ", running=");
-		result += xmlBufferCat(buf, *OFFSET_VERSION_STR(running, version_elements[i].offset));
-		result += xmlBufferCat(buf, BAD_CAST "\n");
-		if (result < 0)
+		result |= xmlBufferCat(buf, version_elements[i].name);
+		result |= xmlBufferCat(buf, BAD_CAST ": compiled=");
+		result |= xmlBufferCat(buf, *OFFSET_VERSION_STR(compiled, version_elements[i].offset));
+		result |= xmlBufferCat(buf, BAD_CAST ", running=");
+		result |= xmlBufferCat(buf, *OFFSET_VERSION_STR(running, version_elements[i].offset));
+		result |= xmlBufferCat(buf, BAD_CAST "\n");
+		if (result)
 			goto done;
 	}
-	if (xmlBufferAdd(buf, BAD_CAST "", 1) < 0)
-		goto done;
 	ret = xmlBufferDetach(buf);
 done:
 	xmlBufferFree(buf);

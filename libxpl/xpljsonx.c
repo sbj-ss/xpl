@@ -308,7 +308,7 @@ static void _yajlPrint(void *ctx, const char *str, size_t len)
 
 	if (!str)
 		return;
-	if (xmlBufferAdd(jctxt->buf, BAD_CAST str, len) < 0)
+	if (xmlBufferAdd(jctxt->buf, BAD_CAST str, len) != 0)
 		jctxt->out_of_memory = true;
 }
 
@@ -348,11 +348,6 @@ xmlNodePtr xplJsonXSerializeNodeList(xmlNodePtr list, bool strictTagNames, bool 
 
 	if ((ret = _jsonxSerializeNodeList(list, &ctxt)))
 		goto done;
-	if (xmlBufferAdd(ctxt.buf, BAD_CAST "", 1) < 0) // null-terminate
-	{
-		ret = xplCreateErrorNode(list->parent, BAD_CAST "%s(): out of memory", __FUNCTION__);
-		goto done;
-	}
 
 	ret = xmlNewDocText(list->doc, NULL);
 	ret->content = xmlBufferDetach(ctxt.buf);

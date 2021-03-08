@@ -459,7 +459,7 @@ static bool _TdsDocRowScanner(xefDbRowPtr row, void *payload)
 	part = row->fields[0].value;
 	if (!part || !*part)
 		return false;
-	if (xmlBufferAdd(ctxt->buf, part, row->fields[0].value_size) < 0)
+	if (xmlBufferAdd(ctxt->buf, part, row->fields[0].value_size))
 	{
 		ctxt->out_of_memory = true;
 		return false;
@@ -482,7 +482,7 @@ static xmlNodePtr _buildDocFromTds(xefDbContextPtr db_ctxt, xplTdsDocRowContextP
 	if (!(buf = xmlBufferCreateSize(4096)))
 		goto oom;
 	xmlBufferSetAllocationScheme(buf, row_ctxt->row_count == -1? XML_BUFFER_ALLOC_DOUBLEIT: XML_BUFFER_ALLOC_EXACT);
-	if (xmlBufferCat(buf, DOC_START) < 0)
+	if (xmlBufferCat(buf, DOC_START))
 		goto oom;
 	row_ctxt->buf = buf;
 	row_ctxt->out_of_memory = false;
@@ -496,7 +496,7 @@ static xmlNodePtr _buildDocFromTds(xefDbContextPtr db_ctxt, xplTdsDocRowContextP
 	}
 	if (row_ctxt->out_of_memory)
 		goto oom;
-	if (xmlBufferCat(buf, DOC_END) < 0)
+	if (xmlBufferCat(buf, DOC_END))
 		goto oom;
 	ret = _buildDocFromMemory(xmlBufferContent(buf), xmlBufferLength(buf), row_ctxt->parent, repeat);
 	goto done;
