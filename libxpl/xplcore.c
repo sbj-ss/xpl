@@ -79,9 +79,9 @@ static void _xpathDummyError(void *data, xmlErrorPtr error)
 	UNUSED_PARAM(error);
 }
 
-xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xplSessionPtr aSession)
+xplDocumentPtr xplDocumentInit(xmlChar *aDocRoot, xplParamsPtr aEnvironment, xplSessionPtr aSession)
 {
-	size_t path_len;
+	size_t doc_root_len;
 	xplDocumentPtr doc;
 	xmlChar delim;
 	
@@ -90,31 +90,31 @@ xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xpl
 		return NULL;
 	memset(doc, 0, sizeof(xplDocument));
 
-	if (!aAppPath)
-		aAppPath = cfgDocRoot;
-	if (aAppPath && *aAppPath)
+	if (!aDocRoot)
+		aDocRoot = cfgDocRoot;
+	if (aDocRoot && *aDocRoot)
 	{
-		path_len = xmlStrlen(aAppPath);
+		doc_root_len = xmlStrlen(aDocRoot);
 		delim = 0;
-		if (aAppPath[path_len - 1] == XPR_PATH_INVERSE_DELIM)
+		if (aDocRoot[doc_root_len - 1] == XPR_PATH_INVERSE_DELIM)
 			delim = XPR_PATH_DELIM;
-		else if (aAppPath[path_len - 1] != XPR_PATH_DELIM)
-			path_len++;
-		doc->app_path = (xmlChar*) XPL_MALLOC(path_len + 1);
-		if (!doc->app_path) 
+		else if (aDocRoot[doc_root_len - 1] != XPR_PATH_DELIM)
+			doc_root_len++;
+		doc->doc_root = (xmlChar*) XPL_MALLOC(doc_root_len + 1);
+		if (!doc->doc_root) 
 		{
 			xplDocumentFree(doc);
 			return NULL;
 		}
-		strcpy((char*) doc->app_path, (const char*) aAppPath);
+		strcpy((char*) doc->doc_root, (const char*) aDocRoot);
 		if (delim)
-			doc->app_path[path_len - 1] = delim;
-		else if (doc->app_path[path_len - 1] != XPR_PATH_DELIM) {
-			doc->app_path[path_len - 1] = XPR_PATH_DELIM;
-			doc->app_path[path_len] = 0;
+			doc->doc_root[doc_root_len - 1] = delim;
+		else if (doc->doc_root[doc_root_len - 1] != XPR_PATH_DELIM) {
+			doc->doc_root[doc_root_len - 1] = XPR_PATH_DELIM;
+			doc->doc_root[doc_root_len] = 0;
 		}
 	} else {
-		doc->app_path = NULL;
+		doc->doc_root = NULL;
 	}
 	doc->xpath_ctxt = xmlXPathNewContext(NULL);
 	if (!doc->xpath_ctxt)
@@ -130,7 +130,7 @@ xplDocumentPtr xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xpl
 	return doc;
 }
 
-xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aAppPath, xmlChar *aFilename, xplParamsPtr aEnvironment, xplSessionPtr aSession)
+xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aEnvironment, xplSessionPtr aSession)
 {
 	xplDocumentPtr ret;	
 	size_t path_len;
@@ -138,8 +138,8 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aAppPath, xmlChar *aFilename, 
 
 	if (!aFilename)
 		return NULL;
-	ret = xplDocumentInit(aAppPath, aEnvironment, aSession);
-	path_len = xmlStrlen(ret->app_path);
+	ret = xplDocumentInit(aDocRoot, aEnvironment, aSession);
+	path_len = xmlStrlen(ret->doc_root);
 	max_fn_len = path_len + xmlStrlen(aFilename) + 1;
 	ret->filename = (xmlChar*) XPL_MALLOC(max_fn_len);
 	if (!ret->filename)
@@ -147,8 +147,8 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aAppPath, xmlChar *aFilename, 
 		xplDocumentFree(ret);
 		return NULL;
 	}
-	if (ret->app_path)
-		strcpy((char*) ret->filename, (const char*) ret->app_path);
+	if (ret->doc_root)
+		strcpy((char*) ret->filename, (const char*) ret->doc_root);
 	strcpy((char*) ret->filename + path_len, (const char*) aFilename);
 
 	if (!xprCheckFilePresence(ret->filename, false))
@@ -167,9 +167,9 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aAppPath, xmlChar *aFilename, 
 	return ret;
 }
 
-xplDocumentPtr xplDocumentCreateFromMemory(xmlChar* aAppPath, xmlChar *aOrigin,  xplParamsPtr aEnvironment, xplSessionPtr aSession, xmlChar *encoding)
+xplDocumentPtr xplDocumentCreateFromMemory(xmlChar* aDocRoot, xmlChar *aOrigin,  xplParamsPtr aEnvironment, xplSessionPtr aSession, xmlChar *encoding)
 {
-	xplDocumentPtr ret = xplDocumentInit(aAppPath, aEnvironment, aSession);
+	xplDocumentPtr ret = xplDocumentInit(aDocRoot, aEnvironment, aSession);
 
 	ret->origin = aOrigin;
 	ret->document = xmlReadMemory((const char*) aOrigin, xmlStrlen(aOrigin), NULL, (const char*) encoding, 0);
@@ -190,8 +190,8 @@ void xplDocumentFree(xplDocumentPtr doc)
 #ifdef _THREADING_SUPPORT
 	xplFinalizeDocThreads(doc, false);
 #endif
-	if (doc->app_path)
-		XPL_FREE(doc->app_path);
+	if (doc->doc_root)
+		XPL_FREE(doc->doc_root);
 	if (doc->filename)
 		XPL_FREE(doc->filename);
 	if (doc->error)
@@ -1398,19 +1398,20 @@ void xplSetDocRoot(xmlChar *new_root)
 	cfgDocRoot = BAD_CAST XPL_STRDUP((char*) new_root);
 }
 
-xmlChar* xplFullFilename(const xmlChar* file, const xmlChar* appPath)
+xmlChar* xplFullFilename(const xmlChar* file, const xmlChar* aDocRoot)
 {
 	xmlChar* ret;
 	int len;
+
 	if (file && xmlStrlen(file) && ((*file == '/') || (*file == '\\'))) /* from FS root */
 	{
-		appPath = xplGetDocRoot();
+		aDocRoot = xplGetDocRoot();
 	}
-	len = xmlStrlen(appPath) + xmlStrlen(file) + 1;
+	len = xmlStrlen(aDocRoot) + xmlStrlen(file) + 1;
 	ret = (xmlChar*) XPL_MALLOC(len);
 	*ret = 0;
-	if (appPath)
-		strcpy((char*) ret, (const char*) appPath);
+	if (aDocRoot)
+		strcpy((char*) ret, (const char*) aDocRoot);
 	if (file)
 		strcat((char*) ret, (const char*) file);
 	return ret;
@@ -1435,11 +1436,11 @@ void checkCoalescing(xmlNodePtr cur)
 #define CHECK_COALESCING(x) ((void)0)
 #endif
 
-xplError xplProcessFile(xmlChar *aAppPath, xmlChar *aFilename, xplParamsPtr aEnvironment, xplSessionPtr aSession, xplDocumentPtr *docOut)
+xplError xplProcessFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aEnvironment, xplSessionPtr aSession, xplDocumentPtr *docOut)
 {
 	xplError ret;
 
-	*docOut = xplDocumentCreateFromFile(aAppPath, aFilename, aEnvironment, aSession);
+	*docOut = xplDocumentCreateFromFile(aDocRoot, aFilename, aEnvironment, aSession);
 	if (!*docOut)
 		return XPL_ERR_DOC_NOT_CREATED;
 	(*docOut)->status = XPL_ERR_NOT_YET_REACHED;

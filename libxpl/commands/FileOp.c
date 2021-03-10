@@ -540,11 +540,11 @@ void xplCmdFileOpEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 
 	if (source_attr)
-		fs_source = makeFSPath(source_attr, commandInfo->document->app_path, srcabspath);
+		fs_source = makeFSPath(source_attr, commandInfo->document->doc_root, srcabspath);
 	if (filemask_attr)
 		xstrIconvString(XPR_FS_ENCODING, "utf-8", filemask_attr, filemask_attr + xmlStrlen(filemask_attr), (char**) &fs_filemask, NULL);
 	if (destination_attr)
-		fs_destination = makeFSPath(destination_attr, commandInfo->document->app_path, dstabspath);
+		fs_destination = makeFSPath(destination_attr, commandInfo->document->doc_root, dstabspath);
 
 	switch (op_type)
 	{

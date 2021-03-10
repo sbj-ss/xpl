@@ -44,7 +44,7 @@ typedef struct _xplDocument xplDocument, *xplDocumentPtr;
 /* XPL document */
 struct _xplDocument
 {
-	xmlChar *app_path;					/* "application" root */
+	xmlChar *doc_root;					/* "application" root */
 	xmlChar *filename;					/* full path to file the document was created from */
 	xmlChar *origin;					/* initial document text if it was created from memory */
 	xmlChar *error;						/* early parsing error */
@@ -75,11 +75,11 @@ struct _xplDocument
 };
 
 XPLPUBFUN xplDocumentPtr XPLCALL
-	xplDocumentInit(xmlChar *aAppPath, xplParamsPtr aEnvironment, xplSessionPtr aSession);
+	xplDocumentInit(xmlChar *aDocRoot, xplParamsPtr aEnvironment, xplSessionPtr aSession);
 XPLPUBFUN xplDocumentPtr XPLCALL
-	xplDocumentCreateFromFile(xmlChar *aAppPath, xmlChar *aFilename, xplParamsPtr aEnvironment, xplSessionPtr aSession);
+	xplDocumentCreateFromFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aEnvironment, xplSessionPtr aSession);
 XPLPUBFUN xplDocumentPtr XPLCALL
-	xplDocumentCreateFromMemory(xmlChar* aAppPath, xmlChar *aOrigin,  xplParamsPtr aEnvironment, xplSessionPtr aSession, xmlChar *encoding);
+	xplDocumentCreateFromMemory(xmlChar* aDocRoot, xmlChar *aOrigin,  xplParamsPtr aEnvironment, xplSessionPtr aSession, xmlChar *encoding);
 /* Main method */
 XPLPUBFUN xplError XPLCALL 
 	xplDocumentApply(xplDocumentPtr doc);
@@ -201,10 +201,10 @@ XPLPUBFUN void XPLCALL
 	xplSetDocRoot(xmlChar *new_root);
 /* Full file name wrt "semi-absolute" (i.e. from app root) paths. Result must be freed by the caller. */
 XPLPUBFUN xmlChar* XPLCALL
-	xplFullFilename(const xmlChar* file, const xmlChar* appPath);
+	xplFullFilename(const xmlChar* file, const xmlChar* aDocRoot);
 /* Actual processing */
 XPLPUBFUN xplError XPLCALL
-	xplProcessFile(xmlChar *aAppPath, xmlChar *aFilename, xplParamsPtr environment, xplSessionPtr session, xplDocumentPtr *docOut);
+	xplProcessFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr environment, xplSessionPtr session, xplDocumentPtr *docOut);
 /* Path format (e.g.)
    basePath = "d:\\Tomcat 4.1\\webapps\\ROOT"
    relativePath = "/Impulse/Developer.xpl" */

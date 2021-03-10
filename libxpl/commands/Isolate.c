@@ -76,7 +76,7 @@ static xplDocumentPtr _createChildDoc(xplDocumentPtr doc, xmlNodePtr carrier, bo
 	xplSetChildren(carrier, root);
 	xplMakeNsSelfContainedTree(root);
 	xplSetChildren(carrier, NULL);
-	ret = xplDocumentInit(doc->app_path, env, session);
+	ret = xplDocumentInit(doc->doc_root, env, session);
 	ret->parent = doc;
 	ret->document = xmlNewDoc(BAD_CAST "1.0");
 	xplSetChildren((xmlNodePtr) ret->document, root);
