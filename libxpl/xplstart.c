@@ -127,7 +127,7 @@ static bool _startXpl(const xplStartParamsPtr params, int argc, const char **arg
 	xplError err_code;
 
 	UNUSED_PARAM(argc);
-	if (xmlStrchr(params->config_file_name, XPR_PATH_DELIM))
+	if (xprIsPathAbsolute(params->config_file_name))
 		conf_path = BAD_CAST XPL_STRDUP((char*) params->config_file_name);
 	else {
 		/* argv[0] can be just "xplweb" on windows :\ */
