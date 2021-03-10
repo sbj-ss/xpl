@@ -591,11 +591,10 @@ xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool b
 					dp.digest_method = XEF_CRYPTO_DIGEST_METHOD_RIPEMD160;
 					if (!xefCryptoDigest(&dp))
 						return XPL_SET_OPTION_INTERNAL_ERROR;
-				} else
-					dp.digest = NULL;
-				value = xstrBufferToHex(dp.digest, dp.digest_size, false);
-				if (dp.digest)
+					value = xstrBufferToHex(dp.digest, dp.digest_size, false);
 					XPL_FREE(dp.digest);
+				} else
+					value = NULL;
 				*((xmlChar**) p->value_ptr) = value;
 			} else
 				*((xmlChar**) p->value_ptr) = BAD_CAST XPL_STRDUP((char*) value);
