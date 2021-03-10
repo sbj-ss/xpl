@@ -53,7 +53,7 @@ struct _xplDocument
 	xplSessionPtr local_session;		/* -//- */
 	xmlDocPtr document;					/* underlying XML document */
 	bool expand;						/* current expansion mode */
-	int recursion_level;				/* protection from infinite loops in macros */
+	int macro_nesting_level;			/* protection from infinite loops in macros */
 	xmlXPathContextPtr xpath_ctxt;		/* reusable XPath context */
 	xmlNodePtr fatal_content;			/* for xpl:fatal */
 	xplMacroPtr current_macro;			/* ditto */

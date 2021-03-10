@@ -947,8 +947,8 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 	xmlNodePtr out, prev_caller;
 	xplMacroPtr prev_macro;
 
-	doc->recursion_level++;
-	if (doc->recursion_level > cfgMaxRecursionDepth)
+	doc->macro_nesting_level++;
+	if (doc->macro_nesting_level > cfgMaxRecursionDepth)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(element, BAD_CAST "recursion depth exhausted (infinite loop in macro?..)"), true, true);
 		return;
@@ -987,7 +987,7 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 		macro->expansion_state = XPL_MACRO_EXPANDED;
 	}
 	ASSIGN_RESULT(out, false, true);
-	doc->recursion_level--;
+	doc->macro_nesting_level--;
 	doc->current_macro = prev_macro;
 	macro->caller = prev_caller;
 	macro->return_value = NULL; 
