@@ -57,7 +57,7 @@ OutputMethodDescPtr getOutputMethod(xmlChar *name)
 	return NULL;
 }
 
-static void _provideUniqueFilename(char* path)
+static bool _provideUniqueFilename(char* path, size_t pathLen)
 {
 #define FN_LEN 16
 // TODO make this configurable
@@ -65,13 +65,16 @@ static void _provideUniqueFilename(char* path)
 	xefCryptoRandomParams rp;
 	xmlChar name_bytes[FN_LEN];
 	bool flag = true;
-	size_t root_len;
+	size_t root_len, folder_len;
 
 	root_len = xmlStrlen(doc_root);
+	folder_len = strlen(UPLOAD_FOLDER);
+	if (root_len + folder_len + FN_LEN*2 + 3 > pathLen)
+		return false;
 	memcpy(path, doc_root, root_len);
 	path[root_len++] = XPR_PATH_DELIM;
-	strcpy(&path[root_len], UPLOAD_FOLDER);
-	root_len += strlen(UPLOAD_FOLDER);
+	memcpy(&path[root_len], UPLOAD_FOLDER, folder_len);
+	root_len += folder_len;
 	path[root_len++] = XPR_PATH_DELIM;
 	path[root_len] = 0;
 	xprEnsurePathExistence(BAD_CAST path);
@@ -95,6 +98,7 @@ static void _provideUniqueFilename(char* path)
 		xstrBufferToHex(rp.bytes, rp.size, false, BAD_CAST &path[root_len]);
 		flag = xprCheckFilePresence(BAD_CAST path, false);
 	}
+	return true;
 #undef UPLOAD_FOLDER
 #undef FN_LEN
 }
@@ -143,8 +147,12 @@ static int _fieldFound(const char *key, const char *filename, char *path, size_t
 	}
 	if (filename && *filename)
 	{
-		_provideUniqueFilename(path);
-		printf("about to create file %s -> %s...\n", filename, path); // TODO remove/move to debug level
+		if (!_provideUniqueFilename(path, pathLen))
+		{
+			xplDisplayMessage(XPL_MSG_ERROR, BAD_CAST "Document root '%s' is too long to handle uploads. Max upload path len is %lu chars", doc_root, pathLen);
+			return MG_FORM_FIELD_STORAGE_ABORT;
+		}
+		xplDisplayMessage(XPL_MSG_DEBUG, BAD_CAST "about to create file %s -> %s...\n", filename, path);
 		if (!(ctxt->file_name = BAD_CAST XPL_STRDUP(filename)))
 		{
 			ctxt->oom = true;
