@@ -4,9 +4,10 @@
 #******************************************
 
 INCLUDE = -I./include -I../libxpl/include -I ../civetweb/include -I/usr/include/libxml2
-LIBS = -lxml2 -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -ldl -lpthread -lcivetweb -lcurl -lyajl
+LIBS = -lcivetweb -lxml2 -ldl -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -lpthread -lcurl -lyajl
 WARNINGS = -Wall -Werror
-CFLAGS = -fno-common -L../libxpl -L../civetweb $(WARNINGS)
+FEATURES = -D_XEF_TRANSPORT_CURL -D_XEF_DB_ODBC -D_XEF_HTML_CLEANER_TIDY -D_XEF_CRYPTO_OPENSSL
+CFLAGS = -fno-common -L../libxpl -L../civetweb $(FEATURES) $(WARNINGS)
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=undefined -fno-sanitize-recover -fstack-protector
 endif

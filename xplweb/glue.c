@@ -3,81 +3,192 @@
 #include <libxml/entities.h>
 #include <libxml/xmlsave.h>
 #include <libxml/tree.h>
+#include <libxpl/abstraction/xef.h>
+#include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xplstring.h>
 
-xmlChar *app_path;
+xmlChar *doc_root;
 
-OutputMethod getOutputMethod(xmlChar *output_method)
+#define DEFAULT_OUTPUT_METHOD_NAME (BAD_CAST "xhtml")
+
+static OutputMethodDesc output_methods[] =
 {
-	if (!xmlStrcasecmp(output_method, BAD_CAST OM_XML))
-		return OUTPUT_METHOD_XML;
-	if (!xmlStrcasecmp(output_method, BAD_CAST OM_HTML))
-		return OUTPUT_METHOD_HTML;
-	if (!xmlStrcasecmp(output_method, BAD_CAST OM_XHTML))
-		return OUTPUT_METHOD_XHTML;
-	if (!xmlStrcasecmp(output_method, BAD_CAST OM_TEXT))
-		return OUTPUT_METHOD_TEXT;
-	if (!xmlStrcasecmp(output_method, BAD_CAST OM_NONE))
-		return OUTPUT_METHOD_NONE;
-	return getOutputMethod(BAD_CAST DEFAULT_OUTPUT_METHOD);
+	{ // the first item is the default one
+		.name = DEFAULT_OUTPUT_METHOD_NAME,
+		.content_type = BAD_CAST "application/xhtml+xml",
+		.xml_format = XML_SAVE_XHTML,
+		.serializer = OS_XML
+	}, {
+		.name = BAD_CAST "xml",
+		.content_type = BAD_CAST "text/xml",
+		.xml_format = XML_SAVE_AS_XML,
+		.serializer = OS_XML
+	}, {
+		.name = BAD_CAST "html",
+		.content_type = BAD_CAST "text/html",
+		.xml_format = XML_SAVE_AS_HTML,
+		.serializer = OS_XML
+	}, {
+		.name = BAD_CAST "text",
+		.content_type = BAD_CAST "text/plain",
+		.xml_format = 0,
+		.serializer = OS_TEXT
+	}, {
+		.name = BAD_CAST "none",
+		.content_type = BAD_CAST "",
+		.xml_format = 0,
+		.serializer = OS_NONE
+	}
+};
+
+
+OutputMethodDescPtr getOutputMethod(xmlChar *name)
+{
+	int i;
+
+	if (!name || !*name)
+		return &output_methods[0];
+	for (i = 0; i < sizeof(output_methods) / sizeof(output_methods[0]); i++)
+		if (!xmlStrcasecmp(name, output_methods[i].name))
+			return &output_methods[i];
+	return NULL;
+}
+
+static void _provideUniqueFilename(char* path)
+{
+#define FN_LEN 16
+// TODO make this configurable
+#define UPLOAD_FOLDER "upload"
+	xefCryptoRandomParams rp;
+	xmlChar name_bytes[FN_LEN];
+	bool flag = true;
+	size_t root_len;
+
+	root_len = xmlStrlen(doc_root);
+	memcpy(path, doc_root, root_len);
+	path[root_len++] = XPR_PATH_DELIM;
+	strcpy(&path[root_len], UPLOAD_FOLDER);
+	root_len += strlen(UPLOAD_FOLDER);
+	path[root_len++] = XPR_PATH_DELIM;
+	path[root_len] = 0;
+	xprEnsurePathExistence(BAD_CAST path);
+	path[root_len + FN_LEN*2] = 0;
+
+	rp.alloc_bytes = false;
+	rp.size = FN_LEN;
+	rp.bytes = name_bytes;
+	rp.secure = false;
+
+	while (flag)
+	{
+		/* We don't ask for allocation so the only reason for xefCryptoRandom() to fail
+		   is lack of entropy. Keep retrying until the function succeeds. */
+		while (!xefCryptoRandom(&rp))
+		{
+			if (rp.error)
+				XPL_FREE(rp.error);
+			xprSleep(10);
+		}
+		xstrBufferToHex(rp.bytes, rp.size, false, BAD_CAST &path[root_len]);
+		flag = xprCheckFilePresence(BAD_CAST path, false);
+	}
+#undef UPLOAD_FOLDER
+#undef FN_LEN
 }
 
 typedef struct _ParseFormCtxt
 {
+	/* set by caller */
+	bool oom;
 	xplParamsPtr params;
-	xmlChar *store_path;
-	xmlChar *file_key;
+	xmlChar *upload_dir;
+	/* used internally */
+	xmlChar *key;
+	xmlBufferPtr value_buf;
 	xmlChar *file_name;
 } ParseFormCtxt, *ParseFormCtxtPtr;
 
-static int _fieldFound(const char *key, const char *filename, char *path, size_t pathlen, void *user_data)
+static bool _fieldFinalize(ParseFormCtxtPtr ctxt)
 {
-	ParseFormCtxtPtr parse_ctxt = (ParseFormCtxtPtr) user_data;
+	xplParamResult res;
+	xmlChar *value;
 
+	if (!ctxt->key)
+		return true;
+	value = xmlBufferDetach(ctxt->value_buf);
+	res = xplParamAddValue(ctxt->params, ctxt->key, value, XPL_PARAM_TYPE_USERDATA);
+	if (res != XPL_PARAM_RES_OK)
+		XPL_FREE(value);
+	XPL_FREE(ctxt->key);
+	ctxt->key = NULL;
+	return res == XPL_PARAM_RES_OK;
+}
+
+/* called when a field of any type is found */
+static int _fieldFound(const char *key, const char *filename, char *path, size_t pathLen, void *userData)
+{
+	ParseFormCtxtPtr ctxt = (ParseFormCtxtPtr) userData;
+
+	if (ctxt->key && !_fieldFinalize(ctxt)) /* new param */
+	{
+		ctxt->oom = true;
+		return MG_FORM_FIELD_HANDLE_ABORT;
+	}
+	if (!(ctxt->key = BAD_CAST XPL_STRDUP(key)))
+	{
+		ctxt->oom = true;
+		return MG_FORM_FIELD_STORAGE_ABORT;
+	}
 	if (filename && *filename)
 	{
-		printf("about to create file %s...\n", filename);
-		parse_ctxt->file_key = BAD_CAST XPL_STRDUP(key);
-		parse_ctxt->file_name = BAD_CAST XPL_STRDUP(filename);
+		_provideUniqueFilename(path);
+		printf("about to create file %s -> %s...\n", filename, path); // TODO remove/move to debug level
+		if (!(ctxt->file_name = BAD_CAST XPL_STRDUP(filename)))
+		{
+			ctxt->oom = true;
+			return MG_FORM_FIELD_STORAGE_ABORT;
+		}
 		return MG_FORM_FIELD_STORAGE_STORE; /* file */
 	} else
 		return MG_FORM_FIELD_STORAGE_GET; /* regular parameter */
 }
 
-static int _fieldGet(const char *key, const char *value, size_t valuelen, void *user_data)
-{
-	ParseFormCtxtPtr parse_ctxt = (ParseFormCtxtPtr) user_data;
 
-	xplParamAddValue(parse_ctxt->params, BAD_CAST key, BAD_CAST XPL_STRDUP(value), XPL_PARAM_TYPE_USERDATA);
-	return MG_FORM_FIELD_HANDLE_NEXT; /* TODO how do we determine there're more chunks? */
+/* called for every portion of a form field */
+static int _fieldGet(const char *key, const char *value, size_t valueLen, void *userData)
+{
+	ParseFormCtxtPtr ctxt = (ParseFormCtxtPtr) userData;
+
+	xmlBufferAdd(ctxt->value_buf, BAD_CAST value, valueLen);
+	return MG_FORM_FIELD_HANDLE_GET;
 }
 
-static int _fieldStore(const char *path, long long file_size, void *user_data)
+/* called when uploaded file is stored completely */
+static int _fieldStore(const char *path, long long fileSize, void *userData)
 {
-	ParseFormCtxtPtr parse_ctxt = (ParseFormCtxtPtr) user_data;
+	ParseFormCtxtPtr ctxt = (ParseFormCtxtPtr) userData;
 
-	if (parse_ctxt->file_key)
-		xplParamAddFileInfo(parse_ctxt->params, parse_ctxt->file_key,
-			parse_ctxt->file_name, BAD_CAST XPL_STRDUP(path), file_size);
+	if (ctxt->key)
+		xplParamAddFileInfo(ctxt->params, ctxt->key,
+			ctxt->file_name, BAD_CAST XPL_STRDUP(path), fileSize);
 	else
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-	if (parse_ctxt->file_key)
+	if (ctxt->key)
 	{
-		XPL_FREE(parse_ctxt->file_key);
-		parse_ctxt->file_key = NULL;
+		XPL_FREE(ctxt->key);
+		ctxt->key = NULL;
 	}
-	if (parse_ctxt->file_name)
-		parse_ctxt->file_name = NULL;
+	if (ctxt->file_name) /* file_name is eaten by xplParamAddFileInfo() */
+		ctxt->file_name = NULL;
 	return MG_FORM_FIELD_HANDLE_NEXT;
 }
 
-xplParamsPtr buildParams(struct mg_connection *conn, const struct mg_request_info *request_info, xmlChar *session_id)
+xplParamsPtr buildParams(struct mg_connection *conn, const struct mg_request_info *requestInfo, xmlChar *sessionId)
 {
-	xplParamsPtr params;
-	ParseFormCtxt parse_ctxt;
+	ParseFormCtxt ctxt;
 	struct mg_form_data_handler fdh = {
 		.field_found = _fieldFound,
 		.field_get = _fieldGet,
@@ -85,32 +196,63 @@ xplParamsPtr buildParams(struct mg_connection *conn, const struct mg_request_inf
 	};
 	int i;
 
-	params = xplParamsCreate();
-	/* xplParseParamString() not needed: the query url part is processed by mg_handle_form_request(), too */
-	parse_ctxt.params = params;
-	parse_ctxt.store_path = NULL; // TODO provide
-	fdh.user_data = &parse_ctxt;
-	mg_handle_form_request(conn, &fdh); // TODO error handling
+	memset(&ctxt, 0, sizeof(ctxt));
+	if (!(ctxt.params = xplParamsCreate()))
+		goto error;
+	if (!(ctxt.value_buf = xmlBufferCreateSize(2048)))
+		goto error;
+	xmlBufferSetAllocationScheme(ctxt.value_buf, XML_BUFFER_ALLOC_HYBRID);
+	ctxt.upload_dir = NULL; // TODO provide
+	fdh.user_data = &ctxt;
+	mg_handle_form_request(conn, &fdh);
+	if (!_fieldFinalize(&ctxt))
+		goto error;
+	if (ctxt.oom)
+		goto error;
 
-	xplParamReplaceValue(params, DOC_ROOT_PARAM, xmlEncodeSpecialChars(NULL, BAD_CAST app_path), XPL_PARAM_TYPE_USERDATA);
-	xplParamReplaceValue(params, RESOURCE_PARAM, xmlEncodeSpecialChars(NULL, BAD_CAST request_info->local_uri), XPL_PARAM_TYPE_USERDATA);
-	if (!xplParamGet(params, ENCODING_PARAM))
-		xplParamAddValue(params, ENCODING_PARAM, BAD_CAST XPL_STRDUP(DEFAULT_OUTPUT_ENC), XPL_PARAM_TYPE_USERDATA);
-	if (!xplParamGet(params, OUTPUT_METHOD_PARAM))
-		xplParamAddValue(params, OUTPUT_METHOD_PARAM, BAD_CAST XPL_STRDUP(DEFAULT_OUTPUT_METHOD), XPL_PARAM_TYPE_USERDATA);
-	xplParamReplaceValue(params, REMOTE_ADDRESS_PARAM, BAD_CAST XPL_STRDUP(request_info->remote_addr), XPL_PARAM_TYPE_USERDATA);
+	if (xplParamReplaceValue(ctxt.params, DOC_ROOT_PARAM, xmlEncodeSpecialChars(NULL, BAD_CAST doc_root), XPL_PARAM_TYPE_USERDATA) != XPL_PARAM_RES_OK)
+		goto error;
+	if (xplParamReplaceValue(ctxt.params, RESOURCE_PARAM, xmlEncodeSpecialChars(NULL, BAD_CAST requestInfo->local_uri), XPL_PARAM_TYPE_USERDATA) != XPL_PARAM_RES_OK)
+		goto error;
+	if (!xplParamGet(ctxt.params, ENCODING_PARAM))
+		if (xplParamAddValue(ctxt.params, ENCODING_PARAM, BAD_CAST XPL_STRDUP(DEFAULT_OUTPUT_ENC), XPL_PARAM_TYPE_USERDATA) != XPL_PARAM_RES_OK)
+			goto error;
+	if (!xplParamGet(ctxt.params, OUTPUT_METHOD_PARAM))
+		if (xplParamAddValue(ctxt.params, OUTPUT_METHOD_PARAM, BAD_CAST XPL_STRDUP(DEFAULT_OUTPUT_METHOD_NAME), XPL_PARAM_TYPE_USERDATA) != XPL_PARAM_RES_OK)
+			goto error;
+	if (xplParamReplaceValue(ctxt.params, REMOTE_ADDRESS_PARAM, BAD_CAST XPL_STRDUP(requestInfo->remote_addr), XPL_PARAM_TYPE_USERDATA) != XPL_PARAM_RES_OK)
+		goto error;
 
-	xplParamsLockValue(params, DOC_ROOT_PARAM, TRUE);
-	xplParamsLockValue(params, REMOTE_ADDRESS_PARAM, TRUE);
-	xplParamsLockValue(params, RESOURCE_PARAM, TRUE);
+	xplParamsLockValue(ctxt.params, DOC_ROOT_PARAM, TRUE);
+	xplParamsLockValue(ctxt.params, REMOTE_ADDRESS_PARAM, TRUE);
+	xplParamsLockValue(ctxt.params, RESOURCE_PARAM, TRUE);
 
-	for (i = 0; i < request_info->num_headers; i++)
-		xplParamAddValue(params, BAD_CAST request_info->http_headers[i].name, BAD_CAST XPL_STRDUP(request_info->http_headers[i].value), XPL_PARAM_TYPE_HEADER);
-
-	return params;
+	for (i = 0; i < requestInfo->num_headers; i++)
+		if (xplParamAddValue(
+			ctxt.params,
+			BAD_CAST requestInfo->http_headers[i].name,
+			BAD_CAST XPL_STRDUP(requestInfo->http_headers[i].value),
+			XPL_PARAM_TYPE_HEADER
+		) != XPL_PARAM_RES_OK)
+			goto error;
+	goto done;
+error:
+	if (ctxt.params)
+	{
+		xplParamsFree(ctxt.params);
+		ctxt.params = NULL;
+	}
+	if (ctxt.key)
+		XPL_FREE(ctxt.key);
+	if (ctxt.file_name)
+		XPL_FREE(ctxt.file_name);
+done:
+	if (ctxt.value_buf)
+		xmlBufferFree(ctxt.value_buf);
+	return ctxt.params;
 }
 
-/* начинка libxml2 */
+/* libxml2 guts */
 struct _xmlSaveCtxt {
     void *_private;
     int type;
@@ -131,90 +273,56 @@ struct _xmlSaveCtxt {
 };
 typedef struct _xmlSaveCtxt *xmlSaveCtxtPtr;
 
-void serializeDoc(struct mg_connection *conn, xmlDocPtr doc, xmlChar *encoding, OutputMethod om)
+xmlChar* serializeDoc(xmlDocPtr doc, xmlChar *encoding, OutputMethodDescPtr om, size_t *size)
 {
-#define ENCODING_ERROR_NODE_STR "<Error>Cannot save document using the specified encoding \"%s\"</Error>"
-#define ENCODING_ERROR_STR "Cannot save document using the specified encoding \"%s\""
 	xmlBufferPtr buf;
-	int save_opts = 0;
 	xmlSaveCtxtPtr save_ctxt;
-	size_t iconv_size;
-	xmlChar *txt;
-	char* out_txt = NULL;
 	xmlNodePtr doc_root;
+	xmlChar *txt, *ret = NULL;
 
-	/* prevent caching of a dynamic document */
-	mg_printf(conn, "Cache-control: no-cache\r\n");
-	switch (om)
+	if (om->serializer == OS_XML)
 	{
-		case OUTPUT_METHOD_XML:
-		case OUTPUT_METHOD_HTML:
-		case OUTPUT_METHOD_XHTML:
-			switch (om)
+		buf = xmlBufferCreate();
+		save_ctxt = xmlSaveToBuffer(buf, (const char*) encoding, om->xml_format);
+		if (save_ctxt)
+		{
+			xmlSaveSetEscape(save_ctxt, NULL);
+			xmlSaveSetAttrEscape(save_ctxt, NULL);
+			xmlSaveDoc(save_ctxt, doc);
+			/* xmlSaveClose leaks this */
+			if (save_ctxt->handler)
+				xmlCharEncCloseFunc(save_ctxt->handler);
+			xmlSaveClose(save_ctxt);
+			*size = xmlBufferLength(buf);
+			ret = xmlBufferDetach(buf);
+		} else {
+			ret = xplFormatMessage(BAD_CAST "<Error>Cannot save document using the specified encoding \"%s\"</Error>", encoding);
+			*size = xmlStrlen(ret);
+		}
+		xmlBufferFree(buf);
+	} else if (om->serializer == OS_TEXT) {
+		doc_root = xplFirstElementNode(doc->children);
+		txt = doc_root? xmlNodeListGetString(doc, doc_root->children, 1): NULL;
+		if (txt)
+		{
+			if (!xmlStrcmp(encoding, BAD_CAST "utf-8"))
 			{
-				case OUTPUT_METHOD_XML: save_opts = XML_SAVE_AS_XML; break;
-				case OUTPUT_METHOD_HTML: save_opts = XML_SAVE_AS_HTML; break;
-				case OUTPUT_METHOD_XHTML: save_opts = XML_SAVE_XHTML; break;
-				default: break;
-			}
-			buf = xmlBufferCreate();
-			save_ctxt = xmlSaveToBuffer(buf, (const char*) encoding, save_opts);
-			if (save_ctxt)
-			{
-				xmlSaveSetEscape(save_ctxt, NULL);
-				xmlSaveSetAttrEscape(save_ctxt, NULL); /* осторожнее со включением, опасно. */
-				xmlSaveDoc(save_ctxt, doc);
-				/* xmlSaveClose не освобождает ресурсы, связанные с перекодировкой.
-				Видимо, для того, чтобы прикладной программист получил удовольствие
-				от копания в исходниках и выноса кишок контекста наружу.
-				*/
-				if (save_ctxt->handler)
-					xmlCharEncCloseFunc(save_ctxt->handler);
-				xmlSaveClose(save_ctxt);
-				mg_printf(conn, "Content-Length: %d\r\n\r\n", buf->use);
-				mg_write(conn, buf->content, xmlStrlen(buf->content));
-			} else {
-				/*mg_printf(conn, "Content-Length: %d\r\n\r\n", strlen(ERROR_STR) - 2 + xmlStrlen(encoding));*/
-				mg_printf(conn, ENCODING_ERROR_NODE_STR, encoding);
-			}
-			xmlBufferFree(buf);
-			break;
-		case OUTPUT_METHOD_TEXT:
-			doc_root = doc->children;
-			while (doc_root)
-			{
-				if (doc_root->type == XML_ELEMENT_NODE)
-					break;
-				doc_root = doc_root->next;
-			}
-			if (doc_root)
-				txt = xmlNodeListGetString(doc, doc_root->children, 1);
-			else
-				txt = NULL;
-			if (txt)
-			{
-				if (xstrIconvString((char*) encoding, "utf-8", (char*) txt, (char*) txt + xmlStrlen(txt), &out_txt, &iconv_size) == -1)
-				{
-					mg_printf(conn, "Content-Length: %ld\r\n\r\n", strlen(ENCODING_ERROR_STR) - 2 + xmlStrlen(encoding));
-					mg_printf(conn, ENCODING_ERROR_STR, encoding);
-				} else {
-					mg_printf(conn, "Content-Length: %ld\r\n\r\n", iconv_size);
-					mg_write(conn, out_txt, iconv_size);
-					if (BAD_CAST out_txt != txt)
-						XPL_FREE(out_txt);
-				}
+				ret = txt;
+				*size = xmlStrlen(txt);
+			} else if (xstrIconvString((char*) encoding, "utf-8", (char*) txt, (char*) txt + xmlStrlen(txt), (char**) &ret, size) == -1) {
+				ret = xplFormatMessage(BAD_CAST "Cannot save document using the specified encoding \"%s\"", encoding);
+				*size = xmlStrlen(ret);
+			} else /* txt and size set in xstrIconvString() */
 				XPL_FREE(txt);
-			} else
-				mg_printf(conn, "Content-Length: 0\r\n\r\n");
-			break;
-		case OUTPUT_METHOD_NONE:
-			mg_printf(conn, "Content-Length: 0\r\n\r\n");
-			break;
-		default:
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
+		} else {
+			ret = NULL;
+			*size = 0;
+		}
+	} else {
+		ret = NULL;
+		*size = 0;
 	}
-#undef ENCODING_ERROR_NODE_STR
-#undef ENCODING_ERROR_STR
+	return ret;
 }
 
 void setSessionCookie(struct mg_connection *conn, xplSessionPtr session)
@@ -228,7 +336,7 @@ void setSessionCookie(struct mg_connection *conn, xplSessionPtr session)
 		{
 			mg_printf(conn, "Set-Cookie: session_id=%s; path=/; expires=", xplSessionGetId(session));
 			if (!xplSessionIsValid(session))
-				mg_printf(conn, "Fri, 10-Jun-1983 03:56:00 GMT;");
+				mg_printf(conn, "Fri, 10-Jun-1983 10:56:00 GMT;");
 			else {
 				cur_time = time(NULL);
 				cur_time += cfgSessionLifetime;
@@ -242,49 +350,46 @@ void setSessionCookie(struct mg_connection *conn, xplSessionPtr session)
 	}
 }
 
-int serveXpl(struct mg_connection *conn, void *user_data)
+int serveXpl(struct mg_connection *conn, void *userData)
 {
-/*
-	mg_printf(conn, "%s", "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
-	printf("uri %s, query %s, remote user %s\n", request_info->uri, request_info->query_string, request_info->remote_user);
-	int i;
-	for (i = 0; i < request_info->num_headers; i++)
-		printf(" * %s = %s\n", request_info->http_headers[i].name, request_info->http_headers[i].value);
-	return;
-*/
 	LEAK_DETECTION_PREPARE
-	/* ToDo: исправить работу с кодировками */
 	const struct mg_request_info *request_info;
 	xplDocumentPtr doc = NULL;
 	xmlChar *uri;
 	const char *cookies;
-	char session_id[XPL_SESSION_ID_SIZE+1];
+	char session_id[XPL_SESSION_ID_SIZE*2 + 1];
 	xplSessionPtr session = NULL;
-	xplParamsPtr params = NULL;
+	xplParamsPtr params;
 	xmlChar *encoding = NULL;
 	xmlChar *output_method = NULL;
 	xmlChar *content_type = NULL;
-	OutputMethod om;
+	xmlChar *payload = NULL;
+	size_t payload_size;
+	OutputMethodDescPtr om;
 	xplError ret;
 	int http_code;
 
 	LEAK_DETECTION_START();
 	request_info = mg_get_request_info(conn);
-	/* session */
 	cookies = mg_get_header(conn, "Cookie");
 	if (cookies && mg_get_cookie(cookies, SESSION_ID_COOKIE, session_id, sizeof(session_id)) > 0)
-			session = xplSessionCreateOrGetShared(BAD_CAST session_id);
-	if (!session)
-		session = xplSessionCreateWithAutoId();
-	/* params */
-	params = buildParams(conn, request_info, xplSessionGetId(session));
+		if (!(session = xplSessionCreateOrGetShared(BAD_CAST session_id)))
+		{
+			mg_printf(conn, "HTTP/1.1 500 Internal Server Error\r\n\r\n");
+			goto done;
+		}
+	if (!(params = buildParams(conn, request_info, xplSessionGetId(session))))
+	{
+		mg_printf(conn, "HTTP/1.1 500 Internal Server Error\r\n\r\n");
+		goto done;
+	}
 	/* ToDo encoding */
-	if (app_path && *app_path && strstr(request_info->local_uri, (char*) app_path) == request_info->local_uri)
-		uri = BAD_CAST request_info->local_uri + xmlStrlen(app_path);
+	if (doc_root && *doc_root && strstr(request_info->local_uri, (char*) doc_root) == request_info->local_uri)
+		uri = BAD_CAST request_info->local_uri + xmlStrlen(doc_root);
 	else
 		uri = BAD_CAST request_info->local_uri;
 
-	ret = xplProcessFileEx(app_path, uri, params, session, &doc);
+	ret = xplProcessFileEx(doc_root, uri, params, session, &doc);
 
 	if (!doc)
 	{
@@ -302,47 +407,42 @@ int serveXpl(struct mg_connection *conn, void *user_data)
 	}
 	if (!encoding || !*encoding)
 		encoding = BAD_CAST DEFAULT_OUTPUT_ENC;
-	if (!output_method || !*output_method)
-		output_method = BAD_CAST DEFAULT_OUTPUT_METHOD;
 	om = getOutputMethod(output_method);
 	if (!content_type || !*content_type)
+		content_type = om->content_type;
+	if (ret == XPL_ERR_NO_ERROR || ret == XPL_ERR_FATAL_CALLED)
 	{
-		switch(om)
-		{
-			case OUTPUT_METHOD_XML: content_type = BAD_CAST "text/xml"; break;
-			case OUTPUT_METHOD_HTML: content_type = BAD_CAST "text/html"; break;
-			case OUTPUT_METHOD_XHTML: content_type = BAD_CAST "application/xhtml+xml"; break;
-			case OUTPUT_METHOD_TEXT: content_type = BAD_CAST "text/plain"; break;
-			case OUTPUT_METHOD_NONE: break;
-			default: DISPLAY_INTERNAL_ERROR_MESSAGE();
-		}
-	}
-	switch(ret)
-	{
-		case XPL_ERR_FATAL_CALLED:
-		case XPL_ERR_NO_ERROR:
-			if (doc->response)
-				mg_printf(conn, "%s\n", doc->response);
-			else
-				mg_printf(conn, "HTTP/1.1 200 OK\r\nContent-Type: %s; charset=%s\r\n", content_type, encoding);
-			setSessionCookie(conn, doc->shared_session);
-			if (!doc->response)
-				serializeDoc(conn, doc->document, encoding, om);
-			else
+		if (doc->response)
+			mg_printf(conn, "%s\r\n\r\n", doc->response);
+		else {
+			if ((payload = serializeDoc(doc->document, encoding, om, &payload_size)))
+			{
+				http_code = 200;
+				mg_printf(conn, "HTTP/1.1 200 OK\r\n");
+				mg_printf(conn, "Cache-control: no-cache\r\n");
+				mg_printf(conn, "Content-Length: %lu\r\n", payload_size);
+				mg_printf(conn, "Content-Type: %s; charset=%s\r\n", content_type, encoding);
+				setSessionCookie(conn, doc->shared_session);
 				mg_printf(conn, "\r\n");
-			http_code = 200;
-			break;
-		case XPL_ERR_INVALID_DOCUMENT:
-			/* always return error as XML */
-			mg_printf(conn, "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/xml; charset=%s\r\n", encoding);
-			if (doc && doc->document)
-				serializeDoc(conn, doc->document, encoding, om);
-			http_code = 500;
-			break;
-		default:
-			mg_printf(conn, "%s", "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/plain\r\n\r\n");
-			mg_printf(conn, "Unknown XPL processor return code: %d", ret);
-			http_code = 500;
+				mg_printf(conn, "%s", payload);
+				XPL_FREE(payload);
+			}
+		}
+		http_code = 200;
+	} else {
+		/* always return error as XML */
+		mg_printf(conn, "HTTP/1.1 500 Internal Server Error\r\n");
+		mg_printf(conn, "Content-Type: text/xml; charset=%s\r\n", encoding);
+		if (doc && doc->document && (payload = serializeDoc(doc->document, encoding, om, &payload_size)))
+		{
+			mg_printf(conn, "Cache-control: no-cache\r\n");
+			mg_printf(conn, "Content-Length: %lu\r\n", payload_size);
+			mg_printf(conn, "\r\n");
+			mg_printf(conn, "%s", payload);
+			XPL_FREE(payload);
+		} else
+			mg_printf(conn, "\r\n");
+		http_code = 500;
 	}
 done:
 	if (doc)

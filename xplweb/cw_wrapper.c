@@ -13,15 +13,6 @@
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplversion.h>
 
-/* Set by cwInitServerName() */
-static char g_server_base_name[128];
-/* Default from cwInitServerName(), updated later from the server config */
-static const char *g_server_name = "[name not set]";
-/* Set by cwInitSystemInfo() */
-static char *g_system_info;
-/* Set by cwProcessCommandLineArguments() */
-static char g_config_file_name[PATH_MAX] = "";
-
 int exit_flag = 0;
 
 void cwDie(const char *fmt, ...)
@@ -37,13 +28,13 @@ void cwDie(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
-char* cwSDup(const char *str)
+static char* _sDup(const char *str)
 {
 	size_t len;
 	char *p;
 
 	len = strlen(str) + 1;
-	p = (char*) malloc(len);
+	p = (char*) XPL_MALLOC(len);
 
 	if (!p)
 		cwDie("Cannot allocate %u bytes", (unsigned) len);
@@ -52,7 +43,7 @@ char* cwSDup(const char *str)
 	return p;
 }
 
-const char* cwGetOption(char **options, const char *option_name)
+static const char* _getOption(char **options, const char *option_name)
 {
 	int i = 0;
 	const char *opt_value = NULL;
@@ -69,7 +60,7 @@ const char* cwGetOption(char **options, const char *option_name)
 	return opt_value;
 }
 
-bool cwSetOption(char **options, const char *name, const char *value)
+static bool _cwSetOption(char **options, const char *name, const char *value)
 {
 	int i, type;
 	const struct mg_option *default_options = mg_get_valid_options();
@@ -141,23 +132,23 @@ bool cwSetOption(char **options, const char *name, const char *value)
 		if (!options[2*i])
 		{
 			/* Option not set yet. Add new option */
-			options[2*i] = cwSDup(name);
-			options[2*i + 1] = cwSDup(value);
+			options[2*i] = _sDup(name);
+			options[2*i + 1] = _sDup(value);
 			options[2*i + 2] = NULL;
 			break;
 		} else if (!strcmp(options[2*i], name)) {
 			if (multi_sep) {
 				/* Option already set. Append new value. */
-				char *s = (char*) malloc(strlen(options[2*i + 1]) + strlen(multi_sep) + strlen(value) + 1);
+				char *s = (char*) XPL_MALLOC(strlen(options[2*i + 1]) + strlen(multi_sep) + strlen(value) + 1);
 				if (!s)
 					cwDie("Out of memory");
 				sprintf(s, "%s%s%s", options[2*i + 1], multi_sep, value);
-				free(options[2*i + 1]);
+				XPL_FREE(options[2*i + 1]);
 				options[2*i + 1] = s;
 			} else {
 				/* Option already set. Overwrite */
-				free(options[2*i + 1]);
-				options[2*i + 1] = cwSDup(value);
+				XPL_FREE(options[2*i + 1]);
+				options[2*i + 1] = _sDup(value);
 			}
 			break;
 		}
@@ -216,7 +207,7 @@ void cwShowUsageAndExit(const char *exeName)
 	exit(EXIT_FAILURE);
 }
 
-int cwReadConfigFile(const char *config_file, char **options)
+static bool _readConfigFile(const char *config_file, char **options)
 {
 	char line[MAX_CONF_FILE_LINE_SIZE], *p;
 	FILE *fp = NULL;
@@ -226,7 +217,7 @@ int cwReadConfigFile(const char *config_file, char **options)
 	fp = fopen(config_file, "r");
 	if (!fp)
 		/* Failed to open the file. Keep errno for the caller. */
-		return 0;
+		return false;
 
 	/* Load config file settings first */
 	fprintf(stdout, "Loading config file %s\n", config_file);
@@ -265,19 +256,20 @@ int cwReadConfigFile(const char *config_file, char **options)
 			j++;
 
 		/* Set option */
-		if (!cwSetOption(options, p + i, p + j))
+		if (!_cwSetOption(options, p + i, p + j))
 			fprintf(stderr, "%s: line %d is invalid, ignoring it: %s\n", config_file, (int) line_no, p);
 	}
 
 	(void) fclose(fp);
 
-	return 1;
+	return true;
 }
 
-void cwProcessCommandLineArguments(int argc, char *argv[], char **options)
+static void _processCommandLineArguments(int argc, char *argv[], char **options)
 {
 	char *p;
 	size_t i, cmd_line_opts_start = 1;
+	char config_file_name[PATH_MAX] = "";
 #if defined(CONFIG_FILE2)
 	FILE *fp = NULL;
 #endif
@@ -286,35 +278,35 @@ void cwProcessCommandLineArguments(int argc, char *argv[], char **options)
 	if ((argc > 1) && (argv[1] != NULL) && (argv[1][0] != '-') && (argv[1][0] != 0))
 	{
 		/* The first command line parameter is a config file name. */
-		snprintf(g_config_file_name, sizeof(g_config_file_name) - 1, "%s", argv[1]);
+		snprintf(config_file_name, sizeof(config_file_name) - 1, "%s", argv[1]);
 		cmd_line_opts_start = 2;
 	} else if ((p = strrchr(argv[0], XPR_PATH_DELIM)) == NULL)
 		/* No config file set. No path in arg[0] found. Use default file name in the current path. */
-		snprintf(g_config_file_name, sizeof(g_config_file_name) - 1, "%s", CONFIG_FILE);
+		snprintf(config_file_name, sizeof(config_file_name) - 1, "%s", CONFIG_FILE);
 	else
 		/* No config file set. Path to exe found in arg[0]. Use default file name next to the executable. */
-		snprintf(g_config_file_name, sizeof(g_config_file_name) - 1, "%.*s%c%s", (int)(p - argv[0]), argv[0], XPR_PATH_DELIM, CONFIG_FILE);
-	g_config_file_name[sizeof(g_config_file_name) - 1] = 0;
+		snprintf(config_file_name, sizeof(config_file_name) - 1, "%.*s%c%s", (int)(p - argv[0]), argv[0], XPR_PATH_DELIM, CONFIG_FILE);
+	config_file_name[sizeof(config_file_name) - 1] = 0;
 
 #if defined(CONFIG_FILE2)
-	fp = fopen(g_config_file_name, "r");
+	fp = fopen(config_file_name, "r");
 
 	/* try alternate config file */
 	if (fp == NULL) {
 		fp = fopen(CONFIG_FILE2, "r");
 		if (fp != NULL)
-			strcpy(g_config_file_name, CONFIG_FILE2);
+			strcpy(config_file_name, CONFIG_FILE2);
 	}
 	if (fp != NULL)
 		fclose(fp);
 #endif
 
-	if (!cwReadConfigFile(g_config_file_name, options))
+	if (!_readConfigFile(config_file_name, options))
 	{
 		if (cmd_line_opts_start == 2)
 			/* If config file was set in command line and open failed, die. */
 			/* Errno will still hold the error from fopen. */
-			cwDie("Cannot open config file %s: %s", g_config_file_name, strerror(errno));
+			cwDie("Cannot open config file %s: %s", config_file_name, strerror(errno));
 		else
 			/* Otherwise: CivetWeb can work without a config file */
 			fprintf(stderr, "warning: %s not found, using default settings\n", CONFIG_FILE);
@@ -330,37 +322,15 @@ void cwProcessCommandLineArguments(int argc, char *argv[], char **options)
 		{
 			if (argv[i][0] != '-' || argv[i + 1] == NULL)
 				cwShowUsageAndExit(argv[0]);
-			if (!cwSetOption(options, &argv[i][1], argv[i + 1]))
+			if (!_cwSetOption(options, &argv[i][1], argv[i + 1]))
 				fprintf(stderr, "command line option is invalid, ignoring it: %s=%s\n", argv[i], argv[i + 1]);
 		}
 	}
 }
 
-void cwInitSystemInfo(void)
+static void _verifyOptionExistence(char **options, const char *optionName, int mustBeDir)
 {
-	int len = mg_get_system_info(NULL, 0);
-	if (len > 0) {
-		g_system_info = (char*) malloc((unsigned)len + 1);
-		(void) mg_get_system_info(g_system_info, len + 1);
-	} else
-		g_system_info = cwSDup("Not available");
-}
-
-void cwInitServerName(void)
-{
-	assert((strlen(mg_version()) + 12 + xmlStrlen(XPL_VERSION_FULL)) < sizeof(g_server_base_name));
-	snprintf(g_server_base_name, sizeof(g_server_base_name), "%s - CivetWeb V%s", XPL_VERSION_FULL, mg_version());
-	//g_server_name = g_server_base_name;
-}
-
-void cwFreeSystemInfo(void)
-{
-	free(g_system_info);
-}
-
-void cwVerifyExistence(char **options, const char *optionName, int mustBeDir)
-{
-	const char *path = cwGetOption(options, optionName);
+	const char *path = _getOption(options, optionName);
 
 	if (path && !xprCheckFilePresence(BAD_CAST path, mustBeDir))
 		cwDie("Invalid path for %s: [%s]: (%s). Make sure that path is either "
@@ -370,14 +340,14 @@ void cwVerifyExistence(char **options, const char *optionName, int mustBeDir)
 		    strerror(errno));
 }
 
-void cwSetAbsolutePath(char *options[], const char *option_name, const char *path_to_civetweb_exe)
+static void _setOptionAbsolutePath(char *options[], const char *option_name, const char *path_to_civetweb_exe)
 {
 	char path[PATH_MAX] = "", absolute[PATH_MAX] = "";
 	const char *option_value;
 	const char *p;
 
 	/* Check whether option is already set */
-	option_value = cwGetOption(options, option_name);
+	option_value = _getOption(options, option_name);
 
 	/* If option is already set and it is an absolute path,
 	   leave it as it is -- it's already absolute. */
@@ -398,27 +368,27 @@ void cwSetAbsolutePath(char *options[], const char *option_name, const char *pat
 
 		/* Absolutize the path, and set the option */
 		(void) realpath(path, absolute);
-		cwSetOption(options, option_name, absolute);
+		_cwSetOption(options, option_name, absolute);
 	}
 }
 
-void cwSanitizeOptions(char *options[], const char *arg0)
+static void _sanitizeOptions(char *options[], const char *arg0)
 {
 	/* Make sure we have absolute paths for files and directories */
-	cwSetAbsolutePath(options, "document_root", arg0);
-	cwSetAbsolutePath(options, "put_delete_auth_file", arg0);
-	cwSetAbsolutePath(options, "cgi_interpreter", arg0);
-	cwSetAbsolutePath(options, "access_log_file", arg0);
-	cwSetAbsolutePath(options, "error_log_file", arg0);
-	cwSetAbsolutePath(options, "global_auth_file", arg0);
-	cwSetAbsolutePath(options, "ssl_certificate", arg0);
+	_setOptionAbsolutePath(options, "document_root", arg0);
+	_setOptionAbsolutePath(options, "put_delete_auth_file", arg0);
+	_setOptionAbsolutePath(options, "cgi_interpreter", arg0);
+	_setOptionAbsolutePath(options, "access_log_file", arg0);
+	_setOptionAbsolutePath(options, "error_log_file", arg0);
+	_setOptionAbsolutePath(options, "global_auth_file", arg0);
+	_setOptionAbsolutePath(options, "ssl_certificate", arg0);
 
 	/* Make extra verification for certain options */
-	cwVerifyExistence(options, "document_root", 1);
-	cwVerifyExistence(options, "cgi_interpreter", 0);
-	cwVerifyExistence(options, "ssl_certificate", 0);
-	cwVerifyExistence(options, "ssl_ca_path", 1);
-	cwVerifyExistence(options, "ssl_ca_file", 0);
+	_verifyOptionExistence(options, "document_root", 1);
+	_verifyOptionExistence(options, "cgi_interpreter", 0);
+	_verifyOptionExistence(options, "ssl_certificate", 0);
+	_verifyOptionExistence(options, "ssl_ca_path", 1);
+	_verifyOptionExistence(options, "ssl_ca_file", 0);
 }
 
 static void signal_handler(int sig_num)
@@ -427,14 +397,14 @@ static void signal_handler(int sig_num)
 }
 
 #ifdef _WIN32
-static BOOL WINAPI win_signal_handler(DWORD reason)
+static BOOL WINAPI _winSignalHandler(DWORD reason)
 {
 	exit_flag = reason;
 	return TRUE;
 }
 #endif
 
-static int log_message(const struct mg_connection *conn, const char *message)
+static int _logMessage(const struct mg_connection *conn, const char *message)
 {
 	fprintf(stderr, "%s\n", message);
 	return 0;
@@ -442,13 +412,50 @@ static int log_message(const struct mg_connection *conn, const char *message)
 
 void cwPrintInfo(void)
 {
+	char *system_info = NULL;
 	xmlChar *libs, *xef;
+	int len;
 
+	if ((len = mg_get_system_info(NULL, 0)) > 0)
+		if ((system_info = (char*) XPL_MALLOC((size_t) len + 1)))
+			(void) mg_get_system_info(system_info, len + 1);
 	libs = xplLibraryVersionsToString(xplGetCompiledLibraryVersions(), xplGetRunningLibraryVersions());
 	xef = xplXefImplementationsToString(xplGetXefImplementations());
-	fprintf(stdout, "\n%s (%s)\n%sLibraries:\n%sXEF:\n%s", g_server_base_name, g_server_name, g_system_info, libs, xef);
+	cwShowServerName();
+	fprintf(stdout, "%sLibraries:\n%sXEF:\n%s",	system_info? system_info: "Not available", libs, xef);
+	if (system_info)
+		XPL_FREE(system_info);
 	XPL_FREE(libs);
 	XPL_FREE(xef);
+}
+
+void cwHandleNonCoreArgs(int argc, char **argv)
+{
+	/* Start option -I:
+	 * Show system information and exit
+	 * This is very useful for diagnosis. */
+	if (argc > 1 && !strcmp(argv[1], "-I"))
+	{
+		cwPrintInfo();
+		exit(EXIT_SUCCESS);
+	}
+	/* Edit passwords file: Add user or change password, if -A option is specified */
+	if (argc > 1 && !strcmp(argv[1], "-A"))
+	{
+		if (argc != 6)
+			cwShowUsageAndExit(argv[0]);
+		exit(mg_modify_passwords_file(argv[2], argv[3], argv[4], argv[5])? EXIT_SUCCESS: EXIT_FAILURE);
+	}
+	/* Edit passwords file: Remove user, if -R option is specified */
+	if (argc > 1 && !strcmp(argv[1], "-R"))
+	{
+		if (argc != 5)
+			cwShowUsageAndExit(argv[0]);
+		exit(mg_modify_passwords_file(argv[2], argv[3], argv[4], NULL)? EXIT_SUCCESS: EXIT_FAILURE);
+	}
+	/* Show usage if -h or --help options are specified */
+	if (argc == 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "-H") || !strcmp(argv[1], "--help")))
+		cwShowUsageAndExit(argv[0]);
 }
 
 struct mg_context* cwStart(int argc, char *argv[], void *user_data, struct mg_callbacks *callbacks)
@@ -459,19 +466,19 @@ struct mg_context* cwStart(int argc, char *argv[], void *user_data, struct mg_ca
 
 	/* Initialize options structure */
 	memset(options, 0, sizeof(options));
-	cwSetOption(options, "document_root", ".");
+	_cwSetOption(options, "document_root", ".");
 
 	/* Update config based on command line arguments */
-	cwProcessCommandLineArguments(argc, argv, options);
+	_processCommandLineArguments(argc, argv, options);
 
-	cwSanitizeOptions(options, argv[0]);
+	_sanitizeOptions(options, argv[0]);
 
 	/* Setup signal handler: quit on Ctrl-C */
 	signal(SIGTERM, signal_handler);
 	signal(SIGINT, signal_handler);
 
 #ifdef _WIN32
-	SetConsoleCtrlHandler(&win_signal_handler, TRUE);
+	SetConsoleCtrlHandler(_winSignalHandler, TRUE);
 #endif
 
 #if defined(DAEMONIZE)
@@ -501,13 +508,13 @@ struct mg_context* cwStart(int argc, char *argv[], void *user_data, struct mg_ca
 
 	/* Start Civetweb */
 	if (!callbacks->log_message)
-		callbacks->log_message = &log_message;
+		callbacks->log_message = &_logMessage;
 	ctxt = mg_start(callbacks, user_data, (const char**) options);
 
 	/* mg_start copies all options to an internal buffer.
 	 * The options data field here is not required anymore. */
 	for (i = 0; options[i] != NULL; i++)
-		free(options[i]);
+		XPL_FREE(options[i]);
 
 	return ctxt;
 }

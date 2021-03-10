@@ -7,6 +7,7 @@
 
 #include <civetweb.h>
 #include <stdbool.h>
+#include "Configuration.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,24 +19,18 @@ extern "C" {
 
 extern int exit_flag;
 
-void cwDie(const char *fmt, ...);
-char* cwSDup(const char *str);
-void cwVerifyExistence(char **options, const char *option_name, int must_be_dir);
-void cwSetAbsolutePath(char *options[], const char *option_name, const char *path_to_civetweb_exe);
-void cwSanitizeOptions(char *options[], const char *arg0);
-
-const char* cwGetOption(char **options, const char *option_name);
-bool cwSetOption(char **options, const char *name, const char *value);
-void cwShowServerName(void);
-void cwShowUsageAndExit(const char *exeName);
-int cwReadConfigFile(const char *config_file, char **options);
-void cwProcessCommandLineArguments(int argc, char *argv[], char **options);
-void cwInitSystemInfo(void);
-void cwInitServerName(void);
-void cwFreeSystemInfo(void);
-void cwPrintInfo(void);
-
-struct mg_context* cwStart(int argc, char *argv[], void *user_data, struct mg_callbacks *callbacks);
+void XPLCALL /* print a formatted message then exit */
+	cwDie(const char *fmt, ...);
+void XPLCALL /* "XPL vA.B running on CiverWeb C.D" */
+	cwShowServerName(void);
+void XPLCALL /* ditto */
+	cwShowUsageAndExit(const char *exeName);
+void XPLCALL /* system info, XPL libraries and XEF */
+	cwPrintInfo(void);
+void XPLCALL /* password file modification, info etc */
+	cwHandleNonCoreArgs(int argc, char **argv);
+struct mg_context* XPLCALL /* process command line and start server */
+	cwStart(int argc, char *argv[], void *user_data, struct mg_callbacks *callbacks);
 
 #ifdef __cplusplus
 }
