@@ -195,6 +195,7 @@ XPLPUBFUN void XPLCALL
 	xplDoneParser(void);
 XPLPUBFUN bool XPLCALL
 	xplParserLoaded(void);
+
 XPLPUBFUN xmlChar* XPLCALL
 	xplGetDocRoot(void);
 XPLPUBFUN void XPLCALL
@@ -202,6 +203,7 @@ XPLPUBFUN void XPLCALL
 /* Full file name wrt "semi-absolute" (i.e. from app root) paths. Result must be freed by the caller. */
 XPLPUBFUN xmlChar* XPLCALL
 	xplFullFilename(const xmlChar* file, const xmlChar* aDocRoot);
+
 /* Actual processing */
 XPLPUBFUN xplError XPLCALL
 	xplProcessFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr environment, xplSessionPtr session, xplDocumentPtr *docOut);
