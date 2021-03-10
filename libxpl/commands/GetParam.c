@@ -122,7 +122,7 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	{
 		/* specified parameter */
 		params->repeat &= params->show_tags || params->tag_name.ncname;
-		values = xplParamGet(commandInfo->document->environment, params->name);
+		values = xplParamGet(commandInfo->document->params, params->name);
 		if (values && !(values->type & params->type))
 			values = NULL; /* skip unwanted */
 		else if (!values && params->default_value) {
@@ -155,7 +155,7 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		}
 	} else /* all parameters */
 		ret = xplParamsToList(
-			commandInfo->document->environment,
+			commandInfo->document->params,
 			params->unique,
 			params->expect,
 			params->show_tags? empty_qname: params->tag_name.ncname? params->tag_name: default_qname,

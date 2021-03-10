@@ -61,15 +61,15 @@ void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xmlNodePtr err_node = NULL;
 
 	ASSIGN_RESULT(NULL, false, true);
-	if (!commandInfo->document->environment)
+	if (!commandInfo->document->params)
 		return;
 	switch (params->mode)
 	{
 		case SET_PARAM_MODE_ADD:
-			res = xplParamAddValue(commandInfo->document->environment, params->name, commandInfo->content, XPL_PARAM_TYPE_USERDATA);
+			res = xplParamAddValue(commandInfo->document->params, params->name, commandInfo->content, XPL_PARAM_TYPE_USERDATA);
 			break;
 		case SET_PARAM_MODE_REPLACE:
-			res = xplParamReplaceValue(commandInfo->document->environment, params->name, commandInfo->content, XPL_PARAM_TYPE_USERDATA);
+			res = xplParamReplaceValue(commandInfo->document->params, params->name, commandInfo->content, XPL_PARAM_TYPE_USERDATA);
 			break;
 		default:
 			DISPLAY_INTERNAL_ERROR_MESSAGE();

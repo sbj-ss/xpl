@@ -48,7 +48,7 @@ struct _xplDocument
 	xmlChar *filename;					/* full path to file the document was created from */
 	xmlChar *origin;					/* initial document text if it was created from memory */
 	xmlChar *error;						/* early parsing error */
-	xplParamsPtr environment;			/* external parameters */
+	xplParamsPtr params;				/* external parameters */
 	xplSessionPtr shared_session;		/* session variables */
 	xplSessionPtr local_session;		/* -//- */
 	xmlDocPtr document;					/* underlying XML document */
@@ -75,11 +75,11 @@ struct _xplDocument
 };
 
 XPLPUBFUN xplDocumentPtr XPLCALL
-	xplDocumentInit(xmlChar *aDocRoot, xplParamsPtr aEnvironment, xplSessionPtr aSession);
+	xplDocumentInit(xmlChar *aDocRoot, xplParamsPtr aParams, xplSessionPtr aSession);
 XPLPUBFUN xplDocumentPtr XPLCALL
-	xplDocumentCreateFromFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aEnvironment, xplSessionPtr aSession);
+	xplDocumentCreateFromFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aParams, xplSessionPtr aSession);
 XPLPUBFUN xplDocumentPtr XPLCALL
-	xplDocumentCreateFromMemory(xmlChar* aDocRoot, xmlChar *aOrigin,  xplParamsPtr aEnvironment, xplSessionPtr aSession, xmlChar *encoding);
+	xplDocumentCreateFromMemory(xmlChar* aDocRoot, xmlChar *aOrigin,  xplParamsPtr aParams, xplSessionPtr aSession, xmlChar *encoding);
 /* Main method */
 XPLPUBFUN xplError XPLCALL 
 	xplDocumentApply(xplDocumentPtr doc);

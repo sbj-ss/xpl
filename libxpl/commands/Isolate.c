@@ -127,7 +127,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		return;
 	}
 #endif
-	env = xplParamsCopy(commandInfo->document->environment);
+	env = xplParamsCopy(commandInfo->document->params);
 	if (params->share_session)
 	{
 		xplDocSessionGetOrCreate(commandInfo->document, false);

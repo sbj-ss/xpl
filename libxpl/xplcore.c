@@ -79,7 +79,7 @@ static void _xpathDummyError(void *data, xmlErrorPtr error)
 	UNUSED_PARAM(error);
 }
 
-xplDocumentPtr xplDocumentInit(xmlChar *aDocRoot, xplParamsPtr aEnvironment, xplSessionPtr aSession)
+xplDocumentPtr xplDocumentInit(xmlChar *aDocRoot, xplParamsPtr aParams, xplSessionPtr aSession)
 {
 	size_t doc_root_len;
 	xplDocumentPtr doc;
@@ -125,12 +125,12 @@ xplDocumentPtr xplDocumentInit(xmlChar *aDocRoot, xplParamsPtr aEnvironment, xpl
 	doc->xpath_ctxt->error = _xpathDummyError;
 	doc->expand = true;
 	doc->shared_session = aSession;
-	doc->environment = aEnvironment;
+	doc->params = aParams;
 	doc->status = XPL_ERR_NOT_YET_REACHED;
 	return doc;
 }
 
-xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aEnvironment, xplSessionPtr aSession)
+xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aParams, xplSessionPtr aSession)
 {
 	xplDocumentPtr ret;	
 	size_t path_len;
@@ -138,7 +138,7 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aDocRoot, xmlChar *aFilename, 
 
 	if (!aFilename)
 		return NULL;
-	ret = xplDocumentInit(aDocRoot, aEnvironment, aSession);
+	ret = xplDocumentInit(aDocRoot, aParams, aSession);
 	path_len = xmlStrlen(ret->doc_root);
 	max_fn_len = path_len + xmlStrlen(aFilename) + 1;
 	ret->filename = (xmlChar*) XPL_MALLOC(max_fn_len);
@@ -167,9 +167,9 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aDocRoot, xmlChar *aFilename, 
 	return ret;
 }
 
-xplDocumentPtr xplDocumentCreateFromMemory(xmlChar* aDocRoot, xmlChar *aOrigin,  xplParamsPtr aEnvironment, xplSessionPtr aSession, xmlChar *encoding)
+xplDocumentPtr xplDocumentCreateFromMemory(xmlChar* aDocRoot, xmlChar *aOrigin,  xplParamsPtr aParams, xplSessionPtr aSession, xmlChar *encoding)
 {
-	xplDocumentPtr ret = xplDocumentInit(aDocRoot, aEnvironment, aSession);
+	xplDocumentPtr ret = xplDocumentInit(aDocRoot, aParams, aSession);
 
 	ret->origin = aOrigin;
 	ret->document = xmlReadMemory((const char*) aOrigin, xmlStrlen(aOrigin), NULL, (const char*) encoding, 0);
@@ -196,8 +196,8 @@ void xplDocumentFree(xplDocumentPtr doc)
 		XPL_FREE(doc->filename);
 	if (doc->error)
 		XPL_FREE(doc->error);
-	if (doc->async && doc->environment)
-		xplParamsFree(doc->environment);
+	if (doc->async && doc->params)
+		xplParamsFree(doc->params);
 	if (doc->local_session)
 		xplSessionFreeLocal(doc->local_session);
 	if (doc->xpath_ctxt)

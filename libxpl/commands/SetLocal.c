@@ -36,13 +36,13 @@ xplCommand xplSetLocalCommand = {
 
 void xplCmdSetLocalPrologue(xplCommandInfoPtr commandInfo)
 {
-	xplParamsPtr old_params = commandInfo->document->environment;
+	xplParamsPtr old_params = commandInfo->document->params;
 	xplParamsPtr tmp_params = NULL;
 
 	if (old_params)
 	{
 		tmp_params = xplParamsCopy(old_params);
-		commandInfo->document->environment = tmp_params;
+		commandInfo->document->params = tmp_params;
 	}
 	commandInfo->prologue_state = old_params;
 }
@@ -58,9 +58,9 @@ void xplCmdSetLocalRestoreState(xplCommandInfoPtr commandInfo)
 {
 	xplParamsPtr old_params, tmp_params;
 	
-	tmp_params = commandInfo->document->environment;
+	tmp_params = commandInfo->document->params;
 	if (tmp_params)
 		xplParamsFree(tmp_params);
 	old_params = (xplParamsPtr) commandInfo->prologue_state;
-	commandInfo->document->environment = old_params;
+	commandInfo->document->params = old_params;
 }
