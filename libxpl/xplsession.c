@@ -82,7 +82,7 @@ void xplSessionManagerCleanup()
 }
 
 /* manager-level */
-static xplSessionPtr _sessionCreateInternal(xmlChar *id, bool local)
+static xplSessionPtr _sessionCreateInternal(const xmlChar *id, bool local)
 {
 	xplSessionPtr ret;
 	xmlNodePtr root;
@@ -99,7 +99,7 @@ static xplSessionPtr _sessionCreateInternal(xmlChar *id, bool local)
 		(void) xmlNewProp(root, BAD_CAST "id", id);
 	xplSetChildren((xmlNodePtr) ret->doc, root);
 	time(&ret->init_ts);
-	ret->id = id;
+	ret->id = BAD_CAST XPL_STRDUP((char*) id);
 	ret->valid = true;
 	ret->just_created = true;
 	ret->local = local;
@@ -128,24 +128,20 @@ static xplSessionPtr _sessionLookupInternal(const xmlChar *id) // eats id
 xplSessionPtr xplSessionCreateOrGetShared(const xmlChar *id)
 {
 	xplSessionPtr ret;
-	xmlChar *id_copy;
 
 	if (!session_mgr)
 		return NULL;
 	SUCCEED_OR_DIE(xprMutexAcquire(&session_interlock));
 	if (!(ret = _sessionLookupInternal(id)))
-	{
-		id_copy = id? BAD_CAST XPL_STRDUP((char*) id): NULL;
-		ret = _sessionCreateInternal(id_copy, false);
-	}
+		ret = _sessionCreateInternal(id, false);
 	SUCCEED_OR_DIE(xprMutexRelease(&session_interlock));
 	return ret;
 }
 
 xplSessionPtr xplSessionCreateWithAutoId()
 {
-	xmlChar *id;
 	unsigned char raw_id[XPL_SESSION_ID_SIZE];
+	xmlChar id[XPL_SESSION_ID_SIZE*2 + 1];
 	bool flag = true;
 	xplSessionPtr ret;
 	xefCryptoRandomParams rp;
@@ -167,9 +163,8 @@ xplSessionPtr xplSessionCreateWithAutoId()
 				XPL_FREE(rp.error);
 			xprSleep(10);
 		}
-		id = xstrBufferToHexAlloc(rp.bytes, rp.size, false);
-		if ((flag = !!_sessionLookupInternal(id)))
-			XPL_FREE(id);
+		xstrBufferToHex(rp.bytes, rp.size, false, id);
+		flag = !!_sessionLookupInternal(id);
 	}
 	ret = _sessionCreateInternal(id, false);
 	SUCCEED_OR_DIE(xprMutexRelease(&session_interlock));
