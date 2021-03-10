@@ -68,7 +68,7 @@ void xplCmdDigestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		return;
 	}
 	ret = xmlNewDocText(commandInfo->document->document, NULL);
-	ret->content = xstrBufferToHex(dp.digest, dp.digest_size, false);
+	ret->content = xstrBufferToHexAlloc(dp.digest, dp.digest_size, false);
 	XPL_FREE(dp.digest);
 	ASSIGN_RESULT(ret, false, true);
 }

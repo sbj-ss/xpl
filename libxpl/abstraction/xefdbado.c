@@ -288,7 +288,7 @@ xmlChar* _xefDbConvertValueToString(VARIANT value, size_t size, bool cleanStream
 		return str;
 	case VT_ARRAY | VT_UI1: /* binary/varbinary */
 		SafeArrayAccessData(value.parray, &data);
-		str = xstrBufferToHex(data, size, true);
+		str = xstrBufferToHexAlloc(data, size, true);
 		SafeArrayUnaccessData(value.parray);
 		return str;
 	case VT_DATE:

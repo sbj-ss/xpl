@@ -62,9 +62,12 @@ XPLPUBFUN int XPLCALL
 				  const char* start, const char* end,
 				  char** resultp, size_t* lengthp);
 
+/* Writes hex represenation of buf to dst */
+XPLPUBFUN void XPLCALL
+	xstrBufferToHex(void* buf, size_t len, bool prefix, xmlChar *dst);
 /* Returns a hex representation of a buffer. Result must be freed. */
 XPLPUBFUN xmlChar* XPLCALL
-	xstrBufferToHex(void* buf, size_t len, bool prefix);
+	xstrBufferToHexAlloc(void* buf, size_t len, bool prefix);
 /* Base64 conversion. result must be preallocated and both result and resultSize set! */
 /* TODO alloc inside */
 XPLPUBFUN int XPLCALL

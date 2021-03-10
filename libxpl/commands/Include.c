@@ -634,7 +634,7 @@ static void computeRetStep(IncludeContextPtr ctxt)
 		ctxt->content_size = encoded_size;
 		break;
 	case OUTPUT_FORMAT_HEX:
-		if (!(encoded_content = xstrBufferToHex(ctxt->content, ctxt->content_size, false)))
+		if (!(encoded_content = xstrBufferToHexAlloc(ctxt->content, ctxt->content_size, false)))
 		{
 			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "insufficient memory");
 			return;

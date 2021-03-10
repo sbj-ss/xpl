@@ -591,7 +591,7 @@ xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool b
 					dp.digest_method = XEF_CRYPTO_DIGEST_METHOD_RIPEMD160;
 					if (!xefCryptoDigest(&dp))
 						return XPL_SET_OPTION_INTERNAL_ERROR;
-					value = xstrBufferToHex(dp.digest, dp.digest_size, false);
+					value = xstrBufferToHexAlloc(dp.digest, dp.digest_size, false);
 					XPL_FREE(dp.digest);
 				} else
 					value = NULL;

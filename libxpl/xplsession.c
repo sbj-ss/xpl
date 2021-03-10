@@ -167,7 +167,7 @@ xplSessionPtr xplSessionCreateWithAutoId()
 				XPL_FREE(rp.error);
 			xprSleep(10);
 		}
-		id = xstrBufferToHex(rp.bytes, rp.size, false);
+		id = xstrBufferToHexAlloc(rp.bytes, rp.size, false);
 		if ((flag = !!_sessionLookupInternal(id)))
 			XPL_FREE(id);
 	}
@@ -406,7 +406,7 @@ bool xplSessionSetSaMode(xplSessionPtr session, bool enable, xmlChar *password)
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		return false;
 	}
-	digest_str = xstrBufferToHex(dp.digest, dp.digest_size, false);
+	digest_str = xstrBufferToHexAlloc(dp.digest, dp.digest_size, false);
 	if (!strcmp((const char*) cfgSaPassword, (const char*) digest_str))
 	{
 		session->sa_mode = true;

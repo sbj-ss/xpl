@@ -317,26 +317,31 @@ int xstrIconvString (const char* tocode, const char* fromcode,
 
 static xmlChar hex_digits[] = "0123456789ABCDEF";
 
-xmlChar* xstrBufferToHex(void* buf, size_t len, bool prefix)
+void xstrBufferToHex(void* buf, size_t len, bool prefix, xmlChar *dst)
 {
-	xmlChar *ret, *ret_start;
 	size_t i;
 
-	ret = ret_start = (xmlChar*) XPL_MALLOC(len*2 + (prefix? 3: 1));
-	if (!ret)
-		return NULL;
 	if (prefix)
 	{
-		*ret++ = '0';
-		*ret++ = 'x';
+		*dst++ = '0';
+		*dst++ = 'x';
 	}
 	for (i = 0; i < len; i++)
 	{
-		*ret++ = hex_digits[((xmlChar*) buf)[i] >> 4];
-		*ret++ = hex_digits[((xmlChar*) buf)[i] & 0x0F];
+		*dst++ = hex_digits[((xmlChar*) buf)[i] >> 4];
+		*dst++ = hex_digits[((xmlChar*) buf)[i] & 0x0F];
 	}
-	*ret = 0;
-	return ret_start;
+	*dst = 0;
+}
+
+xmlChar* xstrBufferToHexAlloc(void* buf, size_t len, bool prefix)
+{
+	xmlChar *ret;
+
+	if (!(ret = (xmlChar*) XPL_MALLOC(len*2 + (prefix? 3: 1))))
+		return NULL;
+	xstrBufferToHex(buf, len, prefix, ret);
+	return ret;
 }
 
 /* BASE64 */
