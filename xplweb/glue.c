@@ -104,7 +104,6 @@ typedef struct _ParseFormCtxt
 	/* set by caller */
 	bool oom;
 	xplParamsPtr params;
-	xmlChar *upload_dir;
 	/* used internally */
 	xmlChar *key;
 	xmlBufferPtr value_buf;
@@ -202,7 +201,6 @@ xplParamsPtr buildParams(struct mg_connection *conn, const struct mg_request_inf
 	if (!(ctxt.value_buf = xmlBufferCreateSize(2048)))
 		goto error;
 	xmlBufferSetAllocationScheme(ctxt.value_buf, XML_BUFFER_ALLOC_HYBRID);
-	ctxt.upload_dir = NULL; // TODO provide
 	fdh.user_data = &ctxt;
 	mg_handle_form_request(conn, &fdh);
 	if (!_fieldFinalize(&ctxt))
