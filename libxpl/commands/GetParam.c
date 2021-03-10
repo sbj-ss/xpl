@@ -147,7 +147,11 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				commandInfo->element);
 		} else { /* stringify */
 			txt = xplParamValuesToString(values, params->unique, params->delimiter, params->expect);
-			if (txt)
+			if (values && !txt)
+			{
+				params->repeat = true;
+				ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "some param types can't be presented as string");
+			} else if (txt)
 			{
 				ret = xmlNewDocText(commandInfo->document->document, NULL);
 				ret->content = txt;
