@@ -10,6 +10,12 @@
 #include <libxpl/xploptions.h>
 #include <libxpl/xplstring.h>
 
+#if defined(_WIN32) && defined(__MINGW64__)
+#define SIZE_T_FORMAT "%I64u"
+#else
+#define SIZE_T_FORMAT "%lu"
+#endif
+
 xmlChar *doc_root;
 
 #define DEFAULT_OUTPUT_METHOD_NAME (BAD_CAST "xhtml")
@@ -224,7 +230,7 @@ xplParamsPtr buildParams(struct mg_connection *conn, const struct mg_request_inf
 		if (xplParamAddValue(ctxt.params, ENCODING_PARAM, BAD_CAST XPL_STRDUP(DEFAULT_OUTPUT_ENC), XPL_PARAM_TYPE_USERDATA) != XPL_PARAM_RES_OK)
 			goto error;
 	if (!xplParamGet(ctxt.params, OUTPUT_METHOD_PARAM))
-		if (xplParamAddValue(ctxt.params, OUTPUT_METHOD_PARAM, BAD_CAST XPL_STRDUP(DEFAULT_OUTPUT_METHOD_NAME), XPL_PARAM_TYPE_USERDATA) != XPL_PARAM_RES_OK)
+		if (xplParamAddValue(ctxt.params, OUTPUT_METHOD_PARAM, BAD_CAST XPL_STRDUP((char*) DEFAULT_OUTPUT_METHOD_NAME), XPL_PARAM_TYPE_USERDATA) != XPL_PARAM_RES_OK)
 			goto error;
 	if (xplParamReplaceValue(ctxt.params, REMOTE_ADDRESS_PARAM, BAD_CAST XPL_STRDUP(requestInfo->remote_addr), XPL_PARAM_TYPE_USERDATA) != XPL_PARAM_RES_OK)
 		goto error;
@@ -365,7 +371,7 @@ int serveXpl(struct mg_connection *conn, void *userData)
 	const char *cookies;
 	char session_id[XPL_SESSION_ID_SIZE*2 + 1];
 	xplSessionPtr session = NULL;
-	xplParamsPtr params;
+	xplParamsPtr params = NULL;
 	xmlChar *encoding = NULL;
 	xmlChar *output_method = NULL;
 	xmlChar *content_type = NULL;
@@ -373,7 +379,7 @@ int serveXpl(struct mg_connection *conn, void *userData)
 	size_t payload_size;
 	OutputMethodDescPtr om;
 	xplError ret;
-	int http_code;
+	int http_code = -1;
 
 	LEAK_DETECTION_START();
 	request_info = mg_get_request_info(conn);
@@ -419,14 +425,16 @@ int serveXpl(struct mg_connection *conn, void *userData)
 	if (ret == XPL_ERR_NO_ERROR || ret == XPL_ERR_FATAL_CALLED)
 	{
 		if (doc->response)
+		{
+			http_code = 200; // TODO extract from response?..
 			mg_printf(conn, "%s\r\n\r\n", doc->response);
-		else {
+		} else {
 			if ((payload = serializeDoc(doc->document, encoding, om, &payload_size)))
 			{
 				http_code = 200;
 				mg_printf(conn, "HTTP/1.1 200 OK\r\n");
 				mg_printf(conn, "Cache-control: no-cache\r\n");
-				mg_printf(conn, "Content-Length: %lu\r\n", payload_size);
+				mg_printf(conn, "Content-Length: "SIZE_T_FORMAT"\r\n", payload_size);
 				mg_printf(conn, "Content-Type: %s; charset=%s\r\n", content_type, encoding);
 				setSessionCookie(conn, doc->shared_session);
 				mg_printf(conn, "\r\n");
@@ -434,7 +442,6 @@ int serveXpl(struct mg_connection *conn, void *userData)
 				XPL_FREE(payload);
 			}
 		}
-		http_code = 200;
 	} else {
 		/* always return error as XML */
 		mg_printf(conn, "HTTP/1.1 500 Internal Server Error\r\n");
@@ -442,7 +449,7 @@ int serveXpl(struct mg_connection *conn, void *userData)
 		if (doc && doc->document && (payload = serializeDoc(doc->document, encoding, om, &payload_size)))
 		{
 			mg_printf(conn, "Cache-control: no-cache\r\n");
-			mg_printf(conn, "Content-Length: %lu\r\n", payload_size);
+			mg_printf(conn, "Content-Length: "SIZE_T_FORMAT"\r\n", payload_size);
 			mg_printf(conn, "\r\n");
 			mg_printf(conn, "%s", payload);
 			XPL_FREE(payload);

@@ -1,4 +1,6 @@
+#ifdef __linux__
 #include <linux/limits.h>
+#endif
 #include <sys/stat.h>
 #include <assert.h>
 #include <ctype.h>
@@ -12,6 +14,10 @@
 #include "Configuration.h"
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplversion.h>
+
+#ifdef _WIN32
+#define realpath(N,R) _fullpath((R),(N), PATH_MAX)
+#endif
 
 int exit_flag = 0;
 

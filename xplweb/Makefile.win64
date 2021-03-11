@@ -3,22 +3,27 @@
 #* (c) НИЛ ИТС, Подковырин, 2006-2020     *
 #******************************************
 
-INCLUDE = -I./include -I../libxpl/include -I ../civetweb/include -I/usr/include/libxml2
-LIBS = -lcivetweb -lxml2 -ldl -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -lpthread -lcurl -lyajl
+INCLUDE = -I./include -I../libxpl/include -I ../civetweb/include
+LIB = -L../libxpl -L../civetweb
+LIBS = -lcivetweb -lxpl -lxml2 -lonig -ltidy -lcrypto -lidn -lodbc32 -liconv -lz.dll -llzma -lpsapi -lole32 -lcurl -lyajl
+ifneq ($(LIB_ROOT),)
+INCLUDE += -I$(LIB_ROOT)/include -I$(LIB_ROOT)/include/libxml2
+LIB += -L$(LIB_ROOT)/lib 
+endif
 WARNINGS = -Wall -Werror
 FEATURES = -D_XEF_TRANSPORT_CURL -D_XEF_DB_ODBC -D_XEF_HTML_CLEANER_TIDY -D_XEF_CRYPTO_OPENSSL
-CFLAGS = -fno-common -L../libxpl -L../civetweb $(FEATURES) $(WARNINGS)
+CFLAGS = -fno-common $(LIB) $(FEATURES) $(WARNINGS)
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=undefined -fno-sanitize-recover -fstack-protector
 else
 CFLAGS += -O2
 endif
 
-BUILD_DIR = build
+BUILD_DIR = build.win64
 SRC = cw_wrapper.c glue.c main.c
 OBJS = $(SRC:%.c=$(BUILD_DIR)/%.o)
 
-CC = gcc
+CC = x86_64-w64-mingw32-gcc
 
 .DEFAULT_GOAL = all
 
@@ -28,10 +33,10 @@ $(BUILD_DIR):
 $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 	
-xplweb: $(OBJS)
+xplweb.exe: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 	
 clean:
-	rm -rf $(BUILD_DIR) xplweb || /bin/true
+	rm -rf $(BUILD_DIR) xplweb.exe || /bin/true
 	
-all: $(BUILD_DIR) xplweb
+all: $(BUILD_DIR) xplweb.exe
