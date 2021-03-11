@@ -245,6 +245,7 @@ static void _getUnixOdbcVersion(const xmlChar **str, bool running)
 	UNUSED_PARAM(running);
 	*str = NOT_COMPILED_IN;
 #else
+#ifndef _WIN32
 	static char buf[48];
 	FILE *fp;
 	/* For some obscure reason unixODBC does not provide a way to obtain its version via headers/functions etc.
@@ -263,7 +264,6 @@ static void _getUnixOdbcVersion(const xmlChar **str, bool running)
 		*str = BAD_CAST buf;
 	} else
 		*str = NOT_CHECKABLE;
-#ifndef _WIN32
 #else
 	UNUSED_PARAM(running);
 	*str = BAD_CAST "Windows native";
