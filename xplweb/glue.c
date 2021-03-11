@@ -53,7 +53,7 @@ static OutputMethodDesc output_methods[] =
 
 OutputMethodDescPtr getOutputMethod(xmlChar *name)
 {
-	int i;
+	size_t i;
 
 	if (!name || !*name)
 		return &output_methods[0];
@@ -174,6 +174,7 @@ static int _fieldFound(const char *key, const char *filename, char *path, size_t
 static int _fieldGet(const char *key, const char *value, size_t valueLen, void *userData)
 {
 	ParseFormCtxtPtr ctxt = (ParseFormCtxtPtr) userData;
+	UNUSED_PARAM(key);
 
 	xmlBufferAdd(ctxt->value_buf, BAD_CAST value, valueLen);
 	return MG_FORM_FIELD_HANDLE_GET;
@@ -199,7 +200,7 @@ static int _fieldStore(const char *path, long long fileSize, void *userData)
 	return MG_FORM_FIELD_HANDLE_NEXT;
 }
 
-xplParamsPtr buildParams(struct mg_connection *conn, const struct mg_request_info *requestInfo, xmlChar *sessionId)
+xplParamsPtr buildParams(struct mg_connection *conn, const struct mg_request_info *requestInfo)
 {
 	ParseFormCtxt ctxt;
 	struct mg_form_data_handler fdh = {
@@ -289,7 +290,7 @@ xmlChar* serializeDoc(xmlDocPtr doc, xmlChar *encoding, OutputMethodDescPtr om, 
 {
 	xmlBufferPtr buf;
 	xmlSaveCtxtPtr save_ctxt;
-	xmlNodePtr doc_root;
+	xmlNodePtr root;
 	xmlChar *txt, *ret = NULL;
 
 	if (om->serializer == OS_XML)
@@ -313,8 +314,8 @@ xmlChar* serializeDoc(xmlDocPtr doc, xmlChar *encoding, OutputMethodDescPtr om, 
 		}
 		xmlBufferFree(buf);
 	} else if (om->serializer == OS_TEXT) {
-		doc_root = xplFirstElementNode(doc->children);
-		txt = doc_root? xmlNodeListGetString(doc, doc_root->children, 1): NULL;
+		root = xplFirstElementNode(doc->children);
+		txt = root? xmlNodeListGetString(doc, root->children, 1): NULL;
 		if (txt)
 		{
 			if (!xmlStrcmp(encoding, BAD_CAST "utf-8"))
@@ -381,6 +382,7 @@ int serveXpl(struct mg_connection *conn, void *userData)
 	xplError ret;
 	int http_code = -1;
 
+	UNUSED_PARAM(userData);
 	LEAK_DETECTION_START();
 	request_info = mg_get_request_info(conn);
 	cookies = mg_get_header(conn, "Cookie");
@@ -390,7 +392,7 @@ int serveXpl(struct mg_connection *conn, void *userData)
 			mg_printf(conn, "HTTP/1.1 500 Internal Server Error\r\n\r\n");
 			goto done;
 		}
-	if (!(params = buildParams(conn, request_info, xplSessionGetId(session))))
+	if (!(params = buildParams(conn, request_info)))
 	{
 		mg_printf(conn, "HTTP/1.1 500 Internal Server Error\r\n\r\n");
 		goto done;

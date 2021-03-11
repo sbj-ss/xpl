@@ -412,6 +412,7 @@ static BOOL WINAPI _winSignalHandler(DWORD reason)
 
 static int _logMessage(const struct mg_connection *conn, const char *message)
 {
+	UNUSED_PARAM(conn);
 	fprintf(stderr, "%s\n", message);
 	return 0;
 }

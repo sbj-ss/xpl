@@ -49,7 +49,7 @@ extern xmlChar *doc_root;
 OutputMethodDescPtr XPLCALL /* ditto */
 	getOutputMethod(xmlChar *name);
 xplParamsPtr XPLCALL /* collect URL query and POST body params */
-	buildParams(struct mg_connection *conn, const struct mg_request_info *request_info, xmlChar *session_id);
+	buildParams(struct mg_connection *conn, const struct mg_request_info *request_info);
 xmlChar* XPLCALL /* serialize output document using selected method */
 	serializeDoc(xmlDocPtr doc, xmlChar *encoding, OutputMethodDescPtr om, size_t *size);
 void XPLCALL /* send session id cookie to client */
