@@ -15,7 +15,7 @@ static xmlChar* getAppType(void)
 	return APP_TYPE;
 }
 
-void shutdownServer(int code)
+static void shutdownServer(int code)
 {
 	printf("Exiting on signal %d, waiting for all threads to finish...\n", exit_flag);
 	exit_flag = 1;
