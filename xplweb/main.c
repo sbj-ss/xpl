@@ -10,12 +10,12 @@
 
 static struct mg_context *ctx;
 
-static xmlChar* getAppType(void)
+static xmlChar* _getAppType(void)
 {
 	return APP_TYPE;
 }
 
-static void shutdownServer(int code)
+static void _shutdownServer(int code)
 {
 	printf("Exiting on signal %d, waiting for all threads to finish...\n", exit_flag);
 	exit_flag = 1;
@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
 		mg_exit_library();
 		cwDie("Error starting XPL engine: %s\n", error); /* no need to free error */
 	}
-	xprSetShutdownFunc(shutdownServer);
-	xplSetGetAppTypeFunc(getAppType);
+	xprSetShutdownFunc(_shutdownServer);
+	xplSetGetAppTypeFunc(_getAppType);
 
 	memset(&callbacks, 0, sizeof(callbacks));
 	if (!(ctx = cwStart(argc, argv, NULL, &callbacks)))
@@ -67,5 +67,5 @@ int main(int argc, char* argv[])
 
 	while (!exit_flag)
 		xprSleep(100);
-	shutdownServer(EXIT_SUCCESS);
+	_shutdownServer(EXIT_SUCCESS);
 }
