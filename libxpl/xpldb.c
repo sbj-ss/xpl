@@ -236,72 +236,10 @@ xmlNodePtr xplDatabasesToNodeList(xmlNodePtr parent, const xplQName qname)
 	return ctxt.head;
 }
 
-bool xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors)
+bool xplInitDatabases()
 {
-	xplDBListPtr db;
-	xmlChar *dbname;
-	bool ok = true;
-	const xplMsgType msg_type = warningsAsErrors? XPL_MSG_ERROR: XPL_MSG_WARNING;
-	const xmlChar *action = BAD_CAST (warningsAsErrors? "stopping": "ignored");
-
 	xplCleanupDatabases();
-	databases = xmlHashCreate(16);
-	if (!databases)
-		return false;
-
-	cur = cur->children;
-	while (cur)
-	{
-		if (cur->type == XML_ELEMENT_NODE)
-		{
-			if (!xmlStrcmp(cur->name, BAD_CAST "Database"))
-			{
-				dbname = xmlGetNoNsProp(cur, BAD_CAST "Name");
-				if (dbname)
-				{
-					if (cur->children->type == XML_TEXT_NODE)
-					{
-						db = xplDBListCreate(cur->children->content);
-						if (xmlHashAddEntry(databases, dbname, (void*) db))
-						{
-							xplDisplayMessage(msg_type, BAD_CAST "duplicate database name in config file (line %d), %s", cur->line, action);
-							ok = false;
-						}
-					} else {
-						xplDisplayMessage(msg_type, BAD_CAST "non-text connection string in config file (line %d), %s", cur->line, action);
-						ok = false;
-					}
-					XPL_FREE(dbname);
-				} else {
-					xplDisplayMessage(msg_type, BAD_CAST "missing dbname attribute in Database element in config file (line %d), %s", cur->line, action);
-					ok = false;
-				}
-			} else {
-				xplDisplayMessage(msg_type, BAD_CAST "unknown node \"%s\" in Databases section in config file (line %d), %s", cur->name, cur->line, action);
-				ok = false;
-			}
-		}
-		cur = cur->next;
-	}
-	return !warningsAsErrors || ok;
-}
-
-static void checkDatabase(void *payload, void *data, XML_HCBNC xmlChar *name)
-{
-	xmlChar *msg;
-	bool is_avail = xefDbCheckAvail(((xplDBListPtr) payload)->conn_string, name, &msg);
-
-	UNUSED_PARAM(data);
-	if (msg)
-	{
-		xplDisplayMessage(is_avail? XPL_MSG_INFO: XPL_MSG_WARNING, msg);
-		XPL_FREE(msg);
-	}
-}
-
-void xplCheckDatabases()
-{
-	xmlHashScan(databases, checkDatabase, NULL);
+	return !!(databases = xmlHashCreate(16));
 }
 
 static void _gcScanner(void *payload, void *data, XML_HCBNC xmlChar *name)

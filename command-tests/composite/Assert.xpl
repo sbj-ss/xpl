@@ -5,6 +5,10 @@
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
+  
+  <xpl:set-sa-mode password="1111111"/>
+  <xpl:set-option name="EnableAssertions">true</xpl:set-option>
+  <xpl:set-sa-mode enable="false"/>
 
   <MustSucceed name="pass/boolean">
     <Input>

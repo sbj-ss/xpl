@@ -14,7 +14,7 @@ bool xplInitCommands()
 	return !!commands;
 }
 
-static xplModuleCmdResult _registerCommandParams(xplCommandPtr cmd, xmlChar **error)
+static xplLoadModuleResult _registerCommandParams(xplCommandPtr cmd, xmlChar **error)
 {
 	int i;
 	xplCmdParamPtr param;
@@ -67,9 +67,9 @@ static xplModuleCmdResult _registerCommandParams(xplCommandPtr cmd, xmlChar **er
 	return XPL_MODULE_CMD_OK;
 }
 
-xplModuleCmdResult xplRegisterCommand(const xmlChar *name, xplCommandPtr cmd, xmlChar **error)
+xplLoadModuleResult xplRegisterCommand(const xmlChar *name, xplCommandPtr cmd, xmlChar **error)
 {
-	xplModuleCmdResult ret;
+	xplLoadModuleResult ret;
 
 	if (!commands)
 		return XPL_MODULE_CMD_NO_PARSER;
@@ -524,17 +524,15 @@ void xplLoadableModulesCleanup(void)
 	loaded_modules = NULL;
 }
 
-xplModuleCmdResult xplLoadableModulesInit(void)
+bool xplLoadableModulesInit(void)
 {
 	if (loaded_modules)
 		xplLoadableModulesCleanup();
 	loaded_modules = xmlHashCreate(16);
-	if (!loaded_modules)
-		return XPL_MODULE_CMD_INSUFFICIENT_MEMORY;
-	return XPL_MODULE_CMD_OK;
+	return !!loaded_modules;
 }
 
-xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
+xplLoadModuleResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 {
 #define ASSIGN_ERR_DATA(x) if (error_data) *error_data = x;
 	XPR_SHARED_OBJECT_HANDLE hmodule;
@@ -542,7 +540,7 @@ xplModuleCmdResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 	GetCommandsFunc get_commands_func;
 	xplExternalCommandsPtr cmds;
 	int i;
-	xplModuleCmdResult ret;
+	xplLoadModuleResult ret;
 	xmlChar *cmd_error;
 	void *prev;
 

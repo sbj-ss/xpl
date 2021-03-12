@@ -75,11 +75,7 @@ XPLPUBFUN xmlNodePtr XPLCALL
 	xplDatabasesToNodeList(xmlNodePtr parent, const xplQName qname);
 
 XPLPUBFUN bool XPLCALL
-	xplReadDatabases(xmlNodePtr cur, bool warningsAsErrors);
-
-XPLPUBFUN void XPLCALL
-	xplCheckDatabases(void);
-
+	xplInitDatabases(void);
 XPLPUBFUN void XPLCALL
 	xplDbGarbageCollect(void);
 XPLPUBFUN void XPLCALL

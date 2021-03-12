@@ -10,7 +10,6 @@
 
 /* inner singletons */
 static xmlHashTablePtr session_mgr = NULL;
-static time_t max_session_lifetime;
 XPR_MUTEX session_interlock;
 
 /* xplSession internals */
@@ -28,13 +27,12 @@ typedef struct _xplSession
 } xplSession;
 
 /* start/stop */
-bool xplSessionManagerInit(time_t max_lifetime)
+bool xplSessionManagerInit()
 {
 	if (!session_mgr)
 		session_mgr = xmlHashCreate(16);
 	if (!session_mgr)
 		return false;
-	max_session_lifetime = max_lifetime;
 	if (!xprMutexInit(&session_interlock))
 	{
 		xmlHashFree(session_mgr, NULL);
@@ -116,7 +114,7 @@ static xplSessionPtr _sessionLookupInternal(const xmlChar *id) // eats id
 	if (ret)
 	{
 		/* don't return an expired session */
-		if (time(NULL) - ret->init_ts > max_session_lifetime)
+		if (time(NULL) - ret->init_ts > cfgSessionLifetime)
 		{
 			xmlHashRemoveEntry(session_mgr, id, _freeSessionCallback);
 			ret = NULL;
@@ -221,7 +219,7 @@ static void _enumStaleSessionsCallback(void *payload, void *data, XML_HCBNC xmlC
 
 	UNUSED_PARAM(name);
 	UNUSED_PARAM(data);
-	if (time(NULL) - s->init_ts > max_session_lifetime)
+	if (time(NULL) - s->init_ts > cfgSessionLifetime)
 		xmlHashRemoveEntry(session_mgr, name, _freeSessionCallback);
 }
 

@@ -15,7 +15,6 @@
 
 /* internal statics */
 static bool parser_loaded = 0;
-static xmlChar *config_file_path = NULL;
 static xplGetAppTypeFunc get_app_type_func = NULL;
 volatile int active_thread_count = 0;
 static XPR_MUTEX global_conf_mutex;
@@ -36,8 +35,6 @@ const xmlChar* xplErrorToString(xplError error)
 		return BAD_CAST "parser couldn't be initialized (not enough memory?..)";
 	case XPL_ERR_INVALID_INPUT:
 		return BAD_CAST "invalid parameters";
-	case XPL_ERR_NO_CONFIG_FILE:
-		return BAD_CAST "config file couldn't be read";
 	case XPL_ERR_NOT_YET_REACHED:
 		return BAD_CAST "execution point not yet reached";
 	default:
@@ -62,8 +59,6 @@ const xmlChar* xplErrorToShortString(xplError error)
 		return BAD_CAST "no_parser";
 	case XPL_ERR_INVALID_INPUT:
 		return BAD_CAST "invalid_params";
-	case XPL_ERR_NO_CONFIG_FILE:
-		return BAD_CAST "invalid_config";
 	case XPL_ERR_NOT_YET_REACHED:
 		return BAD_CAST "not_reached";
 	default:
@@ -139,7 +134,7 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aDocRoot, xmlChar *aFilename, 
 	if (!aFilename)
 		return NULL;
 	ret = xplDocumentInit(aDocRoot, aParams, aSession);
-	path_len = xmlStrlen(ret->doc_root);
+	path_len = ret->doc_root? xmlStrlen(ret->doc_root): 0;
 	max_fn_len = path_len + xmlStrlen(aFilename) + 1;
 	ret->filename = (xmlChar*) XPL_MALLOC(max_fn_len);
 	if (!ret->filename)
@@ -665,6 +660,8 @@ void xplDocSessionClear(xplDocumentPtr doc, bool local)
 
 bool xplDocSessionGetSaMode(xplDocumentPtr doc)
 {
+	if (doc->force_sa_mode)
+		return true;
 	if (doc->local_session && xplSessionGetSaMode(doc->local_session))
 		return true;
 	if (doc->shared_session)
@@ -1228,64 +1225,6 @@ xmlChar* xplGetAppType()
 	return BAD_CAST "unknown";
 }
 
-bool xplReadConfig()
-{
-	xmlDocPtr cfg;
-	xmlNodePtr cur;
-	int options_read = 0;
-
-	if (!config_file_path)
-		return false;
-	if (!xplInitWrapperMap())
-		return false;
-	cfg = xmlParseFile((const char*) config_file_path); /* TODO path encoding */
-	if (!cfg)
-		return false;
-	cur = cfg->children->children;
-	while (cur)
-	{
-		if (cur->type == XML_ELEMENT_NODE)
-		{
-			if (!xmlStrcmp(cur->name, BAD_CAST "Databases"))
-			{
-				if (!xplReadDatabases(cur, false)) /* TODO control warningsAsErrors */
-				{
-					xmlFreeDoc(cfg);
-					return false;
-				}
-			} else if (!xmlStrcmp(cur->name, BAD_CAST "Options")) {
-				xplReadOptions(cur);
-				options_read = 1;
-			} else if (!xmlStrcmp(cur->name, BAD_CAST "WrapperMap"))
-				NOOP();
-		}
-		cur = cur->next;
-	}
-	xmlFreeDoc(cfg);
-	if (!options_read)
-		xplAssignDefaultsToAllOptions();
-	if (cfgCheckDbOnStartup)
-		xplCheckDatabases();
-	return true;
-}
-
-static bool _ssLoadableModulesInit()
-{
-	return xplLoadableModulesInit() == XPL_MODULE_CMD_OK;
-}
-
-static bool _ssSessionManagerInit()
-{
-	return xplSessionManagerInit(cfgSessionLifetime);
-}
-
-static void _ssReleaseConfigBasedResources()
-{
-	xplCleanupDatabases();
-	xplCleanupOptions();
-	xplCleanupWrapperMap();
-}
-
 static bool _ssInitCore()
 {
 	if (!xprMutexInit(&global_conf_mutex))
@@ -1311,27 +1250,26 @@ typedef struct _ParserStartStopStep
 
 static ParserStartStopStep start_stop_steps[] =
 {
-	{ _ssLoadableModulesInit, xplLoadableModulesCleanup, "loadable modules" },
+	{ xplInitOptions, xplCleanupOptions, "options" },
+	{ xplInitNamePointers, NULL, "name pointers" },
 	{ xplInitLibraryVersions, xplCleanupLibraryVersions, "library versions" },
-	{ xplReadConfig, _ssReleaseConfigBasedResources, "config" }, // TODO this should be split into individual steps
+	{ xplInitWrapperMap, xplCleanupWrapperMap, "wrappers" },
+	{ xplInitDatabases, xplCleanupDatabases, "databases" },
 	{ xplInitMessages, xplCleanupMessages, "messages" },
 	{ xplInitCommands, xplCleanupCommands, "commands" },
+	{ xplLoadableModulesInit, xplLoadableModulesCleanup, "loadable modules" },
 	{ xplRegisterBuiltinCommands, xplUnregisterBuiltinCommands, "builtin commands" },
-	{ xplInitNamePointers, NULL, "name pointers" },
-	{ _ssSessionManagerInit, xplSessionManagerCleanup, "session" },
-	{ _ssInitCore, _ssStopCore, "core" }
+	{ xplSessionManagerInit, xplSessionManagerCleanup, "session" },
+	{ _ssInitCore, _ssStopCore, "core" },
 };
 #define START_STOP_STEP_COUNT (sizeof(start_stop_steps) / sizeof(start_stop_steps[0]))
 
-xplError xplInitParser(xmlChar *cfgFile, bool verbose)
+xplError xplInitParser(bool verbose)
 {
 	int i, j;
 
 	if (parser_loaded)
 		return XPL_ERR_NO_ERROR;
-	if (!cfgFile)
-		return XPL_ERR_NO_CONFIG_FILE;
-	config_file_path = BAD_CAST XPL_STRDUP((char*) cfgFile);
 	for (i = 0; i < (int) START_STOP_STEP_COUNT; i++)
 	{
 		if (!start_stop_steps[i].start_fn)
@@ -1350,8 +1288,6 @@ xplError xplInitParser(xmlChar *cfgFile, bool verbose)
 					continue;
 				start_stop_steps[j].stop_fn();
 			}
-			XPL_FREE(config_file_path);
-			config_file_path = NULL;
 			return XPL_ERR_NO_PARSER;
 		} else if (verbose)
 			printf("OK\n");
@@ -1371,11 +1307,6 @@ void xplDoneParser()
 		if (!start_stop_steps[i].stop_fn)
 			continue;
 		start_stop_steps[i].stop_fn();
-	}
-	if (config_file_path)
-	{
-		XPL_FREE(config_file_path);
-		config_file_path = NULL;
 	}
 	parser_loaded = false;
 }
@@ -1436,30 +1367,56 @@ void checkCoalescing(xmlNodePtr cur)
 #define CHECK_COALESCING(x) ((void)0)
 #endif
 
-xplError xplProcessFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aEnvironment, xplSessionPtr aSession, xplDocumentPtr *docOut)
+xplError xplProcessFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aParams, xplSessionPtr aSession, xplDocumentPtr *docOut)
 {
 	xplError ret;
 
-	*docOut = xplDocumentCreateFromFile(aDocRoot, aFilename, aEnvironment, aSession);
+	*docOut = xplDocumentCreateFromFile(aDocRoot, aFilename, aParams, aSession);
 	if (!*docOut)
 		return XPL_ERR_DOC_NOT_CREATED;
 	(*docOut)->status = XPL_ERR_NOT_YET_REACHED;
 	ret = xplDocumentApply(*docOut);
 	if (ret >= XPL_ERR_NO_ERROR)
-	{
 		CHECK_COALESCING((*docOut)->document->children);
-	} 
 	return ret;
 }
 
-xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr environment, xplSessionPtr session, xplDocumentPtr *docOut)
+xplError xplProcessStartupFile(xmlChar *aDocRoot, xmlChar *aFilename)
+{
+	xplParamsPtr params = NULL;
+	xplSessionPtr session = NULL;
+	xplDocumentPtr doc = NULL;
+	xplError ret = XPL_ERR_DOC_NOT_CREATED;
+
+	if (!(params = xplParamsCreate()))
+		goto done;
+	if (!(session = xplSessionCreateLocal()))
+		goto done;
+	if (!(doc = xplDocumentCreateFromFile(aDocRoot, aFilename, params, session)))
+		goto done;
+	doc->force_sa_mode = true;
+	doc->status = XPL_ERR_NOT_YET_REACHED;
+	ret = xplDocumentApply(doc);
+	if (ret >= XPL_ERR_NO_ERROR)
+		CHECK_COALESCING(doc->document->children);
+done:
+	if (doc)
+		xplDocumentFree(doc);
+	if (params)
+		xplParamsFree(params);
+	if (session)
+		xplSessionFreeLocal(session);
+	return ret;
+}
+
+xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr aParams, xplSessionPtr aSession, xplDocumentPtr *docOut)
 {
 	xmlChar *norm_path;
 	xmlChar *norm_filename;
 	xplError status;
 
 	xstrComposeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename);
-	status = xplProcessFile(norm_path, norm_filename, environment, session, docOut);
+	status = xplProcessFile(norm_path, norm_filename, aParams, aSession, docOut);
 	if (norm_path)
 		XPL_FREE(norm_path);
 	return status;

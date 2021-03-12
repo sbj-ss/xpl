@@ -36,15 +36,12 @@ typedef enum _xplSetOptionResult
 XPLPUBFUN xplSetOptionResult XPLCALL
 	xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool byDefault);
 
-XPLPUBFUN int XPLCALL
-	xplReadOptions(xmlNodePtr opt_root);
-XPLPUBFUN void XPLCALL
-	xplAssignDefaultsToAllOptions(void);
+XPLPUBFUN bool XPLCALL
+	xplInitOptions(void);
 XPLPUBFUN void XPLCALL
 	xplCleanupOptions(void);
 
 /* config variables */
-XPLPUBVAR int cfgCheckDbOnStartup;
 XPLPUBVAR int cfgCheckSAMode;
 XPLPUBVAR xmlChar *cfgDebugSaveFile;
 XPLPUBVAR xmlChar *cfgDefaultEncoding;
@@ -90,7 +87,6 @@ XPLPUBVAR int cfgWarnOnWontReplace;
 XPLPUBVAR xmlChar *cfgXplNsUri;
 
 /* Config defaults - for reference */
-#define DEFAULT_CHECK_DB_ON_STARTUP true
 #define DEFAULT_CHECK_SA_MODE true
 #define DEFAULT_DEFAULT_ENCODING (BAD_CAST "utf-8")
 #define DEFAULT_ENABLE_ASSERTIONS false

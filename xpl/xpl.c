@@ -153,8 +153,6 @@ int main(int argc, char* argv[])
 	app_path = BAD_CAST getcwd(NULL, 0);
 	memcpy(&start_params, &xplDefaultStartParams, sizeof(xplStartParams));
 	start_params.verbose = (bool) verbose;
-	if (conf_file)
-		start_params.config_file_name = conf_file;
 
 	/* start XPL engine */
 	if (!xplStartEngine((const xplStartParamsPtr) &start_params, argc, (const char**) argv, &error_text))

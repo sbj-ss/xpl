@@ -20,12 +20,6 @@ extern "C" {
 #define XPL_SESSION_ID_SIZE 16 /* in raw bytes */
 typedef struct _xplSession* xplSessionPtr;
 
-/* start/stop */
-XPLPUBFUN bool XPLCALL
-	xplSessionManagerInit(time_t max_lifetime);
-XPLPUBFUN void XPLCALL
-	xplSessionManagerCleanup(void);
-
 /* manager-level functions */
 XPLPUBFUN xplSessionPtr XPLCALL
 	xplSessionCreateOrGetShared(const xmlChar *id);
@@ -73,6 +67,12 @@ XPLPUBFUN bool XPLCALL
 	xplSessionIsJustCreated(xplSessionPtr session);
 XPLPUBFUN void XPLCALL
 	xplSessionMarkAsSeen(xplSessionPtr session);
+
+/* start/stop */
+XPLPUBFUN bool XPLCALL
+	xplSessionManagerInit(void);
+XPLPUBFUN void XPLCALL
+	xplSessionManagerCleanup(void);
 
 #ifdef __cplusplus
 }

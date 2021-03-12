@@ -59,3 +59,5 @@ user.dict
 /command-tests/composite/out/*.xml
 /command-tests/composite/save/*.xml
 /command-tests/composite/save/a/*
+# private configs
+/command-tests/composite/conf/*.xpl

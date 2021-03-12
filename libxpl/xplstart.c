@@ -88,11 +88,6 @@ static bool _startXml(const xplStartParamsPtr params, int argc, const char **arg
 	return true;
 }
 
-static void _stopXml(void)
-{
-	xmlCleanupParser();
-}
-
 static bool _startXef(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error)
 {
 	xefStartupParams xef_params;
@@ -115,35 +110,14 @@ static bool _startXef(const xplStartParamsPtr params, int argc, const char **arg
 	return true;
 }
 
-static void _stopXef(void)
-{
-	xefShutdown();
-}
-
 static bool _startXpl(const xplStartParamsPtr params, int argc, const char **argv, xmlChar **error)
 {
-	xmlChar* conf_path;
-	char *fn_pos;
 	xplError err_code;
 
 	UNUSED_PARAM(argc);
-	if (xprIsPathAbsolute(params->config_file_name))
-		conf_path = BAD_CAST XPL_STRDUP((char*) params->config_file_name);
-	else {
-		/* argv[0] can be just "xplweb" on windows :\ */
-		fn_pos = strrchr(argv[0], XPR_PATH_DELIM);
-		if (fn_pos)
-		{
-			conf_path = (xmlChar*) XPL_MALLOC(strlen(argv[0]) + xmlStrlen(params->config_file_name) + 1);
-			strncpy((char*) conf_path, argv[0], fn_pos - argv[0] + 1);
-			conf_path[fn_pos - argv[0] + 1] = 0;
-			strcat((char*) conf_path, (char*) params->config_file_name);
-		} else
-			conf_path = BAD_CAST XPL_STRDUP((char*) params->config_file_name);
-	}
+	UNUSED_PARAM(argv);
 
-	err_code = xplInitParser(conf_path, params->verbose);
-	XPL_FREE(conf_path);
+	err_code = xplInitParser(params->verbose);
 	if (err_code != XPL_ERR_NO_ERROR)
 	{
 		if (error)
@@ -151,11 +125,6 @@ static bool _startXpl(const xplStartParamsPtr params, int argc, const char **arg
 		return false;
 	}
 	return true;
-}
-
-static void _stopXpl(void)
-{
-	xplDoneParser();
 }
 
 typedef struct _StartStopStep
@@ -167,9 +136,9 @@ typedef struct _StartStopStep
 static StartStopStep start_stop_steps[] =
 {
 	{ _startXpr, _stopXpr },
-	{ _startXml, _stopXml },
-	{ _startXef, _stopXef },
-	{ _startXpl, _stopXpl }
+	{ _startXml, xmlCleanupParser },
+	{ _startXef, xefShutdown },
+	{ _startXpl, xplDoneParser }
 };
 #define START_STOP_STEP_COUNT (sizeof(start_stop_steps) / sizeof(start_stop_steps[0]))
 
@@ -210,6 +179,5 @@ void xplShutdownEngine()
 const xplStartParams xplDefaultStartParams =
 {
 	.xpr_start_flags = XPR_STARTSTOP_EVERYTHING,
-	.config_file_name = BAD_CAST "xpl.xml",
 	.verbose = false
 };

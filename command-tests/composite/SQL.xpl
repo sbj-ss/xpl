@@ -5,6 +5,19 @@
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl" xmlns:ns-a="http://a.example.com">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
+  
+  <xpl:choose>
+    <xpl:when>
+      <xpl:test><xpl:file-exists file="conf/DB.xpl"/>()</xpl:test>
+       <xpl:include select="/Root/node()" file="conf/DB.xpl"/>
+    </xpl:when>
+    <xpl:otherwise>
+      <xpl:debug-print severity="warning">conf/DB.xpl not found, not running :sql tests</xpl:debug-print>
+      <xpl:fatal>
+        <Root>no conf/DB.xpl, tests skipped</Root>
+      </xpl:fatal>
+    </xpl:otherwise>
+  </xpl:choose>
 
   <MustSucceed name="pass/defaults">
     <Input>
@@ -381,5 +394,8 @@
   </MustFail>
   
   <xpl:db-garbage-collect/>
+  <xpl:set-sa-mode password="1111111"/>
+  <xpl:remove-db name="pg-xpl-test"/>
+  <xpl:set-sa-mode enable="false"/>
   <Summary/>
 </Root>

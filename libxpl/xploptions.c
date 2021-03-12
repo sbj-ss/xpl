@@ -6,7 +6,6 @@
 #include <libxpl/xpltree.h>
 #include <stdint.h>
 
-int cfgCheckDbOnStartup;
 int cfgCheckSAMode;
 xmlChar *cfgDebugSaveFile;
 xmlChar *cfgDefaultEncoding;
@@ -60,12 +59,6 @@ typedef enum {
 	CFG_TYPE_DEFERRED /* waiting until a command registers it and decodes */
 } xplCfgValueType;
 
-typedef enum {
-	CFG_STATE_UNASSIGNED,
-	CFG_STATE_ASSIGNED,
-	CFG_STATE_DEFAULT
-} xplCfgState;
-
 #define CFG_OPTION_IS_PASSWORD 0x01
 #define CFG_OPTION_STORED_AS_HASH 0x02
 #define CFG_OPTION_RESTART_REQUIRED 0x04
@@ -78,18 +71,12 @@ typedef struct _xplConfigEntry
 	xmlChar *name;
 	void *default_value;
 	int options;
-	xplCfgState state;
 } xplConfigEntry, *xplConfigEntryPtr;
 
 xplConfigEntry config_entries[] =
 {
 /* cfg_type, value_ptr, name, default_value */
 	{
-		.cfg_type = CFG_TYPE_BOOL,
-		.value_ptr = &cfgCheckDbOnStartup,
-		.name = BAD_CAST "CheckDbOnStartup",
-		.default_value = (void*) DEFAULT_CHECK_DB_ON_STARTUP
-	}, {
 		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgCheckSAMode,
 		.name = BAD_CAST "CheckSAMode",
@@ -338,45 +325,6 @@ int xplGetBooleanValue(xmlChar* str)
 
 #define VOID_PTR_TO_INT(x) ((int) (((uintptr_t) (x)) & UINTPTR_MAX))
 
-static void xplReadOption(xplConfigEntryPtr opt, xmlChar *value)
-{
-	int int_value = 0;
-
-	if (opt->options & CFG_OPTION_DEPRECATED)
-	{
-		xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "Option \"%s\" is deprecated. Setting it has no effect.", opt->name);
-		return;
-	}
-	switch (opt->cfg_type)
-	{
-		case CFG_TYPE_STRING:
-			*((xmlChar**) opt->value_ptr) = BAD_CAST XPL_STRDUP((char*) value);
-			break;
-		case CFG_TYPE_INT:
-			if (sscanf((char*) value, "%d", (int*) opt->value_ptr) != 1)
-			{
-				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "\"%s\" is not a valid integer value. Setting config option \"%s\" to its default value \"%d\"\n",
-					value, opt->name, VOID_PTR_TO_INT(opt->default_value));
-				*((int*) opt->value_ptr) = VOID_PTR_TO_INT(opt->default_value);
-			}
-			break;
-		case CFG_TYPE_BOOL:
-			int_value = xplGetBooleanValue(value);
-			if (int_value == -1)
-			{
-				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "\"%s\" is not a valid boolean value. Setting config option \"%s\" to its default value \"%d\"\n",
-					value, opt->name, VOID_PTR_TO_INT(opt->default_value));
-				*((int*) opt->value_ptr) = VOID_PTR_TO_INT(opt->default_value);
-			} else
-				*((int*) opt->value_ptr) = int_value;
-			break;
-		default:
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
-			return;
-	}
-	opt->state = CFG_STATE_ASSIGNED;
-}
-
 static void xplAssignDefaultToOption(xplConfigEntryPtr opt)
 {
 	if (!opt || !opt->value_ptr)
@@ -396,25 +344,10 @@ static void xplAssignDefaultToOption(xplConfigEntryPtr opt)
 		default:
 			return;
 	}
-	opt->state = CFG_STATE_DEFAULT;
 }
 
-void xplAssignDefaultsToAllOptions(void)
+bool xplInitOptions()
 {
-	unsigned int i;
-
-	for (i = 0; i < CONFIG_ENTRIES_COUNT; i++)
-	{
-		if (config_entries[i].state == CFG_STATE_UNASSIGNED)
-			xplAssignDefaultToOption(&config_entries[i]);
-	}
-}
-
-int xplReadOptions(xmlNodePtr opt_root)
-{
-	xmlNodePtr cur;
-	xmlChar *opt_name;
-	xplConfigEntryPtr opt;
 	unsigned int i;
 
 	if (config_entries_hash)
@@ -423,34 +356,9 @@ int xplReadOptions(xmlNodePtr opt_root)
 
 	for (i = 0; i < CONFIG_ENTRIES_COUNT; i++)
 	{
-		config_entries[i].state = CFG_STATE_UNASSIGNED;
 		xmlHashAddEntry(config_entries_hash, config_entries[i].name, &config_entries[i]);
+		xplAssignDefaultToOption(&config_entries[i]);
 	}
-	cur = opt_root->children;
-	while (cur)
-	{
-		if (cur->type == XML_ELEMENT_NODE)
-		{
-			if (!xmlStrcmp(cur->name, BAD_CAST "Option"))
-			{
-				opt_name = xmlGetNoNsProp(cur, BAD_CAST "name");
-				if (opt_name)
-				{
-					opt = (xplConfigEntryPtr) xmlHashLookup(config_entries_hash, opt_name);
-					if (opt)
-						xplReadOption(opt, cur->children?cur->children->content:NULL);
-					else
-						xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "unknown config option \"%s\" (line %d), ignored\n", opt_name, cur->line);
-					XPL_FREE(opt_name);
-				} else
-					xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "missing option name in config file (line %d), ignored\n", cur->line);
-			} else
-				xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "unknown node \"%s\" in Options section in config file (line %d), ignored", cur->name, cur->line);
-		}
-		cur = cur->next;
-	}
-	xplAssignDefaultsToAllOptions();
-	/* implication */
 	if (cfgStackTrace)
 		cfgErrorsToConsole = 1;
 	if (cfgProxyServer && *cfgProxyServer)
@@ -550,8 +458,6 @@ xmlNodePtr xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showPasswo
 			default:
 				DISPLAY_INTERNAL_ERROR_MESSAGE();
 		}
-		if (config_entries[i].state == CFG_STATE_DEFAULT)
-			xmlNewProp(cur, BAD_CAST "default", BAD_CAST "true");
 		if (config_entries[i].options & CFG_OPTION_IS_PASSWORD)
 			xmlNewProp(cur, BAD_CAST "ispassword", BAD_CAST "true");
 		if (config_entries[i].options & CFG_OPTION_RESTART_REQUIRED)

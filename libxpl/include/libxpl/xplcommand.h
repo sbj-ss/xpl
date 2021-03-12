@@ -162,7 +162,7 @@ typedef struct _xplExternalCommands
 
 typedef xplExternalCommandsPtr (*GetCommandsFunc)(void);
 
-typedef enum _xplModuleCmdResult
+typedef enum _xplLoadModuleResult
 {
 	XPL_MODULE_CMD_OK = 0,
 	XPL_MODULE_CMD_MODULE_NOT_FOUND = -1,
@@ -179,11 +179,11 @@ typedef enum _xplModuleCmdResult
 	XPL_MODULE_CMD_WRONG_PARAMS = -12,
 	XPL_MODULE_CMD_PARAM_NAME_CLASH = -13,
 	XPL_MODULE_CMD_PARAM_DICT_NAME_CLASH = -14
-} xplModuleCmdResult;
+} xplLoadModuleResult;
 
 XPLPUBFUN bool XPLCALL
 	xplInitCommands(void);
-XPLPUBFUN xplModuleCmdResult XPLCALL
+XPLPUBFUN xplLoadModuleResult XPLCALL
 	xplRegisterCommand(const xmlChar* name, xplCommandPtr cmd, xmlChar **error);
 XPLPUBFUN void XPLCALL
 	xplUnregisterCommand(const xmlChar* name);
@@ -208,9 +208,9 @@ XPLPUBFUN void XPLCALL
 XPLPUBFUN xmlXPathObjectPtr XPLCALL
 	xplSelectNodes(xplCommandInfoPtr commandInfo, xmlNodePtr src, xmlChar *expr);
 
-XPLPUBFUN xplModuleCmdResult XPLCALL
+XPLPUBFUN bool XPLCALL
 	xplLoadableModulesInit(void);
-XPLPUBFUN xplModuleCmdResult XPLCALL
+XPLPUBFUN xplLoadModuleResult XPLCALL
 	xplLoadModule(xmlChar *name, xmlChar **error_data);
 XPLPUBFUN void XPLCALL
 	xplUnloadModule(const xmlChar *name);

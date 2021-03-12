@@ -29,7 +29,7 @@ typedef enum _xplError
 	XPL_ERR_DOC_NOT_CREATED = -2,
 	XPL_ERR_NO_PARSER = -3,
 	XPL_ERR_INVALID_INPUT = -4,
-	XPL_ERR_NO_CONFIG_FILE = -5,
+	// -5 is unused
 	XPL_ERR_NOT_YET_REACHED = -6
 } xplError;
 
@@ -67,6 +67,7 @@ struct _xplDocument
 	xmlNodeSetPtr landing_point_path;	/* xmlNodePtr[] from landing point to doc root */
 	xplDocumentPtr parent;				/* spawning document */
 	bool async;							/* child running asynchronously */
+	bool force_sa_mode;					/* for startup documents */
 	int indent_spin;					/* for :text */
 	xmlNsPtr root_xpl_ns;				/* for fast XPL namespace checking */
 	XPR_TIME profile_start_time;		/* for execution timing */
@@ -181,21 +182,7 @@ XPLPUBFUN xplGetAppTypeFunc XPLCALL
 XPLPUBFUN xmlChar* XPLCALL
 	xplGetAppType(void);
 
-/* This function uses the config file path set by xplInitParser.
- * It should only be called after the parser initialization to RE-read the config if it's changed externally.
- */
-XPLPUBFUN bool XPLCALL
-	xplReadConfig(void);
-
-/* High-level functions */
-/* Init and done */
-XPLPUBFUN xplError XPLCALL
-	xplInitParser(xmlChar* cfgFile, bool verbose);
-XPLPUBFUN void XPLCALL
-	xplDoneParser(void);
-XPLPUBFUN bool XPLCALL
-	xplParserLoaded(void);
-
+/* File paths */
 XPLPUBFUN xmlChar* XPLCALL
 	xplGetDocRoot(void);
 XPLPUBFUN void XPLCALL
@@ -206,12 +193,22 @@ XPLPUBFUN xmlChar* XPLCALL
 
 /* Actual processing */
 XPLPUBFUN xplError XPLCALL
-	xplProcessFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr environment, xplSessionPtr session, xplDocumentPtr *docOut);
+	xplProcessFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aParams, xplSessionPtr aSession, xplDocumentPtr *docOut);
+XPLPUBFUN xplError XPLCALL
+	xplProcessStartupFile(xmlChar *aDocRoot, xmlChar *aFilename);
 /* Path format (e.g.)
    basePath = "d:\\Tomcat 4.1\\webapps\\ROOT"
    relativePath = "/Impulse/Developer.xpl" */
 XPLPUBFUN xplError XPLCALL
-	xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr environment, xplSessionPtr session, xplDocumentPtr *docOut);
+	xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr aParams, xplSessionPtr aSession, xplDocumentPtr *docOut);
+
+/* Init and done */
+XPLPUBFUN xplError XPLCALL
+	xplInitParser(bool verbose);
+XPLPUBFUN void XPLCALL
+	xplDoneParser(void);
+XPLPUBFUN bool XPLCALL
+	xplParserLoaded(void);
 
 #ifdef __cplusplus
 }

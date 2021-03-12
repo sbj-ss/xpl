@@ -44,7 +44,7 @@ void xplCmdLoadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	xplCmdLoadModuleParamsPtr params = (xplCmdLoadModuleParamsPtr) commandInfo->params;
 	xmlChar *error;
 	xmlNodePtr ret = NULL;
-	xplModuleCmdResult code;
+	xplLoadModuleResult code;
 
 	xplLockThreads(true);
 	code = xplLoadModule(params->name, &error);
