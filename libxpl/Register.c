@@ -111,7 +111,6 @@ static xplCommandSignature builtinCommands[] =
 	{ BAD_CAST "change-db", &xplChangeDBCommand, 0 },
 	{ BAD_CAST "get-db", &xplGetDBCommand, 0 },
 	{ BAD_CAST "get-sa-mode", &xplGetSaModeCommand, 0 },
-	{ BAD_CAST "rehash", &xplRehashCommand, 0 },
 	{ BAD_CAST "remove-db", &xplRemoveDBCommand, 0 },
 	{ BAD_CAST "restart", &xplRestartCommand, 0 },
 	{ BAD_CAST "set-option", &xplSetOptionCommand, 0 },

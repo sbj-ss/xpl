@@ -146,7 +146,6 @@ commands/AddDB.c\
 commands/ChangeDB.c\
 commands/GetDB.c\
 commands/GetSaMode.c\
-commands/Rehash.c\
 commands/RemoveDB.c\
 commands/Restart.c\
 commands/SetOption.c\

@@ -113,7 +113,6 @@ extern xplCommand xplAddDBCommand;
 extern xplCommand xplChangeDBCommand;
 extern xplCommand xplGetDBCommand;
 extern xplCommand xplGetSaModeCommand;
-extern xplCommand xplRehashCommand;
 extern xplCommand xplRemoveDBCommand;
 extern xplCommand xplRestartCommand;
 extern xplCommand xplSetOptionCommand;
