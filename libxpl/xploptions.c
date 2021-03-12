@@ -243,7 +243,7 @@ xplConfigEntry config_entries[] =
 		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgWarnOnJsonxSerializationIssues,
 		.name = BAD_CAST "WarnOnJsSerializationIssues",
-		.default_value = DEFAULT_WARN_ON_JSONX_SERIALIZATION_ISSUES
+		.default_value = (void*) DEFAULT_WARN_ON_JSONX_SERIALIZATION_ISSUES
 	}, {
 		.cfg_type = CFG_TYPE_BOOL,
 		.value_ptr = &cfgWarnOnMacroRedefinition,
