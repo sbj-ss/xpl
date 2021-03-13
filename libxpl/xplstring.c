@@ -516,10 +516,10 @@ xmlChar* xstrEnsureTrailingSlash(xmlChar *path)
 		return NULL;
 	strcpy((char*) ret, (const char*) path);
 	if (delim)
-		path[len - 1] = delim;
+		ret[len - 1] = delim;
 	else if (path[len - 1] != XPR_PATH_DELIM) {
-		path[len - 1] = XPR_PATH_DELIM;
-		path[len] = 0;
+		ret[len - 1] = XPR_PATH_DELIM;
+		ret[len] = 0;
 	}
 
 	return ret;
@@ -533,21 +533,21 @@ void xstrComposeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar *
 	if ((fn = BAD_CAST strrchr((const char*) relativePath, '/')))
 	{
 		fn++;
-		path = (xmlChar*) XPL_MALLOC(xmlStrlen(basePath) + (fn - relativePath) + 1);
-		*normalizedPath = path;
+		*normalizedPath = path = BAD_CAST XPL_MALLOC(base_path_len + (fn - relativePath) + 2);
 		if ((basePath[base_path_len - 1] != XPR_PATH_DELIM) && (basePath[base_path_len - 1] != XPR_PATH_INVERSE_DELIM))
 		{
-			strcpy((char*) path, (char*) basePath);
+			memcpy(path, basePath, base_path_len);
 			path += base_path_len;
 		} else {
-			strncpy((char*) path, (char*) basePath, base_path_len - 1);
+			memcpy(path, basePath, base_path_len - 1);
 			path += base_path_len - 1;
 		}
 		*path++ = XPR_PATH_DELIM;
-		strncpy((char*) path, (char*) relativePath, fn - relativePath);
+		memcpy(path, relativePath, fn - relativePath);
+		path[fn - relativePath] = 0;
 	} else {
 		fn = relativePath;
-		path = *normalizedPath = BAD_CAST XPL_STRDUP((char*) basePath);
+		*normalizedPath = path = xstrEnsureTrailingSlash(basePath);
 	}
 	if (path)
 		xprConvertSlashes(path);
