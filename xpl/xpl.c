@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
 
 	/* process real document */
 	LEAK_DETECTION_START();
-	err_code = xplProcessFile(app_path, in_file, env, session, &doc);
+	err_code = xplProcessFileEx(app_path, in_file, env, session, &doc);
 	if (doc->document && !xplSaveXmlDocToFile(doc->document, out_file, encoding, XML_SAVE_FORMAT))
 	{
 		fprintf(stderr, "can't save output file '%s': %s\n", out_file, strerror(errno));
