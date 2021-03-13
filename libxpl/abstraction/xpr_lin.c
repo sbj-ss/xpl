@@ -147,6 +147,13 @@ xmlChar* xprGetProgramPath(void)
     return ret;
 }
 
+xmlChar *xprRealPath(xmlChar *path)
+{
+	char ret[PATH_MAX + 1];
+
+	return BAD_CAST XPL_STRDUP(realpath((char*) path, ret));
+}
+
 /* sync */
 bool xprMutexInit(XPR_MUTEX *m)
 {
