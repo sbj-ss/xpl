@@ -499,6 +499,32 @@ size_t xstrBase64Decode (const char *data_buf, size_t dataLength, char *result, 
 	return len;
 }
 
+xmlChar* xstrEnsureTrailingSlash(xmlChar *path)
+{
+	size_t len;
+	xmlChar delim = 0, *ret;
+
+	if (!path || *!path)
+		return NULL;
+
+	len = xmlStrlen(path);
+	if (path[len - 1] == XPR_PATH_INVERSE_DELIM)
+		delim = XPR_PATH_DELIM;
+	else if (path[len - 1] != XPR_PATH_DELIM)
+		len++;
+	if (!(ret = (xmlChar*) XPL_MALLOC(len + 1)))
+		return NULL;
+	strcpy((char*) ret, (const char*) path);
+	if (delim)
+		path[len - 1] = delim;
+	else if (path[len - 1] != XPR_PATH_DELIM) {
+		path[len - 1] = XPR_PATH_DELIM;
+		path[len] = 0;
+	}
+
+	return ret;
+}
+
 void xstrComposeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **normalizedPath, xmlChar **normalizedFilename)
 {
 	size_t base_path_len = xmlStrlen(basePath);

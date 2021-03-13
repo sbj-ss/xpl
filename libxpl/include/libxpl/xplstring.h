@@ -76,6 +76,9 @@ XPLPUBFUN int XPLCALL
 XPLPUBFUN size_t XPLCALL
 	xstrBase64Decode(const char* data_buf, size_t dataLength, char* result, size_t resultSize);
 
+/* Returns a copy */
+XPLPUBFUN xmlChar* XPLCALL
+	xstrEnsureTrailingSlash(xmlChar *path);
 /* Converts "/a/b"+"c/d" to "/a/b/c"+"d" etc */
 XPLPUBFUN void XPLCALL
 	xstrComposeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **normalizedPath, xmlChar **normalizedFilename);
