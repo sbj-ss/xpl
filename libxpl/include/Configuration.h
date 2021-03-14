@@ -105,7 +105,7 @@
 				xmlMemDisplay(stdout); \
 			} \
 		} while(0)
-	#define LEAK_DETECTION_RET_CODE(old) (__ld_leaked? 5: (old))
+	#define LEAK_DETECTION_RET_CODE(old) (__ld_leaked? 18: (old))
 	#define XPL_MALLOC(size) xmlMallocLoc((size), __FILE__, __LINE__)
 	#define XPL_REALLOC(ptr, size) xmlReallocLoc((ptr), (size), __FILE__, __LINE__)
 	#define XPL_STRDUP_NO_CHECK(str) xmlMemStrdupLoc((const char*) (str), __FILE__, __LINE__)
