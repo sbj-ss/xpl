@@ -5,7 +5,7 @@
 
 INCLUDE = -I./include -I../libxpl/include -I ../civetweb/include -I/usr/include/libxml2
 LIB = -L../libxpl
-LIBS = -lcivetweb -lxml2 -ldl -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -lpthread -lcurl -lyajl
+LIBS = -lxml2 -ldl -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -lpthread -lcurl -lyajl
 WARNINGS = -Wall -Wextra -Wmissing-prototypes -Wshadow
 FEATURES = -D_XEF_TRANSPORT_CURL -D_XEF_DB_ODBC -D_XEF_HTML_CLEANER_TIDY -D_XEF_CRYPTO_OPENSSL
 CFLAGS = -fno-common $(LIB) $(FEATURES) $(WARNINGS) -Werror $(INCLUDE)
