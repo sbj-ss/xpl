@@ -17,7 +17,7 @@ void xplCmdReturnEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	/* theoretically we can use this to get past current macro level (e.g. using id), but it's too expensive to implement. */
 	if (!commandInfo->document->current_macro)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "this command can only be called within macro definition"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "this command can only be called within macro definition"), true, true);
 		return;
 	}
 	commandInfo->document->current_macro->return_value = xplDetachChildren(commandInfo->element);

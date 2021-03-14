@@ -252,7 +252,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 			ctxt.input_str = sel->stringval;
 			ret = _splitBySingle(&ctxt);
 		} else
-			ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath expression '%s' evaluated to unsupported type", ctxt.params->select->user);
+			ret = xplCreateErrorNode(commandInfo->element, "XPath expression '%s' evaluated to unsupported type", (char*) ctxt.params->select->user);
 	} else
 		cur = commandInfo->element->children;
 	while (cur)
@@ -263,7 +263,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 			ctxt.input_str = BAD_CAST XPL_STRDUP((char*) cur->content);
 		else {
 			if (cfgWarnOnInvalidNodeType)
-				xplDisplayWarning(commandInfo->element, BAD_CAST "can only use elements, attributes and text/cdata as input");
+				xplDisplayWarning(commandInfo->element, "can only use elements, attributes and text/cdata as input");
 			continue;
 		}
 		if (!ctxt.input_str)

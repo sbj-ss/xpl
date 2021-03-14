@@ -27,24 +27,24 @@ typedef enum _xplMsgType
 XPLPUBFUN xplMsgType XPLCALL
 	xplMsgTypeFromString(const xmlChar *severity, bool allowInternalError);
 XPLPUBFUN xmlChar* XPLCALL
-	xplFormatMessage(const xmlChar *fmt, ...);
+	xplFormat(PRINTF_FORMAT_STRING(const char *fmt), ...) PRINTF_ARGS(1, 2);
 /* The same via va_list - for wrappers */
 XPLPUBFUN xmlChar* XPLCALL
-	xplVFormatMessage(const xmlChar *fmt, va_list args);
+	xplVFormatMessage(const char *fmt, va_list args);
 XPLPUBFUN void XPLCALL
-	xplDisplayMessage(xplMsgType msgType, const xmlChar *fmt, ...);
+	xplDisplayMessage(xplMsgType msgType, PRINTF_FORMAT_STRING(const char *fmt), ...) PRINTF_ARGS(2, 3);
 XPLPUBFUN void XPLCALL
-	xplDisplayWarning(const xmlNodePtr carrier, const xmlChar *fmt, ...);
+	xplDisplayWarning(const xmlNodePtr carrier, PRINTF_FORMAT_STRING(const char *fmt), ...) PRINTF_ARGS(2, 3);
 /* eats msg */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplCreateSimpleErrorNode(const xmlDocPtr doc, const xmlChar *msg, const xmlChar *src);
+	xplCreateSimpleErrorNode(const xmlDocPtr doc, const char *msg, const xmlChar *src);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplCreateErrorNode(const xmlNodePtr cmd, const xmlChar *fmt_msg, ...);
+	xplCreateErrorNode(const xmlNodePtr cmd, PRINTF_FORMAT_STRING(const char *fmt_msg), ...) PRINTF_ARGS(2, 3);
 XPLPUBFUN void XPLCALL
 	xplStackTrace(const xmlNodePtr startPoint);
 
 #define DISPLAY_INTERNAL_ERROR_MESSAGE() xplDisplayMessage(XPL_MSG_INTERNAL_ERROR,\
-	BAD_CAST "please contact the developer. Function %s, file %s, line %d",\
+	"please contact the developer. Function %s, file %s, line %d",\
 	__FUNCTION__, __FILE__, __LINE__);
 
 #define SUCCEED_OR_DIE(f) \
@@ -53,7 +53,7 @@ XPLPUBFUN void XPLCALL
 		{ \
 			xplDisplayMessage( \
 				XPL_MSG_INTERNAL_ERROR, \
-				BAD_CAST "please contact the developer. Function %s, file %s, line %d. Exiting", \
+				"please contact the developer. Function %s, file %s, line %d. Exiting", \
 				__FUNCTION__, __FILE__, __LINE__ \
 			); \
 			xprShutdownApp(7); \

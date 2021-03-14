@@ -216,12 +216,12 @@ static void getFormatsStep(IncludeContextPtr ctxt)
 	/* sanity checks */
 	if ((ctxt->params->input_format == INPUT_FORMAT_RAW) && (ctxt->params->output_format == OUTPUT_FORMAT_XML))
 	{
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot create XML output from raw input");
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, "cannot create XML output from raw input");
 		return;
 	}
 	if ((ctxt->input_source == INPUT_SOURCE_LOCAL) && (ctxt->params->input_format != INPUT_FORMAT_XML))
 	{
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "input format for local inclusion must be xml");
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, "input format for local inclusion must be xml");
 		return;
 	}
 }
@@ -237,7 +237,7 @@ static void fetchFileContent(IncludeContextPtr ctxt)
 	fd = xprSOpen(ctxt->params->uri, O_BINARY | O_RDONLY, _SH_DENYNO, 0);
 	if (fd == -1)
 	{
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot open file \"%s\"", ctxt->params->uri);
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, "cannot open file \"%s\"", ctxt->params->uri);
 		return;
 	}
 	fstat(fd, &stat); /* stat32/stat64 depending on the platform */
@@ -246,7 +246,7 @@ static void fetchFileContent(IncludeContextPtr ctxt)
 	ctxt->content = BAD_CAST file_content;
 	if (!file_content)
 	{
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "insufficient memory");
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, "insufficient memory");
 		return;
 	}
 	ctxt->content_size = file_size;
@@ -254,7 +254,7 @@ static void fetchFileContent(IncludeContextPtr ctxt)
 	{
 		if ((num_read = read(fd, file_content, file_size > 0x10000? 0x10000: file_size)) == -1)
 		{
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot read from file \"%s\"", ctxt->params->uri);
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, "cannot read from file \"%s\"", ctxt->params->uri);
 			ctxt->content = NULL;
 			ctxt->content_size = 0;
 			XPL_FREE(file_content);
@@ -283,14 +283,14 @@ static void fetchXTPContent(IncludeContextPtr ctxt)
 	} else {
 		if (params.error)
 		{
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "fetch error \"%s\"", params.error);
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, "fetch error \"%s\"", params.error);
 			XPL_FREE(params.error);
 		} else
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "unknown fetch error");
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, "unknown fetch error");
 	}
 	xefFetchParamsClear(&params);
 #else
-	ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "remote transport support not compiled in");
+	ctxt->error = xplCreateErrorNode(ctxt->command_element, "remote transport support not compiled in");
 #endif
 }
 
@@ -372,13 +372,13 @@ static void updateCtxtEncoding(IncludeContextPtr ctxt)
 	ctxt->encoding = fastDetectEncoding((char*) ctxt->content, ctxt->content_size);
 	if (ctxt->encoding == XSTR_ENC_UNKNOWN)
 	{
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "unable to determine content encoding automatically");
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, "unable to determine content encoding automatically");
 		return;
 	}
 	if (ctxt->encoding > XSTR_ENC_MAX)
 	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "unable to determine content encoding: internal error");
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, "unable to determine content encoding: internal error");
 		return;
 	}
 	XPL_FREE(ctxt->params->encoding); // was "auto"
@@ -405,7 +405,7 @@ static void recodeStep(IncludeContextPtr ctxt)
 		&recoded_size
 	) == -1)
 	{
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "error converting data from encoding \"%s\"", ctxt->params->encoding);
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, "error converting data from encoding \"%s\"", ctxt->params->encoding);
 		return;
 	}
 	XPL_FREE(ctxt->content);
@@ -444,12 +444,12 @@ static void cleanStep(IncludeContextPtr ctxt)
 	{
 		if (!checkForNonprintable(ctxt->content, ctxt->content_size))
 		{
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "input document contains characters that cannot be output as text (try hex or base64 output format)");
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, "input document contains characters that cannot be output as text (try hex or base64 output format)");
 			return;
 		}
 		if (!xstrIsValidUtf8Sample(ctxt->content, ctxt->content_size, true))
 		{
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "input document contains characters that cannot be displayed as utf-8 (try recoding or hex/base64 output format)");
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, "input document contains characters that cannot be displayed as utf-8 (try recoding or hex/base64 output format)");
 			return;
 		}
 		/* don't call xmlEncodeSpecialChars right here! */
@@ -466,12 +466,12 @@ static void cleanStep(IncludeContextPtr ctxt)
 		ctxt->content = params.clean_document;
 		ctxt->content_size = params.clean_document_size;
 	} else if (params.error) {
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "Error cleaning HTML document: \"%s\"", params.error);
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, "Error cleaning HTML document: \"%s\"", params.error);
 		XPL_FREE(params.error);
 	} else
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot clean HTML document: unknown error");
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, "cannot clean HTML document: unknown error");
 #else
-	ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "HTML document cleaning support not compiled in");
+	ctxt->error = xplCreateErrorNode(ctxt->command_element, "HTML document cleaning support not compiled in");
 #endif
 }
 
@@ -493,7 +493,7 @@ static void buildDocumentStep(IncludeContextPtr ctxt)
 			if (!ctxt->src_node)
 			{
 				error_txt = xstrGetLastLibxmlError();
-				ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "error parsing input document: \"%s\"", error_txt);
+				ctxt->error = xplCreateErrorNode(ctxt->command_element, "error parsing input document: \"%s\"", error_txt);
 				XPL_FREE(error_txt);
 				return;
 			}
@@ -515,7 +515,7 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 	/* check select attribute */
 	if (ctxt->params->select && ctxt->params->input_format == INPUT_FORMAT_RAW)
 	{
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "cannot select nodes from non-structured source");
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, "cannot select nodes from non-structured source");
 		return;
 	}
 	if (ctxt->params->input_format == INPUT_FORMAT_RAW)
@@ -586,11 +586,11 @@ static void selectNodesStep(IncludeContextPtr ctxt)
 				}
 			}
 		} else if (sel->type != XPATH_UNDEFINED) 
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "select XPath expression \"%s\" evaluated to non-nodeset value", ctxt->params->select);
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, "select XPath expression \"%s\" evaluated to non-nodeset value", ctxt->params->select);
 		else 
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "select XPath expression \"%s\" evaluated to undef", ctxt->params->select);
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, "select XPath expression \"%s\" evaluated to undef", ctxt->params->select);
 	} else
-		ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "invalid select XPath expression \"%s\"", ctxt->params->select);
+		ctxt->error = xplCreateErrorNode(ctxt->command_element, "invalid select XPath expression \"%s\"", ctxt->params->select);
 	ctxt->ret = head;
 	if (sel)
 		xmlXPathFreeObject(sel);
@@ -618,14 +618,14 @@ static void computeRetStep(IncludeContextPtr ctxt)
 	case OUTPUT_FORMAT_BASE64:
 		if ((ctxt->content_size*4.0/3 + 4) > (size_t) SIZE_MAX)
 		{
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "content cannot be transformed to base64, resulting value is bigger than SIZE_MAX");
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, "content cannot be transformed to base64, resulting value is bigger than SIZE_MAX");
 			return;
 		}
 		encoded_size = (size_t) (ctxt->content_size*4.0/3 + 4); /* rounding down, padding and terminating zero */
 		encoded_content = (xmlChar*) XPL_MALLOC(encoded_size);
 		if (!encoded_content)
 		{
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "insufficient memory");
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, "insufficient memory");
 			return;
 		}
 		xstrBase64Encode(ctxt->content, ctxt->content_size, (char*) encoded_content, encoded_size);
@@ -636,7 +636,7 @@ static void computeRetStep(IncludeContextPtr ctxt)
 	case OUTPUT_FORMAT_HEX:
 		if (!(encoded_content = xstrBufferToHexAlloc(ctxt->content, ctxt->content_size, false)))
 		{
-			ctxt->error = xplCreateErrorNode(ctxt->command_element, BAD_CAST "insufficient memory");
+			ctxt->error = xplCreateErrorNode(ctxt->command_element, "insufficient memory");
 			return;
 		}
 		XPL_FREE(ctxt->content);

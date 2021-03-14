@@ -46,7 +46,7 @@ static xplLoadModuleResult _registerCommandParams(xplCommandPtr cmd, xmlChar **e
 			xmlHashFree(cmd->param_hash, NULL);
 			cmd->param_hash = NULL;
 			if (error)
-				*error = xplFormatMessage(BAD_CAST "duplicate parameter name '%'s", param->name);
+				*error = xplFormat("duplicate parameter name '%s'", param->name);
 			return XPL_MODULE_CMD_PARAM_NAME_CLASH;
 		}
 		for (alias = param->aliases; alias && *alias; alias++)
@@ -55,7 +55,7 @@ static xplLoadModuleResult _registerCommandParams(xplCommandPtr cmd, xmlChar **e
 				xmlHashFree(cmd->param_hash, NULL);
 				cmd->param_hash = NULL;
 				if (error)
-					*error = xplFormatMessage(BAD_CAST "duplicate alias name '%s'", *alias);
+					*error = xplFormat("duplicate alias name '%s'", *alias);
 				return XPL_MODULE_CMD_PARAM_NAME_CLASH;
 			}
 		param->value_offset = (uintptr_t) param->value_stencil - (uintptr_t) cmd->params_stencil;
@@ -209,7 +209,7 @@ static xmlChar* xplGetParamIntValue(xplCommandInfoPtr info, xplCmdParamPtr param
 
 	*((int*) ((uintptr_t) info->params + param->value_offset)) = strtol((char*) *raw_value, &end_ptr, 0);
 	if (*end_ptr)
-		return xplFormatMessage(BAD_CAST "'%s': not a valid integer", *raw_value);
+		return xplFormat("'%s': not a valid integer", *raw_value);
 	else
 		return NULL;
 }
@@ -220,7 +220,7 @@ static xmlChar* xplGetParamBoolValue(xplCommandInfoPtr info, xplCmdParamPtr para
 
 	int_value = xplGetBooleanValue(*raw_value);
 	if (int_value < 0)
-		return xplFormatMessage(BAD_CAST "'%s': not a valid boolean", *raw_value);
+		return xplFormat("'%s': not a valid boolean", *raw_value);
 	else {
 		*((bool*) ((uintptr_t) info->params + param->value_offset)) = (bool) int_value;
 		return NULL;
@@ -243,7 +243,7 @@ static xmlChar* xplGetParamDictValue(xplCommandInfoPtr info, xplCmdParamPtr para
 		dict_value++;
 	}
 	if (!dict_value->name) /* nothing matched */
-		return xplFormatMessage(BAD_CAST "'%s': not in the allowed list", *raw_value);
+		return xplFormat("'%s': not in the allowed list", *raw_value);
 	else {
 		*((int*) ((uintptr_t) info->params + param->value_offset)) = int_value;
 		return NULL;
@@ -256,15 +256,15 @@ static xmlChar* xplGetParamXPathValue(xplCommandInfoPtr info, xplCmdParamPtr par
 
 	xpath_obj = xplSelectNodes(info, info->element, *raw_value);
 	if (!xpath_obj)
-		return xplFormatMessage(BAD_CAST "invalid XPath expression '%s'", *raw_value);
+		return xplFormat("invalid XPath expression '%s'", *raw_value);
 	*((xmlXPathObjectPtr*) ((uintptr_t) info->params + param->value_offset)) = xpath_obj;
 	if (param->extra.xpath_type == XPL_CMD_PARAM_XPATH_TYPE_NODESET)
 	{
 		if (xpath_obj->type != XPATH_NODESET)
-			return xplFormatMessage(BAD_CAST "XPath query '%s' evaluated to non-nodeset type", *raw_value);
+			return xplFormat("XPath query '%s' evaluated to non-nodeset type", *raw_value);
 	} else if (param->extra.xpath_type == XPL_CMD_PARAM_XPATH_TYPE_SCALAR)
 		if (xpath_obj->type != XPATH_BOOLEAN && xpath_obj->type != XPATH_NUMBER && xpath_obj->type != XPATH_STRING)
-			return xplFormatMessage(BAD_CAST "XPath query '%s' evaluated to a non-scalar value", *raw_value);
+			return xplFormat("XPath query '%s' evaluated to a non-scalar value", *raw_value);
 	xpath_obj->user = *raw_value;
 	*raw_value = NULL;
 	return NULL;
@@ -280,10 +280,10 @@ static xmlChar* xplGetParamQNameValue(xplCommandInfoPtr info, xplCmdParamPtr par
 		case XPL_PARSE_QNAME_OK:
 			break;
 		case XPL_PARSE_QNAME_INVALID_QNAME:
-			return xplFormatMessage(BAD_CAST "invalid QName/NCName '%s'", *raw_value);
+			return xplFormat("invalid QName/NCName '%s'", *raw_value);
 		case XPL_PARSE_QNAME_UNKNOWN_NS:
 			if (!param->extra.allow_unknown_namespaces)
-				return xplFormatMessage(BAD_CAST "'%s': unknown namespace", *raw_value);
+				return xplFormat("'%s': unknown namespace", *raw_value);
 			break;
 		default:
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -320,7 +320,7 @@ static xmlChar* xplGetParamCustomPtrValue(xplCommandInfoPtr info, xplCmdParamPtr
 static xmlChar* xplGetParamNCNameValue(xplCommandInfoPtr info, xplCmdParamPtr param, xmlChar **raw_value)
 {
 	if (xmlValidateNCName(*raw_value, 0))
-		return xplFormatMessage(BAD_CAST "invalid NCName '%s'", *raw_value);
+		return xplFormat("invalid NCName '%s'", *raw_value);
 	*((xmlChar**) ((uintptr_t) info->params + param->value_offset)) = *raw_value;
 	*raw_value = NULL;
 	return NULL;
@@ -350,16 +350,16 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 	xmlNodePtr ret = NULL;
 
 	if (!command->param_hash)
-		return xplCreateErrorNode(commandInfo->element, BAD_CAST "command->param_hash is NULL");
+		return xplCreateErrorNode(commandInfo->element, "command->param_hash is NULL");
 	if (!commandInfo->params)
 		commandInfo->params = XPL_MALLOC(command->stencil_size);
 	if (!commandInfo->params)
-		return xplCreateErrorNode(commandInfo->element, BAD_CAST "out of memory");
+		return xplCreateErrorNode(commandInfo->element, "out of memory");
 	memcpy(commandInfo->params, command->params_stencil, command->stencil_size); /* set defaults */
 
 	required_params = (unsigned char*) XPL_MALLOC(command->param_count);
 	if (!required_params)
-		return xplCreateErrorNode(commandInfo->element, BAD_CAST "insufficient memory");
+		return xplCreateErrorNode(commandInfo->element, "insufficient memory");
 	memcpy(required_params, command->required_params, command->param_count);
 
 	while (attr)
@@ -369,7 +369,7 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 			if ((int) param->type < 0 || (int) param->type > XPL_CMD_PARAM_TYPE_MAX)
 			{
 				DISPLAY_INTERNAL_ERROR_MESSAGE();
-				error = xplFormatMessage(BAD_CAST "unknown parameter type '%d'", (int) param->type);
+				error = xplFormat("unknown parameter type '%d'", (int) param->type);
 			} else {
 				value_text = xplGetPropValue(attr);
 				error = value_getters[param->type](commandInfo, param, &value_text);
@@ -382,7 +382,7 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 			}
 			if (error)
 			{
-				ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s': %s", attr->name, error);
+				ret = xplCreateErrorNode(commandInfo->element, "parameter '%s': %s", attr->name, error);
 				XPL_FREE(error);
 				goto done;
 			}
@@ -392,7 +392,7 @@ xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandI
 	for (i = 0; i < command->param_count; i++)
 		if (required_params[i])
 		{
-			ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter '%s' must be specified", command->parameters[i].name);
+			ret = xplCreateErrorNode(commandInfo->element, "parameter '%s' must be specified", command->parameters[i].name);
 			goto done;
 		}
 done:
@@ -419,12 +419,12 @@ xmlNodePtr xplFillCommandInfo(xplCommandPtr command, xplCommandInfoPtr info, boo
 		if (info->element->children)
 		{
 			if (!xplCheckNodeListForText(info->element->children))
-				return xplCreateErrorNode(info->element, BAD_CAST "command content is non-text");
+				return xplCreateErrorNode(info->element, "command content is non-text");
 			info->content = xmlNodeListGetString(info->element->doc, info->element->children, 1);
 		} else
 			info->content = NULL;
 		if (!info->content && (command->flags & XPL_CMD_FLAG_REQUIRE_CONTENT))
-			return xplCreateErrorNode(info->element, BAD_CAST "command content is empty");
+			return xplCreateErrorNode(info->element, "command content is empty");
 	}
 	return NULL;
 }
@@ -552,7 +552,7 @@ xplLoadModuleResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 	prev = xmlHashLookup(loaded_modules, name);
 	if (prev)
 	{
-		ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "module %s is already loaded", name));
+		ASSIGN_ERR_DATA(xplFormat("module %s is already loaded", name));
 		return XPL_MODULE_CMD_MODULE_ALREADY_LOADED;
 	}
 	ASSIGN_ERR_DATA(NULL);
@@ -568,7 +568,7 @@ xplLoadModuleResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 	hmodule = xprLoadSharedObject(path_with_ext);
 	if (!hmodule)
 	{
-		ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "module %s not found", path_with_ext));
+		ASSIGN_ERR_DATA(xplFormat("module %s not found", path_with_ext));
 		XPL_FREE(path_with_ext);
 		return XPL_MODULE_CMD_MODULE_NOT_FOUND;
 	}
@@ -590,13 +590,13 @@ xplLoadModuleResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 	if (cmds->version > PLUGGABLE_MODULE_VERSION)
 	{
 		xprUnloadSharedObject(hmodule);
-		ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "module version (%d) is newer than the interpreter (%d)", cmds->version, PLUGGABLE_MODULE_VERSION));
+		ASSIGN_ERR_DATA(xplFormat("module version (%d) is newer than the interpreter (%d)", cmds->version, PLUGGABLE_MODULE_VERSION));
 		return XPL_MODULE_CMD_UNSUPPORTED_VERSION;
 	}
 	if (cmds->version < PLUGGABLE_MODULE_VERSION)
 	{
 		xprUnloadSharedObject(hmodule);
-		ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "module version (%d) is too old", cmds->version));
+		ASSIGN_ERR_DATA(xplFormat("module version (%d) is too old", cmds->version));
 		return XPL_MODULE_CMD_VERSION_TOO_OLD;
 	}
 	cmds->handle = (void*) hmodule;
@@ -604,13 +604,13 @@ xplLoadModuleResult xplLoadModule(xmlChar *name, xmlChar **error_data)
 	{
 		if (cmds->commands[i].magic != PLUGGABLE_MODULE_MAGIC)
 		{
-			ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "command #%d: wrong signature", i));
+			ASSIGN_ERR_DATA(xplFormat("command #%d: wrong signature", i));
 			xplUnloadModule(name);
 			return XPL_MODULE_CMD_INVALID_COMMAND_FORMAT;
 		}
 		if ((ret = xplRegisterCommand((const xmlChar*) cmds->commands[i].name, cmds->commands[i].cmd, &cmd_error)) != XPL_MODULE_CMD_OK)
 		{
-			ASSIGN_ERR_DATA(xplFormatMessage(BAD_CAST "command #%d (%s) failed to initialize: %s", i, cmds->commands[i].name, cmd_error));
+			ASSIGN_ERR_DATA(xplFormat("command #%d (%s) failed to initialize: %s", i, cmds->commands[i].name, cmd_error));
 			if (cmd_error)
 				XPL_FREE(cmd_error);
 			xplUnloadModule(name);

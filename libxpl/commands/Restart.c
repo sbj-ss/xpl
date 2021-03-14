@@ -17,7 +17,7 @@ void xplCmdRestartEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	if (!xplDocSessionGetSaMode(commandInfo->document))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "access denied"), true, true);
 		return;
 	}
 	xplLockThreads(true);

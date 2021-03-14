@@ -45,7 +45,7 @@ void xplCmdSetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (!xplDocSessionGetSaMode(commandInfo->document))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "access denied"), true, true);
 		return;
 	}
 
@@ -56,13 +56,13 @@ void xplCmdSetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			ASSIGN_RESULT(NULL, false, true);
 			break;
 		case XPL_SET_OPTION_UNKNOWN_OPTION:
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown option \"%s\"", params->name), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "unknown option \"%s\"", params->name), true, true);
 			break;
 		case XPL_SET_OPTION_INVALID_VALUE:
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid option value \"%s\"", commandInfo->content), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "invalid option value \"%s\"", commandInfo->content), true, true);
 			break;
 		case XPL_SET_OPTION_INTERNAL_ERROR:
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "internal error, please contact the developer"), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "internal error, please contact the developer"), true, true);
 			break;
 	}
 	xplLockThreads(false);

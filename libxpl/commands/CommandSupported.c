@@ -64,7 +64,7 @@ void xplCmdCommandSupportedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 	{
 		if (params->show_tags && params->tagname.ncname)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "tagname and showtags can't be used simultaneously"), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "tagname and showtags can't be used simultaneously"), true, true);
 			return;
 		}
 		tagname = params->show_tags? empty_qname: params->tagname.ncname? params->tagname: default_qname;
@@ -72,7 +72,7 @@ void xplCmdCommandSupportedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 	} else { /* specified command */
 		if (params->tagname.ncname || params->show_tags)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "name can't be used together with tagname or showtags"), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "name can't be used together with tagname or showtags"), true, true);
 			return;
 		}
 		value = BAD_CAST (xplCommandSupported(params->name)? "true": "false");

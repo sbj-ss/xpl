@@ -100,21 +100,21 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	bool free_needed = false;
 
 	if (cfgWarnOnNoExpectParam && params->expect == XPL_EXPECT_UNSPECIFIED)
-		xplDisplayWarning(commandInfo->element, BAD_CAST "no expect attribute");
+		xplDisplayWarning(commandInfo->element, "no expect attribute");
 
 	if (params->show_tags && params->tag_name.ncname)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "showtags and tagname can't be used simultaneously"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "showtags and tagname can't be used simultaneously"), true, true);
 		return;
 	}
 	if ((params->show_tags || params->tag_name.ncname) && params->delimiter)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "delimiter can't be used simultaneously with showtags or tagname"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "delimiter can't be used simultaneously with showtags or tagname"), true, true);
 		return;
 	}
 	if (params->default_value && !params->name)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "default value can be specified only for a single parameter"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "default value can be specified only for a single parameter"), true, true);
 		return;
 	}
 
@@ -150,7 +150,7 @@ void xplCmdGetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			if (values && !txt)
 			{
 				params->repeat = true;
-				ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "some param types can't be presented as string");
+				ret = xplCreateErrorNode(commandInfo->element, "some param types can't be presented as string");
 			} else if (txt)
 			{
 				ret = xmlNewDocText(commandInfo->document->document, NULL);

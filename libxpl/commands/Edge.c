@@ -147,11 +147,11 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	{
 		if (!params->name.ncname)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "missing name argument"), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "missing name argument"), true, true);
 			return;
 		}
 	} else if (params->name.ncname)	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "using name argument for this operation type makes no sense"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "using name argument for this operation type makes no sense"), true, true);
 		return;
 	}
 	/* obtain source data taking into account they can be text only */
@@ -169,7 +169,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					}
 					if (!xplCheckNodeSetForText(params->source->nodesetval))
 					{
-						ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "can't create attribute from non-text nodes"), true, true);
+						ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "can't create attribute from non-text nodes"), true, true);
 						return;
 					}
 					source_text = _flattenTextSet(params->source->nodesetval);
@@ -180,7 +180,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					source_text = xmlXPathCastToString(params->source);
 					break;
 				default:
-					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "source XPath expression '%s' evaluated to an invalid result", params->source->user), true, true);
+					ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "source XPath expression '%s' evaluated to an invalid result", (char*) params->source->user), true, true);
 					return;
 			}
 		} else
@@ -190,7 +190,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			if (!xplCheckNodeListForText(commandInfo->element->children))
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "non-text nodes inside"), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "non-text nodes inside"), true, true);
 				return;
 			}
 			source_text = xmlNodeListGetString(commandInfo->element->doc, commandInfo->element->children, 1);
@@ -217,17 +217,17 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				if (cur->type == XML_ELEMENT_NODE)
 					xplAppendChildren(cur, xplCloneNodeList(source_list, cur, cur->doc));
 				else if (cfgWarnOnInvalidNodeType)
-					xplDisplayWarning(commandInfo->element, BAD_CAST "can't add content to non-elements, destination '%s'", params->destination->user);
+					xplDisplayWarning(commandInfo->element, "can't add content to non-elements, destination '%s'", (char*) params->destination->user);
 				break;
 			case EDGE_REPLACE:
 				if (cur->type != XML_ELEMENT_NODE && cur->type != XML_TEXT_NODE && cur->type != XML_CDATA_SECTION_NODE)
 				{
 					if (cfgWarnOnInvalidNodeType)
-						xplDisplayWarning(commandInfo->element, BAD_CAST "can only replace elements and text/cdata nodes, destination '%s'", params->destination->user);
+						xplDisplayWarning(commandInfo->element, "can only replace elements and text/cdata nodes, destination '%s'", (char*) params->destination->user);
 				} else if ((commandInfo->element != cur) && !xplIsAncestor(commandInfo->element, cur))
 					xplDocDeferNodeDeletion(commandInfo->document, xplReplaceWithList(cur, xplCloneNodeList(source_list, cur, cur->doc)));
 				else if (cfgWarnOnAncestorModificationAttempt)
-					xplDisplayWarning(commandInfo->element, BAD_CAST "ancestor/self node modification attempt denied, destination '%s'", params->destination->user);
+					xplDisplayWarning(commandInfo->element, "ancestor/self node modification attempt denied, destination '%s'", (char*) params->destination->user);
 				break;
 			case EDGE_ELEMENT:
 				if (cur->type == XML_ELEMENT_NODE)
@@ -237,7 +237,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					xplAppendChildren(cur, el);
 					xplSetChildren(el, xplCloneNodeList(source_list, el, el->doc));
 				} else if (cfgWarnOnInvalidNodeType)
-					xplDisplayWarning(commandInfo->element, BAD_CAST "can't add elements to non-elements, destination '%s'", params->destination->user);
+					xplDisplayWarning(commandInfo->element, "can't add elements to non-elements, destination '%s'", (char*) params->destination->user);
 				break;
 			case EDGE_ATTRIBUTE:
 				if (cur->type == XML_ELEMENT_NODE)
@@ -248,7 +248,7 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					else
 						xmlNewProp(cur, params->name.ncname, source_text);
 				} else if (cfgWarnOnInvalidNodeType)
-					xplDisplayWarning(commandInfo->element, BAD_CAST "can't assign attributes to non-elements, destination '%s'", params->destination->user);
+					xplDisplayWarning(commandInfo->element, "can't assign attributes to non-elements, destination '%s'", (char*) params->destination->user);
 				break;
 			default:
 				DISPLAY_INTERNAL_ERROR_MESSAGE();

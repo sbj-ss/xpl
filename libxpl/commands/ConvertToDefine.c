@@ -61,7 +61,7 @@ void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr r
 				XPL_FREE(expand_attr);
 				if (expand == XPL_MACRO_EXPAND_UNKNOWN)
 				{
-					error = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid expand value '%s'", expand_attr);
+					error = xplCreateErrorNode(commandInfo->element, "invalid expand value '%s'", expand_attr);
 					xplReplaceWithList(cur, error);
 					cur = error->next;
 					continue;
@@ -75,7 +75,7 @@ void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr r
 				XPL_FREE(replace_attr);
 				if (replace == -1)
 				{
-					error = xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid replace value '%s'", replace_attr);
+					error = xplCreateErrorNode(commandInfo->element, "invalid replace value '%s'", replace_attr);
 					xplReplaceWithList(cur, error);
 					cur = error->next;
 					continue;

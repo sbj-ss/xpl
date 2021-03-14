@@ -143,7 +143,7 @@ bool xplRegisterBuiltinCommands()
 			continue;
 		if (xplRegisterCommand(builtinCommands[i].name, builtinCommands[i].command, &cmd_error) != XPL_MODULE_CMD_OK)
 		{
-			xplDisplayMessage(XPL_MSG_ERROR, BAD_CAST "command \"%s\" failed to initialize, error \"%s\"",
+			xplDisplayMessage(XPL_MSG_ERROR, "command \"%s\" failed to initialize, error \"%s\"",
 				builtinCommands[i].name, cmd_error);
 			if (cmd_error)
 				XPL_FREE(cmd_error);

@@ -61,7 +61,7 @@ void xplCmdListMacrosEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 
 	if (params->delimiter && params->tagname.ncname)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot use delimiter and tagname at the same time"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "cannot use delimiter and tagname at the same time"), true, true);
 		return;
 	}
 	if (params->delimiter)

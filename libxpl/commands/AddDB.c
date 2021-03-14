@@ -52,7 +52,7 @@ void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (!xplDocSessionGetSaMode(commandInfo->document))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "access denied"), true, true);
 		return;
 	}
 	xplLockThreads(true);
@@ -64,6 +64,6 @@ void xplCmdAddDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(NULL, false, true);
 	else
 		ASSIGN_RESULT(xplCreateErrorNode(
-			commandInfo->element, BAD_CAST "can't add database \"%s\": %s", params->name, xplDecodeDBConfigResult(cfg_result)
+			commandInfo->element, "can't add database \"%s\": %s", params->name, xplDecodeDBConfigResult(cfg_result)
 		), true, true);
 }

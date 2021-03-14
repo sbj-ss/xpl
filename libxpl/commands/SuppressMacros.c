@@ -66,7 +66,7 @@ static void _fillMacroHashFromNodeSet(xmlNodePtr source, xmlHashTablePtr target,
 			if (macro)
 				xmlHashAddEntry(target, cur->name, macro);
 		} else if (cfgWarnOnInvalidNodeType)
-			xplDisplayWarning(source, BAD_CAST "only element nodes returned by the select parameter are used");
+			xplDisplayWarning(source, "only element nodes returned by the select parameter are used");
 	}
 }
 
@@ -86,7 +86,7 @@ static xmlNodePtr _addMacroToHash(xmlChar *str, xmlHashTablePtr hash, xmlNodePtr
 		case XPL_PARSE_QNAME_UNKNOWN_NS:
 			break;
 		case XPL_PARSE_QNAME_INVALID_QNAME:
-			return xplCreateErrorNode(source, BAD_CAST "invalid qname '%s'", str);
+			return xplCreateErrorNode(source, "invalid qname '%s'", str);
 	}
 	return NULL;
 }

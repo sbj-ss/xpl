@@ -39,5 +39,5 @@ void xplCmdShutdownEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (xplDocSessionGetSaMode(commandInfo->document))
 		xprShutdownApp(params->code);
 	else
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "access denied"), true, true);
 }

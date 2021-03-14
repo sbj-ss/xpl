@@ -35,7 +35,7 @@ static xmlChar* xefCreateTransportErrorMessage(xmlChar *fmt, ...)
 	formatted = xplVFormatMessage(fmt, args);
 	if (!formatted)
 		return NULL;
-	ret = xplFormatMessage(BAD_CAST "%s: %s", formatted, sys_error);
+	ret = xplFormat("%s: %s", formatted, sys_error);
 	XPL_FREE(sys_error);
 	XPL_FREE(formatted);
 	return ret;
@@ -138,7 +138,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	if (cfgProxyServer)
 	{
 		proxyInfo.dwAccessType = WINHTTP_ACCESS_TYPE_NAMED_PROXY;
-		szProxy = (char*) xplFormatMessage(BAD_CAST "%s:%d", cfgProxyServer, cfgProxyPort?cfgProxyPort:80);
+		szProxy = (char*) xplFormat("%s:%d", cfgProxyServer, cfgProxyPort?cfgProxyPort:80);
 		xstrIconvString("utf-16le", "utf-8", (char*) szProxy, (char*) (szProxy + strlen(szProxy)), (char**) &proxyInfo.lpszProxy, NULL);
 		if (!WinHttpSetOption(hRequest, WINHTTP_OPTION_PROXY, &proxyInfo, sizeof(proxyInfo)))
 		{

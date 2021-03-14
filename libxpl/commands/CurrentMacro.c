@@ -52,7 +52,7 @@ void xplCmdCurrentMacroEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resu
 
 	if (!commandInfo->document->current_macro)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no active macros"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "no active macros"), true, true);
 		return;
 	}
 	if (params->detailed)

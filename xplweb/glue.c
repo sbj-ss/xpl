@@ -155,10 +155,10 @@ static int _fieldFound(const char *key, const char *filename, char *path, size_t
 	{
 		if (!_provideUniqueFilename(path, pathLen))
 		{
-			xplDisplayMessage(XPL_MSG_ERROR, BAD_CAST "Document root '%s' is too long to handle uploads. Max upload path len is %lu chars", doc_root, pathLen);
+			xplDisplayMessage(XPL_MSG_ERROR, "Document root '%s' is too long to handle uploads. Max upload path len is %lu chars", doc_root, pathLen);
 			return MG_FORM_FIELD_STORAGE_ABORT;
 		}
-		xplDisplayMessage(XPL_MSG_DEBUG, BAD_CAST "about to create file %s -> %s...\n", filename, path);
+		xplDisplayMessage(XPL_MSG_DEBUG, "about to create file %s -> %s...\n", filename, path);
 		if (!(ctxt->file_name = BAD_CAST XPL_STRDUP(filename)))
 		{
 			ctxt->oom = true;
@@ -309,7 +309,7 @@ xmlChar* serializeDoc(xmlDocPtr doc, xmlChar *encoding, OutputMethodDescPtr om, 
 			*size = xmlBufferLength(buf);
 			ret = xmlBufferDetach(buf);
 		} else {
-			ret = xplFormatMessage(BAD_CAST "<Error>Cannot save document using the specified encoding \"%s\"</Error>", encoding);
+			ret = xplFormat("<Error>Cannot save document using the specified encoding \"%s\"</Error>", encoding);
 			*size = xmlStrlen(ret);
 		}
 		xmlBufferFree(buf);
@@ -323,7 +323,7 @@ xmlChar* serializeDoc(xmlDocPtr doc, xmlChar *encoding, OutputMethodDescPtr om, 
 				ret = txt;
 				*size = xmlStrlen(txt);
 			} else if (xstrIconvString((char*) encoding, "utf-8", (char*) txt, (char*) txt + xmlStrlen(txt), (char**) &ret, size) == -1) {
-				ret = xplFormatMessage(BAD_CAST "Cannot save document using the specified encoding \"%s\"", encoding);
+				ret = xplFormat("Cannot save document using the specified encoding \"%s\"", encoding);
 				*size = xmlStrlen(ret);
 			} else /* txt and size set in xstrIconvString() */
 				XPL_FREE(txt);

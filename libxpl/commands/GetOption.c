@@ -70,7 +70,7 @@ void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (params->show_passwords && !xplDocSessionGetSaMode(commandInfo->document))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "access denied"), true, true);
 		return;
 	}
 
@@ -79,7 +79,7 @@ void xplCmdGetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		value = xplGetOptionValue(params->name, params->show_passwords, &found);
 		if (!found)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "option '%s' not found", params->name), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "option '%s' not found", params->name), true, true);
 			return;
 		}
 		ret = xmlNewDocText(commandInfo->element->doc, NULL);

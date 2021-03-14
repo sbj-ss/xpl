@@ -29,7 +29,7 @@ xmlChar* xplExpectTypeGetter(xplCommandInfoPtr commandInfo, const xmlChar *expec
 		return BAD_CAST XPL_STRDUP("xplExpectTypeGetter: result is NULL");
 	*result = xplExpectTypeFromString(expect);
 	if (*result == XPL_EXPECT_UNKNOWN)
-		return xplFormatMessage(BAD_CAST "unknown expect type '%s'", expect);
+		return xplFormat("unknown expect type '%s'", expect);
 	return NULL;
 }
 
@@ -143,7 +143,7 @@ xmlChar* xplParamTypeMaskGetter(xplCommandInfoPtr info, const xmlChar *mask, int
 {
 	UNUSED_PARAM(info);
 	if ((*result = xplParamTypeMaskFromString(mask)) == -1)
-		return xplFormatMessage(BAD_CAST "invalid type mask '%s'", mask);
+		return xplFormat("invalid type mask '%s'", mask);
 	return NULL;
 }
 

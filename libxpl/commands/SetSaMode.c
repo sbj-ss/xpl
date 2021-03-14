@@ -49,12 +49,12 @@ void xplCmdSetSaModeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (params->enable && !params->password)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "password is required to enable the SA mode"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "password is required to enable the SA mode"), true, true);
 		return;
 	}
 
 	if (xplDocSessionSetSaMode(commandInfo->document, params->local, params->enable, params->password))
 		ASSIGN_RESULT(NULL, false, true);
 	else
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "the password is incorrect"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "the password is incorrect"), true, true);
 }

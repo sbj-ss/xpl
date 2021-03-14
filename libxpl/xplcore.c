@@ -119,10 +119,10 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *docPath, xmlChar *filename, xp
 		xplDocumentFree(ret);
 		return NULL;
 	}
-	full_name = xplFormatMessage(BAD_CAST "%s%s", ret->path, filename);
+	full_name = xplFormat("%s%s", ret->path, filename);
 	if (!xprCheckFilePresence(full_name, false))
 	{
-		ret->error = xplFormatMessage(BAD_CAST "file '%s' not found", full_name);
+		ret->error = xplFormat("file '%s' not found", full_name);
 		XPL_FREE(full_name);
 		return ret;
 	}
@@ -176,7 +176,7 @@ xplDocumentPtr xplDocumentCreateChild(xplDocumentPtr parent, xmlNodePtr parentNo
 	if (!(ret->document = xmlNewDoc(BAD_CAST "1.0")))
 		goto error;
 	if (ret->filename)
-		ret->document->URL = xplFormatMessage(BAD_CAST "[FORK] %s%s", ret->path, ret->filename);
+		ret->document->URL = xplFormat("[FORK] %s%s", ret->path, ret->filename);
 	else
 		ret->document->URL = BAD_CAST XPL_STRDUP("[FORK]");
 	if (!ret->document->URL)
@@ -313,7 +313,7 @@ static XPR_DECLARE_THREAD_ROUTINE(xplDocThreadWrapper, p)
 	err = xplDocumentApply(doc);
 	if ((err != XPL_ERR_NO_ERROR) && (err != XPL_ERR_FATAL_CALLED))
 		/* this shouldn't happen, but… */
-		content = xplCreateErrorNode(doc->landing_point_path->nodeTab[0], BAD_CAST "error processing child document: \"%s\"", xplErrorToString(err));
+		content = xplCreateErrorNode(doc->landing_point_path->nodeTab[0], "error processing child document: \"%s\"", xplErrorToString(err));
 	else {
 		/* root element is a stub */
 		xplMergeDocOldNamespaces(doc->document, doc->landing_point_path->nodeTab[0]->doc);
@@ -325,7 +325,7 @@ static XPR_DECLARE_THREAD_ROUTINE(xplDocThreadWrapper, p)
 		xplDocDeferNodeDeletion(doc->parent, xplReplaceWithList(doc->landing_point_path->nodeTab[0], content));
 	else {
 		if (cfgWarnOnDeletedThreadLandingPoint)
-			xplDisplayWarning(xplFirstElementNode(doc->document->children), BAD_CAST "thread landing point deleted");
+			xplDisplayWarning(xplFirstElementNode(doc->document->children), "thread landing point deleted");
 		xmlFreeNodeList(content);
 	}
 	SUCCEED_OR_DIE(xprMutexRelease(&doc->parent->thread_landing_lock));
@@ -383,7 +383,7 @@ void xplDiscardSuspendedThreadDocs(xplDocumentPtr doc)
 
 	pool_size = xmlBufferLength(doc->suspended_thread_docs) / sizeof(xplDocumentPtr);
 	if (pool_size && cfgWarnOnNeverLaunchedThreads)
-		xplDisplayWarning(xplFirstElementNode(doc->document->children), BAD_CAST "%d suspended threads were never launched", pool_size);
+		xplDisplayWarning(xplFirstElementNode(doc->document->children), "%d suspended threads were never launched", (int) pool_size);
 	for (i = 0, docs = (xplDocumentPtr*) xmlBufferContent(doc->suspended_thread_docs); i < pool_size; i++)
 		xplDocumentFree(docs[i]);
 	xmlBufferEmpty(doc->suspended_thread_docs);
@@ -559,7 +559,7 @@ static xmlNodePtr _selectAndCopyNodes(
 	if (!sel)
 	{
 		*ok = false;
-		return xplCreateErrorNode(parent, BAD_CAST "invalid select XPath expression '%s'", select);
+		return xplCreateErrorNode(parent, "invalid select XPath expression '%s'", select);
 	}
 	if ((sel->type == XPATH_NODESET) && sel->nodesetval)
 	{
@@ -573,7 +573,7 @@ static xmlNodePtr _selectAndCopyNodes(
 		head->content = xmlXPathCastToString(sel);
 	} else {
 		*ok = false;
-		head = xplCreateErrorNode(parent, BAD_CAST "select XPath expression '%s' evaluated to undef", select);
+		head = xplCreateErrorNode(parent, "select XPath expression '%s' evaluated to undef", select);
 	}
 	xmlXPathFreeObject(sel);
 	return head;
@@ -858,19 +858,19 @@ xmlNodePtr xplReplaceContentEntries(
 					}
 					xmlXPathFreeObject(sel);
 				} else  /* if sel */
-					new_content = xplCreateErrorNode(cur, BAD_CAST "invalid select XPath expression \"%s\"", select_attr);
+					new_content = xplCreateErrorNode(cur, "invalid select XPath expression \"%s\"", select_attr);
 				if (content_cache)
 					xmlHashAddEntry(content_cache, select_attr, new_content? new_content: empty_content_marker);
 			}
 			if (new_content == empty_content_marker)
 				new_content = NULL;
 			if (required && !new_content)
-				xplDisplayWarning(oldElement, BAD_CAST "missing macro content '%s'", select_attr);
+				xplDisplayWarning(oldElement, "missing macro content '%s'", select_attr);
 			XPL_FREE(select_attr);
 		} else { /* if (select_attr) */
 			new_content = xplCloneNodeList(oldElement->children, cur->parent, oldElement->doc);
 			if (required && !new_content)
-				xplDisplayWarning(oldElement, BAD_CAST "missing macro content");
+				xplDisplayWarning(oldElement, "missing macro content");
 		}
 		if (ret == cur)
 			ret = new_content; /* <xpl:define name="A"><xpl:content/></xpl:define> */
@@ -984,7 +984,7 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 	doc->macro_nesting_level++;
 	if (doc->macro_nesting_level > cfgMaxRecursionDepth)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(element, BAD_CAST "recursion depth exhausted (infinite loop in macro?..)"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(element, "recursion depth exhausted (infinite loop in macro?..)"), true, true);
 		return;
 	}
 	prev_macro = doc->current_macro;
@@ -993,7 +993,7 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 	doc->current_macro = macro;
 	macro->times_called++;
 	if (element->children && cfgWarnOnExpandedMacroContent && (macro->expansion_state == XPL_MACRO_EXPANDED))
-		xplDisplayWarning(element, BAD_CAST "child nodes present in expanded macro caller");
+		xplDisplayWarning(element, "child nodes present in expanded macro caller");
 	switch (macro->expansion_state)
 	{
 	case XPL_MACRO_EXPAND_ALWAYS:
@@ -1042,7 +1042,7 @@ void _xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr res
 	if (!cmd)
 	{
 		if (cfgWarnOnUnknownCommand && doc->expand)
-			xplDisplayWarning(element, BAD_CAST "unknown command");
+			xplDisplayWarning(element, "unknown command");
 		xplNodeListApply(doc, element->children, result);
 		return;
 	}
@@ -1095,7 +1095,7 @@ xplMacroPtr xplAddMacro(
 	if (!replace || (replace && cfgWarnOnMacroRedefinition))
 		prev_def = xplMacroLookupByQName(macro->parent, qname);
 	if (replace && cfgWarnOnMacroRedefinition && prev_def)
-		xplDisplayWarning(macro, BAD_CAST "macro '%s%s%s' redefined, previous line: %d",
+		xplDisplayWarning(macro, "macro '%s%s%s' redefined, previous line: %d",
 			qname.ns && qname.ns->href? qname.ns->href: BAD_CAST "",
 			qname.ns && qname.ns->href? ":": "",
 			qname.ncname, prev_def->line);
@@ -1171,10 +1171,10 @@ static void xplCheckRootNs(xplDocumentPtr doc, xmlNodePtr root)
 	if (cfgWarnOnInvalidXplNsUri)
 	{
 		if (doc->root_xpl_ns)
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "XPL namespace uri \"%s\" differs from configured \"%s\", document \"%s\"",
+			xplDisplayMessage(XPL_MSG_WARNING, "XPL namespace uri \"%s\" differs from configured \"%s\", document \"%s\"",
 			doc->root_xpl_ns->href, cfgXplNsUri, doc->document->URL);
 		else
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "Cannot find XPL namespace on the root document element, document \"%s\"", doc->document->URL);
+			xplDisplayMessage(XPL_MSG_WARNING, "Cannot find XPL namespace on the root document element, document \"%s\"", doc->document->URL);
 	}
 }
 
@@ -1229,7 +1229,7 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 	if (cfgDebugSaveFile && !doc->parent) /* saving derived documents makes no sense */
 	{
 		if (!xplSaveXmlDocToFile(doc->document, cfgDebugSaveFile, (char*) cfgDefaultEncoding, XML_SAVE_FORMAT))
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "Cannot save debug output to \"%s\", check that the file location exists and is writable", cfgDebugSaveFile);
+			xplDisplayMessage(XPL_MSG_WARNING, "Cannot save debug output to \"%s\", check that the file location exists and is writable", cfgDebugSaveFile);
 	}
 	return ret;
 }

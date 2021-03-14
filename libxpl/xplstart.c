@@ -121,7 +121,7 @@ static bool _startXpl(const xplStartParamsPtr params, int argc, const char **arg
 	if (err_code != XPL_ERR_NO_ERROR)
 	{
 		if (error)
-			*error = xplFormatMessage(BAD_CAST "error starting interpreter: \"%s\"", xplErrorToString(err_code));
+			*error = xplFormat("error starting interpreter: \"%s\"", xplErrorToString(err_code));
 		return false;
 	}
 	return true;

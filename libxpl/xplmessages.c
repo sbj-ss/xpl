@@ -24,7 +24,7 @@ xplMsgType xplMsgTypeFromString(const xmlChar *severity, bool allowInternalError
 	return XPL_MSG_UNKNOWN;
 }
 
-xmlChar* xplFormatMessage(const xmlChar *fmt, ...)
+xmlChar* xplFormat(const char *fmt, ...)
 {
 	xmlChar *ret;
 	size_t ret_size;
@@ -39,7 +39,7 @@ xmlChar* xplFormatMessage(const xmlChar *fmt, ...)
 	return ret;
 }
 
-xmlChar* xplVFormatMessage(const xmlChar *fmt, va_list args)
+xmlChar* xplVFormatMessage(const char *fmt, va_list args)
 {
 	xmlChar *ret;
 	size_t ret_size;
@@ -52,7 +52,7 @@ xmlChar* xplVFormatMessage(const xmlChar *fmt, va_list args)
 	return ret;
 }
 
-void xplDisplayMessage(xplMsgType msgType, const xmlChar *fmt, ... )
+void xplDisplayMessage(xplMsgType msgType, const char *fmt, ... )
 {
 	char *encoded_msg;
 	xmlChar *msg;
@@ -118,7 +118,7 @@ void xplDisplayMessage(xplMsgType msgType, const xmlChar *fmt, ... )
 	XPL_FREE(msg);
 }
 
-void xplDisplayWarning(const xmlNodePtr carrier, const xmlChar *fmt, ...)
+void xplDisplayWarning(const xmlNodePtr carrier, const char *fmt, ...)
 {
 	va_list arg_list;
 	xmlChar *inner_message;
@@ -128,7 +128,7 @@ void xplDisplayWarning(const xmlNodePtr carrier, const xmlChar *fmt, ...)
 
 	xplDisplayMessage(
 		XPL_MSG_WARNING,
-		BAD_CAST "%s%s%s: %s. file '%s', line %d",
+		"%s%s%s: %s. file '%s', line %d",
 		(carrier->ns && carrier->ns->prefix)? (char*) carrier->ns->prefix: "",
 		(carrier->ns && carrier->ns->prefix)? ":": "",
 		carrier->name,
@@ -141,7 +141,7 @@ void xplDisplayWarning(const xmlNodePtr carrier, const xmlChar *fmt, ...)
 }
 
 
-xmlNodePtr xplCreateSimpleErrorNode(const xmlDocPtr doc, const xmlChar *msg, const xmlChar *src)
+xmlNodePtr xplCreateSimpleErrorNode(const xmlDocPtr doc, const char *msg, const xmlChar *src)
 {
 	xmlNodePtr txt, ret;
 	ret = xmlNewDocNode(doc, NULL, ERROR_NODE_NAME, NULL);
@@ -156,7 +156,7 @@ xmlNodePtr xplCreateSimpleErrorNode(const xmlDocPtr doc, const xmlChar *msg, con
 	return ret;
 }
 
-xmlNodePtr xplCreateErrorNode(const xmlNodePtr cmd, const xmlChar *fmt, ...)
+xmlNodePtr xplCreateErrorNode(const xmlNodePtr cmd, const char *fmt, ...)
 {
 	xmlNodePtr ret;
 	xmlChar *orig_msg, *full_msg;
@@ -164,8 +164,8 @@ xmlNodePtr xplCreateErrorNode(const xmlNodePtr cmd, const xmlChar *fmt, ...)
 
 	va_start(arg_list, fmt);
 	orig_msg = xplVFormatMessage(fmt, arg_list);
-	full_msg = xplFormatMessage(
-		BAD_CAST "%s%s%s: %s (file \"%s\", line %d)",
+	full_msg = xplFormat(
+		"%s%s%s: %s (file \"%s\", line %d)",
 		cmd->ns && cmd->ns->prefix? cmd->ns->prefix: BAD_CAST "",
 		cmd->ns && cmd->ns->prefix? ":": "",
 		cmd->name,
@@ -173,9 +173,9 @@ xmlNodePtr xplCreateErrorNode(const xmlNodePtr cmd, const xmlChar *fmt, ...)
 		cmd->doc->URL,
 		cmd->line);
 	XPL_FREE(orig_msg);
-	ret = xplCreateSimpleErrorNode(cmd->doc, full_msg, cmd->name);
+	ret = xplCreateSimpleErrorNode(cmd->doc, (char*) full_msg, cmd->name);
 	if (cfgErrorsToConsole)
-		xplDisplayMessage(XPL_MSG_ERROR, full_msg);
+		xplDisplayMessage(XPL_MSG_ERROR, "%s", (char*) full_msg);
 	if (cfgStackTrace)
 		xplStackTrace(cmd);
 	return ret;
@@ -246,10 +246,10 @@ static bool xplInitLogger()
 	if (cfgLogFileName)
 	{
 		executable_path = xprGetProgramPath();
-		log_file_full_name = xplFormatMessage(BAD_CAST "%s%s%s", executable_path, BAD_CAST XPR_PATH_DELIM_STR, cfgLogFileName);
+		log_file_full_name = xplFormat("%s%s%s", executable_path, BAD_CAST XPR_PATH_DELIM_STR, cfgLogFileName);
 		log_file = xprFOpen(log_file_full_name, "a");
 		if (!log_file)
-			xplDisplayMessage(XPL_MSG_WARNING, BAD_CAST "cannot open log file \"%s\" for writing", log_file_full_name);
+			xplDisplayMessage(XPL_MSG_WARNING, "cannot open log file \"%s\" for writing", log_file_full_name);
 		XPL_FREE(log_file_full_name);
 		XPL_FREE(executable_path);
 		return !!log_file;

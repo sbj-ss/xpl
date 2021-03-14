@@ -96,7 +96,7 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				upper_point = (xmlChar*) params->point->user;
 				break;
 			default:
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "point XPath expression \"%s\" evaluated to invalid type", params->point->user), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "point XPath expression \"%s\" evaluated to invalid type", (char*) params->point->user), true, true);
 				return;
 		}
 		if (ascend)
@@ -107,8 +107,7 @@ void xplCmdBreakEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				upper_break = _createBreak(commandInfo, upper_point);
 				xmlAddNextSibling(commandInfo->element->parent, upper_break);
 			} else if (cfgWarnOnInvalidNodeType)
-				xplDisplayWarning(commandInfo->element, BAD_CAST "can't add children to non-elements, point '%s'",
-				commandInfo->element->doc->URL, commandInfo->element->line, params->point);
+				xplDisplayWarning(commandInfo->element, "can't add children to non-elements, point '%s'", (char*) params->point->user);
 		}
 	}
 	if (delete_tail)

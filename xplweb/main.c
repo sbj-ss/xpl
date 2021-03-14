@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 
 	mg_set_request_handler(ctx, "**.xpl$", serveXpl, NULL);
 
-	xplDisplayMessage(XPL_MSG_INFO, BAD_CAST "XPL web server based on CivetWeb %s started on port(s) [%s], serving directory \"%s\"",
+	xplDisplayMessage(XPL_MSG_INFO, "XPL web server based on CivetWeb %s started on port(s) [%s], serving directory \"%s\"",
 	    mg_version(),
 	    mg_get_option(ctx, "listening_ports"),
 	    mg_get_option(ctx, "document_root"));

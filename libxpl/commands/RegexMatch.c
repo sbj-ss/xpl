@@ -67,13 +67,13 @@ void xplCmdRegexMatchEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	{
 		if (!onig_error_code_to_str(err_str, ret_code))
 			strcpy((char*) err_str, "unknown error");
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "Oniguruma error: '%s'", err_str), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "Oniguruma error: '%s'", err_str), true, true);
 		goto done;
 	}
 	region = onig_region_new();
 	if (!region)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "Oniguruma cannot create search region"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "Oniguruma cannot create search region"), true, true);
 		goto done;
 	}
 	content_end = commandInfo->content + xmlStrlen(commandInfo->content);

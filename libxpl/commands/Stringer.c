@@ -141,7 +141,7 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			if (cur_str && cur_str != cur->content)
 				XPL_FREE(cur_str);
 		} else if (cfgWarnOnInvalidNodeType)
-			xplDisplayWarning(commandInfo->element, BAD_CAST "only elements, attributes and text/cdata can be used for text extraction");
+			xplDisplayWarning(commandInfo->element, "only elements, attributes and text/cdata can be used for text extraction");
 		// advance to next node
 		if (params->select)
 		{

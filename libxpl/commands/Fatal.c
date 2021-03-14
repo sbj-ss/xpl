@@ -12,7 +12,7 @@ static xmlNodePtr _onlyFirstChildElement(xmlNodePtr parent)
 	if ((cur = xplFirstElementNode(parent->children)))
 	{ 
 		if (cur->next && cfgWarnOnMultipleSelection)
-			xplDisplayWarning(parent, BAD_CAST "more nodes follow in command content, ignored");
+			xplDisplayWarning(parent, "more nodes follow in command content, ignored");
 		xplMakeNsSelfContainedTree(cur);
 		xmlUnlinkNode(cur);
 		return cur;

@@ -45,7 +45,7 @@ void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (!xplDocSessionGetSaMode(commandInfo->document))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "access denied"), true, true);
 		return;
 	}
 	xplLockThreads(true);
@@ -57,6 +57,6 @@ void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(NULL, false, true);
 	else
 		ASSIGN_RESULT(xplCreateErrorNode(
-			commandInfo->element, BAD_CAST "can't remove database \"%s\": %s", params->name, xplDecodeDBConfigResult(cfg_result)
+			commandInfo->element, "can't remove database \"%s\": %s", params->name, xplDecodeDBConfigResult(cfg_result)
 		), true, true);
 }

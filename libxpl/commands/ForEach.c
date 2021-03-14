@@ -61,7 +61,7 @@ void xplCmdForEachPrologue(xplCommandInfoPtr commandInfo)
 			if ((cur->type != XML_ELEMENT_NODE) && (cur->type != XML_ATTRIBUTE_NODE))
 			{
 				if (cfgWarnOnInvalidNodeType)
-					xplDisplayWarning(commandInfo->element, BAD_CAST "can only process elements and attributes, select '%s'", params->select->user);
+					xplDisplayWarning(commandInfo->element, "can only process elements and attributes, select '%s'", (char*) params->select->user);
 				continue;
 			}
 			repl = xplReplaceContentEntries(commandInfo->document, params->id, cur, commandInfo->element->children, commandInfo->element);

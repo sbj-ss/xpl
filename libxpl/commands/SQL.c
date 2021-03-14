@@ -87,7 +87,7 @@ xplCommand xplSqlCommand =
 #ifndef _XEF_HAS_DB
 void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "No database support is compiled in"), true, true);
+	ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "No database support is compiled in"), true, true);
 }
 #else
 
@@ -217,7 +217,7 @@ static xplSqlXmlRowDescPtr _createXmlRowDesc(xefDbRowPtr row, xmlNodePtr parent,
 			ret->qnames[i] = defaultColumnName;
 		else if (xplParseQName(field_name, parent, &ret->qnames[i]) != XPL_PARSE_QNAME_OK)
 		{
-			*error = xplCreateErrorNode(parent, BAD_CAST "invalid field name '%s'", field_name);
+			*error = xplCreateErrorNode(parent, "invalid field name '%s'", field_name);
 			_freeXmlRowDesc(ret);
 			return NULL;
 		}
@@ -295,14 +295,14 @@ static xmlNodePtr _getNextRTN(xplTdsFragmentRowContextPtr row_ctxt, xplSqlRowTag
 	xmlChar *name;
 
 	if (!tag_names || (tag_names->pos >= tag_names->count))
-		return xplCreateErrorNode(row_ctxt->parent, BAD_CAST "query result has more recordsets than tag names specified");
+		return xplCreateErrorNode(row_ctxt->parent, "query result has more recordsets than tag names specified");
 	name = tag_names->names[tag_names->pos++];
 	if (name && *name)
 	{
 		if (xplParseQName(name, row_ctxt->parent, &(row_ctxt->row_qname)) != XPL_PARSE_QNAME_OK)
-			return xplCreateErrorNode(row_ctxt->parent, BAD_CAST "invalid row name '%s'", name);
+			return xplCreateErrorNode(row_ctxt->parent, "invalid row name '%s'", name);
 	} else if (row_ctxt->as_attributes)
-		return xplCreateErrorNode(row_ctxt->parent, BAD_CAST "can't use empty row name if asattributes is set");
+		return xplCreateErrorNode(row_ctxt->parent, "can't use empty row name if asattributes is set");
 	else {
 		row_ctxt->row_qname.ns = NULL;
 		row_ctxt->row_qname.ncname = NULL;
@@ -333,13 +333,13 @@ static xmlNodePtr _buildFragmentFromTds(
 		}
 		if ((error = xefDbGetError(db_ctxt)))
 		{
-			error_node = xplCreateErrorNode(row_ctxt->parent, error);
+			error_node = xplCreateErrorNode(row_ctxt->parent, "%s", (char*) error);
 			goto fail;
 		}
 		xefDbNextRowset(db_ctxt);
 		if ((error = xefDbGetError(db_ctxt)))
 		{
-			error_node = xplCreateErrorNode(row_ctxt->parent, error);
+			error_node = xplCreateErrorNode(row_ctxt->parent, "%s", (char*) error);
 			goto fail;
 		}
 		xplClearQName(&row_ctxt->row_qname);
@@ -366,7 +366,7 @@ static xmlNodePtr _buildDocFromMemory(const xmlChar *src, size_t size, xmlNodePt
 	{
 		error = xstrGetLastLibxmlError();
 		*repeat = true;
-		ret = xplCreateErrorNode(parent, BAD_CAST "error parsing input document: \"%s\"", error);
+		ret = xplCreateErrorNode(parent, "error parsing input document: \"%s\"", error);
 		goto done;
 	}
 	ret = xplDetachChildren(doc->children);
@@ -389,7 +389,7 @@ static xmlNodePtr _buildDocFromXmlStream(xefDbContextPtr db_ctxt, xmlNodePtr car
 	if ((error = xefDbGetError(db_ctxt)))
 	{
 		*repeat = true;
-		ret = xplCreateErrorNode(carrier, error);
+		ret = xplCreateErrorNode(carrier, "%s", (char*) error);
 		goto done;
 	}
 	if (!stream_size)
@@ -403,7 +403,7 @@ static xmlNodePtr _buildDocFromXmlStream(xefDbContextPtr db_ctxt, xmlNodePtr car
 	if (!xml_doc_start)
 	{
 		*repeat = true;
-		ret = xplCreateErrorNode(carrier, BAD_CAST "insufficient memory for resulting XML document");
+		ret = xplCreateErrorNode(carrier, "insufficient memory for resulting XML document");
 		goto done;
 	}
 	strcpy((char*) xml_doc_cur, (char*) DOC_START);
@@ -491,7 +491,7 @@ static xmlNodePtr _buildDocFromTds(xefDbContextPtr db_ctxt, xplTdsDocRowContextP
 	if ((error = xefDbGetError(db_ctxt)))
 	{
 		*repeat = true;
-		ret = xplCreateErrorNode(row_ctxt->parent, error);
+		ret = xplCreateErrorNode(row_ctxt->parent, "%s", (char*) error);
 		goto done;
 	}
 	if (row_ctxt->out_of_memory)
@@ -501,7 +501,7 @@ static xmlNodePtr _buildDocFromTds(xefDbContextPtr db_ctxt, xplTdsDocRowContextP
 	ret = _buildDocFromMemory(xmlBufferContent(buf), xmlBufferLength(buf), row_ctxt->parent, repeat);
 	goto done;
 oom:
-	ret = xplCreateErrorNode(row_ctxt->parent, BAD_CAST "out of memory");
+	ret = xplCreateErrorNode(row_ctxt->parent, "out of memory");
 	*repeat = true;
 done:
 	if (error)
@@ -525,7 +525,7 @@ static xmlNodePtr _buildDoc(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_
 	if ((error = xefDbGetError(db_ctxt)))
 	{
 		*repeat = true;
-		ret = xplCreateErrorNode(row_ctxt->parent, error);
+		ret = xplCreateErrorNode(row_ctxt->parent, "%s", (char*) error);
 		XPL_FREE(error);
 	} else if (!row_ctxt->row_count)
 		ret = NULL;
@@ -551,7 +551,7 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	dbq_params.error = NULL;
 	if (cmd_params->as_attributes && cmd_params->show_nulls)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "asattributes and shownulls can't be used simultaneously"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "asattributes and shownulls can't be used simultaneously"), true, true);
 		return;
 	}
 	dbs = commandInfo->element->parent;
@@ -563,19 +563,19 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	if (!dbs)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "dbsession not found"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "dbsession not found"), true, true);
 		return;
 	}
 	dbname_attr = xmlGetNoNsProp(dbs, BAD_CAST "dbname");
 	if (!dbname_attr)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no dbname found in %s:dbsession", dbs->ns? dbs->ns->prefix: BAD_CAST ""), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "no dbname found in %s:dbsession", dbs->ns? dbs->ns->prefix: BAD_CAST ""), true, true);
 		return;
 	}
 	db_list = xplLocateDBList(dbname_attr);
 	if (!db_list)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unknown database \"%s\" in %s:dbsession", 
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "unknown database \"%s\" in %s:dbsession",
 			dbname_attr, dbs->ns? dbs->ns->prefix: BAD_CAST ""), true, true);
 		goto done;
 	}
@@ -588,7 +588,7 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	db_ctxt = xefDbQuery(&dbq_params);
 	if (!db_ctxt || dbq_params.error)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, dbq_params.error? dbq_params.error: BAD_CAST "unknown error"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "%s", dbq_params.error? (char*) dbq_params.error: "unknown error"), true, true);
 		goto done;
 	}
 	if (dbq_params.desired_stream_type == XEF_DB_STREAM_XML)

@@ -17,7 +17,7 @@ void xplCmdWaitForThreadsEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr re
 	if (!commandInfo->document->thread_handles)
 	{
 		if (cfgWarnOnNoAwaitableThreads)
-			xplDisplayWarning(commandInfo->element, BAD_CAST "no awaitable threads");
+			xplDisplayWarning(commandInfo->element, "no awaitable threads");
 	} else
 		xplWaitForChildThreads(commandInfo->document);
 	ASSIGN_RESULT(NULL, false, true);

@@ -65,12 +65,12 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (params->tag_name.ncname && params->show_tags)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "showtags and tagname can't be used simultaneously"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "showtags and tagname can't be used simultaneously"), true, true);
 		return;
 	}
 	if (!xplDocSessionGetSaMode(commandInfo->document))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "access denied"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "access denied"), true, true);
 		return;
 	}
 
@@ -79,7 +79,7 @@ void xplCmdGetDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		db_list = xplLocateDBList(params->name);
 		if (!db_list)
 		{
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid database name \"%s\"", params->name), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "invalid database name \"%s\"", params->name), true, true);
 			return;
 		}
 		ret = xmlNewDocText(commandInfo->element->doc, db_list->conn_string);

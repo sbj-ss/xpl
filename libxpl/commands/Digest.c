@@ -64,7 +64,7 @@ void xplCmdDigestEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	dp.digest_method = params->method;
 	if (!xefCryptoDigest(&dp))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "digest error: %s", dp.error? dp.error: BAD_CAST "unknown error"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "digest error: %s", dp.error? dp.error: BAD_CAST "unknown error"), true, true);
 		return;
 	}
 	ret = xmlNewDocText(commandInfo->document->document, NULL);

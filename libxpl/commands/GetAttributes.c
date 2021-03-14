@@ -134,7 +134,7 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 
 	if (params->tagname.ncname && params->show_tags)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "showtags and tagname can't be used simultaneously"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "showtags and tagname can't be used simultaneously"), true, true);
 		return;
 	}
 
@@ -143,12 +143,12 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 		while ((i < nodes->nodeNr) && (nodes->nodeTab[i]->type != XML_ELEMENT_NODE))
 			i++;
 		if (cfgWarnOnInvalidNodeType && i)
-			xplDisplayWarning(commandInfo->element, BAD_CAST "can only work with element nodes, select '%s'", params->select->user);
+			xplDisplayWarning(commandInfo->element, "can only work with element nodes, select '%s'", (char*) params->select->user);
 		if (i < nodes->nodeNr)
 		{
 			src = params->select->nodesetval->nodeTab[i];
 			if (cfgWarnOnMultipleSelection && _hasMoreElements(params->select->nodesetval, i))
-				xplDisplayWarning(commandInfo->element, BAD_CAST "gets attributes only from the first selected element but more elements follow, select '%s'", params->select->user);
+				xplDisplayWarning(commandInfo->element, "gets attributes only from the first selected element but more elements follow, select '%s'", (char*) params->select->user);
 		}
 	} else if (!params->select) {
 		if (!(src = xplFirstElementNode(commandInfo->element->children)))
@@ -157,9 +157,9 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 			return;
 		}
 		if (cfgWarnOnInvalidNodeType && src != commandInfo->element->children)
-			xplDisplayWarning(commandInfo->element, BAD_CAST "can only work with element nodes, select '%s'", params->select->user);
+			xplDisplayWarning(commandInfo->element, "can only work with element nodes, select '%s'", (char*) params->select->user);
 		if (cfgWarnOnMultipleSelection && _hasElementTail(src))
-			xplDisplayWarning(commandInfo->element, BAD_CAST "gets attributes only from its first child element but more elements follow");
+			xplDisplayWarning(commandInfo->element, "gets attributes only from its first child element but more elements follow");
 	}
 	if (!src)
 	{

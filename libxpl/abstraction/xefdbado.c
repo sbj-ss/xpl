@@ -149,7 +149,7 @@ bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **m
 		_Connection_Close(conn);
 		_Connection_Release(conn);
 		if (msg)
-			*msg = xplFormatMessage(BAD_CAST "Successfully connected to database \"%s\"", name);
+			*msg = xplFormat("Successfully connected to database \"%s\"", name);
 		return true;
 	}
 
@@ -165,7 +165,7 @@ bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **m
 				*pw++ = '*';
 		}
 		error = _xefDbDecodeComError();
-		*msg = xplFormatMessage(BAD_CAST "Cannot connect to database \"%s\" (connection string \"%s\"), ADO error \"%s\"", name, stars, error);
+		*msg = xplFormat("Cannot connect to database \"%s\" (connection string \"%s\"), ADO error \"%s\"", name, stars, error);
 		XPL_FREE(error);
 		XPL_FREE(stars);
 	}
@@ -351,14 +351,14 @@ static void _xefDbCreateRowDesc(xefDbContextPtr ctxt)
 		return;
 	if (!ctxt->rs)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->rs is NULL", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->rs is NULL", __FUNCTION__));
 		return;
 	}
 	desc = (xefDbRowDescPtr) XPL_MALLOC(sizeof(xefDbRowDesc));
 	if (!desc)
 	{
 		/* this will likely fail, too */
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): insufficient memory for desc", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): insufficient memory for desc", __FUNCTION__));
 		return;
 	}
 	memset(desc, 0, sizeof(xefDbRowDesc));
@@ -366,13 +366,13 @@ static void _xefDbCreateRowDesc(xefDbContextPtr ctxt)
 	if FAILED(_Recordset_get_Fields(ctxt->rs, &flds))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->rs->get_Fields() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->rs->get_Fields() failed (%s)", __FUNCTION__, error_text));
 		goto error;
 	}
 	if FAILED(Fields_get_Count(flds, &ado_count))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): flds->get_Count() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): flds->get_Count() failed (%s)", __FUNCTION__, error_text));
 		goto error;
 	}
 	desc->count = (size_t) ado_count;
@@ -380,14 +380,14 @@ static void _xefDbCreateRowDesc(xefDbContextPtr ctxt)
 	desc->names = (xmlChar**) XPL_MALLOC(desc->count * sizeof(xmlChar*));
 	if (!desc->names)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): insufficient memory for desc->fields", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): insufficient memory for desc->fields", __FUNCTION__));
 		goto error;
 	}
 	memset(desc->names, 0, (size_t) desc->count * sizeof(xmlChar*));
 	desc->db_objects = (void**) XPL_MALLOC(desc->count * sizeof(void*));
 	if (!desc->db_objects)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): insufficient memory for desc->db_objects", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): insufficient memory for desc->db_objects", __FUNCTION__));
 		goto error;
 	}
 	memset(desc->db_objects, 0, desc->count * sizeof(void*));
@@ -398,13 +398,13 @@ static void _xefDbCreateRowDesc(xefDbContextPtr ctxt)
 		if FAILED(Fields_get_Item(flds, field_index, &fld))
 		{
 			error_text = _xefDbDecodeComError();
-			_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): flds->get_Count() failed (%s)", __FUNCTION__, error_text));
+			_xefDbSetContextError(ctxt, xplFormat("%s(): flds->get_Count() failed (%s)", __FUNCTION__, error_text));
 			goto error;
 		}
 		if FAILED(Field_get_Name(fld, &bstr_field_name))
 		{
 			error_text = _xefDbDecodeComError();
-			_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s: fld->get_Name() failed (%s)", __FUNCTION__, error_text));
+			_xefDbSetContextError(ctxt, xplFormat("%s: fld->get_Name() failed (%s)", __FUNCTION__, error_text));
 			goto error;
 		}
 		if (bstr_field_name)
@@ -598,14 +598,14 @@ static bool _xefDbCheckConnection(xefDbQueryParamsPtr params, ADOConnection *con
 	if FAILED(_Connection_get_State(conn, &conn_state))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): conn->get_State() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetParamsError(params, xplFormat("%s(): conn->get_State() failed (%s)", __FUNCTION__, error_text));
 		goto error;
 	}
 	if (conn_state == adStateClosed)
 		if FAILED(_Connection_Open(conn, NULL, NULL, NULL, adOptionUnspecified))
 		{
 			error_text = _xefDbDecodeComError();
-			_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): conn->Open() failed (%s)", __FUNCTION__, error_text));
+			_xefDbSetParamsError(params, xplFormat("%s(): conn->Open() failed (%s)", __FUNCTION__, error_text));
 			goto error;
 		}	
 	goto done;
@@ -628,7 +628,7 @@ static ADOCommand* _xefDbCreateCommand(xefDbQueryParamsPtr params, ADOConnection
 	if FAILED(CoCreateInstance(&CLSID_CADOCommand, NULL, CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER, &IID_IADOCommand, (LPVOID*) &cmd))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): CoCreateInstance() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetParamsError(params, xplFormat("%s(): CoCreateInstance() failed (%s)", __FUNCTION__, error_text));
 		goto error;
 	}
 	conn_wrapper.vt = VT_DISPATCH;
@@ -636,7 +636,7 @@ static ADOCommand* _xefDbCreateCommand(xefDbQueryParamsPtr params, ADOConnection
 	if FAILED(_Command_put_ActiveConnection(cmd, conn_wrapper))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): put_ActiveConnection() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetParamsError(params, xplFormat("%s(): put_ActiveConnection() failed (%s)", __FUNCTION__, error_text));
 		goto error;
 	}
 	xstrIconvString("utf-16le", "utf-8", params->query, params->query + xmlStrlen(params->query), (char**) &wsz_query, NULL);
@@ -644,7 +644,7 @@ static ADOCommand* _xefDbCreateCommand(xefDbQueryParamsPtr params, ADOConnection
 	if FAILED(_Command_put_CommandText(cmd, bstr_query))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): put_CommandText() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetParamsError(params, xplFormat("%s(): put_CommandText() failed (%s)", __FUNCTION__, error_text));
 		goto error;
 	}
 	SysFreeString(bstr_query);
@@ -653,7 +653,7 @@ static ADOCommand* _xefDbCreateCommand(xefDbQueryParamsPtr params, ADOConnection
 	if FAILED(_Command_put_CommandTimeout(cmd, 0))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): put_CommandTimeout() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetParamsError(params, xplFormat("%s(): put_CommandTimeout() failed (%s)", __FUNCTION__, error_text));
 		goto error;
 	}
 	goto done;
@@ -682,7 +682,7 @@ static ADOStream* _xefDbCreateOutputStream(xefDbQueryParamsPtr params, ADOComman
 	if FAILED(CoCreateInstance(&CLSID_CADOStream, NULL, CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER, &IID_IADOStream, (LPVOID*) &strm))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): CoCreateInstance() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetParamsError(params, xplFormat("%s(): CoCreateInstance() failed (%s)", __FUNCTION__, error_text));
 		goto error;
 	}
 	six.vt = VT_ERROR;
@@ -690,13 +690,13 @@ static ADOStream* _xefDbCreateOutputStream(xefDbQueryParamsPtr params, ADOComman
 	if FAILED(_Stream_Open(strm, six, adModeUnknown, adOpenStreamUnspecified, NULL, NULL))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): strm->Open() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetParamsError(params, xplFormat("%s(): strm->Open() failed (%s)", __FUNCTION__, error_text));
 		goto error;
 	}
 	if FAILED(_Command_get_Properties(cmd, &props))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): cmd->get_Properties() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetParamsError(params, xplFormat("%s(): cmd->get_Properties() failed (%s)", __FUNCTION__, error_text));
 		goto error;
 	}
 	six.vt = VT_BSTR;
@@ -704,7 +704,7 @@ static ADOStream* _xefDbCreateOutputStream(xefDbQueryParamsPtr params, ADOComman
 	if FAILED(Properties_get_Item(props, six, &prop))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): props->get_Item() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetParamsError(params, xplFormat("%s(): props->get_Item() failed (%s)", __FUNCTION__, error_text));
 		SysFreeString(six.bstrVal);
 		goto error;
 	}
@@ -713,7 +713,7 @@ static ADOStream* _xefDbCreateOutputStream(xefDbQueryParamsPtr params, ADOComman
 	if FAILED(Property_put_Value(prop, six))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): prop->put_Value() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetParamsError(params, xplFormat("%s(): prop->put_Value() failed (%s)", __FUNCTION__, error_text));
 		goto error;
 	}
 	Property_Release(prop);
@@ -747,7 +747,7 @@ static bool _xefDbLocateNextNonemptyRecordset(xefDbContextPtr ctxt, bool advance
 		if FAILED(_Recordset_get_State(ctxt->rs, &state))
 		{
 			error_text = _xefDbDecodeComError();
-			_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->rs->get_State() failed (%s)", __FUNCTION__, error_text));
+			_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->rs->get_State() failed (%s)", __FUNCTION__, error_text));
 			goto error;
 		}
 		if (state != adStateClosed)
@@ -762,7 +762,7 @@ static bool _xefDbLocateNextNonemptyRecordset(xefDbContextPtr ctxt, bool advance
 		if FAILED(ctxt->rs->lpVtbl->NextADORecordset(ctxt->rs, NULL, &next))
 		{
 			error_text = _xefDbDecodeComError();
-			_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->rs->NextADORecordset() failed (%s)", __FUNCTION__, error_text));
+			_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->rs->NextADORecordset() failed (%s)", __FUNCTION__, error_text));
 			goto error;
 		}
 		_Recordset_Close(ctxt->rs);
@@ -792,7 +792,7 @@ static bool _xefDbNextRecord(xefDbContextPtr ctxt)
 	if FAILED(_Recordset_MoveNext(ctxt->rs))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->rs->MoveNext() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->rs->MoveNext() failed (%s)", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
 		return false;
 	}
@@ -809,7 +809,7 @@ static bool _xefDbCheckEof(xefDbContextPtr ctxt)
 	if FAILED(_Recordset_get_EOF(ctxt->rs, &eof))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->rs->get_EOF() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->rs->get_EOF() failed (%s)", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
 		return true;
 	}
@@ -828,12 +828,12 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 		return;
 	if (!ctxt->row_desc)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): INTERNAL ERROR ctxt->row_desc is NULL", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): INTERNAL ERROR ctxt->row_desc is NULL", __FUNCTION__));
 		return;
 	}
 	if (!ctxt->row)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): INTERNAL ERROR ctxt->row is NULL", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): INTERNAL ERROR ctxt->row is NULL", __FUNCTION__));
 		return;
 	}
 	for (i = 0; i < ctxt->row_desc->count; i++)
@@ -842,14 +842,14 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 		if FAILED(Field_get_ActualSize(field, &actual_size))
 		{
 			error_text = _xefDbDecodeComError();
-			_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): field->get_ActualSize() failed (%s)", __FUNCTION__, error_text));
+			_xefDbSetContextError(ctxt, xplFormat("%s(): field->get_ActualSize() failed (%s)", __FUNCTION__, error_text));
 			XPL_FREE(error_text);
 			return;
 		}
 		if FAILED(Field_get_Value(field, &value))
 		{
 			error_text = _xefDbDecodeComError();
-			_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): field->get_Value() failed (%s)", __FUNCTION__, error_text));
+			_xefDbSetContextError(ctxt, xplFormat("%s(): field->get_Value() failed (%s)", __FUNCTION__, error_text));
 			XPL_FREE(error_text);
 			return;
 		}
@@ -869,7 +869,7 @@ static xmlChar* _xefDbAccessStreamData(xefDbContextPtr ctxt, size_t *size)
 	if FAILED(_Stream_get_State(ctxt->xml_stream, &state))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->xml_stream->get_State() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->xml_stream->get_State() failed (%s)", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
 		*size = 0;
 		return NULL;
@@ -882,7 +882,7 @@ static xmlChar* _xefDbAccessStreamData(xefDbContextPtr ctxt, size_t *size)
 	if FAILED(_Stream_put_Type(ctxt->xml_stream, adTypeBinary))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->xml_stream->get_State() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->xml_stream->get_State() failed (%s)", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
 		*size = 0;
 		return NULL;
@@ -890,7 +890,7 @@ static xmlChar* _xefDbAccessStreamData(xefDbContextPtr ctxt, size_t *size)
 	if FAILED(_Stream_get_Size(ctxt->xml_stream, &ado_size))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->xml_stream->get_Size() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->xml_stream->get_Size() failed (%s)", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
 		*size = 0;
 		return NULL;
@@ -900,7 +900,7 @@ static xmlChar* _xefDbAccessStreamData(xefDbContextPtr ctxt, size_t *size)
 	if FAILED(_Stream_Read(ctxt->xml_stream, adReadAll, &ctxt->stream_data))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->xml_stream->Read() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->xml_stream->Read() failed (%s)", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
 		*size = 0;
 		return NULL;
@@ -908,7 +908,7 @@ static xmlChar* _xefDbAccessStreamData(xefDbContextPtr ctxt, size_t *size)
 	if FAILED(SafeArrayAccessData(ctxt->stream_data.parray, (void HUGEP* FAR*) &ret))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): SafeArrayAccessData() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): SafeArrayAccessData() failed (%s)", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
 		*size = 0;
 		return NULL;
@@ -930,14 +930,14 @@ static void _xefDbUnaccessStreamData(xefDbContextPtr ctxt, xmlChar *data)
 	if FAILED(SafeArrayUnaccessData(ctxt->stream_data.parray))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): SafeArrayUnaccessData() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): SafeArrayUnaccessData() failed (%s)", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
 		return;
 	}
 	if FAILED(VariantClear(&ctxt->stream_data))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): VariantClear() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): VariantClear() failed (%s)", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
 		return;
 	}
@@ -958,14 +958,14 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 		return NULL;
 	if (!params->db_list)
 	{
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): params->db_list is NULL", __FUNCTION__));
+		_xefDbSetParamsError(params, xplFormat("%s(): params->db_list is NULL", __FUNCTION__));
 		return NULL;
 	}
 
 	db = _xefDbGetAvailDB(params->db_list);
 	if (!db)
 	{
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): cannot connect to requested database", __FUNCTION__));
+		_xefDbSetParamsError(params, xplFormat("%s(): cannot connect to requested database", __FUNCTION__));
 		return NULL;
 	}
 	conn = (ADOConnection*) db->connection;
@@ -985,7 +985,7 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 	if FAILED(_Command_Execute(cmd, NULL, NULL, params->stream_type == XEF_DB_STREAM_XML? adExecuteStream: adOptionUnspecified, &rs))
 	{
 		error_text = _xefDbDecodeComError();
-		_xefDbSetParamsError(params, xplFormatMessage(BAD_CAST "%s(): cmd->Execute() failed (%s)", __FUNCTION__, error_text));
+		_xefDbSetParamsError(params, xplFormat("%s(): cmd->Execute() failed (%s)", __FUNCTION__, error_text));
 		goto error;
 	}
 
@@ -1039,12 +1039,12 @@ bool xefDbNextRowset(xefDbContextPtr ctxt)
 		return false;
 	if (ctxt->stream_type != XEF_DB_STREAM_TDS)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->stream_type (%d) != XEF_DB_STREAM_TDS", __FUNCTION__, ctxt->stream_type));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->stream_type (%d) != XEF_DB_STREAM_TDS", __FUNCTION__, ctxt->stream_type));
 		return false;
 	}
 	if (!ctxt->rs)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->rs is NULL", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->rs is NULL", __FUNCTION__));
 		return false;
 	}
 	if (!_xefDbLocateNextNonemptyRecordset(ctxt, true))
@@ -1063,17 +1063,17 @@ void xefDbEnumRows(xefDbContextPtr ctxt, xefDbGetRowCallback cb)
 		return;
 	if (!cb)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): cb is NULL", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): cb is NULL", __FUNCTION__));
 		return;
 	}
 	if (ctxt->stream_type != XEF_DB_STREAM_TDS)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->stream_type (%d) != XEF_DB_STREAM_TDS", __FUNCTION__, ctxt->stream_type));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->stream_type (%d) != XEF_DB_STREAM_TDS", __FUNCTION__, ctxt->stream_type));
 		return;
 	}
 	if (!ctxt->rs)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->rs is NULL", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->rs is NULL", __FUNCTION__));
 		return;
 	}
 	continue_flag = _xefDbCheckEof(ctxt);
@@ -1101,17 +1101,17 @@ xmlChar* xefDbAccessStreamData(xefDbContextPtr ctxt, size_t *size)
 		return NULL;
 	if (ctxt->stream_type != XEF_DB_STREAM_XML)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->stream_type != XEF_DB_STREAM_XML", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->stream_type != XEF_DB_STREAM_XML", __FUNCTION__));
 		return NULL;
 	}
 	if (!ctxt->xml_stream)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->xml_stream is NULL", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->xml_stream is NULL", __FUNCTION__));
 		return NULL;
 	}
 	if (!size)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): size parameter is NULL", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): size parameter is NULL", __FUNCTION__));
 		return NULL;
 	}
 	return _xefDbAccessStreamData(ctxt, size);
@@ -1123,12 +1123,12 @@ void xefDbUnaccessStreamData(xefDbContextPtr ctxt, xmlChar *data)
 		return;
 	if (ctxt->stream_type != XEF_DB_STREAM_XML)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->stream_type != XEF_DB_STREAM_XML", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->stream_type != XEF_DB_STREAM_XML", __FUNCTION__));
 		return;
 	}
 	if (!ctxt->xml_stream)
 	{
-		_xefDbSetContextError(ctxt, xplFormatMessage(BAD_CAST "%s(): ctxt->xml_stream is NULL", __FUNCTION__));
+		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->xml_stream is NULL", __FUNCTION__));
 		return;
 	}
 	_xefDbUnaccessStreamData(ctxt, data);

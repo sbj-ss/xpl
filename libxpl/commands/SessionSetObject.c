@@ -45,7 +45,7 @@ void xplCmdSessionSetObjectEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr 
 
 	if (!*params->name)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "name attribute is empty"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "name attribute is empty"), true, true);
 		return;
 	}
 	xplDocSessionSetObject(commandInfo->document, params->local, commandInfo->element, params->name);

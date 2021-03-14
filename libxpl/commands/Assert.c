@@ -62,22 +62,22 @@ void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			smth = (ct->stringval && *ct->stringval);
 			break;
 		default:
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "unsupported XPath result type %d (expression is %s)", ct->type, commandInfo->content), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "unsupported XPath result type %d (expression is %s)", ct->type, commandInfo->content), true, true);
 			goto done;
 		}
 		if (!smth)
 		{
 			if (params->message)
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, params->message), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "%s", (char*) params->message), true, true);
 			} else {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "assertion \"%s\" failed", commandInfo->content), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "assertion \"%s\" failed", commandInfo->content), true, true);
 			}
 		} else {
 			ASSIGN_RESULT(NULL, false, true);
 		}
 	} else {
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "invalid XPath expression (%s)", commandInfo->content), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "invalid XPath expression (%s)", commandInfo->content), true, true);
 	}
 done:
 	if (ct)

@@ -55,7 +55,7 @@ void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (!commandInfo->document->current_macro)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "not inside macro definition or call"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "not inside macro definition or call"), true, true);
 		return;
 	}
 	if (params->name.ncname)
@@ -73,7 +73,7 @@ void xplCmdInheritEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (!macro)
 	{
 		if (cfgWarnOnMissingInheritBase)
-			xplDisplayWarning(commandInfo->element, BAD_CAST "no macro '%s:%s' to inherit from", macro_name.ns? macro_name.ns->prefix: NULL, macro_name.ncname);
+			xplDisplayWarning(commandInfo->element, "no macro '%s:%s' to inherit from", macro_name.ns? macro_name.ns->prefix: NULL, macro_name.ncname);
 		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}

@@ -117,7 +117,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				{
 					if ((nodes->nodeNr != 1) || (nodes->nodeTab[0]->type != XML_ELEMENT_NODE))
 					{
-						ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "omitroot requires exactly one element node returned by XPath selection"), true, true);
+						ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "omitroot requires exactly one element node returned by XPath selection"), true, true);
 						goto done;
 					}
 					root = nodes->nodeTab[0];
@@ -127,11 +127,11 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				}
 				xmlAddChild((xmlNodePtr) doc, root);
 			} else if (params->omit_root) {
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "XPath expression '%s' returned an empty result but omitroot is requested", params->select->user), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "XPath expression '%s' returned an empty result but omitroot is requested", (char*) params->select->user), true, true);
 				goto done;
 			}
 		} else if (params->omit_root) {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression '%s' evaluated to non-nodeset value", params->select->user), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "select XPath expression '%s' evaluated to non-nodeset value", (char*) params->select->user), true, true);
 			goto done;
 		} else if ((params->select->type == XPATH_BOOLEAN) || (params->select->type == XPATH_NUMBER) || (params->select->type == XPATH_STRING)) {
 			value = xmlXPathCastToString(params->select);
@@ -139,7 +139,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			xmlAddChild((xmlNodePtr) doc, root);
 			root->children->content = value;
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "select XPath expression '%s' evaluated to unsupported type %d", params->select->user, params->select->type), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "select XPath expression '%s' evaluated to unsupported type %d", (char*) params->select->user, params->select->type), true, true);
 			goto done;
 		}
 	} else {
@@ -147,17 +147,17 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		{
 			if (!commandInfo->element->children)
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "omitroot requires non-empty command content"), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "omitroot requires non-empty command content"), true, true);
 				goto done;				
 			}
 			if (commandInfo->element->children->next)
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "command has multiple child nodes but omitroot is requested"), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "command has multiple child nodes but omitroot is requested"), true, true);
 				goto done;
 			}
 			if (commandInfo->element->children->type != XML_ELEMENT_NODE)
 			{
-				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "command content is non-element but omitroot is requested"), true, true);
+				ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "command content is non-element but omitroot is requested"), true, true);
 				goto done;
 			}
 			root = commandInfo->element->children;
@@ -173,7 +173,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		xprEnsurePathExistence(filename);
 	if (!xplSaveXmlDocToFile(doc, filename, (char*) params->encoding, options))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot save document \"%s\" using encoding \"%s\"", filename, params->encoding), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "cannot save document \"%s\" using encoding \"%s\"", filename, params->encoding), true, true);
 		goto done;
 	}
 	ASSIGN_RESULT(NULL, false, true);

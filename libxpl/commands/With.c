@@ -102,7 +102,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 		if (((int) cur->type) & XPL_NODE_DELETION_MASK)
 		{
 			if (cfgWarnOnDeletedNodeReference)
-				xplDisplayWarning(commandInfo->element, BAD_CAST "node '%s%s%s' (line %d) post-mortem access attempt",
+				xplDisplayWarning(commandInfo->element, "node '%s%s%s' (line %d) post-mortem access attempt",
 						cur->ns && cur->ns->prefix? cur->ns->prefix: BAD_CAST "",
 						cur->ns && cur->ns->prefix? ":": "",
 						cur->name, cur->line);
@@ -111,21 +111,21 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 		if ((cur->type != XML_ELEMENT_NODE))
 		{
 			if (cfgWarnOnInvalidNodeType)
-				xplDisplayWarning(commandInfo->element, BAD_CAST "can only process element nodes");
+				xplDisplayWarning(commandInfo->element, "can only process element nodes");
 			continue;
 		}
 		naos_check_result = cfgFoolproofDestructiveCommands? _checkNAOS(commandInfo->element, cur): NAOS_CHECK_RESULT_OK;
 		if (naos_check_result == NAOS_CHECK_RESULT_IS_ANCESTOR)
 		{
 			if (cfgWarnOnAncestorModificationAttempt)
-				xplDisplayWarning(commandInfo->element, BAD_CAST "ancestor/self node '%s%s%s' (line %d) modification attempt denied",
+				xplDisplayWarning(commandInfo->element, "ancestor/self node '%s%s%s' (line %d) modification attempt denied",
 					cur->ns && cur->ns->prefix? cur->ns->prefix: BAD_CAST "",
 					cur->ns && cur->ns->prefix? ":": "",
 					cur->name, cur->line);
 			continue;
 		} else if (naos_check_result == NAOS_CHECK_RESULT_ANCESTOR_DELETED) {
 			if (cfgWarnOnDeletedNodeReference)
-				xplDisplayWarning(commandInfo->element, BAD_CAST "deleted while running, stopping");
+				xplDisplayWarning(commandInfo->element, "deleted while running, stopping");
 			break;
 		}
 

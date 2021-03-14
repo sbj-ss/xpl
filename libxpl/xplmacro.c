@@ -24,7 +24,7 @@ xmlChar* xplMacroExpansionStateGetter(xplCommandInfoPtr info, const xmlChar *raw
 	UNUSED_PARAM(info);
 	*result = xplMacroExpansionStateFromString(raw_value);
 	if (*result == XPL_MACRO_EXPAND_UNKNOWN)
-		return xplFormatMessage(BAD_CAST "invalid expand value '%s'", raw_value);
+		return xplFormat("invalid expand value '%s'", raw_value);
 	return NULL;
 }
 

@@ -49,7 +49,7 @@ void xplCmdParseXmlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	if (!doc)
 	{
 		parse_error = xstrGetLastLibxmlError();
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "document parsing error: %s", parse_error), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "document parsing error: %s", parse_error), true, true);
 		XPL_FREE(parse_error);
 	} else {
 		xplMergeDocOldNamespaces(doc, commandInfo->element->doc);

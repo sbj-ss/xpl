@@ -75,29 +75,29 @@ void xplCmdSetParamEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 			return;
 	}
-	switch (res)
+	switch (res) // TODO decode in xplparams
 	{
 		case XPL_PARAM_RES_OK:
 			commandInfo->content = NULL;
 			break;
 		case XPL_PARAM_RES_OUT_OF_MEMORY:
-			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "out of memory");
+			err_node = xplCreateErrorNode(commandInfo->element, "out of memory");
 			break;
 		case XPL_PARAM_RES_INVALID_INPUT:
-			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "internal interpreter error, possibly out of memory");
+			err_node = xplCreateErrorNode(commandInfo->element, "internal interpreter error, possibly out of memory");
 			break;
 		case XPL_PARAM_RES_TYPE_CLASH:
-			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter with the same name (%s), but of another type already exists", params->name);
+			err_node = xplCreateErrorNode(commandInfo->element, "parameter with the same name (%s), but of another type already exists", params->name);
 			break;
 		case XPL_PARAM_RES_READ_ONLY:
-			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "parameter \"%s\" is read-only", params->name);
+			err_node = xplCreateErrorNode(commandInfo->element, "parameter \"%s\" is read-only", params->name);
 			break;
 		case XPL_PARAM_RES_INTERNAL_ERROR:
-			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "internal hash error, possibly out of memory");
+			err_node = xplCreateErrorNode(commandInfo->element, "internal hash error, possibly out of memory");
 			break;
 		default:
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
-			err_node = xplCreateErrorNode(commandInfo->element, BAD_CAST "internal error");
+			err_node = xplCreateErrorNode(commandInfo->element, "internal error");
 	}
 	if (err_node)
 		ASSIGN_RESULT(err_node, true, true);

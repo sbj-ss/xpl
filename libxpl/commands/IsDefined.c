@@ -61,7 +61,7 @@ void xplCmdIsDefinedEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					break;
 			}
 			if (cfgWarnOnMultipleSelection && params->at->nodesetval->nodeNr > 1)
-				xplDisplayWarning(commandInfo->element, BAD_CAST "select expression '%s' evaluated to multiple nodes", params->at->user);
+				xplDisplayWarning(commandInfo->element, "select expression '%s' evaluated to multiple nodes", (char*) params->at->user);
 		}
 	} else
 		macro = xplMacroLookupByQName(commandInfo->element->parent, params->name);

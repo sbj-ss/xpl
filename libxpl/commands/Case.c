@@ -80,7 +80,7 @@ void xplCmdCasePrologue(xplCommandInfoPtr commandInfo)
 
 	if (!xplCheckNodeForXplNs(commandInfo->document, parent) ||	xmlStrcmp(parent->name, BAD_CAST "switch"))
 	{
-		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "parent element must be a switch command");
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, "parent element must be a switch command");
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 		return;
 	}

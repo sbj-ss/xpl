@@ -119,13 +119,13 @@ void xplCmdRegexSplitEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	{
 		if (!onig_error_code_to_str(onig_err_str, onig_ret_code))
 			strcpy((char*) onig_err_str, "unknown error");
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "Oniguruma error: %s", onig_err_str), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "Oniguruma error: %s", onig_err_str), true, true);
 		goto done;
 	}
 	region = onig_region_new();
 	if (!region)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "Oniguruma cannot create search region"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "Oniguruma cannot create search region"), true, true);
 		goto done;
 	}
 

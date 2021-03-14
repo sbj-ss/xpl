@@ -46,7 +46,7 @@ void xplCmdDefaultPrologue(xplCommandInfoPtr commandInfo)
 
 	if (!xplCheckNodeForXplNs(commandInfo->document, parent) || xmlStrcmp(parent->name, BAD_CAST "switch"))
 	{
-		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, BAD_CAST "parent tag must be :switch");
+		commandInfo->prologue_error = xplCreateErrorNode(commandInfo->element, "parent tag must be :switch");
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 	}
 }

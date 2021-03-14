@@ -40,9 +40,9 @@ void xplCmdGetDocumentFilenameEpilogue(xplCommandInfoPtr commandInfo, xplResultP
 
 	doc = commandInfo->document;
 	if (params->abs_path)
-		fn = xplFormatMessage(BAD_CAST "%s%s", doc->path, doc->filename);
+		fn = xplFormat("%s%s", doc->path, doc->filename);
 	else
-		fn = xplFormatMessage(BAD_CAST "%s%s", doc->path + xmlStrlen(xplGetDocRoot()) + 1, doc->filename);
+		fn = xplFormat("%s%s", doc->path + xmlStrlen(xplGetDocRoot()) + 1, doc->filename);
 	ret = xmlNewDocText(commandInfo->element->doc, NULL);
 	ret->content = fn;
 	ASSIGN_RESULT(ret, false, true);

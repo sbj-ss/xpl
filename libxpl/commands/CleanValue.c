@@ -80,7 +80,7 @@ void xplCmdCleanValueEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 					XPL_FREE(clean_value);
 					break;
 				case CLEAN_BEHAVIOR_COMPLAIN:
-					ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "value '%s' doesn't pass validation", commandInfo->content);
+					ret = xplCreateErrorNode(commandInfo->element, "value '%s' doesn't pass validation", commandInfo->content);
 					XPL_FREE(clean_value);
 					break;
 				default:

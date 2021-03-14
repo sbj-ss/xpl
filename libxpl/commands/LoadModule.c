@@ -50,11 +50,11 @@ void xplCmdLoadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	code = xplLoadModule(params->name, &error);
 	if ((code != XPL_MODULE_CMD_OK) || (code != XPL_MODULE_CMD_MODULE_ALREADY_LOADED))
 	{
-		ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "cannot load module '%s': %s", params->name, error);
+		ret = xplCreateErrorNode(commandInfo->element, "cannot load module '%s': %s", params->name, error);
 		if (error)
 			XPL_FREE(error);
 	} else if (code == XPL_MODULE_CMD_MODULE_ALREADY_LOADED && params->fail_if_already_loaded)
-		ret = xplCreateErrorNode(commandInfo->element, BAD_CAST "module '%s' already loaded", params->name);
+		ret = xplCreateErrorNode(commandInfo->element, "module '%s' already loaded", params->name);
 	xplLockThreads(false);
 	ASSIGN_RESULT(ret, true, true);
 }

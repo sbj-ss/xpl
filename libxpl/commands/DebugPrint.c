@@ -19,7 +19,7 @@ static xmlChar* _getSeverity(xplCommandInfoPtr info, const xmlChar *raw_value, i
 {
 	UNUSED_PARAM(info);
 	if ((*result = xplMsgTypeFromString(raw_value, false)) == XPL_MSG_UNKNOWN)
-		return xplFormatMessage(BAD_CAST "unknown severity value '%s'", raw_value);
+		return xplFormat("unknown severity value '%s'", raw_value);
 	return NULL;
 }
 
@@ -53,6 +53,6 @@ void xplCmdDebugPrintEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
-	xplDisplayMessage(params->severity, BAD_CAST "%s", commandInfo->content? commandInfo->content: BAD_CAST "<no message provided>");
+	xplDisplayMessage(params->severity, "%s", commandInfo->content? commandInfo->content: BAD_CAST "<no message provided>");
 	ASSIGN_RESULT(NULL, true, true);
 }

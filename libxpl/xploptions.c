@@ -362,7 +362,7 @@ bool xplInitOptions()
 	if (cfgStackTrace)
 		cfgErrorsToConsole = 1;
 	if (cfgProxyServer && *cfgProxyServer)
-		xplDisplayMessage(XPL_MSG_INFO, BAD_CAST "Using proxy server \"%s:%d\"", cfgProxyServer, cfgProxyPort);
+		xplDisplayMessage(XPL_MSG_INFO, "Using proxy server \"%s:%d\"", cfgProxyServer, cfgProxyPort);
 	return 1;
 }
 

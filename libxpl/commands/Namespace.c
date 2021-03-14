@@ -83,15 +83,15 @@ void xplCmdNamespaceEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			if (nodeset->nodeTab[i]->type != XML_ELEMENT_NODE)
 			{
 				if (cfgWarnOnInvalidNodeType)
-					xplDisplayWarning(commandInfo->element, BAD_CAST "can't assign namespaces to non-elements, destination '%s'", params->destination->user);
+					xplDisplayWarning(commandInfo->element, "can't assign namespaces to non-elements, destination '%s'", (char*) params->destination->user);
 				continue;
 			}
 			if (!_setNs(nodeset->nodeTab[i], params->prefix, commandInfo->content, params->replace) && cfgWarnOnWontReplace)
-				xplDisplayWarning(commandInfo->element, BAD_CAST "won't replace existing namespace");
+				xplDisplayWarning(commandInfo->element, "won't replace existing namespace");
 		}
 	} else {
 		if (!_setNs(commandInfo->element->parent, params->prefix, commandInfo->content, params->replace) && cfgWarnOnWontReplace)
-			xplDisplayWarning(commandInfo->element, BAD_CAST "won't replace existing namespace");
+			xplDisplayWarning(commandInfo->element, "won't replace existing namespace");
 	}
 	ASSIGN_RESULT(NULL, false, true);
 }

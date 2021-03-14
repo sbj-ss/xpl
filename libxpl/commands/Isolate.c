@@ -74,13 +74,13 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 #ifndef _THREADING_SUPPORT
 	if (params->parallel)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "no threading support compiled in"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "no threading support compiled in"), true, true);
 		return;
 	}
 #endif
 	if (!params->parallel && params->delay_start)
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "delaystart can only be used for parallel execution"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "delaystart can only be used for parallel execution"), true, true);
 		return;
 	}
 	if (!commandInfo->element->children)
@@ -91,13 +91,13 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 #ifdef _THREADING_SUPPORT
 	if (params->parallel && !(landing_point_path = xplGetNodeAncestorOrSelfAxis(commandInfo->element)))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "out of memory"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "out of memory"), true, true);
 		return;
 	}
 #endif
 	if (!(child = xplDocumentCreateChild(commandInfo->document, commandInfo->element, params->inherit_macros, params->share_session)))
 	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "out of memory"), true, true);
+		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "out of memory"), true, true);
 		return;
 	}
 	if (params->parallel)
@@ -111,7 +111,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			ASSIGN_RESULT(NULL, false, false);
 		} else {
 			xplDocumentFree(child);
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "couldn't spawn child thread"), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "couldn't spawn child thread"), true, true);
 		}
 		/* we don't need #else here - this was handled above */
 #endif
@@ -120,7 +120,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		if (status == XPL_ERR_NO_ERROR || status == XPL_ERR_FATAL_CALLED)
 		{
 			if ((status == XPL_ERR_FATAL_CALLED) && cfgWarnOnFatalErrorsInIsolatedDocuments)
-				xplDisplayWarning(commandInfo->element, BAD_CAST ":fatal called while processing child document");
+				xplDisplayWarning(commandInfo->element, ":fatal called while processing child document");
 			xplMergeDocOldNamespaces(child->document, commandInfo->element->doc);
 			content = xplDetachChildren((xmlNodePtr) child->document);
 			xmlSetListDoc(content, commandInfo->element->doc);
@@ -129,7 +129,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			xplLiftNsDefs(commandInfo->element->parent, content, content->children);
 			ASSIGN_RESULT(xplDetachChildren(commandInfo->element->children), params->repeat, true);
 		} else
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "error \"%s\" processing child document", xplErrorToString(status)), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "error \"%s\" processing child document", xplErrorToString(status)), true, true);
 		if (params->share_session)
 			child->shared_session = NULL;
 		else if (child->shared_session)
