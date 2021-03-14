@@ -18,7 +18,7 @@ void xefShutdownTransport(void)
 {
 }
 
-static xmlChar* xefCreateTransportErrorMessage(xmlChar *fmt, ...)
+static xmlChar* xefCreateTransportErrorMessage(PRINTF_FORMAT_STRING(const char *fmt), ...) PRINTF_ARGS(1, 2)
 {
 	WCHAR *buffer;
 	xmlChar *sys_error = NULL, *formatted, *ret;
@@ -98,7 +98,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	xstrIconvString("utf-16le", "utf-8", (char*) params->uri, (char*) params->uri + xmlStrlen(params->uri), (char**) &wszRequestUrl, NULL);
 	if (!WinHttpCrackUrl(wszRequestUrl, 0, 0, &urlComp))
 	{
-		params->error = xefCreateTransportErrorMessage(BAD_CAST "the specified URI \"%s\" is incorrect", params->uri);
+		params->error = xefCreateTransportErrorMessage("the specified URI \"%s\" is incorrect", params->uri);
 		goto done;
 	}
 
@@ -106,7 +106,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 	hConnect = WinHttpConnect(hSession, urlComp.lpszHostName, urlComp.nPort, 0);
 	if (!hConnect)
 	{
-		params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot connect to %s", params->uri);
+		params->error = xefCreateTransportErrorMessage("cannot connect to %s", params->uri);
 		goto done;
 	}
 
@@ -118,7 +118,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 		NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES,	options);
 	if (!hRequest)
 	{
-		params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot open WinHTTP request to %s", params->uri);
+		params->error = xefCreateTransportErrorMessage("cannot open WinHTTP request to %s", params->uri);
 		goto done;
 	}
 
@@ -142,7 +142,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 		xstrIconvString("utf-16le", "utf-8", (char*) szProxy, (char*) (szProxy + strlen(szProxy)), (char**) &proxyInfo.lpszProxy, NULL);
 		if (!WinHttpSetOption(hRequest, WINHTTP_OPTION_PROXY, &proxyInfo, sizeof(proxyInfo)))
 		{
-			params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot set up proxy %s:%d", cfgProxyServer, cfgProxyPort);
+			params->error = xefCreateTransportErrorMessage("cannot set up proxy %s:%d", cfgProxyServer, cfgProxyPort);
 			goto done;
 		}
 		if (cfgProxyUser)
@@ -150,7 +150,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 			xstrIconvString("utf-16le", "utf-8", (char*) cfgProxyUser, (char*) (cfgProxyUser + xmlStrlen(cfgProxyUser)), (char**) &wszProxyUser, &iconv_len);
 			if (!WinHttpSetOption(hRequest, WINHTTP_OPTION_PROXY_USERNAME, (LPVOID) wszProxyUser, (DWORD) iconv_len))
 			{
-				params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot set up proxy user %s", cfgProxyUser);
+				params->error = xefCreateTransportErrorMessage("cannot set up proxy user %s", cfgProxyUser);
 				goto done;
 			}
 			if (cfgProxyPassword)
@@ -158,7 +158,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 				xstrIconvString("utf-16le", "utf-8", (char*) cfgProxyPassword, (char*)(cfgProxyPassword + xmlStrlen(cfgProxyPassword)), (char**) &wszProxyPassword, &iconv_len);
 				if (!WinHttpSetOption(hRequest, WINHTTP_OPTION_PROXY_PASSWORD, (LPVOID) wszProxyPassword, (DWORD) iconv_len))
 				{
-					params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot set up proxy password");
+					params->error = xefCreateTransportErrorMessage("cannot set up proxy password");
 					goto done;
 				}
 			} /* if(cfgProxyPassword) */
@@ -181,7 +181,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 		{
 			if (iRetryTimes == INT_RETRYTIMES)
 			{
-				params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot send request to %s", params->uri);
+				params->error = xefCreateTransportErrorMessage("cannot send request to %s", params->uri);
 				goto done;
 			} else
 				continue; /* next try */
@@ -190,7 +190,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 		{
 			if (iRetryTimes == INT_RETRYTIMES)
 			{
-				params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot receive server response from %s", params->uri);
+				params->error = xefCreateTransportErrorMessage("cannot receive server response from %s", params->uri);
 				goto done;
 			} else
 				continue; /* next try */
@@ -247,7 +247,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 			{
 				if (iRetryTimes == INT_RETRYTIMES)
 				{
-					params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot determine server response size (!?)");
+					params->error = xefCreateTransportErrorMessage("cannot determine server response size (!?)");
 					goto done;
 				} else
 					continue; /* next try */
@@ -262,7 +262,7 @@ bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 			{
 				if (iRetryTimes == INT_RETRYTIMES)
 				{
-					params->error = xefCreateTransportErrorMessage(BAD_CAST "cannot read server response (!?)");
+					params->error = xefCreateTransportErrorMessage("cannot read server response (!?)");
 					goto done;
 				} else
 					continue; /* next try */
