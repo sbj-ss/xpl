@@ -149,7 +149,6 @@ int main(int argc, char* argv[])
 	xplInitMemory(xplDefaultDebugAllocation, xplDefaultUseTcmalloc);
 	parseCommandLine(argc, argv);
 
-	/* TODO: ideally we want app_path = dirname(input_file) but we need working path c14n for this */
 	app_path = BAD_CAST getcwd(NULL, 0);
 	memcpy(&start_params, &xplDefaultStartParams, sizeof(xplStartParams));
 	start_params.verbose = (bool) verbose;
