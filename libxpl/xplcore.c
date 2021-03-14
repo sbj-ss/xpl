@@ -74,42 +74,23 @@ static void _xpathDummyError(void *data, xmlErrorPtr error)
 	UNUSED_PARAM(error);
 }
 
-xplDocumentPtr xplDocumentInit(xmlChar *aDocRoot, xplParamsPtr aParams, xplSessionPtr aSession)
+xplDocumentPtr xplDocumentInit(xmlChar *docPath, xplParamsPtr params, xplSessionPtr session)
 {
-	size_t doc_root_len;
 	xplDocumentPtr doc;
-	xmlChar delim;
 	
 	doc = (xplDocumentPtr) XPL_MALLOC(sizeof(xplDocument));
 	if (!doc)
 		return NULL;
 	memset(doc, 0, sizeof(xplDocument));
 
-	if (!aDocRoot)
-		aDocRoot = cfgDocRoot;
-	if (aDocRoot && *aDocRoot)
+	if (!docPath)
+		doc->path = BAD_CAST XPL_STRDUP(cfgDocRoot);
+	else
+		doc->path = xstrEnsureTrailingSlash(docPath);
+	if (!doc->path)
 	{
-		doc_root_len = xmlStrlen(aDocRoot);
-		delim = 0;
-		if (aDocRoot[doc_root_len - 1] == XPR_PATH_INVERSE_DELIM)
-			delim = XPR_PATH_DELIM;
-		else if (aDocRoot[doc_root_len - 1] != XPR_PATH_DELIM)
-			doc_root_len++;
-		doc->doc_root = (xmlChar*) XPL_MALLOC(doc_root_len + 1);
-		if (!doc->doc_root) 
-		{
-			xplDocumentFree(doc);
-			return NULL;
-		}
-		strcpy((char*) doc->doc_root, (const char*) aDocRoot);
-		if (delim)
-			doc->doc_root[doc_root_len - 1] = delim;
-		else if (doc->doc_root[doc_root_len - 1] != XPR_PATH_DELIM) {
-			doc->doc_root[doc_root_len - 1] = XPR_PATH_DELIM;
-			doc->doc_root[doc_root_len] = 0;
-		}
-	} else {
-		doc->doc_root = NULL;
+		xplDocumentFree(doc);
+		return NULL;
 	}
 	doc->xpath_ctxt = xmlXPathNewContext(NULL);
 	if (!doc->xpath_ctxt)
@@ -119,39 +100,34 @@ xplDocumentPtr xplDocumentInit(xmlChar *aDocRoot, xplParamsPtr aParams, xplSessi
 	}
 	doc->xpath_ctxt->error = _xpathDummyError;
 	doc->expand = true;
-	doc->shared_session = aSession;
-	doc->params = aParams;
+	doc->shared_session = session;
+	doc->params = params;
 	doc->status = XPL_ERR_NOT_YET_REACHED;
 	return doc;
 }
 
-xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aParams, xplSessionPtr aSession)
+xplDocumentPtr xplDocumentCreateFromFile(xmlChar *docPath, xmlChar *filename, xplParamsPtr params, xplSessionPtr session)
 {
 	xplDocumentPtr ret;	
-	size_t path_len;
-	size_t max_fn_len;
+	xmlChar *full_name;
 
-	if (!aFilename)
+	if (!filename)
 		return NULL;
-	ret = xplDocumentInit(aDocRoot, aParams, aSession);
-	path_len = ret->doc_root? xmlStrlen(ret->doc_root): 0;
-	max_fn_len = path_len + xmlStrlen(aFilename) + 1;
-	ret->filename = (xmlChar*) XPL_MALLOC(max_fn_len);
-	if (!ret->filename)
+	ret = xplDocumentInit(docPath, params, session);
+	if (!(ret->filename = BAD_CAST XPL_STRDUP(filename)))
 	{
 		xplDocumentFree(ret);
 		return NULL;
 	}
-	if (ret->doc_root)
-		strcpy((char*) ret->filename, (const char*) ret->doc_root);
-	strcpy((char*) ret->filename + path_len, (const char*) aFilename);
-
-	if (!xprCheckFilePresence(ret->filename, false))
+	full_name = xplFormatMessage(BAD_CAST "%s%s", ret->path, filename);
+	if (!xprCheckFilePresence(full_name, false))
 	{
-		ret->error = xplFormatMessage(BAD_CAST "file '%s' not found", ret->filename);
+		XPL_FREE(full_name);
+		ret->error = xplFormatMessage(BAD_CAST "file '%s' not found", full_name);
 		return ret;
 	}
-	ret->document = xmlParseFile((const char*) ret->filename);
+	ret->document = xmlParseFile((const char*) full_name);
+	XPL_FREE(full_name);
 	if (ret->document)
 		ret->error = NULL;
 	else {
@@ -162,12 +138,12 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *aDocRoot, xmlChar *aFilename, 
 	return ret;
 }
 
-xplDocumentPtr xplDocumentCreateFromMemory(xmlChar* aDocRoot, xmlChar *aOrigin,  xplParamsPtr aParams, xplSessionPtr aSession, xmlChar *encoding)
+xplDocumentPtr xplDocumentCreateFromMemory(xmlChar *docPath, xmlChar *origin, xplParamsPtr params, xplSessionPtr session, xmlChar *encoding)
 {
-	xplDocumentPtr ret = xplDocumentInit(aDocRoot, aParams, aSession);
+	xplDocumentPtr ret = xplDocumentInit(docPath, params, session);
 
-	ret->origin = aOrigin;
-	ret->document = xmlReadMemory((const char*) aOrigin, xmlStrlen(aOrigin), NULL, (const char*) encoding, 0);
+	ret->origin = origin;
+	ret->document = xmlReadMemory((const char*) origin, xmlStrlen(origin), NULL, (const char*) encoding, 0);
 	if (ret->document)
 	{
 		ret->error = NULL;
@@ -178,6 +154,67 @@ xplDocumentPtr xplDocumentCreateFromMemory(xmlChar* aDocRoot, xmlChar *aOrigin, 
 
 	return ret;
 }
+
+xplDocumentPtr xplDocumentCreateChild(xplDocumentPtr parent, xmlNodePtr parentNode, bool inheritMacros, bool shareSession)
+{
+	xmlNodePtr content, root;
+	xmlHashTablePtr macros = NULL;
+	xplParamsPtr params = NULL;
+	xplSessionPtr session = NULL;
+	xplDocumentPtr ret = NULL;
+
+	if (!(params = xplParamsCopy(parent->params)))
+		goto error;
+	if (shareSession)
+		if (!(session = xplDocSessionGetOrCreate(parent, false)))
+			goto error;
+	if (!(ret = xplDocumentInit(parent->path, params, session)))
+		goto error;
+	if (parent->filename && !(ret->filename = BAD_CAST XPL_STRDUP((char*) parent->filename)))
+		goto error;
+	ret->parent = parent;
+	if (!(ret->document = xmlNewDoc(BAD_CAST "1.0")))
+		goto error;
+	if (ret->filename)
+		ret->document->URL = xplFormatMessage(BAD_CAST "[FORK] %s%s", ret->path, ret->filename);
+	else
+		ret->document->URL = BAD_CAST XPL_STRDUP("[FORK]");
+	if (!ret->document->URL)
+		goto error;
+
+	if (!(root = xmlNewDocNode(parent->document, NULL, BAD_CAST "Root", NULL)))
+		goto error;
+	if (inheritMacros)
+		if (!(macros = xplCloneMacroTableUpwards(parentNode, root)))
+		{
+			xmlFreeNode(root);
+			goto error;
+		}
+	root->_private = macros;
+
+	content = xplDetachChildren(parentNode);
+	xplSetChildren(root, content);
+	xplSetChildren(parentNode, root);
+	if (!xplMakeNsSelfContainedTree(root))
+	{
+		xmlFreeNodeList(xplDetachChildren(parentNode));
+		goto error;
+	}
+	xplSetChildren(parentNode, NULL);
+	xplSetChildren((xmlNodePtr) ret->document, root);
+	xmlSetListDoc(root, ret->document);
+
+	return ret;
+error:
+	if (ret)
+		xplDocumentFree(ret);
+	if (params)
+		xplParamsFree(params);
+	if (macros)
+		xplMacroTableFree(macros);
+	return NULL;
+}
+
 void xplDocumentFree(xplDocumentPtr doc)
 {
 	if (!doc)
@@ -185,8 +222,8 @@ void xplDocumentFree(xplDocumentPtr doc)
 #ifdef _THREADING_SUPPORT
 	xplFinalizeDocThreads(doc, false);
 #endif
-	if (doc->doc_root)
-		XPL_FREE(doc->doc_root);
+	if (doc->path)
+		XPL_FREE(doc->path);
 	if (doc->filename)
 		XPL_FREE(doc->filename);
 	if (doc->error)
@@ -1367,22 +1404,29 @@ void checkCoalescing(xmlNodePtr cur)
 #define CHECK_COALESCING(x) ((void)0)
 #endif
 
-xplError xplProcessFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aParams, xplSessionPtr aSession, xplDocumentPtr *docOut)
+xplError xplProcessFile(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr params, xplSessionPtr session, xplDocumentPtr *docOut)
 {
+	xmlChar *norm_path;
+	xmlChar *norm_filename;
 	xplError ret;
 
-	*docOut = xplDocumentCreateFromFile(aDocRoot, aFilename, aParams, aSession);
+	xstrComposeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename);
+	*docOut = xplDocumentCreateFromFile(norm_path, norm_filename, params, session);
 	if (!*docOut)
 		return XPL_ERR_DOC_NOT_CREATED;
 	(*docOut)->status = XPL_ERR_NOT_YET_REACHED;
 	ret = xplDocumentApply(*docOut);
 	if (ret >= XPL_ERR_NO_ERROR)
 		CHECK_COALESCING((*docOut)->document->children);
+	if (norm_path)
+		XPL_FREE(norm_path);
 	return ret;
 }
 
-xplError xplProcessStartupFile(xmlChar *aDocRoot, xmlChar *aFilename)
+xplError xplProcessStartupFile(xmlChar *basePath, xmlChar *relativePath)
 {
+	xmlChar *norm_path = NULL;
+	xmlChar *norm_filename;
 	xplParamsPtr params = NULL;
 	xplSessionPtr session = NULL;
 	xplDocumentPtr doc = NULL;
@@ -1392,7 +1436,8 @@ xplError xplProcessStartupFile(xmlChar *aDocRoot, xmlChar *aFilename)
 		goto done;
 	if (!(session = xplSessionCreateLocal()))
 		goto done;
-	if (!(doc = xplDocumentCreateFromFile(aDocRoot, aFilename, params, session)))
+	xstrComposeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename);
+	if (!(doc = xplDocumentCreateFromFile(norm_path, norm_filename, params, session)))
 		goto done;
 	doc->force_sa_mode = true;
 	doc->status = XPL_ERR_NOT_YET_REACHED;
@@ -1400,6 +1445,8 @@ xplError xplProcessStartupFile(xmlChar *aDocRoot, xmlChar *aFilename)
 	if (ret >= XPL_ERR_NO_ERROR)
 		CHECK_COALESCING(doc->document->children);
 done:
+	if (norm_path)
+		XPL_FREE(norm_path);
 	if (doc)
 		xplDocumentFree(doc);
 	if (params)
@@ -1409,15 +1456,8 @@ done:
 	return ret;
 }
 
-xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr aParams, xplSessionPtr aSession, xplDocumentPtr *docOut)
+xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr params, xplSessionPtr session, xplDocumentPtr *docOut)
 {
-	xmlChar *norm_path;
-	xmlChar *norm_filename;
-	xplError status;
-
-	xstrComposeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename);
-	status = xplProcessFile(norm_path, norm_filename, aParams, aSession, docOut);
-	if (norm_path)
-		XPL_FREE(norm_path);
-	return status;
+	// TODO middleware
+	return xplProcessFile(basePath, relativePath, params, session, docOut);
 }

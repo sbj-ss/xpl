@@ -44,8 +44,8 @@ typedef struct _xplDocument xplDocument, *xplDocumentPtr;
 /* XPL document */
 struct _xplDocument
 {
-	xmlChar *doc_root;					/* "application" root */
-	xmlChar *filename;					/* full path to file the document was created from */
+	xmlChar *path;						/* path to document without file name, including the trailing slash*/
+	xmlChar *filename;					/* document file name only (no path) */
 	xmlChar *origin;					/* initial document text if it was created from memory */
 	xmlChar *error;						/* early parsing error */
 	xplParamsPtr params;				/* external parameters */
@@ -76,14 +76,15 @@ struct _xplDocument
 };
 
 XPLPUBFUN xplDocumentPtr XPLCALL
-	xplDocumentInit(xmlChar *aDocRoot, xplParamsPtr aParams, xplSessionPtr aSession);
+	xplDocumentInit(xmlChar *docPath, xplParamsPtr params, xplSessionPtr session);
 XPLPUBFUN xplDocumentPtr XPLCALL
-	xplDocumentCreateFromFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aParams, xplSessionPtr aSession);
+	xplDocumentCreateFromFile(xmlChar *docPath, xmlChar *filename, xplParamsPtr params, xplSessionPtr session);
 XPLPUBFUN xplDocumentPtr XPLCALL
-	xplDocumentCreateFromMemory(xmlChar* aDocRoot, xmlChar *aOrigin,  xplParamsPtr aParams, xplSessionPtr aSession, xmlChar *encoding);
+	xplDocumentCreateFromMemory(xmlChar* docPath, xmlChar *origin,  xplParamsPtr params, xplSessionPtr session, xmlChar *encoding);
+XPLPUBFUN xplDocumentPtr XPLCALL
+	xplDocumentCreateChild(xplDocumentPtr parent, xmlNodePtr parentNode, bool inheritMacros, bool shareSession);
+
 /* Main method */
-XPLPUBFUN xplError XPLCALL 
-	xplDocumentApply(xplDocumentPtr doc);
 XPLPUBFUN void XPLCALL
 	xplDocumentFree(xplDocumentPtr doc);
 
@@ -146,8 +147,19 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN bool XPLCALL
 	xplDocSessionSetSaMode(xplDocumentPtr doc, bool local, bool enable, xmlChar *password);
 
+/* processing */
 XPLPUBFUN bool XPLCALL
 	xplCheckNodeForXplNs(xplDocumentPtr doc, xmlNodePtr element);
+XPLPUBFUN xplMacroPtr XPLCALL
+	xplAddMacro(
+		xplDocumentPtr doc,
+		xmlNodePtr macro,
+		xplQName qname,
+		xmlNodePtr destination,
+		xplMacroExpansionState expansionState,
+		bool replace,
+		xmlChar *id
+	);
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplReplaceContentEntries(
 		xplDocumentPtr doc,
@@ -160,16 +172,8 @@ XPLPUBFUN void XPLCALL
 	xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result);
 XPLPUBFUN void XPLCALL
 	xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr result);
-XPLPUBFUN xplMacroPtr XPLCALL
-	xplAddMacro(
-		xplDocumentPtr doc, 
-		xmlNodePtr macro,
-		xplQName qname,
-		xmlNodePtr destination, 
-		xplMacroExpansionState expansionState,
-		bool replace,
-		xmlChar *id
-	);
+XPLPUBFUN xplError XPLCALL
+	xplDocumentApply(xplDocumentPtr doc);
 
 /* application hooks */
 XPLPUBFUN void XPLCALL
@@ -189,18 +193,18 @@ XPLPUBFUN void XPLCALL
 	xplSetDocRoot(xmlChar *new_root);
 /* Full file name wrt "semi-absolute" (i.e. from app root) paths. Result must be freed by the caller. */
 XPLPUBFUN xmlChar* XPLCALL
-	xplFullFilename(const xmlChar* file, const xmlChar* aDocRoot);
+	xplFullFilename(const xmlChar* file, const xmlChar* docPath);
 
-/* Actual processing */
+/* High-level processing */
 XPLPUBFUN xplError XPLCALL
-	xplProcessFile(xmlChar *aDocRoot, xmlChar *aFilename, xplParamsPtr aParams, xplSessionPtr aSession, xplDocumentPtr *docOut);
+	xplProcessFile(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr params, xplSessionPtr session, xplDocumentPtr *docOut);
 XPLPUBFUN xplError XPLCALL
-	xplProcessStartupFile(xmlChar *aDocRoot, xmlChar *aFilename);
+	xplProcessStartupFile(xmlChar *basePath, xmlChar *relativePath);
 /* Path format (e.g.)
    basePath = "d:\\Tomcat 4.1\\webapps\\ROOT"
    relativePath = "/Impulse/Developer.xpl" */
 XPLPUBFUN xplError XPLCALL
-	xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr aParams, xplSessionPtr aSession, xplDocumentPtr *docOut);
+	xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr params, xplSessionPtr session, xplDocumentPtr *docOut);
 
 /* Init and done */
 XPLPUBFUN xplError XPLCALL

@@ -61,42 +61,10 @@ xplCommand xplIsolateCommand =
 	}
 };
 
-static xplDocumentPtr _createChildDoc(xplDocumentPtr doc, xmlNodePtr carrier, bool inherit_macros, xplParamsPtr env, xplSessionPtr session)
-{
-	xmlNodePtr content, root;
-	xmlHashTablePtr macros = NULL;
-	xplDocumentPtr ret;
-
-	content = xplDetachChildren(carrier);
-	root = xmlNewDocNode(carrier->doc, NULL, BAD_CAST "Root", NULL);
-	if (inherit_macros)
-		macros = xplCloneMacroTableUpwards(carrier, root);
-	root->_private = macros;
-	xplSetChildren(root, content);
-	xplSetChildren(carrier, root);
-	xplMakeNsSelfContainedTree(root);
-	xplSetChildren(carrier, NULL);
-	ret = xplDocumentInit(doc->doc_root, env, session);
-	ret->parent = doc;
-	ret->document = xmlNewDoc(BAD_CAST "1.0");
-	xplSetChildren((xmlNodePtr) ret->document, root);
-	xmlSetListDoc(root, ret->document);
-	if (doc->filename)
-	{
-		ret->filename = BAD_CAST XPL_STRDUP((char*) doc->filename);
-		ret->document->URL = (xmlChar*) XPL_MALLOC((size_t) xmlStrlen(doc->filename) + 8);
-		sprintf((char*) ret->document->URL, "[FORK] %s", doc->filename);
-	} else
-		ret->document->URL = BAD_CAST XPL_STRDUP("[FORK]");
-	return ret;
-}
-
 void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdIsolateParamsPtr params = (xplCmdIsolateParamsPtr) commandInfo->params;
 	xplDocumentPtr child;
-	xplParamsPtr env;
-	xplSessionPtr session;
 	xplError status;
 	xmlNodePtr content;
 #ifdef _THREADING_SUPPORT
@@ -127,14 +95,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		return;
 	}
 #endif
-	env = xplParamsCopy(commandInfo->document->params);
-	if (params->share_session)
-	{
-		xplDocSessionGetOrCreate(commandInfo->document, false);
-		session = commandInfo->document->shared_session;
-	} else
-		session = NULL;
-	if (!(child = _createChildDoc(commandInfo->document, commandInfo->element, params->inherit_macros, env, session)))
+	if (!(child = xplDocumentCreateChild(commandInfo->document, commandInfo->element, params->inherit_macros, params->share_session)))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, BAD_CAST "out of memory"), true, true);
 		return;
@@ -173,7 +134,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			child->shared_session = NULL;
 		else if (child->shared_session)
 			xplSessionFreeLocal(child->shared_session);
+		xplParamsFree(child->params);
 		xplDocumentFree(child);
-		xplParamsFree(env);
 	}
 }
