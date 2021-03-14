@@ -17,20 +17,15 @@ xmlChar* getAppType(void)
 /*
 	-i, --in-file infile.xpl
 	-o, --out-file outfile.xml
-	-c, --config-file configfile.xml
-	-p, --params-file paramsfile.xml
-	-s, --session-file sessionfile.xml
-	-e, --encoding output encoding
-	--save-session
+	-s, --start-file configfile.xml
+	-e, --out-encoding output encoding
+	-v, --verbose
 */
 
 xmlChar *in_file = BAD_CAST "test.xml";
 xmlChar *out_file = BAD_CAST "test_out.xml";
 xmlChar *conf_file = NULL;
-xmlChar *params_file = NULL;
-xmlChar *session_file = NULL;
-char *encoding = NULL;
-int save_session = 0;
+char *out_encoding = NULL;
 int verbose = 0;
 
 static struct option option_list[] = 
@@ -46,30 +41,15 @@ static struct option option_list[] =
 		.flag = NULL,
 		.val = 'o'
 	}, {
-		.name = "config-file",
-		.has_arg = required_argument,
-		.flag = NULL,
-		.val = 'c'
-	}, {
-		.name = "params-file",
-		.has_arg = required_argument,
-		.flag = NULL,
-		.val = 'p'
-	}, {
-		.name = "session-file",
+		.name = "start-file",
 		.has_arg = required_argument,
 		.flag = NULL,
 		.val = 's'
 	}, {
-		.name = "encoding",
+		.name = "out-out_encoding",
 		.has_arg = required_argument,
 		.flag = NULL,
 		.val = 'e'
-	}, {
-		.name = "save-session",
-		.has_arg = no_argument,
-		.flag = &save_session,
-		.val = 1
 	}, {
 		.name = "verbose",
 		.has_arg = no_argument,
@@ -90,7 +70,7 @@ void parseCommandLine(int argc, char **argv)
 
 	while (1)
 	{
-		int c = getopt_long(argc, argv, "i:o:c:p:s:e:", option_list, &option_index);
+		int c = getopt_long(argc, argv, "i:o:s:e:v", option_list, &option_index);
 		if (c == -1)
 			break;
 		switch (c)
@@ -103,17 +83,14 @@ void parseCommandLine(int argc, char **argv)
 		case 'o':
 			out_file = BAD_CAST optarg;
 			break;
-		case 'c':
+		case 's':
 			conf_file = BAD_CAST optarg;
 			break;
-		case 'p':
-			params_file = BAD_CAST optarg;
-			break;
-		case 's':
-			session_file = BAD_CAST optarg;
-			break;
 		case 'e':
-			encoding = optarg;
+			out_encoding = optarg;
+			break;
+		case 'v':
+			verbose = true;
 			break;
 		default:
 			exit(-1);
@@ -132,7 +109,6 @@ void parseCommandLine(int argc, char **argv)
 }
 
 #define XPR_FEATURES_NEEDED (XPR_STARTSTOP_LOW_LEVEL | XPR_STARTSTOP_CONSOLE)
-#define HELPER_FILE BAD_CAST "ConsoleHelper.xpl"
 
 int main(int argc, char* argv[])
 {
@@ -140,7 +116,7 @@ int main(int argc, char* argv[])
 	xplError err_code;
 	xmlChar *error_text = NULL;
 	xplDocumentPtr doc;
-	xplParamsPtr env = NULL;
+	xplParamsPtr params = NULL;
 	xplSessionPtr session = NULL;
 	xplStartParams start_params;
 	int ret_code = 0;
@@ -169,32 +145,12 @@ int main(int argc, char* argv[])
 
 	/* create auxiliary structures */
 	session = xplSessionCreateWithAutoId();
-	env = xplParamsCreate();
-
-	/* quick hack: we need to provide working parameters and session somehow.
-	 * parsing arbitrary input would mean duplicating the interpreter code.
-	 * the quickest way is to run a special XPL file over XML input files and reuse filled environment and session. */
-	if (params_file || session_file)
-	{
-		xplParamAddValue(env, BAD_CAST "ParamsFile", BAD_CAST XPL_STRDUP(params_file? (char*) params_file: ""), XPL_PARAM_TYPE_USERDATA);
-		xplParamAddValue(env, BAD_CAST "SessionFile", BAD_CAST XPL_STRDUP(session_file? (char*) session_file: ""), XPL_PARAM_TYPE_USERDATA);
-		xplParamAddValue(env, BAD_CAST "HelperFunction", BAD_CAST XPL_STRDUP("Load"), XPL_PARAM_TYPE_USERDATA);
-		err_code = xplProcessFile(app_path, HELPER_FILE, env, session, &doc);
-		xplDocumentFree(doc);
-		xplParamsFree(env);
-		env = xplParamsCreate();
-		if (err_code != XPL_ERR_NO_ERROR)
-		{
-			fprintf(stderr, "error: %s returned an error \"%s\" parsing session and/or parameters files\n", HELPER_FILE, xplErrorToString(err_code));
-			ret_code = 2;
-			goto cleanup;
-		}
-	}
+	params = xplParamsCreate();
 
 	/* process real document */
 	LEAK_DETECTION_START();
-	err_code = xplProcessFileEx(app_path, in_file, env, session, &doc);
-	if (doc->document && !xplSaveXmlDocToFile(doc->document, out_file, encoding, XML_SAVE_FORMAT))
+	err_code = xplProcessFileEx(app_path, in_file, params, session, &doc);
+	if (doc->document && !xplSaveXmlDocToFile(doc->document, out_file, out_encoding, XML_SAVE_FORMAT))
 	{
 		fprintf(stderr, "can't save output file '%s': %s\n", out_file, strerror(errno));
 		ret_code = 3;
@@ -208,28 +164,11 @@ int main(int argc, char* argv[])
 		xplDocumentFree(doc);
 	xmlResetLastError(); 
 	LEAK_DETECTION_STOP_AND_REPORT();
-
-	/* save session if requested.
-	 * use the helper file again */
-	if (save_session)
-	{
-		if (!session_file)
-			fprintf(stderr, "can't save session: no session file name specified!");
-		else {
-			xplParamReplaceValue(env, BAD_CAST "SessionFile", BAD_CAST XPL_STRDUP((char*) session_file), XPL_PARAM_TYPE_USERDATA);
-			xplParamReplaceValue(env, BAD_CAST "HelperFunction", BAD_CAST XPL_STRDUP("Save"), XPL_PARAM_TYPE_USERDATA);
-			err_code = xplProcessFile(app_path, HELPER_FILE, env, session, &doc);
-			xplDocumentFree(doc);
-			if (err_code != XPL_ERR_NO_ERROR)
-				fprintf(stderr, "error: %s returned an error \"%s\" saving session file\n", HELPER_FILE, xplErrorToString(err_code));
-		}
-	}
-
 cleanup:
 	if (session)
 		xplSessionDeleteShared(xplSessionGetId(session));
-	if (env)
-		xplParamsFree(env);
+	if (params)
+		xplParamsFree(params);
 	xplShutdownEngine();
 	if (app_path)
 		free(app_path);
