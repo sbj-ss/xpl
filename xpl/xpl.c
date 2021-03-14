@@ -19,7 +19,7 @@ static xmlChar* _getAppType(void)
 
 xmlChar *in_file = BAD_CAST "test.xml";
 xmlChar *out_file = BAD_CAST "test_out.xml";
-xmlChar *conf_file = NULL;
+xmlChar *start_file = NULL;
 char *out_encoding = NULL;
 int verbose = 0;
 
@@ -95,6 +95,16 @@ static void _printVersion(void)
 	xplCleanupLibraryVersions();
 }
 
+typedef enum _ExitCode
+{
+	EC_OK = EXIT_SUCCESS,
+	EC_BAD_OPTION = 1,
+	EC_CANNOT_START_ENGINE = 2,
+	EC_BAD_START_FILE = 3,
+	EC_CANNOT_SAVE_OUTPUT = 4,
+	EC_PROCESSING_FAILED = 5
+} ExitCode;
+
 // TODO windows and file names (wchar_t command line is needed)
 static void _parseCommandLine(int argc, char **argv)
 {
@@ -116,7 +126,7 @@ static void _parseCommandLine(int argc, char **argv)
 			out_file = BAD_CAST optarg;
 			break;
 		case 's':
-			conf_file = BAD_CAST optarg;
+			start_file = BAD_CAST optarg;
 			break;
 		case 'e':
 			out_encoding = optarg;
@@ -132,7 +142,7 @@ static void _parseCommandLine(int argc, char **argv)
 			exit(EXIT_SUCCESS);
 		default:
 			_printUsage();
-			exit(EXIT_FAILURE);
+			exit(EC_BAD_OPTION);
 		}
 	}
 }
@@ -140,13 +150,13 @@ static void _parseCommandLine(int argc, char **argv)
 int main(int argc, char* argv[])
 {
 	xmlChar *app_path = NULL;
-	xplError err_code;
+	xplError doc_result;
 	xmlChar *error_text = NULL;
 	xplDocumentPtr doc;
 	xplParamsPtr params = NULL;
 	xplSessionPtr session = NULL;
 	xplStartParams start_params;
-	int ret_code = 0;
+	int exit_code = EC_OK;
 	LEAK_DETECTION_PREPARE
 
 	xplInitMemory(xplDefaultDebugAllocation, xplDefaultUseTcmalloc);
@@ -162,7 +172,7 @@ int main(int argc, char* argv[])
 		printf("Error starting XPL engine: %s\n", error_text);
 		if (error_text)
 			XPL_FREE(error_text);
-		ret_code = 1;
+		exit_code = EC_CANNOT_START_ENGINE;
 		goto cleanup;
 	}
 
@@ -170,35 +180,47 @@ int main(int argc, char* argv[])
 		cfgDocRoot = BAD_CAST XPL_STRDUP((char*) app_path);
 	xplSetGetAppTypeFunc(_getAppType);
 
-	/* create auxiliary structures */
-	session = xplSessionCreateWithAutoId();
-	params = xplParamsCreate();
+	/* process startup file if specified */
+	if (start_file)
+	{
+		doc_result = xplProcessStartupFile(app_path, start_file);
+		if (doc_result != XPL_ERR_NO_ERROR)
+		{
+			fprintf(stderr, "Failed to process start file %s%c%s: %s\n", app_path, XPR_PATH_DELIM, in_file, xplErrorToString(doc_result));
+			exit_code = EC_BAD_START_FILE;
+			goto cleanup;
+		}
+		xmlResetLastError();
+	}
 
-	/* process real document */
 	LEAK_DETECTION_START();
-	err_code = xplProcessFileEx(app_path, in_file, params, session, &doc);
+	session = xplSessionCreateLocal();
+	params = xplParamsCreate();
+	doc_result = xplProcessFileEx(app_path, in_file, params, session, &doc);
+	/* save document even if processing failed */
 	if (doc->document && !xplSaveXmlDocToFile(doc->document, out_file, out_encoding, XML_SAVE_FORMAT))
 	{
 		fprintf(stderr, "can't save output file '%s': %s\n", out_file, strerror(errno));
-		ret_code = 3;
+		exit_code = EC_CANNOT_SAVE_OUTPUT;
 	}
-	if (err_code < XPL_ERR_NO_ERROR)
+	if (doc_result < XPL_ERR_NO_ERROR)
 	{
-		fprintf(stderr, "error processing document: %s (%s)\n", xplErrorToString(err_code), doc? doc->error: NULL);
-		ret_code = 4;
+		fprintf(stderr, "error processing document: %s (%s)\n", xplErrorToString(doc_result), doc? doc->error: NULL);
+		exit_code = EC_PROCESSING_FAILED;
 	}
 	if (doc)
 		xplDocumentFree(doc);
-	xmlResetLastError(); 
-	LEAK_DETECTION_STOP_AND_REPORT();
 cleanup:
 	if (session)
-		xplSessionDeleteShared(xplSessionGetId(session));
+		xplSessionFreeLocal(session);
 	if (params)
 		xplParamsFree(params);
+	xmlResetLastError();
+	if (exit_code == EC_OK)
+		LEAK_DETECTION_STOP_AND_REPORT();
 	xplShutdownEngine();
 	if (app_path)
 		free(app_path);
 	xplCleanupMemory();
-	return LEAK_DETECTION_RET_CODE(ret_code);
+	return LEAK_DETECTION_RET_CODE(exit_code);
 }
