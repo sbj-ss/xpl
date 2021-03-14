@@ -122,8 +122,8 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *docPath, xmlChar *filename, xp
 	full_name = xplFormatMessage(BAD_CAST "%s%s", ret->path, filename);
 	if (!xprCheckFilePresence(full_name, false))
 	{
-		XPL_FREE(full_name);
 		ret->error = xplFormatMessage(BAD_CAST "file '%s' not found", full_name);
+		XPL_FREE(full_name);
 		return ret;
 	}
 	ret->document = xmlParseFile((const char*) full_name);
