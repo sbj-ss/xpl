@@ -16,8 +16,11 @@ extern "C" {
 #define MAX_OPTIONS 50
 #define MAX_CONF_FILE_LINE_SIZE 8192
 #define CONFIG_FILE "xplweb.conf"
+#define XPL_START_FILE_ARG "xplstart"
+#define XPL_DEFAULT_START_FILE "start.xpl"
 
 extern int exit_flag;
+extern char *start_file;
 
 void XPLCALL /* print a formatted message then exit */
 	cwDie(const char *fmt, ...);

@@ -1,6 +1,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "Configuration.h"
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
@@ -22,6 +23,8 @@ static void _shutdownServer(int code)
 	mg_stop(ctx);
 	xplShutdownEngine();
 	mg_exit_library();
+	if (start_file)
+		XPL_FREE(start_file);
 	xplCleanupMemory();
 	fflush(stdout);
 	exit(code);
@@ -32,6 +35,7 @@ int main(int argc, char* argv[])
 	xmlChar *error;
 	struct mg_callbacks callbacks;
 	const int features = MG_FEATURES_DEFAULT;
+	xplError err;
 
 	xplInitMemory(xplDefaultDebugAllocation, xplDefaultUseTcmalloc);
 	if (!mg_init_library(features) && features)
@@ -54,6 +58,22 @@ int main(int argc, char* argv[])
 		cwDie("Cannot initialize CivetWeb context");
 	}
 
+	doc_root = BAD_CAST getcwd(NULL, 0);
+	xplSetDocRoot(doc_root);
+
+	if (start_file && (err = xplProcessStartupFile(doc_root, BAD_CAST start_file)) != XPL_ERR_NO_ERROR)
+	{
+		mg_stop(ctx);
+		xplShutdownEngine();
+		mg_exit_library();
+		cwDie("Can't process start file %s: %s\n", start_file, xplErrorToString(err));
+	}
+
+	if (doc_root)
+		free(doc_root);
+	doc_root = BAD_CAST mg_get_option(ctx, "document_root");
+	xplSetDocRoot(doc_root);
+
 	mg_set_request_handler(ctx, "**.xpl$", serveXpl, NULL);
 
 	xplDisplayMessage(XPL_MSG_INFO, "XPL web server based on CivetWeb %s started on port(s) [%s], serving directory \"%s\"",
@@ -61,9 +81,6 @@ int main(int argc, char* argv[])
 	    mg_get_option(ctx, "listening_ports"),
 	    mg_get_option(ctx, "document_root"));
 	fflush(stdout);
-
-	doc_root = BAD_CAST mg_get_option(ctx, "document_root");
-	xplSetDocRoot(doc_root);
 
 	while (!exit_flag)
 		xprSleep(100);

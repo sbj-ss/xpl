@@ -20,6 +20,7 @@
 #endif
 
 int exit_flag = 0;
+char *start_file = NULL;
 
 void cwDie(const char *fmt, ...)
 {
@@ -71,6 +72,12 @@ static bool _cwSetOption(char **options, const char *name, const char *value)
 	int i, type;
 	const struct mg_option *default_options = mg_get_valid_options();
 	const char *multi_sep = NULL;
+
+	if (!strcmp(name, XPL_START_FILE_ARG))
+	{
+		start_file = _sDup(value);
+		return true;
+	}
 
 	type = MG_CONFIG_TYPE_UNKNOWN; /* type "unknown" means "option not found" */
 	for (i = 0; default_options[i].name; i++)
@@ -209,7 +216,7 @@ void cwShowUsageAndExit(const char *exeName)
 		             ? "<empty>"
 		             : options[i].default_value));
 	}
-    // TODO add XPR/XPL options
+	fprintf(stderr, " -%s %s\n", XPL_START_FILE_ARG, XPL_START_FILE);
 	exit(EXIT_FAILURE);
 }
 
