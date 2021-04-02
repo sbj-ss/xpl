@@ -403,7 +403,7 @@ int serveXpl(struct mg_connection *conn, void *userData)
 	else
 		uri = BAD_CAST request_info->local_uri;
 
-	ret = xplProcessFileEx(doc_root, uri, params, session, &doc);
+	ret = xplProcessFileEx(doc_root, uri, params, session, &doc, false);
 
 	if (!doc)
 	{

@@ -81,7 +81,13 @@ XPLPUBFUN xmlChar* XPLCALL
 	xstrEnsureTrailingSlash(xmlChar *path);
 /* Converts "/a/b"+"c/d" to "/a/b/c"+"d" etc */
 XPLPUBFUN void XPLCALL
-	xstrComposeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **normalizedPath, xmlChar **normalizedFilename);
+	xstrComposeAndSplitPath(
+		xmlChar *basePath,
+		xmlChar *relativePath,
+		xmlChar **normalizedPath,
+		xmlChar **normalizedFilename,
+		bool checkAbsPath
+	);
 
 #ifdef __cplusplus
 }

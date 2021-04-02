@@ -196,15 +196,29 @@ XPLPUBFUN xmlChar* XPLCALL
 	xplFullFilename(const xmlChar* file, const xmlChar* docPath);
 
 /* High-level processing */
-XPLPUBFUN xplError XPLCALL
-	xplProcessFile(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr params, xplSessionPtr session, xplDocumentPtr *docOut);
-XPLPUBFUN xplError XPLCALL
-	xplProcessStartupFile(xmlChar *basePath, xmlChar *relativePath);
 /* Path format (e.g.)
    basePath = "d:\\Tomcat 4.1\\webapps\\ROOT"
    relativePath = "/Impulse/Developer.xpl" */
 XPLPUBFUN xplError XPLCALL
-	xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr params, xplSessionPtr session, xplDocumentPtr *docOut);
+	xplProcessFile(
+		xmlChar *basePath,
+		xmlChar *relativePath,
+		xplParamsPtr params,
+		xplSessionPtr session,
+		xplDocumentPtr *docOut,
+		bool checkAbsPath
+	);
+XPLPUBFUN xplError XPLCALL
+	xplProcessStartupFile(xmlChar *basePath, xmlChar *relativePath);
+XPLPUBFUN xplError XPLCALL
+	xplProcessFileEx(
+		xmlChar *basePath,
+		xmlChar *relativePath,
+		xplParamsPtr params,
+		xplSessionPtr session,
+		xplDocumentPtr *docOut,
+		bool checkAbsPath
+	);
 
 /* Init and done */
 XPLPUBFUN xplError XPLCALL

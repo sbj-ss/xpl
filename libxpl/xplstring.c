@@ -525,14 +525,14 @@ xmlChar* xstrEnsureTrailingSlash(xmlChar *path)
 	return ret;
 }
 
-void xstrComposeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **normalizedPath, xmlChar **normalizedFilename)
+void xstrComposeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **normalizedPath, xmlChar **normalizedFilename, bool checkAbsPath)
 {
 	size_t len;
 	xmlChar *path, *fn;
 
 	fn = BAD_CAST strrchr((const char*) relativePath, '/');
 
-	if (xprIsPathAbsolute(relativePath)) // ignore basePath
+	if (checkAbsPath && xprIsPathAbsolute(relativePath)) // ignore basePath
 	{
 		len = fn - relativePath + 1;
 		*normalizedPath = path = BAD_CAST XPL_MALLOC(len + 1);

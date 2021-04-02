@@ -1404,13 +1404,20 @@ void checkCoalescing(xmlNodePtr cur)
 #define CHECK_COALESCING(x) ((void)0)
 #endif
 
-xplError xplProcessFile(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr params, xplSessionPtr session, xplDocumentPtr *docOut)
+xplError xplProcessFile(
+	xmlChar *basePath,
+	xmlChar *relativePath,
+	xplParamsPtr params,
+	xplSessionPtr session,
+	xplDocumentPtr *docOut,
+	bool checkAbsPath
+)
 {
 	xmlChar *norm_path;
 	xmlChar *norm_filename;
 	xplError ret;
 
-	xstrComposeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename);
+	xstrComposeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename, checkAbsPath);
 	*docOut = xplDocumentCreateFromFile(norm_path, norm_filename, params, session);
 	if (!*docOut)
 		return XPL_ERR_DOC_NOT_CREATED;
@@ -1436,7 +1443,7 @@ xplError xplProcessStartupFile(xmlChar *basePath, xmlChar *relativePath)
 		goto done;
 	if (!(session = xplSessionCreateLocal()))
 		goto done;
-	xstrComposeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename);
+	xstrComposeAndSplitPath(basePath, relativePath, &norm_path, &norm_filename, true);
 	if (!(doc = xplDocumentCreateFromFile(norm_path, norm_filename, params, session)))
 		goto done;
 	doc->force_sa_mode = true;
@@ -1456,8 +1463,15 @@ done:
 	return ret;
 }
 
-xplError xplProcessFileEx(xmlChar *basePath, xmlChar *relativePath, xplParamsPtr params, xplSessionPtr session, xplDocumentPtr *docOut)
+xplError xplProcessFileEx(
+	xmlChar *basePath,
+	xmlChar *relativePath,
+	xplParamsPtr params,
+	xplSessionPtr session,
+	xplDocumentPtr *docOut,
+	bool checkAbsPath
+)
 {
 	// TODO middleware
-	return xplProcessFile(basePath, relativePath, params, session, docOut);
+	return xplProcessFile(basePath, relativePath, params, session, docOut, checkAbsPath);
 }

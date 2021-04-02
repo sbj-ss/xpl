@@ -196,7 +196,7 @@ int main(int argc, char* argv[])
 	LEAK_DETECTION_START();
 	session = xplSessionCreateLocal();
 	params = xplParamsCreate();
-	doc_result = xplProcessFileEx(app_path, in_file, params, session, &doc);
+	doc_result = xplProcessFileEx(app_path, in_file, params, session, &doc, true);
 	/* save document even if processing failed */
 	if (doc->document && !xplSaveXmlDocToFile(doc->document, out_file, out_encoding, XML_SAVE_FORMAT))
 	{
