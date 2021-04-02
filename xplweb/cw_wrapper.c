@@ -216,7 +216,7 @@ void cwShowUsageAndExit(const char *exeName)
 		             ? "<empty>"
 		             : options[i].default_value));
 	}
-	fprintf(stderr, " -%s %s\n", XPL_START_FILE_ARG, XPL_START_FILE);
+	fprintf(stderr, " -%s %s\n", XPL_START_FILE_ARG, "none");
 	exit(EXIT_FAILURE);
 }
 
@@ -370,8 +370,10 @@ static void _setOptionAbsolutePath(char *options[], const char *option_name, con
 		   be the relative directory for everything.
 		   Extract civetweb executable directory into path. */
 		if ((p = strrchr(path_to_civetweb_exe, XPR_PATH_DELIM)) == NULL)
-			(void) getcwd(path, sizeof(path));
-		else {
+		{
+			if (!getcwd(path, sizeof(path)))
+				cwDie("getcwd() failed!\n");
+		} else {
 			snprintf(path, sizeof(path) - 1, "%.*s", (int) (p - path_to_civetweb_exe), path_to_civetweb_exe);
 			path[sizeof(path) - 1] = 0;
 		}
@@ -380,7 +382,8 @@ static void _setOptionAbsolutePath(char *options[], const char *option_name, con
 		strncat(path, option_value, sizeof(path) - strlen(path) - 1);
 
 		/* Absolutize the path, and set the option */
-		(void) realpath(path, absolute);
+		if (!realpath(path, absolute))
+			cwDie("realpath() failed!\n");
 		_cwSetOption(options, option_name, absolute);
 	}
 }
