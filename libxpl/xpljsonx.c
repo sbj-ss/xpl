@@ -144,6 +144,7 @@ static xmlNodePtr _jsonxSerializeList(xmlNodePtr cur, jsonxSerializeContextPtr c
 	xmlNodePtr ret = NULL;
 	int yajl_result;
 
+	prev_container_type = ctxt->container_type;
 	if (containerType == JXE_ARRAY)
 		yajl_result = yajl_gen_array_open(ctxt->gen);
 	else if (containerType == JXE_OBJECT)
@@ -153,7 +154,6 @@ static xmlNodePtr _jsonxSerializeList(xmlNodePtr cur, jsonxSerializeContextPtr c
 		return xplCreateErrorNode(ctxt->parent, "internal error");
 	}
 	CHECK_RESULT_AND_OOM(yajl_result, ctxt, false);
-	prev_container_type = ctxt->container_type;
 	ctxt->container_type = containerType;
 	if ((ret = _jsonxSerializeNodeList(cur->children, ctxt)))
 		goto done;

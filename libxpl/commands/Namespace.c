@@ -64,7 +64,7 @@ static bool _setNs(xmlNodePtr cur, xmlChar *prefix, xmlChar *href, bool replace)
 	if (ns)
 	{
 		XPL_FREE(BAD_CAST ns->href);
-		ns->href = BAD_CAST XPL_STRDUP(href);
+		ns->href = BAD_CAST XPL_STRDUP((char*) href);
 	} else
 		xmlNewNs(cur, href, prefix);
 	return true;

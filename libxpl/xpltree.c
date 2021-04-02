@@ -1401,7 +1401,7 @@ xmlNodeSetPtr xplGetNodeAncestorOrSelfAxis(xmlNodePtr cur)
 bool xplVerifyAncestorOrSelfAxis(xmlNodePtr root, xmlNodeSetPtr axis)
 {
 	ssize_t i;
-	bool found;
+	bool found = false;
 	xmlNodePtr cur, first;
 
 	if (!root || !axis)

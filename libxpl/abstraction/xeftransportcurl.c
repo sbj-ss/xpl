@@ -118,7 +118,7 @@ static size_t _readCallback(char *ptr, size_t size, size_t nItems, void *userDat
 bool xefFetchDocument(xefFetchDocumentParamsPtr params)
 {
 	CURL *curl;
-	xmlBufferPtr buf;
+	xmlBufferPtr buf = NULL;
 	uploadData post_data;
 	CURLcode res;
 	long status;

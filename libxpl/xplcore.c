@@ -84,7 +84,7 @@ xplDocumentPtr xplDocumentInit(xmlChar *docPath, xplParamsPtr params, xplSession
 	memset(doc, 0, sizeof(xplDocument));
 
 	if (!docPath)
-		doc->path = BAD_CAST XPL_STRDUP(cfgDocRoot);
+		doc->path = BAD_CAST XPL_STRDUP((char*) cfgDocRoot);
 	else
 		doc->path = xstrEnsureTrailingSlash(docPath);
 	if (!doc->path)
@@ -114,7 +114,7 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *docPath, xmlChar *filename, xp
 	if (!filename)
 		return NULL;
 	ret = xplDocumentInit(docPath, params, session);
-	if (!(ret->filename = BAD_CAST XPL_STRDUP(filename)))
+	if (!(ret->filename = BAD_CAST XPL_STRDUP((char*) filename)))
 	{
 		xplDocumentFree(ret);
 		return NULL;
@@ -614,7 +614,7 @@ xmlChar* xplDocSessionGetId(xplDocumentPtr doc, bool local)
 	if (!session)
 		return NULL;
 	id = xplSessionGetId(session);
-	return id? BAD_CAST XPL_STRDUP(id): NULL;
+	return id? BAD_CAST XPL_STRDUP((char*) id): NULL;
 }
 
 xmlNodePtr xplDocSessionGetObject(xplDocumentPtr doc, bool local, const xmlChar *name, const xmlNodePtr parent, const xmlChar *select, bool *ok)

@@ -176,6 +176,7 @@ done:
 
 #define NOT_CHECKABLE (BAD_CAST "not checkable")
 #define NOT_COMPILED_IN (BAD_CAST "not compiled in")
+#define CHECK_FAILED (BAD_CAST "check failed!")
 
 typedef void (*versionGetter)(const xmlChar **str, bool running);
 
@@ -255,7 +256,8 @@ static void _getUnixOdbcVersion(const xmlChar **str, bool running)
 		if (!(fp = popen("odbcinst --version", "r")))
 			snprintf(buf, sizeof(buf), "failed to execute odbcinst (errno=%d)", errno);
 		else {
-			fgets(buf, sizeof(buf), fp);
+			if (!fgets(buf, sizeof(buf), fp))
+				strcpy(buf, (char*) CHECK_FAILED);
 			pclose(fp);
 		}
 		buf[sizeof(buf) - 1] = 0;

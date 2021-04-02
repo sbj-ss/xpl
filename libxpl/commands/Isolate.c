@@ -68,7 +68,7 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplError status;
 	xmlNodePtr content;
 #ifdef _THREADING_SUPPORT
-	xmlNodeSetPtr landing_point_path;
+	xmlNodeSetPtr landing_point_path = NULL;
 #endif
 
 #ifndef _THREADING_SUPPORT
