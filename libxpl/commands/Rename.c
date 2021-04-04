@@ -56,12 +56,15 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			if ((cur->type == XML_ELEMENT_NODE) || (cur->type == XML_ATTRIBUTE_NODE))
 			{
 				xmlNodeSetName(cur, params->new_name.ncname);
-				if (xmlSearchNsByHref(cur->doc, cur, params->new_name.ns->href))
-					cur->ns = params->new_name.ns;
-				else {
-					ns_copy = xmlCopyNamespace(params->new_name.ns);
-					xplAppendNsDef(cur, ns_copy);
-					cur->ns = ns_copy;
+				if (params->new_name.ns)
+				{
+					if (xmlSearchNsByHref(cur->doc, cur, params->new_name.ns->href))
+						cur->ns = params->new_name.ns;
+					else {
+						ns_copy = xmlCopyNamespace(params->new_name.ns);
+						xplAppendNsDef(cur, ns_copy);
+						cur->ns = ns_copy;
+					}
 				}
 			} else if (cfgWarnOnInvalidNodeType)
 				xplDisplayWarning(commandInfo->element, "can only rename elements and attributes, select = '%s'", (char*) params->select->user);
