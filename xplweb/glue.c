@@ -18,14 +18,14 @@
 
 xmlChar *doc_root;
 
-#define DEFAULT_OUTPUT_METHOD_NAME (BAD_CAST "xhtml")
+#define DEFAULT_OUTPUT_METHOD_NAME (BAD_CAST "html")
 
 static OutputMethodDesc output_methods[] =
 {
-	{ // the first item is the default one
-		.name = DEFAULT_OUTPUT_METHOD_NAME,
-		.content_type = BAD_CAST "application/xhtml+xml",
-		.xml_format = XML_SAVE_XHTML,
+	{
+		.name = BAD_CAST "html",
+		.content_type = BAD_CAST "text/html",
+		.xml_format = XML_SAVE_AS_HTML,
 		.serializer = OS_XML
 	}, {
 		.name = BAD_CAST "xml",
@@ -33,9 +33,9 @@ static OutputMethodDesc output_methods[] =
 		.xml_format = XML_SAVE_AS_XML,
 		.serializer = OS_XML
 	}, {
-		.name = BAD_CAST "html",
-		.content_type = BAD_CAST "text/html",
-		.xml_format = XML_SAVE_AS_HTML,
+		.name = BAD_CAST "xhtml",
+		.content_type = BAD_CAST "application/xhtml+xml",
+		.xml_format = XML_SAVE_XHTML,
 		.serializer = OS_XML
 	}, {
 		.name = BAD_CAST "text",
@@ -56,7 +56,7 @@ OutputMethodDescPtr getOutputMethod(xmlChar *name)
 	size_t i;
 
 	if (!name || !*name)
-		return &output_methods[0];
+		name = DEFAULT_OUTPUT_METHOD_NAME;
 	for (i = 0; i < sizeof(output_methods) / sizeof(output_methods[0]); i++)
 		if (!xmlStrcasecmp(name, output_methods[i].name))
 			return &output_methods[i];
