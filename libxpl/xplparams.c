@@ -375,8 +375,6 @@ xmlChar* xplParamValuesToString(const xplParamValuesPtr values, bool unique, con
 		if (values->param_tab[i])
 			total_len += xmlStrlen((const xmlChar*) values->param_tab[i]);
 	total_len += (values->param_nr - 1)*delim_len;
-	if (!total_len)
-		return NULL;
 	start = ret = (xmlChar*) XPL_MALLOC(total_len + 1);
 	if (!ret)
 		return NULL;
