@@ -217,7 +217,6 @@ static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 
 void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
-	xmlXPathObjectPtr sel = NULL;
 	UnstringerContext ctxt;
 	ssize_t i;
 	xmlNodePtr ret = NULL, tail = NULL, out, cur;
@@ -249,7 +248,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 			else if (ctxt.params->keep_empty_tags)
 				ret = xmlNewDocNode(commandInfo->element->doc, ctxt.params->tag_name.ns, ctxt.params->tag_name.ncname, NULL);
 		} else if (ctxt.params->select->type == XPATH_STRING) {
-			ctxt.input_str = sel->stringval;
+			ctxt.input_str = ctxt.params->select->stringval;
 			ret = _splitBySingle(&ctxt);
 		} else
 			ret = xplCreateErrorNode(commandInfo->element, "XPath expression '%s' evaluated to unsupported type", (char*) ctxt.params->select->user);
