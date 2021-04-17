@@ -127,6 +127,17 @@
     </Expected>
   </MustSucceed>
   
+  <MustSucceed name="pass/selected-string">
+    <Input>
+      <xpl:unstringer select="string('1,2,3')" delimiter="," tagname="A"/>
+    </Input>
+    <Expected>
+      <A>1</A>
+      <A>2</A>
+      <A>3</A>
+    </Expected>
+  </MustSucceed>
+  
   <MustSucceed name="pass/selected-nothing">
     <Input>
       <xpl:unstringer select="../Nonexistent" delimiter="," tagname="A"/>
