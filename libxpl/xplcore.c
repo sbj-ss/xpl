@@ -786,13 +786,13 @@ xmlNodePtr xplReplaceContentEntries(
 	xmlNodePtr parent
 )
 {
-	xmlNodePtr ret, cur, new_content, tail, cloned;
+	xmlNodePtr ret, cur, new_content;
 	xmlNodeSetPtr content_cmds;
 	xmlChar *select_attr;
 	xmlChar *required_attr = NULL;
 	bool required = false;
-	xmlXPathObjectPtr sel;
-	int i, j;
+	int i;
+	bool ok;
 	xmlHashTablePtr content_cache = NULL;
 	void *empty_content_marker = &empty_content_marker;
 
@@ -813,7 +813,6 @@ xmlNodePtr xplReplaceContentEntries(
     for (i = 0; i < content_cmds->nodeNr; i++)
 	{
 		cur = content_cmds->nodeTab[i];
-		select_attr = xmlGetNoNsProp(cur, BAD_CAST "select");
 		if (cfgWarnOnMissingMacroContent)
 		{
 			required = false;
@@ -822,7 +821,7 @@ xmlNodePtr xplReplaceContentEntries(
 				required = true;
 			XPL_FREE(required_attr);
 		}
-		if (select_attr)
+		if ((select_attr = xmlGetNoNsProp(cur, BAD_CAST "select")))
 		{
 			if (content_cache) 
 			{
@@ -831,34 +830,9 @@ xmlNodePtr xplReplaceContentEntries(
 					new_content = xplCloneNodeList(new_content, parent, oldElement->doc);
 			} else
 				new_content = NULL;
-			if (!new_content) /* get new content by selector */ /* TODO _selectAndCopyNodes() */
+			if (!new_content) /* get new content by selector */
 			{
-				sel = xplSelectNodesWithCtxt(doc->xpath_ctxt, oldElement, select_attr);
-				if (sel)
-				{
-					if (sel->type == XPATH_NODESET)
-					{
-						if (sel->nodesetval)
-						{
-							tail = NULL;
-							for (j = 0; j < sel->nodesetval->nodeNr; j++)
-							{	
-								cloned = xplCloneAsNodeChild(sel->nodesetval->nodeTab[j], parent);
-								if (tail)
-									tail->next = cloned;
-								cloned->prev = tail;
-								tail = cloned;
-								if (!new_content)
-									new_content = cloned;
-							}
-						}
-					} else if (sel->type != XPATH_UNDEFINED) {
-						new_content = xmlNewDocText(cur->doc, NULL);
-						new_content->content = xmlXPathCastToString(sel);
-					}
-					xmlXPathFreeObject(sel);
-				} else  /* if sel */
-					new_content = xplCreateErrorNode(cur, "invalid select XPath expression \"%s\"", select_attr);
+				new_content = _selectAndCopyNodes(doc, oldElement, select_attr, parent, &ok); // ignore ok
 				if (content_cache)
 					xmlHashAddEntry(content_cache, select_attr, new_content? new_content: empty_content_marker);
 			}
