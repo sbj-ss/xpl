@@ -1,6 +1,6 @@
 /******************************************/
 /* Polaris project: the pure C XPL engine */
-/* (c) НИЛ ИТС, Подковырин, 2006-2020     */
+/* (c) НИЛ ИТС, Подковырин, 2006-2021     */
 /******************************************/
 #ifndef _IN_XPR_H
 #error do not include this file directly, use xpr.h instead
