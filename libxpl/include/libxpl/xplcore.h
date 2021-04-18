@@ -169,6 +169,10 @@ XPLPUBFUN xmlNodePtr XPLCALL
 		xmlNodePtr parent
 	);
 XPLPUBFUN void XPLCALL
+	xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result);
+XPLPUBFUN void XPLCALL
+	xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result);
+XPLPUBFUN void XPLCALL
 	xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result);
 XPLPUBFUN void XPLCALL
 	xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr result);

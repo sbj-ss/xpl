@@ -724,19 +724,7 @@ bool xplCheckNodeForXplNs(xplDocumentPtr doc, xmlNodePtr element)
 }
 
 /* content stuff for <xpl:content/> */
-void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, const xmlChar* id, xmlNodeSetPtr list);
-
-static xmlNodeSetPtr getContentList(xplDocumentPtr doc, xmlNodePtr root, const xmlChar* id)
-{
-	/* ReszBuf not needed here: node sets grow by doubling */
-	xmlNodeSetPtr nodeset = xmlXPathNodeSetCreate(NULL);
-	if (!nodeset)
-		return NULL;
-	getContentListInner(doc, root, true, id, nodeset);
-	return nodeset;
-}
-
-void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, const xmlChar* id, xmlNodeSetPtr list)
+static void _getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, const xmlChar* id, xmlNodeSetPtr list)
 {
 	xmlChar* attr_id;
 	xmlNodePtr c = root;
@@ -769,13 +757,23 @@ void getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defContent, c
 				|| !xmlStrcmp(c->name, BAD_CAST "with")
 				|| !xmlStrcmp(c->name, BAD_CAST "do")
 			)
-				getContentListInner(doc, c->children, false, id, list);
+				_getContentListInner(doc, c->children, false, id, list);
 			else
-				getContentListInner(doc, c->children, defContent, id, list);
+				_getContentListInner(doc, c->children, defContent, id, list);
 		} else
-			getContentListInner(doc, c->children, defContent, id, list);
+			_getContentListInner(doc, c->children, defContent, id, list);
 		c = c->next;
 	}
+}
+
+static xmlNodeSetPtr _getContentList(xplDocumentPtr doc, xmlNodePtr root, const xmlChar* id)
+{
+	/* ReszBuf not needed here: node sets grow by doubling */
+	xmlNodeSetPtr nodeset = xmlXPathNodeSetCreate(NULL);
+	if (!nodeset)
+		return NULL;
+	_getContentListInner(doc, root, true, id, nodeset);
+	return nodeset;
 }
 
 xmlNodePtr xplReplaceContentEntries(
@@ -799,7 +797,7 @@ xmlNodePtr xplReplaceContentEntries(
 	ret = xplCloneNodeList(macroContent, parent, oldElement->doc);
 	if (!ret)
 		return NULL;
-	content_cmds = getContentList(doc, ret, id);
+	content_cmds = _getContentList(doc, ret, id);
 	if (!content_cmds) /* out of memory */
 	{
 		xmlFreeNodeList(ret);
@@ -864,9 +862,6 @@ xmlNodePtr xplReplaceContentEntries(
 }
 
 /* node mode-based processing */
-static void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result);
-static void _xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result);
-
 void xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result)
 {
 	xplMacroPtr macro;
@@ -877,12 +872,12 @@ void xplNodeApply(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result)
 		macro->times_encountered++;
         if (!macro->disabled_spin)
         {
-			_xplExecuteMacro(doc, element, macro, result);     
+			xplExecuteMacro(doc, element, macro, result);
 			goto done;
         }
 	}
     if (xplCheckNodeForXplNs(doc, element))
-        _xplExecuteCommand(doc, element, result);
+        xplExecuteCommand(doc, element, result);
     else
     	xplNodeListApply(doc, element->children, result);
 done:
@@ -950,7 +945,7 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr resu
 	ASSIGN_RESULT(NULL, false, false);
 }
 
-void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result)
+void xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result)
 {
 	xmlNodePtr out, prev_caller;
 	xplMacroPtr prev_macro;
@@ -1006,7 +1001,7 @@ void _xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro,
 	}
 }
 
-void _xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result)
+void xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result)
 {
 	xmlNodePtr error;
 	xplCommandPtr cmd;
@@ -1336,7 +1331,7 @@ void xplSetDocRoot(xmlChar *new_root)
 {
 	if (cfgDocRoot)
 		XPL_FREE(cfgDocRoot);
-	/* don't remove strdup() here unless you want to spent the rest of your evening debugging code */
+	/* don't remove strdup() here unless you want to spend the rest of your evening debugging code */
 	cfgDocRoot = BAD_CAST XPL_STRDUP((char*) new_root);
 }
 
