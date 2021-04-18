@@ -728,6 +728,8 @@ static void _getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defCo
 {
 	xmlChar* attr_id;
 	xmlNodePtr c = root;
+	xplCommandPtr cmd;
+	bool def_content;
 
 	while (c)
 	{
@@ -752,14 +754,11 @@ static void _getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defCo
 					}
 				} else
 					xmlXPathNodeSetAddUnique(list, c);
-			} else if (!xmlStrcmp(c->name, BAD_CAST "define") /* these commands may have there own content */
-				|| !xmlStrcmp(c->name, BAD_CAST "for-each")
-				|| !xmlStrcmp(c->name, BAD_CAST "with")
-				|| !xmlStrcmp(c->name, BAD_CAST "do")
-			)
-				_getContentListInner(doc, c->children, false, id, list);
-			else
-				_getContentListInner(doc, c->children, defContent, id, list);
+			} else {
+				cmd = xplGetCommand(c);
+				def_content = !(cmd && (cmd->flags & XPL_CMD_FLAG_HAS_CONTENT));
+				_getContentListInner(doc, c->children, def_content, id, list);
+			}
 		} else
 			_getContentListInner(doc, c->children, defContent, id, list);
 		c = c->next;

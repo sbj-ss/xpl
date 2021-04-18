@@ -37,7 +37,7 @@ xplCommand xplWithCommand =
 {
 	.prologue = xplCmdWithPrologue,
 	.epilogue = xplCmdWithEpilogue,
-	.flags = XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE | XPL_CMD_FLAG_HAS_CONTENT,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdWithParams),
 	.parameters = {

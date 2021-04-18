@@ -23,7 +23,7 @@ xplCommand xplDefineCommand =
 {
 	.prologue = xplCmdDefinePrologue,
 	.epilogue = xplCmdDefineEpilogue,
-	.flags = XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_PROLOGUE | XPL_CMD_FLAG_HAS_CONTENT,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdDefineParams),
 	.parameters = {

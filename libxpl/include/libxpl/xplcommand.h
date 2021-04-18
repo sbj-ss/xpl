@@ -60,6 +60,7 @@ typedef void (*xplCommandFinalizer) (void*);
 #define XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE 0x0004UL
 #define XPL_CMD_FLAG_REQUIRE_CONTENT 0x0008UL
 #define XPL_CMD_FLAG_ALWAYS_EXPAND 0x0010UL
+#define XPL_CMD_FLAG_HAS_CONTENT 0x0020UL
 #define XPL_CMD_FLAG_INITIALIZED 0x1000UL
 
 typedef enum _xplCmdParamType

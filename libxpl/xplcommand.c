@@ -126,20 +126,21 @@ xplCommandPtr xplGetCommand(xmlNodePtr el)
 
 static const xmlChar* builtins[] =
 {
-	BAD_CAST "content",
-	BAD_CAST "define"
+	BAD_CAST "content"
 };
 
 bool xplCommandSupported(const xmlChar* name)
 {
 	unsigned int i;
 
+	if (!commands)
+		return false;
+	if (xmlHashLookup(commands, name))
+		return true;
 	for (i = 0; i < sizeof(builtins) / sizeof(xmlChar*); i++)
 		if (!xmlStrcmp(name, builtins[i]))
 			return true;
-	if (!commands)
-		return false;
-	return !!xmlHashLookup(commands, name);
+	return false;
 }
 
 typedef struct _CommandListScannerContext
