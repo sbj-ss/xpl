@@ -3,8 +3,19 @@
   XPL interpreter high-level test suite
   :rename command
 -->
-<Root xmlns:xpl="urn:x-xpl:xpl">
+<Root xmlns:xpl="urn:x-xpl:xpl" xmlns:ns-a="http://a.com">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
+  
+  <MustSucceed name="pass/without-ns">
+    <Input>
+      <ns-a:A>
+        <xpl:rename select="parent::*" newname="B"/>
+      </ns-a:A>
+    </Input>
+    <Expected>
+      <B/>
+    </Expected>
+  </MustSucceed>
 
   <MustSucceed name="pass/own-ns">
     <Input>

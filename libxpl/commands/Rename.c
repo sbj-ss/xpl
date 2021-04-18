@@ -65,7 +65,8 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 						xplAppendNsDef(cur, ns_copy);
 						cur->ns = ns_copy;
 					}
-				}
+				} else
+					cur->ns = NULL;
 			} else if (cfgWarnOnInvalidNodeType)
 				xplDisplayWarning(commandInfo->element, "can only rename elements and attributes, select = '%s'", (char*) params->select->user);
 		}
