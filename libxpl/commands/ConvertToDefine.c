@@ -82,7 +82,7 @@ void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr r
 				}
 			} else
 				replace = params->default_replace;
-			id_attr = xmlGetNoNsProp(cur, BAD_CAST "id");
+			id_attr = xmlGetNoNsProp(cur, CONTENT_ID_ATTR);
 			qname.ns = cur->ns;
 			qname.ncname = BAD_CAST cur->name;
 			xplAddMacro(commandInfo->document, cur, qname, commandInfo->element->parent, expand, replace, id_attr);

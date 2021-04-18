@@ -68,6 +68,7 @@
 /* Should be changed only together with all existing XPL code. */
 #define ERROR_NODE_NAME (BAD_CAST "error")
 #define ERROR_SOURCE_NAME (BAD_CAST "src")
+#define CONTENT_ID_ATTR (BAD_CAST "id")
 
 /* Feature control */
 /* Enable tests for two or more subsequent text nodes. Text nodes merging isn't ready for now. */

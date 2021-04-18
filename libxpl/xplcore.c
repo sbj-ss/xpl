@@ -745,7 +745,7 @@ static void _getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defCo
 			{
 				if (!defContent)
 				{
-					attr_id = xmlGetNoNsProp(c, BAD_CAST "id");
+					attr_id = xmlGetNoNsProp(c, CONTENT_ID_ATTR);
 					if (attr_id)
 					{
 						if (!xmlStrcmp(attr_id, id))

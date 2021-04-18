@@ -34,7 +34,7 @@ xplCommand xplForEachCommand = {
 			.required = true,
 			.value_stencil = &params_stencil.select
 		}, {
-			.name = BAD_CAST "id",
+			.name = CONTENT_ID_ATTR,
 			.type = XPL_CMD_PARAM_TYPE_STRING,
 			.value_stencil = &params_stencil.id
 		}, {
