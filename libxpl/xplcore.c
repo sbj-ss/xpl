@@ -756,7 +756,7 @@ static void _getContentListInner(xplDocumentPtr doc, xmlNodePtr root, bool defCo
 					xmlXPathNodeSetAddUnique(list, c);
 			} else {
 				cmd = xplGetCommand(c);
-				def_content = !(cmd && (cmd->flags & XPL_CMD_FLAG_HAS_CONTENT));
+				def_content = defContent && !(cmd && (cmd->flags & XPL_CMD_FLAG_HAS_CONTENT));
 				_getContentListInner(doc, c->children, def_content, id, list);
 			}
 		} else
