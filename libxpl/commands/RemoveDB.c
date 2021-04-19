@@ -1,4 +1,5 @@
 #include <libxpl/xplcore.h>
+#include <libxpl/xpldb.h>
 #include <libxpl/xplmessages.h>
 
 void xplCmdRemoveDBEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result);

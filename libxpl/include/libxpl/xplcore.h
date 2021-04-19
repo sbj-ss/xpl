@@ -10,11 +10,9 @@
 #include <libxml/xpath.h>
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplcommand.h>
-#include <libxpl/xpldb.h>
 #include <libxpl/xplmacro.h>
 #include <libxpl/xplparams.h>
 #include <libxpl/xplsession.h>
-#include <libxpl/xplwrappers.h>
 
 #ifdef __cplusplus
 extern "C" {

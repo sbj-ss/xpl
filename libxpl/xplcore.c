@@ -5,7 +5,9 @@
 #include <libxml/xpathInternals.h>
 #include <libxpl/abstraction/xef.h>
 #include <libxpl/xplcore.h>
+#include <libxpl/xpldb.h>
 #include <libxpl/xplmessages.h>
+#include <libxpl/xplmiddleware.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xplsave.h>
 #include <libxpl/xplstring.h>

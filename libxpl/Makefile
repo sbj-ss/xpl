@@ -33,6 +33,7 @@ xpldb.c\
 xpljsonx.c\
 xplmacro.c\
 xplmessages.c\
+xplmiddleware.c\
 xploptions.c\
 xplparams.c\
 xplsave.c\
@@ -41,7 +42,6 @@ xplstart.c\
 xplstring.c\
 xpltree.c\
 xplversion.c\
-xplwrappers.c\
 Register.c
 
 COMMANDS = \

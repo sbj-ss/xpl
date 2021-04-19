@@ -1,8 +1,8 @@
 #include <string.h>
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplmessages.h>
+#include <libxpl/xplmiddleware.h>
 #include <libxpl/xpltree.h>
-#include <libxpl/xplwrappers.h>
 #include <oniguruma.h>
 
 static XPR_MUTEX mapper_interlock;
