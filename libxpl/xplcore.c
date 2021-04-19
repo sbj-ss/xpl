@@ -1375,8 +1375,8 @@ void checkCoalescing(xmlNodePtr cur)
 #endif
 
 xplError xplProcessFile(
-	xmlChar *basePath,
-	xmlChar *relativePath,
+	const xmlChar *basePath,
+	const xmlChar *relativePath,
 	xplParamsPtr params,
 	xplSessionPtr session,
 	xplDocumentPtr *docOut,
@@ -1397,10 +1397,12 @@ xplError xplProcessFile(
 		CHECK_COALESCING((*docOut)->document->children);
 	if (norm_path)
 		XPL_FREE(norm_path);
+	if (norm_filename)
+		XPL_FREE(norm_filename);
 	return ret;
 }
 
-xplError xplProcessStartupFile(xmlChar *basePath, xmlChar *relativePath)
+xplError xplProcessStartupFile(const xmlChar *basePath, const xmlChar *relativePath)
 {
 	xmlChar *norm_path = NULL;
 	xmlChar *norm_filename;
@@ -1424,6 +1426,8 @@ xplError xplProcessStartupFile(xmlChar *basePath, xmlChar *relativePath)
 done:
 	if (norm_path)
 		XPL_FREE(norm_path);
+	if (norm_filename)
+		XPL_FREE(norm_filename);
 	if (doc)
 		xplDocumentFree(doc);
 	if (params)
@@ -1434,14 +1438,13 @@ done:
 }
 
 xplError xplProcessFileEx(
-	xmlChar *basePath,
-	xmlChar *relativePath,
+	const xmlChar *basePath,
+	const xmlChar *relativePath,
 	xplParamsPtr params,
 	xplSessionPtr session,
 	xplDocumentPtr *docOut,
 	bool checkAbsPath
 )
 {
-	// TODO middleware
 	return xplProcessFile(basePath, relativePath, params, session, docOut, checkAbsPath);
 }

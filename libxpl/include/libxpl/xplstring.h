@@ -16,14 +16,14 @@ extern "C" {
 
 /* cuts spaces/tabs/newlines from both string sides, returning a cleaned copy */
 XPLPUBFUN xmlChar* XPLCALL
-	xstrStrTrim(xmlChar* str);
+	xstrStrTrim(const xmlChar* str);
 
 /* checks if there's more than blanks */
 XPLPUBFUN bool XPLCALL
-	xstrStrNonblank(xmlChar *str);
+	xstrStrNonblank(const xmlChar *str);
 /* ^[0-9]+(\.[0-9]+)$ */
 XPLPUBFUN bool XPLCALL
-	xstrIsNumber(xmlChar *str);
+	xstrIsNumber(const xmlChar *str);
 
 /* returns a human-readable copy of last libxml2 error */
 XPLPUBFUN xmlChar* XPLCALL
@@ -31,13 +31,13 @@ XPLPUBFUN xmlChar* XPLCALL
 
 /* Checks if s is in utf-8 encoding. isCompleteString requires the last char to be a complete sequence */
 XPLPUBFUN bool XPLCALL
-	xstrIsValidUtf8Sample(xmlChar *s, size_t len, bool isCompleteString);
+	xstrIsValidUtf8Sample(const xmlChar *s, size_t len, bool isCompleteString);
 /* Returns offset to the next utf-8 char. 0 if input sequence is incorrect. */
 XPLPUBFUN size_t XPLCALL
-	xstrGetOffsetToNextUTF8Char(xmlChar *cur);
+	xstrGetOffsetToNextUTF8Char(const xmlChar *cur);
 /* International characters URI encoding (xn--...) */
 XPLPUBFUN xmlChar* XPLCALL
-	xstrEncodeUriIdn(xmlChar *uri);
+	xstrEncodeUriIdn(const xmlChar *uri);
 
 typedef enum _xstrEncoding {
 	XSTR_ENC_UNKNOWN,
@@ -54,7 +54,7 @@ typedef enum _xstrEncoding {
 
 /* Detects cyrillic encoding automatically */
 XPLPUBFUN xstrEncoding XPLCALL
-	xstrDetectEncoding(char* str, size_t sampleLen);
+	xstrDetectEncoding(const char* str, size_t sampleLen);
 
 /* Recodes start..end. resultp is allocated inside */
 XPLPUBFUN int XPLCALL
@@ -64,10 +64,10 @@ XPLPUBFUN int XPLCALL
 
 /* Writes hex represenation of buf to dst */
 XPLPUBFUN void XPLCALL
-	xstrBufferToHex(void* buf, size_t len, bool prefix, xmlChar *dst);
+	xstrBufferToHex(const void* buf, size_t len, bool prefix, xmlChar *dst);
 /* Returns a hex representation of a buffer. Result must be freed. */
 XPLPUBFUN xmlChar* XPLCALL
-	xstrBufferToHexAlloc(void* buf, size_t len, bool prefix);
+	xstrBufferToHexAlloc(const void* buf, size_t len, bool prefix);
 /* Base64 conversion. result must be preallocated and both result and resultSize set! */
 /* TODO alloc inside */
 XPLPUBFUN int XPLCALL
@@ -78,12 +78,12 @@ XPLPUBFUN size_t XPLCALL
 
 /* Returns a copy */
 XPLPUBFUN xmlChar* XPLCALL
-	xstrEnsureTrailingSlash(xmlChar *path);
+	xstrEnsureTrailingSlash(const xmlChar *path);
 /* Converts "/a/b"+"c/d" to "/a/b/c"+"d" etc */
 XPLPUBFUN void XPLCALL
 	xstrComposeAndSplitPath(
-		xmlChar *basePath,
-		xmlChar *relativePath,
+		const xmlChar *basePath,
+		const xmlChar *relativePath,
 		xmlChar **normalizedPath,
 		xmlChar **normalizedFilename,
 		bool checkAbsPath

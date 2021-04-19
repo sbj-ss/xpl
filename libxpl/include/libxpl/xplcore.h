@@ -203,19 +203,19 @@ XPLPUBFUN xmlChar* XPLCALL
    relativePath = "/Impulse/Developer.xpl" */
 XPLPUBFUN xplError XPLCALL
 	xplProcessFile(
-		xmlChar *basePath,
-		xmlChar *relativePath,
-		xplParamsPtr params,
+		const xmlChar *basePath,
+		const xmlChar *relativePath,
+		const xplParamsPtr params,
 		xplSessionPtr session,
 		xplDocumentPtr *docOut,
 		bool checkAbsPath
 	);
 XPLPUBFUN xplError XPLCALL
-	xplProcessStartupFile(xmlChar *basePath, xmlChar *relativePath);
+	xplProcessStartupFile(const xmlChar *basePath, const xmlChar *relativePath);
 XPLPUBFUN xplError XPLCALL
 	xplProcessFileEx(
-		xmlChar *basePath,
-		xmlChar *relativePath,
+		const xmlChar *basePath,
+		const xmlChar *relativePath,
 		xplParamsPtr params,
 		xplSessionPtr session,
 		xplDocumentPtr *docOut,

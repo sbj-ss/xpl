@@ -10,10 +10,11 @@
 #include <idn-free.h>
 #endif
 
-xmlChar* xstrStrTrim(xmlChar* str)
+xmlChar* xstrStrTrim(const xmlChar* str)
 {
 	size_t out_size;
-	xmlChar *start, *end, *out;
+	const xmlChar *start, *end;
+	xmlChar *out;
 
 	start = str;
 	end = str + xmlStrlen(str) - 1;
@@ -37,7 +38,7 @@ xmlChar* xstrStrTrim(xmlChar* str)
 	return out;
 }
 
-bool xstrStrNonblank(xmlChar* str)
+bool xstrStrNonblank(const xmlChar* str)
 {
 	if (!str)
 		return false;
@@ -50,9 +51,9 @@ bool xstrStrNonblank(xmlChar* str)
 	return false;
 }
 
-bool xstrIsNumber(xmlChar *str)
+bool xstrIsNumber(const xmlChar *str)
 {
-	xmlChar *p;
+	const xmlChar *p;
 	bool dot = false;
 
 	if (!str)
@@ -134,9 +135,9 @@ static utf8CheckState U8TransitionList[] =
 	{ 0xC0, 0x80, U8CS_DECISION }	/* U8CS_4_3 */
 };
 
-bool xstrIsValidUtf8Sample(xmlChar *s, size_t len, bool isCompleteString)
+bool xstrIsValidUtf8Sample(const xmlChar *s, size_t len, bool isCompleteString)
 {
-	xmlChar *end = s + len, *p = s;
+	const xmlChar *end = s + len, *p = s;
 	utf8CheckStep step = U8CS_DECISION;
 	int i;
 
@@ -165,7 +166,7 @@ bool xstrIsValidUtf8Sample(xmlChar *s, size_t len, bool isCompleteString)
 	return true;
 }
 
-size_t xstrGetOffsetToNextUTF8Char(xmlChar *cur)
+size_t xstrGetOffsetToNextUTF8Char(const xmlChar *cur)
 {
 	if (!cur || !*cur)
 		return 0;
@@ -182,7 +183,7 @@ size_t xstrGetOffsetToNextUTF8Char(xmlChar *cur)
 	return xstrGetOffsetToNextUTF8Char(cur + 1) + 1;
 }
 
-xmlChar* xstrEncodeUriIdn(xmlChar *uri)
+xmlChar* xstrEncodeUriIdn(const xmlChar *uri)
 {
 #ifdef _USE_LIBIDN
 	xmlChar *ret = NULL, *slash_pos;
@@ -211,7 +212,7 @@ xmlChar* xstrEncodeUriIdn(xmlChar *uri)
 #endif
 }
 
-xstrEncoding xstrDetectEncoding(char* str, size_t sampleLen)
+xstrEncoding xstrDetectEncoding(const char* str, size_t sampleLen)
 {
 	size_t small_count, caps_count;
 	size_t a0af_count, f0ff_count;
@@ -317,7 +318,7 @@ int xstrIconvString (const char* tocode, const char* fromcode,
 
 static xmlChar hex_digits[] = "0123456789ABCDEF";
 
-void xstrBufferToHex(void* buf, size_t len, bool prefix, xmlChar *dst)
+void xstrBufferToHex(const void* buf, size_t len, bool prefix, xmlChar *dst)
 {
 	size_t i;
 
@@ -334,7 +335,7 @@ void xstrBufferToHex(void* buf, size_t len, bool prefix, xmlChar *dst)
 	*dst = 0;
 }
 
-xmlChar* xstrBufferToHexAlloc(void* buf, size_t len, bool prefix)
+xmlChar* xstrBufferToHexAlloc(const void* buf, size_t len, bool prefix)
 {
 	xmlChar *ret;
 
@@ -499,7 +500,7 @@ size_t xstrBase64Decode (const char *data_buf, size_t dataLength, char *result, 
 	return len;
 }
 
-xmlChar* xstrEnsureTrailingSlash(xmlChar *path)
+xmlChar* xstrEnsureTrailingSlash(const xmlChar *path)
 {
 	size_t len;
 	xmlChar delim = 0, *ret;
@@ -525,10 +526,17 @@ xmlChar* xstrEnsureTrailingSlash(xmlChar *path)
 	return ret;
 }
 
-void xstrComposeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar **normalizedPath, xmlChar **normalizedFilename, bool checkAbsPath)
+void xstrComposeAndSplitPath(
+	const xmlChar *basePath,
+	const xmlChar *relativePath,
+	xmlChar **normalizedPath,
+	xmlChar **normalizedFilename,
+	bool checkAbsPath
+)
 {
 	size_t len;
-	xmlChar *path, *fn;
+	xmlChar *path;
+	const xmlChar *fn;
 
 	fn = BAD_CAST strrchr((const char*) relativePath, '/');
 
@@ -569,5 +577,5 @@ void xstrComposeAndSplitPath(xmlChar *basePath, xmlChar *relativePath, xmlChar *
 		xprConvertSlashes(path);
 	if (*fn == XPR_PATH_DELIM || *fn == XPR_PATH_INVERSE_DELIM)
 		fn++;
-	*normalizedFilename = fn;
+	*normalizedFilename = BAD_CAST XPL_STRDUP((char*) fn);
 }
