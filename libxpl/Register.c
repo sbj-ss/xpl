@@ -108,10 +108,15 @@ static xplCommandSignature builtinCommands[] =
 #endif
 #ifdef _DYNACONF_SUPPORT
 	{ BAD_CAST "add-db", &xplAddDBCommand, 0 },
+	{ BAD_CAST "add-middleware", &xplAddMiddlewareCommand, 0 },
 	{ BAD_CAST "change-db", &xplChangeDBCommand, 0 },
+	{ BAD_CAST "change-middleware", &xplChangeMiddlewareCommand, 0 },
+	{ BAD_CAST "clear-middleware", &xplClearMiddlewareCommand, 0 },
 	{ BAD_CAST "get-db", &xplGetDBCommand, 0 },
+	{ BAD_CAST "get-middleware", &xplGetMiddlewareCommand, 0 },
 	{ BAD_CAST "get-sa-mode", &xplGetSaModeCommand, 0 },
 	{ BAD_CAST "remove-db", &xplRemoveDBCommand, 0 },
+	{ BAD_CAST "remove-middleware", &xplRemoveMiddlewareCommand, 0 },
 	{ BAD_CAST "restart", &xplRestartCommand, 0 },
 	{ BAD_CAST "set-option", &xplSetOptionCommand, 0 },
 	{ BAD_CAST "set-sa-mode", &xplSetSaModeCommand, 0 },

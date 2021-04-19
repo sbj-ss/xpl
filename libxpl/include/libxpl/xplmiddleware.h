@@ -35,7 +35,7 @@ XPLPUBFUN xplMWResult XPLCALL
 	xplMWClear(void);
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplMWListEntries(xmlDocPtr doc, xplQName qname);
-XPLPUBFUN xmlChar* XPLCALL
+XPLPUBFUN const xmlChar* XPLCALL
 	xplMWGetWrapper(const xmlChar *filename);
 XPLPUBFUN bool XPLCALL
 	xplInitMiddleware(void);

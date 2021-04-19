@@ -112,7 +112,7 @@ xplMWResult xplMWAddEntry(const xmlChar *regexString, const xmlChar *wrapperFile
 	if ((old = _locateMWEntry(regexString)))
 	{
 		if (allowReplace)
-			return _changeMWEntry(old, regexString, wrapperFile, false);
+			return _changeMWEntry(old, regexString, wrapperFile, true);
 		else
 			return XPL_MW_ALREADY_EXISTS;
 	}
@@ -185,7 +185,7 @@ xmlNodePtr xplMWListEntries(xmlDocPtr doc, xplQName qname)
 	return head;
 }
 
-xmlChar* xplMWGetWrapper(const xmlChar *filename)
+const xmlChar* xplMWGetWrapper(const xmlChar *filename)
 {
 	xplMWEntryPtr cur;
 	OnigRegion *region;

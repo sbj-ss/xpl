@@ -143,10 +143,15 @@ ifeq ($(DYNACONF_SUPPORT), 1)
 CFLAGS += -D_DYNACONF_SUPPORT
 COMMANDS += \
 commands/AddDB.c\
+commands/AddMiddleware.c\
 commands/ChangeDB.c\
+commands/ChangeMiddleware.c\
+commands/ClearMiddleware.c\
 commands/GetDB.c\
+commands/GetMiddleware.c\
 commands/GetSaMode.c\
 commands/RemoveDB.c\
+commands/RemoveMiddleware.c\
 commands/Restart.c\
 commands/SetOption.c\
 commands/SetSaMode.c\

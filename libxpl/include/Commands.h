@@ -110,10 +110,15 @@ extern xplCommand xplWaitForThreadsCommand;
 
 #ifdef _DYNACONF_SUPPORT
 extern xplCommand xplAddDBCommand;
+extern xplCommand xplAddMiddlewareCommand;
 extern xplCommand xplChangeDBCommand;
+extern xplCommand xplChangeMiddlewareCommand;
+extern xplCommand xplClearMiddlewareCommand;
 extern xplCommand xplGetDBCommand;
+extern xplCommand xplGetMiddlewareCommand;
 extern xplCommand xplGetSaModeCommand;
 extern xplCommand xplRemoveDBCommand;
+extern xplCommand xplRemoveMiddlewareCommand;
 extern xplCommand xplRestartCommand;
 extern xplCommand xplSetOptionCommand;
 extern xplCommand xplSetSaModeCommand;
