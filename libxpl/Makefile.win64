@@ -51,13 +51,18 @@ xplversion.c\
 Register.c
 
 COMMANDS = \
+commands/AddDB.c\
+commands/AddMiddleware.c\
 commands/Append.c\
 commands/Assert.c\
 commands/Attribute.c\
 commands/Break.c\
 commands/Case.c\
+commands/ChangeDB.c\
+commands/ChangeMiddleware.c\
 commands/Choose.c\
 commands/CleanValue.c\
+commands/ClearMiddleware.c\
 commands/CommandSupported.c\
 commands/Comment.c\
 commands/CommentNode.c\
@@ -80,10 +85,13 @@ commands/FileExists.c\
 commands/ForEach.c\
 commands/GetAppType.c\
 commands/GetAttributes.c\
+commands/GetDB.c\
 commands/GetDocumentFilename.c\
 commands/GetElapsedTime.c\
+commands/GetMiddleware.c\
 commands/GetOption.c\
 commands/GetParam.c\
+commands/GetSaMode.c\
 commands/GetThreadId.c\
 commands/GetVersion.c\
 commands/If.c\
@@ -104,8 +112,11 @@ commands/ProcessingInstruction.c\
 commands/RegexMatch.c\
 commands/RegexSplit.c\
 commands/Rename.c\
+commands/RemoveDB.c\
+commands/RemoveMiddleware.c\
 commands/ReplaceIfUndefined.c\
 commands/Replicate.c\
+commands/Restart.c\
 commands/Return.c\
 commands/Save.c\
 commands/Serialize.c\
@@ -116,8 +127,11 @@ commands/SessionGetObject.c\
 commands/SessionRemoveObject.c\
 commands/SessionSetObject.c\
 commands/SetLocal.c\
+commands/SetOption.c\
 commands/SetParam.c\
 commands/SetResponse.c\
+commands/SetSaMode.c\
+commands/Shutdown.c\
 commands/Sleep.c\
 commands/SQL.c\
 commands/StackClear.c\
@@ -125,6 +139,7 @@ commands/StackIsEmpty.c\
 commands/StackLocalize.c\
 commands/StackPop.c\
 commands/StackPush.c\
+commands/StartThreadsAndWait.c\
 commands/StartTimer.c\
 commands/Stringer.c\
 commands/SuppressMacros.c\
@@ -136,34 +151,9 @@ commands/Unstringer.c\
 commands/UriEncode.c\
 commands/UriEscapeParam.c\
 commands/ValueOf.c\
+commands/WaitForThreads.c\
 commands/When.c\
 commands/With.c
-
-ifeq ($(DYNACONF_SUPPORT), 1)
-CFLAGS += -D_DYNACONF_SUPPORT
-COMMANDS += \
-commands/AddDB.c\
-commands/AddMiddleware.c\
-commands/ChangeDB.c\
-commands/ChangeMiddleware.c\
-commands/ClearMiddleware.c\
-commands/GetDB.c\
-commands/GetMiddleware.c\
-commands/GetSaMode.c\
-commands/RemoveDB.c\
-commands/RemoveMiddleware.c\
-commands/Restart.c\
-commands/SetOption.c\
-commands/SetSaMode.c\
-commands/Shutdown.c
-endif
-
-ifeq ($(THREADING_SUPPORT), 1)
-CFLAGS += -D_THREADING_SUPPORT
-COMMANDS +=\
-commands/StartThreadsAndWait.c\
-commands/WaitForThreads.c
-endif
 
 ifeq ($(USE_CRASH_COMMAND), 1)
 CFLAGS += -D_USE_CRASH_COMMAND

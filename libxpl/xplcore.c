@@ -221,9 +221,7 @@ void xplDocumentFree(xplDocumentPtr doc)
 {
 	if (!doc)
 		return;
-#ifdef _THREADING_SUPPORT
 	xplFinalizeDocThreads(doc, false);
-#endif
 	if (doc->path)
 		XPL_FREE(doc->path);
 	if (doc->filename)
@@ -251,7 +249,6 @@ void xplDocumentFree(xplDocumentPtr doc)
 	XPL_FREE(doc);
 }
 
-#ifdef _THREADING_SUPPORT
 bool xplEnsureDocThreadSupport(xplDocumentPtr doc)
 {
 	if (doc->thread_handles)
@@ -414,7 +411,6 @@ void xplFinalizeDocThreads(xplDocumentPtr doc, bool force_mutex_cleanup)
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 	}
 }
-#endif
 
 /* per-document node stack (for xpl:stack-*) */
 void xplPushToDocStack(xplDocumentPtr doc, xmlNodePtr node)
@@ -1173,9 +1169,7 @@ xplError xplDocumentApply(xplDocumentPtr doc)
 			}
 			xplCheckRootNs(doc, root_element);
 			xplNodeApply(doc, root_element, &res);
-#ifdef _THREADING_SUPPORT
 			xplFinalizeDocThreads(doc, false);
-#endif
 			if (doc->fatal_content) /* xpl:fatal called */
 			{
 				root_element->type &= ~XPL_NODE_DELETION_MASK;
@@ -1451,7 +1445,9 @@ xplError xplProcessFileEx(
 	wrapper = xplMWGetWrapper(relativePath);
 	if (!wrapper)
 		return xplProcessFile(basePath, relativePath, params, session, docOut, checkAbsPath);
-	xplParamAddValue(params, BAD_CAST "OriginalFile", BAD_CAST XPL_STRDUP((char*) wrapper), XPL_PARAM_TYPE_USERDATA);
+	xplParamAddValue(params, BAD_CAST "WrapperFile", BAD_CAST XPL_STRDUP((char*) wrapper), XPL_PARAM_TYPE_USERDATA);
+	xplParamsLockValue(params, BAD_CAST "WrapperFile", true);
+	xplParamAddValue(params, BAD_CAST "OriginalFile", BAD_CAST XPL_STRDUP((char*) relativePath), XPL_PARAM_TYPE_USERDATA);
 	xplParamsLockValue(params, BAD_CAST "OriginalFile", true);
 	return xplProcessFile(basePath, wrapper, params, session, docOut, checkAbsPath);
 }

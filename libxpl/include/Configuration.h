@@ -73,11 +73,7 @@
 /* Feature control */
 /* Enable tests for two or more subsequent text nodes. Text nodes merging isn't ready for now. */
 /* #undef _DEBUG_COALESCING */
-/* Enable :set-option, :rehash, :restart, :xx-db, :xx-sa-mode. Not now. */
-/* #undef _DYNACONF_SUPPORT */
-/* Enable threading support */
-/* #undef _THREADING_SUPPORT */
-/* Enable :crash (for PhoenixTech debugging) */
+/* Enable :crash */
 /* #undef _USE_CRASH_COMMAND */
 /* Enable :file-op. This command needs to be rewritten. */
 /* #undef _FILEOP_SUPPORT */

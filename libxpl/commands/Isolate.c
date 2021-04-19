@@ -67,17 +67,8 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	xplDocumentPtr child;
 	xplError status;
 	xmlNodePtr content;
-#ifdef _THREADING_SUPPORT
 	xmlNodeSetPtr landing_point_path = NULL;
-#endif
 
-#ifndef _THREADING_SUPPORT
-	if (params->parallel)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "no threading support compiled in"), true, true);
-		return;
-	}
-#endif
 	if (!params->parallel && params->delay_start)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "delaystart can only be used for parallel execution"), true, true);
@@ -88,13 +79,11 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		ASSIGN_RESULT(NULL, false, true);
 		return;
 	}
-#ifdef _THREADING_SUPPORT
 	if (params->parallel && !(landing_point_path = xplGetNodeAncestorOrSelfAxis(commandInfo->element)))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "out of memory"), true, true);
 		return;
 	}
-#endif
 	if (!(child = xplDocumentCreateChild(commandInfo->document, commandInfo->element, params->inherit_macros, params->share_session)))
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "out of memory"), true, true);
@@ -102,7 +91,6 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 	}
 	if (params->parallel)
 	{
-#ifdef _THREADING_SUPPORT
 		child->landing_point_path = landing_point_path;
 		child->async = true;
 		if (xplStartChildThread(commandInfo->document, child, !params->delay_start))
@@ -113,8 +101,6 @@ void xplCmdIsolateEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			xplDocumentFree(child);
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "couldn't spawn child thread"), true, true);
 		}
-		/* we don't need #else here - this was handled above */
-#endif
 	} else {
 		status = xplDocumentApply(child);
 		if (status == XPL_ERR_NO_ERROR || status == XPL_ERR_FATAL_CALLED)

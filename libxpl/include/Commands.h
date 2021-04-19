@@ -11,13 +11,18 @@
 extern "C" {
 #endif
 
+extern xplCommand xplAddDBCommand;
+extern xplCommand xplAddMiddlewareCommand;
 extern xplCommand xplAppendCommand;
 extern xplCommand xplAssertCommand;
 extern xplCommand xplAttributeCommand;
 extern xplCommand xplBreakCommand;
 extern xplCommand xplCaseCommand;
+extern xplCommand xplChangeDBCommand;
+extern xplCommand xplChangeMiddlewareCommand;
 extern xplCommand xplChooseCommand;
 extern xplCommand xplCleanValueCommand;
+extern xplCommand xplClearMiddlewareCommand;
 extern xplCommand xplCommandSupportedCommand;
 extern xplCommand xplCommentCommand;
 extern xplCommand xplCommentNodeCommand;
@@ -40,10 +45,13 @@ extern xplCommand xplFileExistsCommand;
 extern xplCommand xplForEachCommand;
 extern xplCommand xplGetAppTypeCommand;
 extern xplCommand xplGetAttributesCommand;
+extern xplCommand xplGetDBCommand;
 extern xplCommand xplGetDocumentFilenameCommand;
 extern xplCommand xplGetElapsedTimeCommand;
+extern xplCommand xplGetMiddlewareCommand;
 extern xplCommand xplGetOptionCommand;
 extern xplCommand xplGetParamCommand;
+extern xplCommand xplGetSaModeCommand;
 extern xplCommand xplGetThreadIdCommand;
 extern xplCommand xplGetVersionCommand;
 extern xplCommand xplIfCommand;
@@ -63,9 +71,12 @@ extern xplCommand xplParseXmlCommand;
 extern xplCommand xplProcessingInstructionCommand;
 extern xplCommand xplRegexMatchCommand;
 extern xplCommand xplRegexSplitCommand;
+extern xplCommand xplRemoveDBCommand;
+extern xplCommand xplRemoveMiddlewareCommand;
 extern xplCommand xplRenameCommand;
 extern xplCommand xplReplaceIfUndefinedCommand;
 extern xplCommand xplReplicateCommand;
+extern xplCommand xplRestartCommand;
 extern xplCommand xplReturnCommand;
 extern xplCommand xplSaveCommand;
 extern xplCommand xplSerializeCommand;
@@ -76,8 +87,11 @@ extern xplCommand xplSessionGetObjectCommand;
 extern xplCommand xplSessionRemoveObjectCommand;
 extern xplCommand xplSessionSetObjectCommand;
 extern xplCommand xplSetLocalCommand;
+extern xplCommand xplSetOptionCommand;
 extern xplCommand xplSetParamCommand;
 extern xplCommand xplSetResponseCommand;
+extern xplCommand xplSetSaModeCommand;
+extern xplCommand xplShutdownCommand;
 extern xplCommand xplSleepCommand;
 extern xplCommand xplSqlCommand;
 extern xplCommand xplStackClearCommand;
@@ -85,6 +99,7 @@ extern xplCommand xplStackIsEmptyCommand;
 extern xplCommand xplStackLocalizeCommand;
 extern xplCommand xplStackPopCommand;
 extern xplCommand xplStackPushCommand;
+extern xplCommand xplStartThreadsAndWaitCommand;
 extern xplCommand xplStartTimerCommand;
 extern xplCommand xplStringerCommand;
 extern xplCommand xplSuppressMacrosCommand;
@@ -96,33 +111,12 @@ extern xplCommand xplUnstringerCommand;
 extern xplCommand xplUriEncodeCommand;
 extern xplCommand xplUriEscapeParamCommand;
 extern xplCommand xplValueOfCommand;
+extern xplCommand xplWaitForThreadsCommand;
 extern xplCommand xplWhenCommand;
 extern xplCommand xplWithCommand;
 
 #ifdef _USE_CRASH_COMMAND
 extern xplCommand xplCrashCommand;
-#endif
-
-#ifdef _THREADING_SUPPORT
-extern xplCommand xplStartThreadsAndWaitCommand;
-extern xplCommand xplWaitForThreadsCommand;
-#endif
-
-#ifdef _DYNACONF_SUPPORT
-extern xplCommand xplAddDBCommand;
-extern xplCommand xplAddMiddlewareCommand;
-extern xplCommand xplChangeDBCommand;
-extern xplCommand xplChangeMiddlewareCommand;
-extern xplCommand xplClearMiddlewareCommand;
-extern xplCommand xplGetDBCommand;
-extern xplCommand xplGetMiddlewareCommand;
-extern xplCommand xplGetSaModeCommand;
-extern xplCommand xplRemoveDBCommand;
-extern xplCommand xplRemoveMiddlewareCommand;
-extern xplCommand xplRestartCommand;
-extern xplCommand xplSetOptionCommand;
-extern xplCommand xplSetSaModeCommand;
-extern xplCommand xplShutdownCommand;
 #endif
 
 #ifdef _FILEOP_SUPPORT

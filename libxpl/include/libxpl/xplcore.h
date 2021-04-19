@@ -86,7 +86,6 @@ XPLPUBFUN xplDocumentPtr XPLCALL
 XPLPUBFUN void XPLCALL
 	xplDocumentFree(xplDocumentPtr doc);
 
-#ifdef _THREADING_SUPPORT
 XPLPUBFUN bool XPLCALL
 	xplEnsureDocThreadSupport(xplDocumentPtr doc);
 XPLPUBFUN void XPLCALL
@@ -99,7 +98,6 @@ XPLPUBFUN void XPLCALL
 	xplDiscardSuspendedThreadDocs(xplDocumentPtr doc);
 XPLPUBFUN void XPLCALL
 	xplFinalizeDocThreads(xplDocumentPtr doc, bool force_mutex_cleanup);
-#endif
 
 /* per-document node stack (for :stack-*) */
 XPLPUBFUN void XPLCALL
