@@ -1446,5 +1446,12 @@ xplError xplProcessFileEx(
 	bool checkAbsPath
 )
 {
-	return xplProcessFile(basePath, relativePath, params, session, docOut, checkAbsPath);
+	const xmlChar *wrapper;
+
+	wrapper = xplMWGetWrapper(relativePath);
+	if (!wrapper)
+		return xplProcessFile(basePath, relativePath, params, session, docOut, checkAbsPath);
+	xplParamAddValue(params, BAD_CAST "OriginalFile", BAD_CAST XPL_STRDUP((char*) wrapper), XPL_PARAM_TYPE_USERDATA);
+	xplParamsLockValue(params, BAD_CAST "OriginalFile", true);
+	return xplProcessFile(basePath, wrapper, params, session, docOut, checkAbsPath);
 }
