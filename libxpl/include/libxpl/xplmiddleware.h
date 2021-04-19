@@ -23,6 +23,8 @@ typedef enum _xplMWResult
 	XPL_MW_OUT_OF_MEMORY
 } xplMWResult;
 
+XPLPUBFUN const xmlChar* XPLCALL
+	xplMWResultToString(xplMWResult res);
 XPLPUBFUN xplMWResult XPLCALL
 	xplMWAddEntry(const xmlChar *regexString, const xmlChar *wrapperFile, bool allowReplace);
 XPLPUBFUN xplMWResult XPLCALL

@@ -86,6 +86,25 @@ static xplMWEntryPtr _locateMWEntry(const xmlChar *regexString)
 	return NULL;
 }
 
+const xmlChar* xplMWResultToString(xplMWResult res)
+{
+	switch (res)
+	{
+	case XPL_MW_OK:
+		return BAD_CAST "no error";
+	case XPL_MW_ALREADY_EXISTS:
+		return BAD_CAST "entry with this regex already exists";
+	case XPL_MW_NOT_FOUND:
+		return BAD_CAST "entry not found";
+	case XPL_MW_BAD_REGEX:
+		return BAD_CAST "bad regex";
+	case XPL_MW_OUT_OF_MEMORY:
+		return BAD_CAST "out of memory";
+	default:
+		return BAD_CAST "unknown error";
+	}
+}
+
 xplMWResult xplMWAddEntry(const xmlChar *regexString, const xmlChar *wrapperFile, bool allowReplace)
 {
 	xplMWEntryPtr old;
