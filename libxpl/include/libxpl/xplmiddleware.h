@@ -6,22 +6,37 @@
 #define __xplwrappers_H
 
 #include "Configuration.h"
+#include <libxml/tree.h>
 #include <libxml/xmlstring.h>
+#include <libxpl/xpltree.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct _xplWrapperMapEntry xplWrapperMapEntry, *xplWrapperMapEntryPtr;
+typedef enum _xplMWResult
+{
+	XPL_MW_OK,
+	XPL_MW_ALREADY_EXISTS,
+	XPL_MW_NOT_FOUND,
+	XPL_MW_BAD_REGEX,
+	XPL_MW_OUT_OF_MEMORY
+} xplMWResult;
 
-XPLPUBFUN xplWrapperMapEntryPtr XPLCALL
-	xplWrapperMapAddEntry(xmlChar *regexString, xmlChar *wrapperFile);
+XPLPUBFUN xplMWResult XPLCALL
+	xplMWAddEntry(const xmlChar *regexString, const xmlChar *wrapperFile, bool allowReplace);
+XPLPUBFUN xplMWResult XPLCALL
+	xplMWChangeEntry(const xmlChar *regexString, const xmlChar *wrapperFile, bool allowCreate);
+XPLPUBFUN xplMWResult XPLCALL
+	xplMWRemoveEntry(const xmlChar *regexString, bool ignoreMissing);
+XPLPUBFUN xmlNodePtr XPLCALL
+	xplMWListEntries(xmlDocPtr doc, xplQName qname);
 XPLPUBFUN xmlChar* XPLCALL
-	xplMapDocWrapper(xmlChar *filename);
+	xplMWGetWrapper(const xmlChar *filename);
 XPLPUBFUN bool XPLCALL
-	xplInitWrapperMap(void);
+	xplInitMiddleware(void);
 XPLPUBFUN void XPLCALL
-	xplCleanupWrapperMap(void);
+	xplCleanupMiddleware(void);
 
 #ifdef __cplusplus
 }

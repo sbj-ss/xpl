@@ -5,109 +5,168 @@
 #include <libxpl/xpltree.h>
 #include <oniguruma.h>
 
-static XPR_MUTEX mapper_interlock;
-static bool mapper_interlock_initialized = false;
+static XPR_MUTEX middleware_interlock;
+static bool middleware_interlock_initialized = false;
 
-/* prologue/epilogue/etc path mapper */
-typedef struct _xplWrapperMapEntry xplWrapperMapEntry;
-typedef xplWrapperMapEntry *xplWrapperMapEntryPtr;
-struct _xplWrapperMapEntry {
+typedef struct _xplMWEntry *xplMWEntryPtr;
+
+typedef struct _xplMWEntry
+{
 	xmlChar *regex_string;
 	xmlChar *wrapper_file;
 	regex_t *regex;
-	xplWrapperMapEntryPtr next;
-};
+	xplMWEntryPtr prev;
+	xplMWEntryPtr next;
+} xplMWEntry;
 
-static xplWrapperMapEntryPtr wrappers;
-
-static xplWrapperMapEntryPtr _createWrapperMapEntry(xmlChar *regexString, xmlChar *wrapperFile, regex_t *regex)
+typedef struct _xplMWEntries
 {
-	xplWrapperMapEntryPtr ret = (xplWrapperMapEntryPtr) XPL_MALLOC(sizeof(xplWrapperMapEntry));
-	if (!ret)
-		return NULL;
-	ret->regex_string = regexString;
-	ret->wrapper_file = wrapperFile;
-	ret->regex = regex;
-	ret->next = NULL;
-	return ret;
-}
+	xplMWEntryPtr first;
+	xplMWEntryPtr last;
+} xplMWEntries, *xplMWEntriesPtr;
 
-static void _freeWrapperMapEntry(xplWrapperMapEntryPtr cur)
+static xplMWEntries middlewares;
+
+static void _clearMWEntry(xplMWEntryPtr cur, bool removeCarrier)
 {
-	if (cur)
-	{
-		if (cur->regex_string) XPL_FREE(cur->regex_string);
-		if (cur->wrapper_file) XPL_FREE(cur->wrapper_file);
-		if (cur->regex) onig_free(cur->regex);
+	if (!cur)
+		return;
+	if (cur->regex_string)
+		XPL_FREE(cur->regex_string);
+	if (cur->wrapper_file)
+		XPL_FREE(cur->wrapper_file);
+	if (cur->regex)
+		onig_free(cur->regex);
+	if (removeCarrier)
 		XPL_FREE(cur);
-	}
 }
 
-bool xplInitWrapperMap()
-{
-	if (!mapper_interlock_initialized)
-	{
-		if (!xprMutexInit(&mapper_interlock))
-			return false;
-		mapper_interlock_initialized = true;
-	}
-	return true;
-}
-
-void xplCleanupWrapperMap(void)
-{
-	xplWrapperMapEntryPtr cur = wrappers, next;
-
-	while (cur)
-	{
-		next = cur->next;
-		_freeWrapperMapEntry(cur);
-		cur = next;
-	}
-	wrappers = NULL;
-	if (mapper_interlock_initialized)
-	{
-		xprMutexCleanup(&mapper_interlock);
-		mapper_interlock_initialized = false;
-	}
-}
-
-xplWrapperMapEntryPtr xplWrapperMapAddEntry(xmlChar *regexString, xmlChar *wrapperFile)
+static xplMWResult _changeMWEntry(xplMWEntryPtr cur, const xmlChar *regexString, const xmlChar *wrapperFile, bool clear)
 {
 	regex_t *regex;
 	OnigErrorInfo err_info;
-	xplWrapperMapEntryPtr entry, cur;
 
 	if (onig_new(&regex, regexString, regexString + xmlStrlen(regexString),
 		ONIG_OPTION_NONE, ONIG_ENCODING_UTF8, ONIG_SYNTAX_PERL_NG, &err_info) != ONIG_NORMAL)
-		return NULL;
-	entry = _createWrapperMapEntry(regexString, wrapperFile, regex);
-	if (!entry)
-		return NULL;
-	if ((cur = wrappers))
-	{
-		while (cur->next)
-			cur = cur->next;
-		cur->next = entry;
-	} else
-		wrappers = entry;
-	return entry;
+		return XPL_MW_BAD_REGEX;
+	if (clear)
+		_clearMWEntry(cur, false);
+	cur->regex_string = BAD_CAST XPL_STRDUP((char*) regexString);
+	cur->wrapper_file = BAD_CAST XPL_STRDUP((char*) wrapperFile);
+	cur->regex = regex;
+	return XPL_MW_OK;
 }
 
-xmlChar* xplMapDocWrapper(xmlChar *filename)
+static xplMWResult _createMWEntry(const xmlChar *regexString, const xmlChar *wrapperFile)
 {
-	xplWrapperMapEntryPtr cur;
-	OnigRegion *region;
-	xmlChar *ret = NULL, *fn_end;
+	xplMWEntryPtr entry;
+	xplMWResult res;
 
-	cur = wrappers;
+	entry = (xplMWEntryPtr) XPL_MALLOC(sizeof(xplMWEntry));
+	if (!entry)
+		return XPL_MW_OUT_OF_MEMORY;
+	memset(entry, 0, sizeof(xplMWEntry));
+	res = _changeMWEntry(entry, regexString, wrapperFile, false);
+	if (res != XPL_MW_OK)
+	{
+		_clearMWEntry(entry, true);
+		return res;
+	}
+	APPEND_NODE_TO_LIST(middlewares.first, middlewares.last, entry);
+	return XPL_MW_OK;
+}
+
+static xplMWEntryPtr _locateMWEntry(const xmlChar *regexString)
+{
+	xplMWEntryPtr cur;
+
+	for (cur = middlewares.first; cur; cur = cur->next)
+		if (!xmlStrcmp(cur->regex_string, regexString))
+			return cur;
+	return NULL;
+}
+
+xplMWResult xplMWAddEntry(const xmlChar *regexString, const xmlChar *wrapperFile, bool allowReplace)
+{
+	xplMWEntryPtr old;
+
+	if ((old = _locateMWEntry(regexString)))
+	{
+		if (allowReplace)
+			return _changeMWEntry(old, regexString, wrapperFile, false);
+		else
+			return XPL_MW_ALREADY_EXISTS;
+	}
+	return _createMWEntry(regexString, wrapperFile);
+}
+
+xplMWResult xplMWChangeEntry(const xmlChar *regexString, const xmlChar *wrapperFile, bool allowCreate)
+{
+	xplMWEntryPtr old;
+
+	if (!(old = _locateMWEntry(regexString)))
+	{
+		if (allowCreate)
+			return _createMWEntry(regexString, wrapperFile);
+		else
+			return XPL_MW_NOT_FOUND;
+	}
+	return _changeMWEntry(old, regexString, wrapperFile, true);
+}
+
+xplMWResult xplMWRemoveEntry(const xmlChar *regexString, bool ignoreMissing)
+{
+	xplMWEntryPtr old;
+
+	if (!(old = _locateMWEntry(regexString)))
+	{
+		if (ignoreMissing)
+			return XPL_MW_OK;
+		else
+			return XPL_MW_NOT_FOUND;
+	}
+	if (middlewares.first == old)
+		middlewares.first = old->next;
+	if (middlewares.last == old)
+		middlewares.last = old->prev;
+	if (old->prev)
+		old->prev->next = old->next;
+	if (old->next)
+		old->next->prev = old->prev;
+	_clearMWEntry(old, true);
+	return XPL_MW_OK;
+}
+
+xmlNodePtr xplMWListEntries(xmlDocPtr doc, xplQName qname)
+{
+	xplMWEntryPtr entry;
+	xmlNodePtr head = NULL, tail = NULL, cur;
+
+	for (entry = middlewares.first; entry; entry = entry->next)
+	{
+		cur = xmlNewDocNode(doc, qname.ns, qname.ncname, NULL);
+		xmlNewProp(cur, BAD_CAST "regex", entry->regex_string);
+		xmlNewProp(cur, BAD_CAST "file", entry->wrapper_file);
+		APPEND_NODE_TO_LIST(head, tail, cur);
+	}
+	return head;
+}
+
+xmlChar* xplMWGetWrapper(const xmlChar *filename)
+{
+	xplMWEntryPtr cur;
+	OnigRegion *region;
+	xmlChar *ret = NULL;
+	const xmlChar *fn_end;
+
+	cur = middlewares.first;
 	if (!cur)
 		return NULL; /* speedup */
 	region = onig_region_new();
 	if (!region)
 		return NULL;
 	fn_end = filename + xmlStrlen(filename);
-	SUCCEED_OR_DIE(xprMutexAcquire(&mapper_interlock)); /* regex isn't thread safe */
+	SUCCEED_OR_DIE(xprMutexAcquire(&middleware_interlock)); /* regex isn't thread safe */
 	while (cur)
 	{
 		if (onig_match(cur->regex, filename, fn_end, filename, region, 0) != ONIG_MISMATCH)
@@ -117,7 +176,37 @@ xmlChar* xplMapDocWrapper(xmlChar *filename)
 		}
 		cur = cur->next;
 	}
-	SUCCEED_OR_DIE(xprMutexRelease(&mapper_interlock));
+	SUCCEED_OR_DIE(xprMutexRelease(&middleware_interlock));
 	onig_region_free(region, 1);
 	return ret;
 }
+
+bool xplInitMiddleware()
+{
+	if (!middleware_interlock_initialized)
+	{
+		if (!xprMutexInit(&middleware_interlock))
+			return false;
+		middleware_interlock_initialized = true;
+	}
+	return true;
+}
+
+void xplCleanupMiddleware(void)
+{
+	xplMWEntryPtr cur = middlewares.first, next;
+
+	while (cur)
+	{
+		next = cur->next;
+		_clearMWEntry(cur, true);
+		cur = next;
+	}
+	middlewares.first = middlewares.last = NULL;
+	if (middleware_interlock_initialized)
+	{
+		xprMutexCleanup(&middleware_interlock);
+		middleware_interlock_initialized = false;
+	}
+}
+

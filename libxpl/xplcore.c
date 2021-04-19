@@ -1260,7 +1260,7 @@ static ParserStartStopStep start_stop_steps[] =
 	{ xplInitOptions, xplCleanupOptions, "options" },
 	{ xplInitNamePointers, NULL, "name pointers" },
 	{ xplInitLibraryVersions, xplCleanupLibraryVersions, "library versions" },
-	{ xplInitWrapperMap, xplCleanupWrapperMap, "wrappers" },
+	{ xplInitMiddleware, xplCleanupMiddleware, "middleware" },
 	{ xplInitDatabases, xplCleanupDatabases, "databases" },
 	{ xplInitMessages, xplCleanupMessages, "messages" },
 	{ xplInitCommands, xplCleanupCommands, "commands" },
