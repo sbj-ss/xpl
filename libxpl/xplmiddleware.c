@@ -137,6 +137,20 @@ xplMWResult xplMWRemoveEntry(const xmlChar *regexString, bool ignoreMissing)
 	return XPL_MW_OK;
 }
 
+xplMWResult xplMWClear()
+{
+	xplMWEntryPtr cur = middlewares.first, next;
+
+	while (cur)
+	{
+		next = cur->next;
+		_clearMWEntry(cur, true);
+		cur = next;
+	}
+	middlewares.first = middlewares.last = NULL;
+	return XPL_MW_OK;
+}
+
 xmlNodePtr xplMWListEntries(xmlDocPtr doc, xplQName qname)
 {
 	xplMWEntryPtr entry;
@@ -194,15 +208,7 @@ bool xplInitMiddleware()
 
 void xplCleanupMiddleware(void)
 {
-	xplMWEntryPtr cur = middlewares.first, next;
-
-	while (cur)
-	{
-		next = cur->next;
-		_clearMWEntry(cur, true);
-		cur = next;
-	}
-	middlewares.first = middlewares.last = NULL;
+	(void) xplMWClear();
 	if (middleware_interlock_initialized)
 	{
 		xprMutexCleanup(&middleware_interlock);

@@ -29,6 +29,8 @@ XPLPUBFUN xplMWResult XPLCALL
 	xplMWChangeEntry(const xmlChar *regexString, const xmlChar *wrapperFile, bool allowCreate);
 XPLPUBFUN xplMWResult XPLCALL
 	xplMWRemoveEntry(const xmlChar *regexString, bool ignoreMissing);
+XPLPUBFUN xplMWResult XPLCALL
+	xplMWClear(void);
 XPLPUBFUN xmlNodePtr XPLCALL
 	xplMWListEntries(xmlDocPtr doc, xplQName qname);
 XPLPUBFUN xmlChar* XPLCALL
