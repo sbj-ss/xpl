@@ -50,7 +50,9 @@ user.dict
 # core dumps
 **/core
 # parser test configs
-**/xpl.xml
+/xpl/*.xpl
+/xplweb/*.xpl
+/xplweb/*.conf
 # internal todo list
 /ToDo.txt
 # debug memory dumps
@@ -61,3 +63,5 @@ user.dict
 /command-tests/composite/save/a/*
 # private configs
 /command-tests/composite/conf/*.xpl
+# xplweb test upload directory
+/xplweb/upload
