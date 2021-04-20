@@ -48,33 +48,33 @@ typedef struct _xplMacro
 XPLPUBFUN xplMacroExpansionState XPLCALL
 	xplMacroExpansionStateFromString(const xmlChar *state);
 XPLPUBFUN xmlChar* XPLCALL
-	xplMacroExpansionStateGetter(xplCommandInfoPtr commandInfo, const xmlChar *expect, xplMacroExpansionState *result);
+	xplMacroExpansionStateGetter(const xplCommandInfoPtr commandInfo, const xmlChar *expect, xplMacroExpansionState *result);
 XPLPUBFUN xplMacroPtr XPLCALL
-	xplMacroCreate(xmlChar *aId, xmlNodePtr aContent, xplMacroExpansionState expansionState);
+	xplMacroCreate(const xmlChar *aId, xmlNodePtr aContent, xplMacroExpansionState expansionState);
 XPLPUBFUN void XPLCALL
 	xplMacroFree(xplMacroPtr macro);
 XPLPUBFUN xplMacroPtr XPLCALL
-	xplMacroCopy(xplMacroPtr macro, xmlNodePtr parent);
+	xplMacroCopy(const xplMacroPtr macro, const xmlNodePtr parent);
 XPLPUBFUN void XPLCALL
 	xplMacroTableFree(xmlHashTablePtr macros);
 XPLPUBFUN xplMacroPtr XPLCALL
-	xplMacroGetFromHashByElement(xmlHashTablePtr hash, xmlNodePtr element);
+	xplMacroGetFromHashByElement(const xmlHashTablePtr hash, const xmlNodePtr element);
 XPLPUBFUN xplMacroPtr XPLCALL
-	xplMacroGetFromHashByQName(xmlHashTablePtr hash, xplQName qname);
+	xplMacroGetFromHashByQName(const xmlHashTablePtr hash, const xplQName qname);
 XPLPUBFUN void XPLCALL
 	xplMacroAddToHash(xmlHashTablePtr hash, xplMacroPtr macro);
 XPLPUBFUN xplMacroPtr XPLCALL
-	xplMacroLookupByElement(xmlNodePtr carrier, xmlNodePtr element);
+	xplMacroLookupByElement(const xmlNodePtr carrier, const xmlNodePtr element);
 XPLPUBFUN xplMacroPtr XPLCALL
-	xplMacroLookupByQName(xmlNodePtr carrier, xplQName qname);
+	xplMacroLookupByQName(const xmlNodePtr carrier, const xplQName qname);
 XPLPUBFUN xmlChar* XPLCALL
-	xplMacroTableToString(xmlNodePtr element, xmlChar* delimiter, bool unique);
+	xplMacroTableToString(const xmlNodePtr element, const xmlChar* delimiter, bool unique);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplMacroToNode(xplMacroPtr macro, xplQName tagname, xmlNodePtr parent);
+	xplMacroToNode(const xplMacroPtr macro, const xplQName tagname, const xmlNodePtr parent);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplMacroTableToNodeList(xmlNodePtr element, xplQName tagname, bool unique, xmlNodePtr parent);
+	xplMacroTableToNodeList(const xmlNodePtr element, const xplQName tagname, bool unique, const xmlNodePtr parent);
 XPLPUBFUN xmlHashTablePtr XPLCALL
-	xplCloneMacroTableUpwards(xmlNodePtr src, xmlNodePtr parent);
+	xplCloneMacroTableUpwards(const xmlNodePtr src, const xmlNodePtr parent);
 
 #ifdef __cplusplus
 }
