@@ -310,7 +310,7 @@ xplConfigEntry config_entries[] =
 
 #define CONFIG_ENTRIES_COUNT (sizeof(config_entries) / sizeof(config_entries[0]))
 
-int xplGetBooleanValue(xmlChar* str)
+int xplGetBooleanValue(const xmlChar* str)
 {
 	if (!str)
 		return 0;
@@ -414,7 +414,7 @@ static xmlChar *xplGetOptionValueInner(xplConfigEntryPtr p, bool showPasswords)
 	return NULL;
 }
 
-xmlChar *xplGetOptionValue(xmlChar *optionName, bool showPasswords, bool *found)
+xmlChar *xplGetOptionValue(const xmlChar *optionName, bool showPasswords, bool *found)
 {
 	xplConfigEntryPtr p;
 
@@ -430,7 +430,7 @@ xmlChar *xplGetOptionValue(xmlChar *optionName, bool showPasswords, bool *found)
 	return xplGetOptionValueInner(p, showPasswords);
 }
 
-xmlNodePtr xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showPasswords)
+xmlNodePtr xplOptionsToList(const xmlNodePtr parent, const xplQName tagname, bool showPasswords)
 {
 	unsigned int i;
 	xmlNodePtr ret = NULL, tail = NULL, cur, value;
@@ -467,11 +467,12 @@ xmlNodePtr xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showPasswo
 	return ret;
 }
 
-xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool byDefault)
+xplSetOptionResult xplSetOptionValue(const xmlChar *optionName, const xmlChar *value, bool byDefault)
 {
 	xplConfigEntryPtr p;
 	int int_value = 0;
 	xefCryptoDigestParams dp;
+	xmlChar *hex;
 
 	p = (xplConfigEntryPtr) xmlHashLookup(config_entries_hash, optionName);
 	if (!p)
@@ -497,11 +498,11 @@ xplSetOptionResult xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool b
 					dp.digest_method = XEF_CRYPTO_DIGEST_METHOD_RIPEMD160;
 					if (!xefCryptoDigest(&dp))
 						return XPL_SET_OPTION_INTERNAL_ERROR;
-					value = xstrBufferToHexAlloc(dp.digest, dp.digest_size, false);
+					hex = xstrBufferToHexAlloc(dp.digest, dp.digest_size, false);
 					XPL_FREE(dp.digest);
 				} else
-					value = NULL;
-				*((xmlChar**) p->value_ptr) = value;
+					hex = NULL;
+				*((xmlChar**) p->value_ptr) = hex;
 			} else
 				*((xmlChar**) p->value_ptr) = BAD_CAST XPL_STRDUP((char*) value);
 			return XPL_SET_OPTION_OK;

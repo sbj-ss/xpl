@@ -16,13 +16,13 @@ extern "C" {
 #endif
 
 XPLPUBFUN int XPLCALL
-	xplGetBooleanValue(xmlChar* str);
+	xplGetBooleanValue(const xmlChar* str);
 /* get option value. result must be freed. */
 XPLPUBFUN xmlChar* XPLCALL
-	xplGetOptionValue(xmlChar *optionName, bool showPasswords, bool *found);
+	xplGetOptionValue(const xmlChar *optionName, bool showPasswords, bool *found);
 /* get all options in a node list */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplOptionsToList(xmlNodePtr parent, xplQName tagname, bool showPasswords);
+	xplOptionsToList(const xmlNodePtr parent, const xplQName tagname, bool showPasswords);
 
 typedef enum _xplSetOptionResult
 {
@@ -34,7 +34,7 @@ typedef enum _xplSetOptionResult
 
 /* set option value. threads must be locked first. access rights aren't checked here */
 XPLPUBFUN xplSetOptionResult XPLCALL
-	xplSetOptionValue(xmlChar *optionName, xmlChar *value, bool byDefault);
+	xplSetOptionValue(const xmlChar *optionName, const xmlChar *value, bool byDefault);
 
 XPLPUBFUN bool XPLCALL
 	xplInitOptions(void);
