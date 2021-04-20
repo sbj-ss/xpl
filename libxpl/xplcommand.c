@@ -119,7 +119,7 @@ void xplUnregisterCommand(const xmlChar *name)
 	cmd->flags &= ~XPL_CMD_FLAG_INITIALIZED;
 }
 
-xplCommandPtr xplGetCommand(xmlNodePtr el)
+xplCommandPtr xplGetCommand(const xmlNodePtr el)
 {
 	return (xplCommandPtr) xmlHashLookup(commands, el->name);
 }
@@ -163,7 +163,7 @@ static void commandListScanner(void *payload, void *data, XML_HCBNC xmlChar *nam
 	APPEND_NODE_TO_LIST(ctxt->head, ctxt->tail, cur);
 }
 
-xmlNodePtr xplSupportedCommandsToList(xmlNodePtr parent, const xplQName tagname)
+xmlNodePtr xplSupportedCommandsToList(const xmlNodePtr parent, const xplQName tagname)
 {
 	CommandListScannerContext ctxt;
 	unsigned int i;
@@ -341,7 +341,7 @@ static const xplParamValueGetter value_getters[] =
 };
 
 
-xmlNodePtr xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandInfo)
+xmlNodePtr xplGetCommandParams(const xplCommandPtr command, xplCommandInfoPtr commandInfo)
 {
 	xmlAttrPtr attr = commandInfo->element->properties;
 	xplCmdParamPtr param;
@@ -402,7 +402,7 @@ done:
 	return ret;
 }
 
-xmlNodePtr xplFillCommandInfo(xplCommandPtr command, xplCommandInfoPtr info, bool inPrologue)
+xmlNodePtr xplFillCommandInfo(const xplCommandPtr command, xplCommandInfoPtr info, bool inPrologue)
 {
 	xmlNodePtr error;
 
@@ -477,14 +477,14 @@ static void _paramClearValueScanner(void *payload, void *data, XML_HCBNC xmlChar
 	}
 }
 
-void xplClearCommandParams(xplCommandPtr command, void *values)
+void xplClearCommandParams(const xplCommandPtr command, void *values)
 {
 	if (!command->param_hash || !values)
 		return;
 	xmlHashScan(command->param_hash, _paramClearValueScanner, values);
 }
 
-void xplClearCommandInfo(xplCommandPtr command, xplCommandInfoPtr info)
+void xplClearCommandInfo(const xplCommandPtr command, xplCommandInfoPtr info)
 {
 	if (info->content)
 	{
@@ -506,7 +506,7 @@ void xplClearCommandInfo(xplCommandPtr command, xplCommandInfoPtr info)
 	info->prologue_state = NULL;
 }
 
-xmlXPathObjectPtr xplSelectNodes(xplCommandInfoPtr commandInfo, xmlNodePtr src, xmlChar *expr)
+xmlXPathObjectPtr xplSelectNodes(const xplCommandInfoPtr commandInfo, const xmlNodePtr src, const xmlChar *expr)
 {
 	if (!src | !commandInfo)
 		return NULL;
@@ -533,7 +533,7 @@ bool xplLoadableModulesInit(void)
 	return !!loaded_modules;
 }
 
-xplLoadModuleResult xplLoadModule(xmlChar *name, xmlChar **error_data)
+xplLoadModuleResult xplLoadModule(const xmlChar *name, xmlChar **error_data)
 {
 #define ASSIGN_ERR_DATA(x) if (error_data) *error_data = x;
 	XPR_SHARED_OBJECT_HANDLE hmodule;
@@ -725,7 +725,7 @@ static void loadedModulesListScanner(void *payload, void *data, XML_HCBNC xmlCha
 		ctxt->last = ctxt->first = cur;
 }
 
-xmlNodePtr xplLoadedModulesToNodeList(const xplQName tagname, xmlNodePtr parent)
+xmlNodePtr xplLoadedModulesToNodeList(const xplQName tagname, const xmlNodePtr parent)
 {
 	LoadedModulesListScannerCtxt ctxt;
 

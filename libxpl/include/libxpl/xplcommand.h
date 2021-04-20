@@ -189,30 +189,30 @@ XPLPUBFUN xplLoadModuleResult XPLCALL
 XPLPUBFUN void XPLCALL
 	xplUnregisterCommand(const xmlChar* name);
 XPLPUBFUN xplCommandPtr XPLCALL
-	xplGetCommand(xmlNodePtr el);
+	xplGetCommand(const xmlNodePtr el);
 XPLPUBFUN bool XPLCALL
 	xplCommandSupported(const xmlChar* name);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplSupportedCommandsToList(xmlNodePtr parent, const xplQName tagname);
+	xplSupportedCommandsToList(const xmlNodePtr parent, const xplQName tagname);
 XPLPUBFUN void XPLCALL
 	xplCleanupCommands(void);
 
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplGetCommandParams(xplCommandPtr command, xplCommandInfoPtr commandInfo);
+	xplGetCommandParams(const xplCommandPtr command, xplCommandInfoPtr commandInfo);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplFillCommandInfo(xplCommandPtr command, xplCommandInfoPtr info, bool inPrologue);
+	xplFillCommandInfo(const xplCommandPtr command, xplCommandInfoPtr info, bool inPrologue);
 XPLPUBFUN void XPLCALL
-	xplClearCommandParams(xplCommandPtr command, void *values);
+	xplClearCommandParams(const xplCommandPtr command, void *values);
 XPLPUBFUN void XPLCALL
-	xplClearCommandInfo(xplCommandPtr command, xplCommandInfoPtr info);
+	xplClearCommandInfo(const xplCommandPtr command, xplCommandInfoPtr info);
 
 XPLPUBFUN xmlXPathObjectPtr XPLCALL
-	xplSelectNodes(xplCommandInfoPtr commandInfo, xmlNodePtr src, xmlChar *expr);
+	xplSelectNodes(const xplCommandInfoPtr commandInfo, const xmlNodePtr src, const xmlChar *expr);
 
 XPLPUBFUN bool XPLCALL
 	xplLoadableModulesInit(void);
 XPLPUBFUN xplLoadModuleResult XPLCALL
-	xplLoadModule(xmlChar *name, xmlChar **error_data);
+	xplLoadModule(const xmlChar *name, xmlChar **error_data);
 XPLPUBFUN void XPLCALL
 	xplUnloadModule(const xmlChar *name);
 XPLPUBFUN bool XPLCALL
@@ -220,7 +220,7 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN xmlChar* XPLCALL
 	xplLoadedModulesToString(const xmlChar *delimiter);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplLoadedModulesToNodeList(const xplQName tagname, xmlNodePtr parent);
+	xplLoadedModulesToNodeList(const xplQName tagname, const xmlNodePtr parent);
 XPLPUBFUN void XPLCALL
 	xplLoadableModulesCleanup(void);
 #ifdef __cplusplus
