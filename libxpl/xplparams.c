@@ -22,7 +22,7 @@ xplExpectType xplExpectTypeFromString(const xmlChar *expect)
 	return XPL_EXPECT_UNKNOWN;
 }
 
-xmlChar* xplExpectTypeGetter(xplCommandInfoPtr commandInfo, const xmlChar *expect, int *result)
+xmlChar* xplExpectTypeGetter(const xplCommandInfoPtr commandInfo, const xmlChar *expect, int *result)
 {
 	UNUSED_PARAM(commandInfo);
 	if (!result)
@@ -33,10 +33,10 @@ xmlChar* xplExpectTypeGetter(xplCommandInfoPtr commandInfo, const xmlChar *expec
 	return NULL;
 }
 
-static void xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, xmlChar *out)
+static void xplCleanTextValueInner(const xmlChar *data_buf, xplExpectType expect, xmlChar *out)
 {
 	bool dot = 0;
-	xmlChar *p = data_buf;
+	const xmlChar *p = data_buf;
 	bool leading_zero = false, leading_x = false;
 
 	if (!p)
@@ -101,7 +101,7 @@ static void xplCleanTextValueInner(xmlChar *data_buf, xplExpectType expect, xmlC
 	*out = 0;
 }
 
-xmlChar* xplCleanTextValue(xmlChar *data_buf, xplExpectType expect)
+xmlChar* xplCleanTextValue(const xmlChar *data_buf, xplExpectType expect)
 {
 	xmlChar *ret;
 
@@ -139,7 +139,7 @@ int xplParamTypeMaskFromString(const xmlChar* mask)
 	return ret;
 }
 
-xmlChar* xplParamTypeMaskGetter(xplCommandInfoPtr info, const xmlChar *mask, int *result)
+xmlChar* xplParamTypeMaskGetter(const xplCommandInfoPtr info, const xmlChar *mask, int *result)
 {
 	UNUSED_PARAM(info);
 	if ((*result = xplParamTypeMaskFromString(mask)) == -1)
@@ -160,7 +160,7 @@ bool xplParamTypeIsAtomic(xplParamType type)
 }
 
 /* xplParamFileInfo */
-xplParamFileInfoPtr xplParamFileInfoCreate(xmlChar *realPath, xmlChar *filename, int Size)
+xplParamFileInfoPtr xplParamFileInfoCreate(xmlChar *realPath, xmlChar *filename, int size)
 {
 	xplParamFileInfoPtr ret;
 
@@ -169,7 +169,7 @@ xplParamFileInfoPtr xplParamFileInfoCreate(xmlChar *realPath, xmlChar *filename,
 		return NULL;
 	ret->real_path = realPath;
 	ret->filename = filename;
-	ret->size = Size;
+	ret->size = size;
 	return ret;
 }
 
@@ -404,7 +404,7 @@ xmlChar* xplParamValuesToString(const xplParamValuesPtr values, bool unique, con
 	return ret;
 }
 
-xmlNodePtr xplParamValuesToList(const xplParamValuesPtr values, bool unique, xplExpectType expect, const xplQName qname, xmlNodePtr parent)
+xmlNodePtr xplParamValuesToList(const xplParamValuesPtr values, bool unique, xplExpectType expect, const xplQName qname, const xmlNodePtr parent)
 {
 	xmlNodePtr ret = NULL, tail = NULL, cur, txt;
 	xmlHashTablePtr unique_table = NULL;
@@ -541,7 +541,7 @@ static void* copyParamsCallback(void *payload, XML_HCBNC xmlChar *name)
 	return xplParamValuesCopy((xplParamValuesPtr) payload);
 }
 
-xplParamsPtr xplParamsCopy(xplParamsPtr params)
+xplParamsPtr xplParamsCopy(const xplParamsPtr params)
 {
 	return xmlHashCopy((xmlHashTablePtr) params, copyParamsCallback);
 }
@@ -585,7 +585,7 @@ xplParamResult xplParamSet(const xplParamsPtr params, const xmlChar* name, const
 		return XPL_PARAM_RES_OK;
 }
 
-static xplParamValuesPtr xplParamLocateCarrier(xplParamsPtr params, const xmlChar *name)
+static xplParamValuesPtr xplParamLocateCarrier(const xplParamsPtr params, const xmlChar *name)
 {
 	xplParamValuesPtr carrier;
 	
@@ -685,7 +685,7 @@ static void xplParamsToListScanner(void *payload, void *data, XML_HCBNC xmlChar 
 	APPEND_NODE_TO_LIST(ctxt->ret, ctxt->tail, cur);
 }
 
-xmlNodePtr xplParamsToList(const xplParamsPtr params, bool unique, xplExpectType expect, const xplQName qname, xmlNodePtr parent, int typeMask)
+xmlNodePtr xplParamsToList(const xplParamsPtr params, bool unique, xplExpectType expect, const xplQName qname, const xmlNodePtr parent, int typeMask)
 {
 	xplParamsToListCtxt ctxt;
 

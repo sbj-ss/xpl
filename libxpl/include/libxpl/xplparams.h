@@ -32,9 +32,9 @@ typedef enum _xplExpectType
 XPLPUBFUN xplExpectType XPLCALL
 	xplExpectTypeFromString(const xmlChar *expect);
 XPLPUBFUN xmlChar* XPLCALL
-	xplExpectTypeGetter(xplCommandInfoPtr commandInfo, const xmlChar *expect, int *result);
+	xplExpectTypeGetter(const xplCommandInfoPtr commandInfo, const xmlChar *expect, int *result);
 XPLPUBFUN xmlChar* XPLCALL
-	xplCleanTextValue(xmlChar *data_buf, xplExpectType expect);
+	xplCleanTextValue(const xmlChar *data_buf, xplExpectType expect);
 
 typedef enum {
 	XPL_PARAM_RES_OK = 0,
@@ -57,7 +57,7 @@ typedef enum
 XPLPUBFUN int XPLCALL
 	xplParamTypeMaskFromString(const xmlChar* mask);
 XPLPUBFUN xmlChar* XPLCALL
-	xplParamTypeMaskGetter(xplCommandInfoPtr info, const xmlChar *mask, int *result);
+	xplParamTypeMaskGetter(const xplCommandInfoPtr info, const xmlChar *mask, int *result);
 XPLPUBFUN bool XPLCALL
 	xplParamTypeIsAtomic(xplParamType type);
 
@@ -70,7 +70,7 @@ typedef struct _xplParamFileInfo
 
 /* Input string parameters are eaten */
 XPLPUBFUN xplParamFileInfoPtr XPLCALL
-	xplParamFileInfoCreate(xmlChar *realPath, xmlChar *filename, int Size);
+	xplParamFileInfoCreate(xmlChar *realPath, xmlChar *filename, int size);
 XPLPUBFUN xplParamFileInfoPtr XPLCALL
 	xplParamFileInfoCopy(const xplParamFileInfoPtr src);
 XPLPUBFUN void XPLCALL	
@@ -109,7 +109,7 @@ XPLPUBFUN xmlChar* XPLCALL
 	xplParamValuesToString(const xplParamValuesPtr values, bool unique, const xmlChar *delim, xplExpectType expect);
 /* Make a list of node-packed values */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplParamValuesToList(const xplParamValuesPtr values, bool unique, xplExpectType expect, const xplQName qname, xmlNodePtr parent);
+	xplParamValuesToList(const xplParamValuesPtr values, bool unique, xplExpectType expect, const xplQName qname, const xmlNodePtr parent);
 
 /* user-defined parameters collection */
 typedef void* xplParamsPtr;
@@ -120,7 +120,7 @@ XPLPUBFUN xplParamsPtr XPLCALL
 XPLPUBFUN int XPLCALL
 	xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xplParamsPtr ret);
 XPLPUBFUN xplParamsPtr XPLCALL
-	xplParamsCopy(xplParamsPtr params);
+	xplParamsCopy(const xplParamsPtr params);
 XPLPUBFUN xplParamValuesPtr XPLCALL
 	xplParamGet(const xplParamsPtr params, const xmlChar *name);
 XPLPUBFUN xmlChar* XPLCALL
