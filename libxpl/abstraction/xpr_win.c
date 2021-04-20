@@ -169,7 +169,7 @@ xmlChar* xprGetProgramPath()
 	return ret;
 }
 
-xmlChar *xprRealPath(xmlChar *path)
+xmlChar *xprRealPath(const xmlChar *path)
 {
 	WCHAR *internal_path = NULL, *full_path = NULL;
 	xmlChar *ret = NULL;
@@ -268,7 +268,7 @@ void xprInterlockedIncrement(volatile int *value)
 }
 
 /* threads */
-void xprWaitForThreads(XPR_THREAD_HANDLE *handles, int count)
+void xprWaitForThreads(const XPR_THREAD_HANDLE *handles, int count)
 {
 	WaitForMultipleObjects((DWORD) count, handles, true, INFINITE);
 }
@@ -381,7 +381,7 @@ void xprSpawnProcessCopy()
 }
 
 /* shared objects */
-XPR_SHARED_OBJECT_HANDLE xprLoadSharedObject(xmlChar *path)
+XPR_SHARED_OBJECT_HANDLE xprLoadSharedObject(const xmlChar *path)
 {
 	WCHAR *internal_path;
 
@@ -397,7 +397,7 @@ void xprUnloadSharedObject(XPR_SHARED_OBJECT_HANDLE handle)
 	FreeLibrary(handle);
 }
 
-void* xprGetProcAddress(XPR_SHARED_OBJECT_HANDLE handle, char *name)
+void* xprGetProcAddress(XPR_SHARED_OBJECT_HANDLE handle, const char *name)
 {
 	return GetProcAddress(handle, name);
 }
@@ -443,7 +443,7 @@ void xprGetTime(XPR_TIME *t)
     clock_gettime(0, t);
 }
 
-long xprTimeDelta(XPR_TIME *after, XPR_TIME *before)
+long xprTimeDelta(const XPR_TIME *after, const XPR_TIME *before)
 {
 	time_t sec_delta = after->tv_sec - before->tv_sec;
 	long ns_delta = after->tv_nsec - before->tv_nsec;
@@ -451,7 +451,7 @@ long xprTimeDelta(XPR_TIME *after, XPR_TIME *before)
 	return sec_delta * 1000 + (ns_delta / 1000000);
 }
 
-bool xprTimeIsEmpty(XPR_TIME *t)
+bool xprTimeIsEmpty(const XPR_TIME *t)
 {
 	return !t || (!t->tv_sec && !t->tv_nsec);
 }

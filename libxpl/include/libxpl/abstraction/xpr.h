@@ -52,7 +52,7 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN xmlChar* XPLCALL /* result must be freed */
 	xprGetProgramPath(void);
 XPLPUBFUN xmlChar* XPLCALL /* result must be freed */
-	xprRealPath(xmlChar *path);
+	xprRealPath(const xmlChar *path);
 
 /* sync */
 XPLPUBFUN bool XPLCALL
@@ -82,7 +82,7 @@ XPLPUBFUN void XPLCALL
 #define XPR_DECLARE_THREAD_ROUTINE(name, param) XPR_THREAD_RETVAL name(XPR_THREAD_PARAM param)
 
 XPLPUBFUN void XPLCALL
-	xprWaitForThreads(XPR_THREAD_HANDLE *handles, int count);
+	xprWaitForThreads(const XPR_THREAD_HANDLE *handles, int count);
 XPLPUBFUN XPR_THREAD_ID XPLCALL
 	xprGetCurrentThreadId(void);
 XPLPUBFUN XPR_THREAD_HANDLE XPLCALL
@@ -102,11 +102,11 @@ XPLPUBFUN void XPLCALL
 
 /* shared objects */
 XPLPUBFUN XPR_SHARED_OBJECT_HANDLE XPLCALL
-	xprLoadSharedObject(xmlChar *path);
+	xprLoadSharedObject(const xmlChar *path);
 XPLPUBFUN void XPLCALL
 	xprUnloadSharedObject(XPR_SHARED_OBJECT_HANDLE handle);
 XPLPUBFUN void* XPLCALL
-	xprGetProcAddress(XPR_SHARED_OBJECT_HANDLE handle, char *name);
+	xprGetProcAddress(XPR_SHARED_OBJECT_HANDLE handle, const char *name);
 
 /* console */
 #define XPR_DEFAULT_CONSOLE_COLOR 0x07
@@ -126,9 +126,9 @@ XPLPUBFUN bool XPLCALL
 XPLPUBFUN void XPLCALL
 	xprGetTime(XPR_TIME *t);
 XPLPUBFUN long XPLCALL
-	xprTimeDelta(XPR_TIME *after, XPR_TIME *before);
+	xprTimeDelta(const XPR_TIME *after, const XPR_TIME *before);
 XPLPUBFUN bool XPLCALL
-	xprTimeIsEmpty(XPR_TIME *t);
+	xprTimeIsEmpty(const XPR_TIME *t);
 XPLPUBFUN void XPLCALL
 	xprSleep(int ms);
 
