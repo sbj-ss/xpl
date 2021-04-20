@@ -128,7 +128,7 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *docPath, xmlChar *filename, xp
 		XPL_FREE(full_name);
 		return ret;
 	}
-	ret->document = xmlParseFile((const char*) full_name);
+	ret->document = xmlReadFile((const char*) full_name, NULL, XPL_XML_PARSE_OPTIONS);
 	XPL_FREE(full_name);
 	if (ret->document)
 		ret->error = NULL;
@@ -145,7 +145,7 @@ xplDocumentPtr xplDocumentCreateFromMemory(xmlChar *docPath, xmlChar *origin, xp
 	xplDocumentPtr ret = xplDocumentInit(docPath, params, session);
 
 	ret->origin = origin;
-	ret->document = xmlReadMemory((const char*) origin, xmlStrlen(origin), NULL, (const char*) encoding, 0);
+	ret->document = xmlReadMemory((const char*) origin, xmlStrlen(origin), NULL, (const char*) encoding, XPL_XML_PARSE_OPTIONS);
 	if (ret->document)
 	{
 		ret->error = NULL;

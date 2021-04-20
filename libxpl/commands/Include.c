@@ -39,6 +39,7 @@ typedef struct _xplCmdIncludeParams
 	OutputFormat output_format;
 	xmlChar *post_data;
 	bool remove_source;
+	bool parse_entities;
 } xplCmdIncludeParams, *xplCmdIncludeParamsPtr;
 
 static const xplCmdIncludeParams params_stencil =
@@ -52,7 +53,8 @@ static const xplCmdIncludeParams params_stencil =
 	.input_format = INPUT_FORMAT_XML,
 	.output_format = OUTPUT_FORMAT_UNSPECIFIED,
 	.post_data = NULL,
-	.remove_source = false
+	.remove_source = false,
+	.parse_entities = true
 };
 
 static xmlChar* select_aliases[] = { BAD_CAST "source", NULL };
@@ -126,6 +128,10 @@ xplCommand xplIncludeCommand =
 			.name = BAD_CAST "removesource",
 			.type = XPL_CMD_PARAM_TYPE_BOOL,
 			.value_stencil = &params_stencil.remove_source
+		}, {
+			.name = BAD_CAST "parseentities",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.parse_entities
 		}, {
 			.name = NULL
 		}
@@ -478,6 +484,7 @@ static void cleanStep(IncludeContextPtr ctxt)
 static void buildDocumentStep(IncludeContextPtr ctxt)
 {
 	xmlChar *error_txt;
+	int options;
 
 	switch(ctxt->params->input_format)
 	{
@@ -489,7 +496,12 @@ static void buildDocumentStep(IncludeContextPtr ctxt)
 		)
 		{ /* we need a document somewhere on the way, let's build it */
 			/* no checks for content_size: we don't know how much memory is available anyway */
-			ctxt->src_node = (xmlNodePtr) xmlReadMemory((char*) ctxt->content, (int) ctxt->content_size, NULL, NULL, XML_PARSE_NODICT);
+			options = XPL_XML_PARSE_OPTIONS;
+			if (ctxt->params->parse_entities)
+				options |= XML_PARSE_NOENT;
+			else
+				options &= ~XML_PARSE_NOENT;
+			ctxt->src_node = (xmlNodePtr) xmlReadMemory((char*) ctxt->content, (int) ctxt->content_size, NULL, NULL, options);
 			if (!ctxt->src_node)
 			{
 				error_txt = xstrGetLastLibxmlError();
