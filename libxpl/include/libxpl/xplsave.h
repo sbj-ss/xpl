@@ -18,17 +18,17 @@ extern "C" {
 
 /* header, elements, props and text only. doesn't use memory manager. */
 XPLPUBFUN void XPLCALL
-	xplSafeSerializeDocument(char *filename, xmlDocPtr doc);
+	xplSafeSerializeDocument(const xmlChar *filename, xmlDocPtr doc);
 
 /* saves using correct utf-8 paths */
 XPLPUBFUN bool XPLCALL
-	xplSaveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int options);
+	xplSaveXmlDocToFile(const xmlDocPtr doc, const xmlChar *filename, const char *encoding, int options);
 
 /* for serialization commands */
 XPLPUBFUN xmlChar* XPLCALL
-	xplSerializeNodeList(xmlNodePtr cur);
+	xplSerializeNodeList(const xmlNodePtr src);
 XPLPUBFUN xmlChar* XPLCALL
-	xplSerializeNodeSet(xmlNodeSetPtr set);
+	xplSerializeNodeSet(const xmlNodeSetPtr set);
 
 #ifdef __cplusplus
 }

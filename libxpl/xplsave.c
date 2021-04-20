@@ -161,9 +161,9 @@ static void safeSerializeNodeList(FILE *fp, xmlNodePtr list, int indent)
 	}
 }
 
-void xplSafeSerializeDocument(char *filename, xmlDocPtr doc)
+void xplSafeSerializeDocument(const xmlChar *filename, xmlDocPtr doc)
 {
-	FILE *fp = fopen(filename, "w");
+	FILE *fp = xprFOpen(filename, "w");
 	if (!fp)
 		return;
 	fprintf(fp, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
@@ -186,7 +186,7 @@ static int xml_save_close_cb(void *context)
 	return 0;
 }
 
-bool xplSaveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int options)
+bool xplSaveXmlDocToFile(const xmlDocPtr doc, const xmlChar *filename, const char *encoding, int options)
 {
 	int fh;
 	xmlSaveCtxtPtr save_ctxt;
@@ -210,13 +210,14 @@ bool xplSaveXmlDocToFile(xmlDocPtr doc, xmlChar *filename, char *encoding, int o
 
 /* serialization */
 
-xmlChar* xplSerializeNodeList(xmlNodePtr cur)
+xmlChar* xplSerializeNodeList(const xmlNodePtr src)
 {
 	xmlBufferPtr buf;
 	xmlSaveCtxtPtr save_ctxt;
 	xmlChar* ret;
+	xmlNodePtr cur;
 
-	if (!cur)
+	if (!src)
 		return NULL;
 	buf = xmlBufferCreate();
 	if (!buf)
@@ -228,11 +229,8 @@ xmlChar* xplSerializeNodeList(xmlNodePtr cur)
 		return NULL;
 	}
 	xmlSaveSetEscape(save_ctxt, NULL);
-	while (cur != NULL)
-	{
+	for (cur = src; cur; cur = cur->next)
 		xmlSaveTree(save_ctxt, cur);
-		cur = cur->next;
-	}
 	xmlSaveFlush(save_ctxt);
 	ret = buf->content;
 	buf->content = NULL;
@@ -241,7 +239,7 @@ xmlChar* xplSerializeNodeList(xmlNodePtr cur)
 	return ret;
 }
 
-xmlChar* xplSerializeNodeSet(xmlNodeSetPtr set)
+xmlChar* xplSerializeNodeSet(const xmlNodeSetPtr set)
 {
 	size_t i;
 	xmlNodePtr cur;
