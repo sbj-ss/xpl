@@ -289,8 +289,6 @@ static xmlChar* xplGetParamQNameValue(xplCommandInfoPtr info, xplCmdParamPtr par
 		default:
 			DISPLAY_INTERNAL_ERROR_MESSAGE();
 	}
-	if (value->ncname == *raw_value)
-		*raw_value = NULL;
 	return NULL;
 }
 

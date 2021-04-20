@@ -303,10 +303,8 @@ static xmlNodePtr _getNextRTN(xplTdsFragmentRowContextPtr row_ctxt, xplSqlRowTag
 			return xplCreateErrorNode(row_ctxt->parent, "invalid row name '%s'", name);
 	} else if (row_ctxt->as_attributes)
 		return xplCreateErrorNode(row_ctxt->parent, "can't use empty row name if asattributes is set");
-	else {
-		row_ctxt->row_qname.ns = NULL;
-		row_ctxt->row_qname.ncname = NULL;
-	}
+	else
+		xplClearQName(&row_ctxt->row_qname);
 	return NULL;
 }
 

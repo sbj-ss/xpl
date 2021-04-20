@@ -7,7 +7,7 @@
 #include <libxml/xpathInternals.h>
 #include <libxpl/abstraction/xpr.h>
 
-xplParseQNameResult xplParseQName(xmlChar *str, xmlNodePtr element, xplQName *qname)
+xplParseQNameResult xplParseQName(const xmlChar *str, const xmlNodePtr element, xplQName *qname)
 {
 	xmlChar *prefix;
 
@@ -20,7 +20,7 @@ xplParseQNameResult xplParseQName(xmlChar *str, xmlNodePtr element, xplQName *qn
 	qname->ncname = xmlSplitQName2(str, &prefix);
 	if (!qname->ncname) /* not a QName */
 	{
-		qname->ncname = str;
+		qname->ncname = BAD_CAST XPL_STRDUP((char*) str);
 		qname->ns = NULL;
 	} else {
 		qname->ns = xmlSearchNs(element->doc, element, prefix);
@@ -35,7 +35,7 @@ xplParseQNameResult xplParseQName(xmlChar *str, xmlNodePtr element, xplQName *qn
 	return XPL_PARSE_QNAME_OK;
 }
 
-xmlChar* xplQNameToStr(xplQName qname)
+xmlChar* xplQNameToStr(const xplQName qname)
 {
 	size_t prefix_len;
 	xmlChar *ret;
@@ -56,7 +56,7 @@ xmlChar* xplQNameToStr(xplQName qname)
 
 void xplClearQName(xplQNamePtr qname)
 {
-	if (qname->ns && qname->ncname)
+	if (qname->ncname)
 	{
 		XPL_FREE(qname->ncname);
 		qname->ncname = NULL;

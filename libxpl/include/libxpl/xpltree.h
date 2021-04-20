@@ -35,9 +35,9 @@ typedef enum _xplParseQNameResult
 } xplParseQNameResult;
 
 XPLPUBFUN xplParseQNameResult XPLCALL
-	xplParseQName(xmlChar *str, xmlNodePtr element, xplQNamePtr qname);
+	xplParseQName(const xmlChar *str, const xmlNodePtr element, xplQNamePtr qname);
 XPLPUBFUN xmlChar* XPLCALL
-	xplQNameToStr(xplQName qname);
+	xplQNameToStr(const xplQName qname);
 XPLPUBFUN void XPLCALL
 	xplClearQName(xplQNamePtr qname);
 
