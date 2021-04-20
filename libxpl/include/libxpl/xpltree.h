@@ -54,17 +54,17 @@ XPLPUBFUN void XPLCALL
 
 /* locates node list tail */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplFindTail(xmlNodePtr cur);
+	xplFindTail(const xmlNodePtr head);
 /* ditto */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplFirstElementNode(xmlNodePtr list);
+	xplFirstElementNode(const xmlNodePtr list);
 /* checks if maybeAncestor is ancestor of maybeChild */
 XPLPUBFUN bool XPLCALL
-	xplIsAncestor(xmlNodePtr maybeChild, xmlNodePtr maybeAncestor);
+	xplIsAncestor(const xmlNodePtr maybeChild, const xmlNodePtr maybeAncestor);
 
 /* returns a flattened copy of attribute value */
 XPLPUBFUN xmlChar* XPLCALL
-	xplGetPropValue(xmlAttrPtr prop);
+	xplGetPropValue(const xmlAttrPtr prop);
 /* unlinks a property but doesn't free it */
 XPLPUBFUN void XPLCALL
 	xplUnlinkProp(xmlAttrPtr cur);
@@ -97,9 +97,9 @@ XPLPUBFUN xmlNodePtr XPLCALL
 
 /* checks for text/CDATA/entity refs only */
 XPLPUBFUN bool XPLCALL
-	xplCheckNodeListForText(xmlNodePtr start);
+	xplCheckNodeListForText(const xmlNodePtr start);
 XPLPUBFUN bool XPLCALL
-	xplCheckNodeSetForText(xmlNodeSetPtr s);
+	xplCheckNodeSetForText(const xmlNodeSetPtr s);
 
 /* marks ancestor axis part from bottom to top (both inclusive) for deferred deletion */
 XPLPUBFUN void XPLCALL 
@@ -119,12 +119,12 @@ XPLPUBFUN bool XPLCALL
 /* Copy nodes or node lists wrt their hierarchy.
    parent is only used for namespace search and IS NOT assigned to new nodes */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplCloneNode(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc);
+	xplCloneNode(const xmlNodePtr node, const xmlNodePtr parent, const xmlDocPtr doc);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplCloneNodeList(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc);
+	xplCloneNodeList(const xmlNodePtr node, const xmlNodePtr parent, const xmlDocPtr doc);
 /* clone a node changing attributes into text nodes */
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplCloneAsNodeChild(xmlNodePtr cur, xmlNodePtr parent);
+	xplCloneAsNodeChild(const xmlNodePtr cur, const xmlNodePtr parent);
 
 /* Copy all higher namespace definitions to top. Returns false on OOM */
 XPLPUBFUN bool XPLCALL
@@ -144,29 +144,29 @@ XPLPUBFUN void XPLCALL
    Identity: exactly the same nodes
    Equality: node names/contents/props must be equal and written in the same order (except props) */
 XPLPUBFUN bool XPLCALL
-	xplCheckNodeEquality(xmlNodePtr a, xmlNodePtr b);
+	xplCheckNodeEquality(const xmlNodePtr a, const xmlNodePtr b);
 XPLPUBFUN bool XPLCALL
-	xplCheckNodeListEquality(xmlNodePtr a, xmlNodePtr b);
+	xplCheckNodeListEquality(const xmlNodePtr a, const xmlNodePtr b);
 XPLPUBFUN bool XPLCALL
-	xplCheckPropListEquality(xmlAttrPtr a, xmlAttrPtr b);
+	xplCheckPropListEquality(const xmlAttrPtr a, const xmlAttrPtr b);
 /* the following functions are using Cartesian products */
 XPLPUBFUN bool XPLCALL
-	xplCheckNodeSetEquality(xmlNodeSetPtr a, xmlNodeSetPtr b);
+	xplCheckNodeSetEquality(const xmlNodeSetPtr a, const xmlNodeSetPtr b);
 XPLPUBFUN bool XPLCALL
-	xplCheckNodeSetIdentity(xmlNodeSetPtr a, xmlNodeSetPtr b);
+	xplCheckNodeSetIdentity(const xmlNodeSetPtr a, const xmlNodeSetPtr b);
 XPLPUBFUN bool XPLCALL
-	xplCompareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool checkEquality);
+	xplCompareXPathSelections(const xmlXPathObjectPtr a, const xmlXPathObjectPtr b, bool checkEquality);
 
 XPLPUBFUN xmlXPathObjectPtr XPLCALL
 	xplSelectNodesWithCtxt(xmlXPathContextPtr ctxt, const xmlNodePtr src, const xmlChar *expr);
 
 XPLPUBFUN xmlAttrPtr XPLCALL
-	xplCreateAttribute(xmlNodePtr dst, xplQName qname, xmlChar *value, bool allowReplace);
+	xplCreateAttribute(xmlNodePtr dst, const xplQName qname, const xmlChar *value, bool allowReplace);
 
 XPLPUBFUN xmlNodeSetPtr XPLCALL
 	xplGetNodeAncestorOrSelfAxis(xmlNodePtr cur);
 XPLPUBFUN bool XPLCALL
-	xplVerifyAncestorOrSelfAxis(xmlNodePtr root, xmlNodeSetPtr axis);
+	xplVerifyAncestorOrSelfAxis(const xmlNodePtr root, const xmlNodeSetPtr axis);
 
 #ifdef __cplusplus
 }

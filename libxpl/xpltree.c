@@ -65,45 +65,47 @@ void xplClearQName(xplQNamePtr qname)
 }
 
 
-xmlNodePtr xplFindTail(xmlNodePtr cur)
+xmlNodePtr xplFindTail(const xmlNodePtr head)
 {
-	if (!cur)
+	xmlNodePtr cur;
+
+	if (!head)
 		return NULL;
-	while (cur->next)
-		cur = cur->next;
+	for (cur = head; cur->next; cur = cur->next)
+		;
 	return cur;
 }
 
-xmlNodePtr xplFirstElementNode(xmlNodePtr list)
+xmlNodePtr xplFirstElementNode(const xmlNodePtr list)
 {
-	while (list)
-	{
-		if (list->type == XML_ELEMENT_NODE)
-			return list;
-		list = list->next;
-	}
+	xmlNodePtr cur;
+
+	for (cur = list; cur; cur = cur->next)
+		if (cur->type == XML_ELEMENT_NODE)
+			return cur;
 	return NULL;
 }
 
-bool xplIsAncestor(xmlNodePtr maybeChild, xmlNodePtr maybeAncestor)
+bool xplIsAncestor(const xmlNodePtr maybeChild, const xmlNodePtr maybeAncestor)
 {
+	xmlNodePtr cur;
+
 	if (maybeChild == maybeAncestor)
 		return false;
 	if (!maybeChild || !maybeAncestor || !maybeChild->parent)
 		return false;
-	while (maybeChild)
+	for (cur = maybeChild; cur; cur = cur->parent)
 	{
-		if (maybeChild->parent == maybeAncestor)
+		if (cur->parent == maybeAncestor)
 			return true;
-		if (maybeChild == maybeAncestor->parent)
+		if (cur == maybeAncestor->parent)
 			return false;
-		maybeChild = maybeChild->parent;
 	}
 	return false;
 }
 
 /* from libxml2 internals (tree.c) */
-xmlChar* xplGetPropValue(xmlAttrPtr prop)
+xmlChar* xplGetPropValue(const xmlAttrPtr prop)
 {
 	if (!prop)
 		return NULL;
@@ -285,45 +287,20 @@ xmlNodePtr xplReplaceWithList(xmlNodePtr el, xmlNodePtr list)
 	return el;
 }
 
-xmlNodePtr xplCloneAsNodeChild(xmlNodePtr cur, xmlNodePtr parent)
+bool xplCheckNodeListForText(const xmlNodePtr start)
 {
-	xmlNodePtr ret;
+	xmlNodePtr cur;
 
-	if (!cur)
-		return NULL;
-	if (cur->type == XML_ATTRIBUTE_NODE)
-	{
-		if (cur->children)
-		{
-			if (!cur->children->next && ((cur->children->type == XML_TEXT_NODE) || (cur->children->type == XML_CDATA_SECTION_NODE)))
-				ret = xmlNewDocText(parent->doc, cur->children->content);
-			else {
-				ret = xmlNewDocText(parent->doc, NULL);			
-				ret->content = xmlNodeListGetString(parent->doc, cur->children, 1);
-			}
-		} else 
-			ret = xmlNewDocText(parent->doc, BAD_CAST "");
-	} else {
-		ret = xplCloneNode(cur, parent, parent->doc);
-	}
-	return ret;
-}
-
-bool xplCheckNodeListForText(xmlNodePtr start)
-{
-	while (start)
-	{
+	for (cur = start; cur; cur = cur->next)
 		if ((start->type != XML_TEXT_NODE) 
 			&& (start->type != XML_ENTITY_REF_NODE)
 			&& (start->type != XML_CDATA_SECTION_NODE)
 		)
 			return false;
-		start = start->next;
-	}
 	return true;
 }
 
-bool xplCheckNodeSetForText(xmlNodeSetPtr s)
+bool xplCheckNodeSetForText(const xmlNodeSetPtr s)
 {
 	size_t i;
 
@@ -510,7 +487,7 @@ static xmlNsPtr newReconciliedNs(xmlDocPtr doc, xmlNodePtr tree, xmlNsPtr ns)
     return def;
 }
 
-static xmlAttrPtr clonePropInternal(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, xmlNodePtr top_clone)
+static xmlAttrPtr clonePropInternal(const xmlDocPtr doc, xmlNodePtr target, const xmlAttrPtr cur, xmlNodePtr top_clone)
 {
     xmlAttrPtr ret;
 
@@ -586,16 +563,16 @@ static xmlAttrPtr clonePropInternal(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr
     return(ret);
 }
 
-static xmlAttrPtr clonePropListInner(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur, xmlNodePtr top_clone)
+static xmlAttrPtr clonePropListInner(const xmlDocPtr doc, xmlNodePtr target, const xmlAttrPtr attr, xmlNodePtr top_clone)
 {
-    xmlAttrPtr ret = NULL;
+    xmlAttrPtr ret = NULL, cur;
     xmlAttrPtr last = NULL, tmp;
 
-    while (cur) 
+    for (cur = attr; cur; cur = cur->next)
 	{
         tmp = clonePropInternal(doc, target, cur, top_clone);
 		if (!tmp)
-			return(NULL);
+			return NULL;
 		if (!last)
 		{
 			ret = last = tmp;
@@ -604,14 +581,13 @@ static xmlAttrPtr clonePropListInner(xmlDocPtr doc, xmlNodePtr target, xmlAttrPt
 			tmp->prev = last;
 			last = tmp;
 		}
-		cur = cur->next;
     }
-    return(ret);
+    return ret;
 }
 
-static xmlNodePtr cloneNodeListInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xmlNodePtr top_clone);
+static xmlNodePtr cloneNodeListInner(const xmlNodePtr cur, const xmlNodePtr parent, const xmlDocPtr doc, xmlNodePtr top_clone);
 
-static xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xmlNodePtr top_clone)
+static xmlNodePtr cloneNodeInner(const xmlNodePtr node, const xmlNodePtr parent, const xmlDocPtr doc, xmlNodePtr top_clone)
 {
     xmlNodePtr ret;
 
@@ -648,7 +624,7 @@ static xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr d
         case XML_ELEMENT_DECL:
         case XML_ATTRIBUTE_DECL:
         case XML_ENTITY_DECL:
-            return(NULL);
+            return NULL;
     }
 
     /*
@@ -771,27 +747,27 @@ static xmlNodePtr cloneNodeInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr d
 	 */
 	if (ret == top_clone)
 		ret->parent = NULL;
-    return(ret);
+    return ret;
 }
 
-static xmlNodePtr cloneNodeListInner(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc, xmlNodePtr top_clone)
+static xmlNodePtr cloneNodeListInner(const xmlNodePtr node, const xmlNodePtr parent, const xmlDocPtr doc, xmlNodePtr top_clone)
 {
-    xmlNodePtr ret = NULL;
+    xmlNodePtr ret = NULL, cur = node;
     xmlNodePtr p = NULL, q;
 
-    while (node) 
+    while (cur)
 	{
 #ifdef LIBXML_TREE_ENABLED
-		if (node->type == XML_DTD_NODE ) 
+		if (cur->type == XML_DTD_NODE )
 		{
 			if (!doc) 
 			{
-				node = node->next;
+				cur = cur->next;
 				continue;
 			}
 			if (!doc->intSubset) 
 			{
-				q = (xmlNodePtr) xmlCopyDtd((xmlDtdPtr) node);
+				q = (xmlNodePtr) xmlCopyDtd((xmlDtdPtr) cur);
 				q->doc = doc;
 				q->parent = parent;
 				doc->intSubset = (xmlDtdPtr) q;
@@ -802,7 +778,7 @@ static xmlNodePtr cloneNodeListInner(xmlNodePtr node, xmlNodePtr parent, xmlDocP
 			}
 		} else
 #endif /* LIBXML_TREE_ENABLED */
-			q = cloneNodeInner(node, parent, doc, top_clone);
+			q = cloneNodeInner(cur, parent, doc, top_clone);
 		if (!ret) 
 		{
 			q->prev = NULL;
@@ -813,19 +789,43 @@ static xmlNodePtr cloneNodeListInner(xmlNodePtr node, xmlNodePtr parent, xmlDocP
 			q->prev = p;
 			p = q;
 		}
-		node = node->next;
+		cur = cur->next;
     }
-    return(ret);
+    return ret;
 }
 
-xmlNodePtr xplCloneNode(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc)
+xmlNodePtr xplCloneNode(const xmlNodePtr node, const xmlNodePtr parent, const xmlDocPtr doc)
 {
 	return cloneNodeInner(node, parent, doc, NULL);
 }
 
-xmlNodePtr xplCloneNodeList(xmlNodePtr node, xmlNodePtr parent, xmlDocPtr doc)
+xmlNodePtr xplCloneNodeList(const xmlNodePtr node, const xmlNodePtr parent, const xmlDocPtr doc)
 {
 	return cloneNodeListInner(node, parent, doc, NULL);
+}
+
+xmlNodePtr xplCloneAsNodeChild(const xmlNodePtr cur, const xmlNodePtr parent)
+{
+	xmlNodePtr ret;
+
+	if (!cur)
+		return NULL;
+	if (cur->type == XML_ATTRIBUTE_NODE)
+	{
+		if (cur->children)
+		{
+			if (!cur->children->next && ((cur->children->type == XML_TEXT_NODE) || (cur->children->type == XML_CDATA_SECTION_NODE)))
+				ret = xmlNewDocText(parent->doc, cur->children->content);
+			else {
+				ret = xmlNewDocText(parent->doc, NULL);
+				ret->content = xmlNodeListGetString(parent->doc, cur->children, 1);
+			}
+		} else
+			ret = xmlNewDocText(parent->doc, BAD_CAST "");
+	} else {
+		ret = xplCloneNode(cur, parent, parent->doc);
+	}
+	return ret;
 }
 
 typedef struct _xplNsPair
@@ -1144,8 +1144,10 @@ void xplRegisterXPathExtensions(xmlXPathContextPtr ctxt)
 #endif
 }
 
-bool xplCheckNodeEquality(xmlNodePtr a, xmlNodePtr b)
+bool xplCheckNodeEquality(const xmlNodePtr a, const xmlNodePtr b)
 {
+	xmlEntityPtr ent_a, ent_b;
+
 	if (!a && !b)
 		return true;
 	if (!a || !b)
@@ -1179,11 +1181,11 @@ bool xplCheckNodeEquality(xmlNodePtr a, xmlNodePtr b)
 	case XML_ENTITY_REF_NODE:
 		if ((a->doc == b->doc) && !xmlStrcmp(a->name, b->name))
 			return true;
-		a = (xmlNodePtr) xmlGetDocEntity(a->doc, a->name);
-		b = (xmlNodePtr) xmlGetDocEntity(b->doc, b->name);
-		if (!a || !b)
+		ent_a = xmlGetDocEntity(a->doc, a->name);
+		ent_b = xmlGetDocEntity(b->doc, b->name);
+		if (!ent_a || !ent_b)
 			return false;
-		return xplCheckNodeListEquality(a->children, b->children);
+		return xplCheckNodeListEquality(ent_a->children, ent_b->children);
 	case XML_PI_NODE:
 		return !xmlStrcmp(a->name, b->name) && !xmlStrcmp(a->content, b->content);
 	case XML_NAMESPACE_DECL:
@@ -1193,27 +1195,25 @@ bool xplCheckNodeEquality(xmlNodePtr a, xmlNodePtr b)
 	}
 }
 
-bool xplCheckNodeListEquality(xmlNodePtr a, xmlNodePtr b)
+bool xplCheckNodeListEquality(const xmlNodePtr a, const xmlNodePtr b)
 {
+	xmlNodePtr cur_a, cur_b;
+
 	if (!a && !b)
 		return true;
 	if (!a || !b)
 		return false;
 	if ((a->type == b->type) && (b->type == XML_ATTRIBUTE_NODE))
 		return xplCheckPropListEquality((xmlAttrPtr) a, (xmlAttrPtr) b);
-	while (a && b)
-	{
-		if (!xplCheckNodeEquality(a, b))
+	for (cur_a = a, cur_b = b; cur_a && cur_b; cur_a = cur_a->next, cur_b = cur_b->next)
+		if (!xplCheckNodeEquality(cur_a, cur_b))
 			return false;
-		a = a->next;
-		b = b->next;
-	}
-	if (a || b)
+	if (cur_a || cur_b)
 		return false;
 	return true;
 }
 
-bool xplCheckPropListEquality(xmlAttrPtr a, xmlAttrPtr b)
+bool xplCheckPropListEquality(const xmlAttrPtr a, const xmlAttrPtr b)
 {
 	/* the same attributes can be written in different order - so we imply sorting but don't require it */
 	xmlAttrPtr prop_a, prop_b, cur_b;
@@ -1251,7 +1251,7 @@ bool xplCheckPropListEquality(xmlAttrPtr a, xmlAttrPtr b)
 	return true;
 }
 
-bool xplCheckNodeSetIdentity(xmlNodeSetPtr a, xmlNodeSetPtr b)
+bool xplCheckNodeSetIdentity(const xmlNodeSetPtr a, const xmlNodeSetPtr b)
 {
 	size_t i, j, max;
 	bool match;
@@ -1279,7 +1279,7 @@ bool xplCheckNodeSetIdentity(xmlNodeSetPtr a, xmlNodeSetPtr b)
 	return true;
 }
 
-bool xplCheckNodeSetEquality(xmlNodeSetPtr a, xmlNodeSetPtr b)
+bool xplCheckNodeSetEquality(const xmlNodeSetPtr a, const xmlNodeSetPtr b)
 {
 	size_t i, j, max;
 	bool match;
@@ -1309,7 +1309,7 @@ bool xplCheckNodeSetEquality(xmlNodeSetPtr a, xmlNodeSetPtr b)
 	return true;
 }
 
-bool xplCompareXPathSelections(xmlXPathObjectPtr a, xmlXPathObjectPtr b, bool checkEquality)
+bool xplCompareXPathSelections(const xmlXPathObjectPtr a, const xmlXPathObjectPtr b, bool checkEquality)
 {
 	if (!a && !b)
 		return checkEquality;
@@ -1357,7 +1357,7 @@ xmlXPathObjectPtr xplSelectNodesWithCtxt(xmlXPathContextPtr ctxt, const xmlNodeP
     return ret;
 }
 
-xmlAttrPtr xplCreateAttribute(xmlNodePtr dst, xplQName qname, xmlChar *value, bool allowReplace)
+xmlAttrPtr xplCreateAttribute(xmlNodePtr dst, const xplQName qname, const xmlChar *value, bool allowReplace)
 {
 	xmlAttrPtr prev;
 	xmlNsPtr ns;
@@ -1382,14 +1382,15 @@ xmlAttrPtr xplCreateAttribute(xmlNodePtr dst, xplQName qname, xmlChar *value, bo
 	return xmlNewProp(dst, qname.ncname, value);
 }
 
-xmlNodeSetPtr xplGetNodeAncestorOrSelfAxis(xmlNodePtr cur)
+xmlNodeSetPtr xplGetNodeAncestorOrSelfAxis(const xmlNodePtr point)
 {
+	xmlNodePtr cur;
 	xmlNodeSetPtr ret;
 
-	if (!cur)
+	if (!point)
 		return NULL;
-	ret = xmlXPathNodeSetCreate(cur);
-	cur = cur->parent;
+	ret = xmlXPathNodeSetCreate(point);
+	cur = point->parent;
 	while (cur && cur->type == XML_ELEMENT_NODE)
 	{
 		xmlXPathNodeSetAddUnique(ret, cur);
@@ -1398,7 +1399,7 @@ xmlNodeSetPtr xplGetNodeAncestorOrSelfAxis(xmlNodePtr cur)
 	return ret;
 }
 
-bool xplVerifyAncestorOrSelfAxis(xmlNodePtr root, xmlNodeSetPtr axis)
+bool xplVerifyAncestorOrSelfAxis(const xmlNodePtr root, const xmlNodeSetPtr axis)
 {
 	ssize_t i;
 	bool found = false;
