@@ -44,8 +44,8 @@ XPLPUBFUN void XPLCALL
 typedef struct _xefFetchDocumentParams
 {
 	/* input */
-	xmlChar *uri;
-	xmlChar *extra_query;		/* POST data etc */
+	const xmlChar *uri;
+	const xmlChar *extra_query;		/* POST data etc */
 	/* output */
 	xmlChar *encoding;			/* must be freed */
 	xmlChar *document;			/* must be freed. May contain zeros inside */
@@ -104,9 +104,9 @@ typedef struct _xefDbQueryParams
 	/* input */
 	xefDbStreamType desired_stream_type;
 	bool cleanup_nonprintable;
-	xmlChar *query;
+	const xmlChar *query;
 	xplDBListPtr db_list;
-	void *user_data;
+	const void *user_data;
 	/* output */
 	xmlChar *error;		/* must be freed */
 } xefDbQueryParams, *xefDbQueryParamsPtr;
@@ -114,13 +114,13 @@ typedef struct _xefDbQueryParams
 XPLPUBFUN xefDbRowPtr XPLCALL
 	xefDbGetRow(xefDbContextPtr ctxt);
 XPLPUBFUN xmlChar* XPLCALL
-	xefDbGetError(xefDbContextPtr ctxt);
-XPLPUBFUN void* XPLCALL
-	xefDbGetUserData(xefDbContextPtr ctxt);
+	xefDbGetError(const xefDbContextPtr ctxt);
+XPLPUBFUN const void* XPLCALL
+	xefDbGetUserData(const xefDbContextPtr ctxt);
 XPLPUBFUN bool XPLCALL
-	xefDbHasRecordset(xefDbContextPtr ctxt);
+	xefDbHasRecordset(const xefDbContextPtr ctxt);
 XPLPUBFUN bool XPLCALL
-	xefDbGetStreamType(xefDbContextPtr ctxt);
+	xefDbGetStreamType(const xefDbContextPtr ctxt);
 XPLPUBFUN ssize_t XPLCALL
 	xefDbGetRowCount(xefDbContextPtr ctxt);
 
@@ -145,7 +145,7 @@ XPLPUBFUN void XPLCALL
 typedef struct _xefCleanHtmlParams
 {
 	/* input */
-	xmlChar *document;			/* must be UTF-8 encoded */
+	const xmlChar *document;	/* must be UTF-8 encoded */
 	/* output */
 	xmlChar *clean_document;	/* must be freed */
 	size_t clean_document_size;
@@ -175,7 +175,7 @@ typedef enum _xefCryptoDigestMethod
 typedef struct _xefCryptoDigestParams
 {
 	/* input */
-	void *input;
+	const void *input;
 	size_t input_size;
 	xefCryptoDigestMethod digest_method;
 	/* output */

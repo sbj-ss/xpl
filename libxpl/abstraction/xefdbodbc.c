@@ -12,7 +12,7 @@
 
 typedef struct xefDbContext
 {
-	void *user_data;
+	const void *user_data;
 	xmlChar *error;
 	int col_count;
 	xefDbRowPtr row;
@@ -273,7 +273,7 @@ static SQLHSTMT _xefCreateStmt(SQLHDBC hConn, xmlChar **error)
 	return stmt;
 }
 
-static bool _xefDbExecSQL(xefDbContextPtr ctxt, xmlChar *sql)
+static bool _xefDbExecSQL(xefDbContextPtr ctxt, const xmlChar *sql)
 {
 	SQLRETURN r;
 	SQLWCHAR *w_sql = NULL;
@@ -620,24 +620,24 @@ xefDbRowPtr xefDbGetRow(xefDbContextPtr ctxt)
 	return ctxt? ctxt->row: NULL;
 }
 
-xmlChar* xefDbGetError(xefDbContextPtr ctxt)
+xmlChar* xefDbGetError(const xefDbContextPtr ctxt)
 {
 	return ctxt? ctxt->error: NULL;
 }
 
-void* xefDbGetUserData(xefDbContextPtr ctxt)
+const void* xefDbGetUserData(const xefDbContextPtr ctxt)
 {
 	return ctxt? ctxt->user_data: NULL;
 }
 
-bool xefDbHasRecordset(xefDbContextPtr ctxt)
+bool xefDbHasRecordset(const xefDbContextPtr ctxt)
 {
 	if (!ctxt)
 		return false;
 	return !ctxt->end_of_recordsets;
 }
 
-bool xefDbGetStreamType(xefDbContextPtr ctxt)
+bool xefDbGetStreamType(const xefDbContextPtr ctxt)
 {
 	if (!ctxt)
 		return XEF_DB_STREAM_UNKNOWN;
@@ -808,7 +808,7 @@ void xefDbFreeParams(xefDbQueryParamsPtr params, bool freeCarrier)
 	if (!params)
 		return;
 	if (params->query)
-		XPL_FREE(params->query);
+		XPL_FREE((void*) params->query);
 	if (params->error)
 		XPL_FREE(params->error);
 	if (freeCarrier)

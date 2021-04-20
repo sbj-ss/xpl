@@ -96,7 +96,7 @@ static size_t _writeCallback(char *ptr, size_t size, size_t nItems, void *userDa
 
 typedef struct _uploadData
 {
-	xmlChar *data;
+	const xmlChar *data;
 	size_t pos;
 	size_t size;
 } uploadData, *uploadDataPtr;

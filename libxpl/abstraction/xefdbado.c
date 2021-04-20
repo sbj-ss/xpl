@@ -561,24 +561,24 @@ xefDbRowPtr xefDbGetRow(xefDbContextPtr ctxt)
 	return ctxt? ctxt->row: NULL;
 }
 
-xmlChar* xefDbGetError(xefDbContextPtr ctxt)
+xmlChar* xefDbGetError(const xefDbContextPtr ctxt)
 {
 	return ctxt? ctxt->error: NULL;
 }
 
-void* xefDbGetUserData(xefDbContextPtr ctxt)
+const void* xefDbGetUserData(const xefDbContextPtr ctxt)
 {
 	return ctxt? ctxt->user_data: NULL;
 }
 
-bool xefDbHasRecordset(xefDbContextPtr ctxt)
+bool xefDbHasRecordset(const xefDbContextPtr ctxt)
 {
 	if (!ctxt)
 		return false;
 	return !!ctxt->rs;
 }
 
-bool xefDbGetStreamType(xefDbContextPtr ctxt)
+bool xefDbGetStreamType(const xefDbContextPtr ctxt)
 {
 	if (!ctxt)
 		return XEF_DB_STREAM_UNKNOWN;
