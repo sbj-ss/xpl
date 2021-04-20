@@ -34,7 +34,7 @@ XPLPUBFUN xplMWResult XPLCALL
 XPLPUBFUN xplMWResult XPLCALL
 	xplMWClear(void);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplMWListEntries(xmlDocPtr doc, xplQName qname);
+	xplMWListEntries(const xmlDocPtr doc, const xplQName qname);
 XPLPUBFUN const xmlChar* XPLCALL
 	xplMWGetWrapper(const xmlChar *filename);
 XPLPUBFUN bool XPLCALL

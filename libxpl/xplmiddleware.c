@@ -170,7 +170,7 @@ xplMWResult xplMWClear()
 	return XPL_MW_OK;
 }
 
-xmlNodePtr xplMWListEntries(xmlDocPtr doc, xplQName qname)
+xmlNodePtr xplMWListEntries(const xmlDocPtr doc, const xplQName qname)
 {
 	xplMWEntryPtr entry;
 	xmlNodePtr head = NULL, tail = NULL, cur;
