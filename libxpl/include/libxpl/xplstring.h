@@ -58,23 +58,28 @@ XPLPUBFUN xstrEncoding XPLCALL
 
 /* Recodes start..end. resultp is allocated inside */
 XPLPUBFUN int XPLCALL
-	xstrIconvString (const char* tocode, const char* fromcode,
-				  const char* start, const char* end,
-				  char** resultp, size_t* lengthp);
+	xstrIconvString(
+		const char *tocode,
+		const char *fromcode,
+		const char *start,
+		const char *end,
+		char **resultp,
+		size_t* lengthp
+	);
 
 /* Writes hex represenation of buf to dst */
 XPLPUBFUN void XPLCALL
-	xstrBufferToHex(const void* buf, size_t len, bool prefix, xmlChar *dst);
+	xstrBufferToHex(const void *buf, size_t len, bool prefix, xmlChar *dst);
 /* Returns a hex representation of a buffer. Result must be freed. */
 XPLPUBFUN xmlChar* XPLCALL
-	xstrBufferToHexAlloc(const void* buf, size_t len, bool prefix);
+	xstrBufferToHexAlloc(const void *buf, size_t len, bool prefix);
 /* Base64 conversion. result must be preallocated and both result and resultSize set! */
 /* TODO alloc inside */
 XPLPUBFUN int XPLCALL
-	xstrBase64Encode(const void* data_buf, size_t dataLength, char* result, size_t resultSize);
+	xstrBase64Encode(const void *data_buf, size_t dataLength, char *result, size_t resultSize);
 /* TODO alloc inside */
 XPLPUBFUN size_t XPLCALL
-	xstrBase64Decode(const char* data_buf, size_t dataLength, char* result, size_t resultSize);
+	xstrBase64Decode(const char *data_buf, size_t dataLength, char *result, size_t resultSize);
 
 /* Returns a copy */
 XPLPUBFUN xmlChar* XPLCALL
