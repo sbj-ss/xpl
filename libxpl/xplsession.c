@@ -181,7 +181,7 @@ xplSessionPtr xplSessionLookup(const xmlChar *id)
 	return ret;
 }
 
-xplSessionPtr xplSessionCopy(xplSessionPtr src, bool local_dest)
+xplSessionPtr xplSessionCopy(const xplSessionPtr src, bool local_dest)
 {
 	xplSessionPtr ret;
 	xmlNodePtr cur;
@@ -286,7 +286,7 @@ xmlNodePtr xplSessionGetObject(const xplSessionPtr session, const xmlChar *name)
 	return (xmlNodePtr) xmlHashLookup(session->items, name);
 }
 
-xmlNodePtr xplSessionAccessObject(const xplSessionPtr session, const xmlChar *name)
+xmlNodePtr xplSessionAccessObject(xplSessionPtr session, const xmlChar *name)
 {
 	if (!session || !session->valid)
 		return NULL;
@@ -302,7 +302,7 @@ xmlNodePtr xplSessionGetAllObjects(const xplSessionPtr session)
 	return session->doc->children;
 }
 
-xmlNodePtr xplSessionAccessAllObjects(const xplSessionPtr session)
+xmlNodePtr xplSessionAccessAllObjects(xplSessionPtr session)
 {
 	if (!session || !session->valid)
 		return NULL;
@@ -310,7 +310,7 @@ xmlNodePtr xplSessionAccessAllObjects(const xplSessionPtr session)
 	return xplSessionGetAllObjects(session);
 }
 
-void xplSessionUnaccess(const xplSessionPtr session)
+void xplSessionUnaccess(xplSessionPtr session)
 {
 	if (session && session->valid)
 		SUCCEED_OR_DIE(xprMutexRelease(&session->locker));
@@ -348,21 +348,21 @@ void xplSessionClear(xplSessionPtr session)
 	SUCCEED_OR_DIE(xprMutexRelease(&session->locker));
 }
 
-xmlChar* xplSessionGetId(xplSessionPtr session)
+xmlChar* xplSessionGetId(const xplSessionPtr session)
 {
 	if (!session)
 		return NULL;
 	return session->id;
 }
 
-bool xplSessionIsValid(xplSessionPtr session)
+bool xplSessionIsValid(const xplSessionPtr session)
 {
 	if (!session)
 		return false;
 	return session->valid;
 }
 
-bool xplSessionGetSaMode(xplSessionPtr session)
+bool xplSessionGetSaMode(const xplSessionPtr session)
 {
 	if (!cfgCheckSAMode)
 		return true;
@@ -371,7 +371,7 @@ bool xplSessionGetSaMode(xplSessionPtr session)
 	return session->sa_mode;
 }
 
-bool xplSessionSetSaMode(xplSessionPtr session, bool enable, xmlChar *password)
+bool xplSessionSetSaMode(xplSessionPtr session, bool enable, const xmlChar *password)
 {
 	xmlChar* digest_str;
 	bool ret;
@@ -411,7 +411,7 @@ bool xplSessionSetSaMode(xplSessionPtr session, bool enable, xmlChar *password)
 	return ret;
 }
 
-bool xplSessionIsJustCreated(xplSessionPtr session)
+bool xplSessionIsJustCreated(const xplSessionPtr session)
 {
 	if (!session)
 		return false;
