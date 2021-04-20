@@ -76,7 +76,7 @@ static void _xpathDummyError(void *data, xmlErrorPtr error)
 	UNUSED_PARAM(error);
 }
 
-xplDocumentPtr xplDocumentInit(xmlChar *docPath, xplParamsPtr params, xplSessionPtr session)
+xplDocumentPtr xplDocumentInit(const xmlChar *docPath, xplParamsPtr params, xplSessionPtr session)
 {
 	xplDocumentPtr doc;
 	
@@ -108,7 +108,7 @@ xplDocumentPtr xplDocumentInit(xmlChar *docPath, xplParamsPtr params, xplSession
 	return doc;
 }
 
-xplDocumentPtr xplDocumentCreateFromFile(xmlChar *docPath, xmlChar *filename, xplParamsPtr params, xplSessionPtr session)
+xplDocumentPtr xplDocumentCreateFromFile(const xmlChar *docPath, const xmlChar *filename, xplParamsPtr params, xplSessionPtr session)
 {
 	xplDocumentPtr ret;	
 	xmlChar *full_name;
@@ -140,11 +140,10 @@ xplDocumentPtr xplDocumentCreateFromFile(xmlChar *docPath, xmlChar *filename, xp
 	return ret;
 }
 
-xplDocumentPtr xplDocumentCreateFromMemory(xmlChar *docPath, xmlChar *origin, xplParamsPtr params, xplSessionPtr session, xmlChar *encoding)
+xplDocumentPtr xplDocumentCreateFromMemory(const xmlChar *docPath, const xmlChar *origin, xplParamsPtr params, xplSessionPtr session, const xmlChar *encoding)
 {
 	xplDocumentPtr ret = xplDocumentInit(docPath, params, session);
 
-	ret->origin = origin;
 	ret->document = xmlReadMemory((const char*) origin, xmlStrlen(origin), NULL, (const char*) encoding, XPL_XML_PARSE_OPTIONS);
 	if (ret->document)
 	{
@@ -1322,7 +1321,7 @@ xmlChar* xplGetDocRoot()
 	return cfgDocRoot;
 }
 
-void xplSetDocRoot(xmlChar *new_root)
+void xplSetDocRoot(const xmlChar *new_root)
 {
 	if (cfgDocRoot)
 		XPL_FREE(cfgDocRoot);

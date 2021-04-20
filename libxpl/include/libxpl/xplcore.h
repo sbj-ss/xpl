@@ -44,7 +44,6 @@ struct _xplDocument
 {
 	xmlChar *path;						/* path to document without file name, including the trailing slash*/
 	xmlChar *filename;					/* document file name only (no path) */
-	xmlChar *origin;					/* initial document text if it was created from memory */
 	xmlChar *error;						/* early parsing error */
 	xplParamsPtr params;				/* external parameters */
 	xplSessionPtr shared_session;		/* session variables */
@@ -74,11 +73,11 @@ struct _xplDocument
 };
 
 XPLPUBFUN xplDocumentPtr XPLCALL
-	xplDocumentInit(xmlChar *docPath, xplParamsPtr params, xplSessionPtr session);
+	xplDocumentInit(const xmlChar *docPath, xplParamsPtr params, xplSessionPtr session);
 XPLPUBFUN xplDocumentPtr XPLCALL
-	xplDocumentCreateFromFile(xmlChar *docPath, xmlChar *filename, xplParamsPtr params, xplSessionPtr session);
+	xplDocumentCreateFromFile(const xmlChar *docPath, const xmlChar *filename, xplParamsPtr params, xplSessionPtr session);
 XPLPUBFUN xplDocumentPtr XPLCALL
-	xplDocumentCreateFromMemory(xmlChar* docPath, xmlChar *origin,  xplParamsPtr params, xplSessionPtr session, xmlChar *encoding);
+	xplDocumentCreateFromMemory(const xmlChar* docPath, const xmlChar *origin,  xplParamsPtr params, xplSessionPtr session, const xmlChar *encoding);
 XPLPUBFUN xplDocumentPtr XPLCALL
 	xplDocumentCreateChild(xplDocumentPtr parent, xmlNodePtr parentNode, bool inheritMacros, bool shareSession);
 
@@ -190,7 +189,7 @@ XPLPUBFUN xmlChar* XPLCALL
 XPLPUBFUN xmlChar* XPLCALL
 	xplGetDocRoot(void);
 XPLPUBFUN void XPLCALL
-	xplSetDocRoot(xmlChar *new_root);
+	xplSetDocRoot(const xmlChar *new_root);
 /* Full file name wrt "semi-absolute" (i.e. from app root) paths. Result must be freed by the caller. */
 XPLPUBFUN xmlChar* XPLCALL
 	xplFullFilename(const xmlChar* file, const xmlChar* docPath);
