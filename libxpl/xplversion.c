@@ -32,7 +32,7 @@ int xplVersion()
 	return XPL_VERSION;
 }
 
-xmlChar* xplVersionString()
+const xmlChar* xplVersionString()
 {
 	return XPL_VERSION_FULL;
 }
@@ -128,7 +128,7 @@ xefImplementationsPtr xplGetXefImplementations()
 	return &xef_implementations;
 }
 
-xmlNodePtr xplXefImplementationsToNodeList(xmlDocPtr doc, xplQName tagname, xefImplementationsPtr impl)
+xmlNodePtr xplXefImplementationsToNodeList(const xmlDocPtr doc, const xplQName tagname, const xefImplementationsPtr impl)
 {
 	xmlNodePtr ret = NULL, tail = NULL, cur;
 	size_t i;
@@ -150,7 +150,7 @@ oom:
 	return NULL;
 }
 
-xmlChar* xplXefImplementationsToString(xefImplementationsPtr impl)
+xmlChar* xplXefImplementationsToString(const xefImplementationsPtr impl)
 {
 	size_t i;
 	xmlBufferPtr buf;
@@ -411,7 +411,7 @@ xplLibraryVersionsPtr xplGetRunningLibraryVersions()
 	return &running_versions;
 }
 
-xmlNodePtr xplLibraryVersionsToNodeList(xmlDocPtr doc, xplQName tagname, xplLibraryVersionsPtr compiled, xplLibraryVersionsPtr running)
+xmlNodePtr xplLibraryVersionsToNodeList(const xmlDocPtr doc, const xplQName tagname, const xplLibraryVersionsPtr compiled, const xplLibraryVersionsPtr running)
 {
 	xmlNodePtr ret = NULL, tail = NULL, cur;
 	size_t i;
@@ -435,7 +435,7 @@ oom:
 	return NULL;
 }
 
-xmlChar* xplLibraryVersionsToString(xplLibraryVersionsPtr compiled, xplLibraryVersionsPtr running)
+xmlChar* xplLibraryVersionsToString(const xplLibraryVersionsPtr compiled, const xplLibraryVersionsPtr running)
 {
 	size_t i;
 	xmlBufferPtr buf;

@@ -58,7 +58,7 @@ extern "C" {
 
 XPLPUBFUN int XPLCALL
 	xplVersion(void);
-XPLPUBFUN xmlChar* XPLCALL
+XPLPUBFUN const xmlChar* XPLCALL
 	xplVersionString(void);
 
 typedef enum _xefImplTransport
@@ -102,9 +102,9 @@ typedef struct _xefImplementations
 XPLPUBFUN xefImplementationsPtr XPLCALL
 	xplGetXefImplementations(void);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplXefImplementationsToNodeList(xmlDocPtr doc, xplQName tagname, xefImplementationsPtr impl);
+	xplXefImplementationsToNodeList(const xmlDocPtr doc, const xplQName tagname, const xefImplementationsPtr impl);
 XPLPUBFUN xmlChar* XPLCALL
-	xplXefImplementationsToString(xefImplementationsPtr impl);
+	xplXefImplementationsToString(const xefImplementationsPtr impl);
 
 typedef struct _xplLibraryVersions
 {
@@ -128,9 +128,9 @@ XPLPUBFUN xplLibraryVersionsPtr XPLCALL
 	xplGetRunningLibraryVersions(void);
 
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplLibraryVersionsToNodeList(xmlDocPtr doc, xplQName tagname, xplLibraryVersionsPtr compiled, xplLibraryVersionsPtr running);
+	xplLibraryVersionsToNodeList(const xmlDocPtr doc, const xplQName tagname, const xplLibraryVersionsPtr compiled, const xplLibraryVersionsPtr running);
 XPLPUBFUN xmlChar* XPLCALL
-	xplLibraryVersionsToString(xplLibraryVersionsPtr compiled, xplLibraryVersionsPtr running);
+	xplLibraryVersionsToString(const xplLibraryVersionsPtr compiled, const xplLibraryVersionsPtr running);
 
 XPLPUBFUN bool XPLCALL
 	xplInitLibraryVersions(void);
