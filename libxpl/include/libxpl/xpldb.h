@@ -65,14 +65,14 @@ XPLPUBFUN const xmlChar* XPLCALL
 	xplDecodeDBConfigResult(xplDBConfigResult result);
 
 XPLPUBFUN xplDBConfigResult XPLCALL
-	xplRemoveDB(xmlChar *name);
+	xplRemoveDB(const xmlChar *name);
 XPLPUBFUN xplDBConfigResult XPLCALL
-	xplAddDB(xmlChar *name, xmlChar *newConnString, bool withCheck);
+	xplAddDB(const xmlChar *name, const xmlChar *newConnString, bool withCheck);
 XPLPUBFUN xplDBConfigResult XPLCALL
-	xplChangeDB(xmlChar *name, xmlChar *newConnString, bool withCheck);
+	xplChangeDB(const xmlChar *name, const xmlChar *newConnString, bool withCheck);
 
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplDatabasesToNodeList(xmlNodePtr parent, const xplQName qname);
+	xplDatabasesToNodeList(const xmlNodePtr parent, const xplQName qname);
 
 XPLPUBFUN bool XPLCALL
 	xplInitDatabases(void);

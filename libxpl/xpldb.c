@@ -140,7 +140,7 @@ static void dbDeallocator(void *payload, XML_HCBNC xmlChar *name)
 	xplDBListFree((xplDBListPtr) payload);
 }
 
-xplDBConfigResult xplRemoveDB(xmlChar *name)
+xplDBConfigResult xplRemoveDB(const xmlChar *name)
 {
 	if (!databases)
 		return XPL_DBCR_NO_PARSER;
@@ -149,7 +149,7 @@ xplDBConfigResult xplRemoveDB(xmlChar *name)
 	return XPL_DBCR_OK;
 }
 
-xplDBConfigResult xplAddDB(xmlChar *name, xmlChar *newConnString, bool withCheck)
+xplDBConfigResult xplAddDB(const xmlChar *name, const xmlChar *newConnString, bool withCheck)
 {
 	xplDBListPtr db;
 
@@ -173,7 +173,7 @@ xplDBConfigResult xplAddDB(xmlChar *name, xmlChar *newConnString, bool withCheck
 	return XPL_DBCR_OK;
 }
 
-xplDBConfigResult xplChangeDB(xmlChar *name, xmlChar *newConnString, bool withCheck)
+xplDBConfigResult xplChangeDB(const xmlChar *name, const xmlChar *newConnString, bool withCheck)
 {
 	xplDBListPtr db, new_db;
 
@@ -222,7 +222,7 @@ static void databaseListScanner(void *payload, void *data, XML_HCBNC xmlChar *na
 	APPEND_NODE_TO_LIST(ctxt->head, ctxt->tail, cur);
 }
 
-xmlNodePtr xplDatabasesToNodeList(xmlNodePtr parent, const xplQName qname)
+xmlNodePtr xplDatabasesToNodeList(const xmlNodePtr parent, const xplQName qname)
 {
 	getDBListContext ctxt;
 
