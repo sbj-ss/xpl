@@ -312,7 +312,7 @@ static void _yajlPrint(void *ctx, const char *str, size_t len)
 		jctxt->out_of_memory = true;
 }
 
-xmlNodePtr xplJsonXSerializeNodeList(xmlNodePtr list, bool strictTagNames, bool valueTypeCheck, bool prettyPrint)
+xmlNodePtr xplJsonXSerializeNodeList(const xmlNodePtr list, bool strictTagNames, bool valueTypeCheck, bool prettyPrint)
 {
 	jsonxSerializeContext ctxt;
 	xmlNodePtr ret;
@@ -502,7 +502,7 @@ static const yajl_callbacks yajl_parse_callbacks =
 	.yajl_end_array = _yajlEndArray
 };
 
-xmlNodePtr xplJsonXParse(xmlChar *src, xmlNodePtr parent, bool validateStrings)
+xmlNodePtr xplJsonXParse(const xmlChar *src, const xmlNodePtr parent, bool validateStrings)
 {
 	jsonxParseContext ctxt;
 	xmlNodePtr ret;

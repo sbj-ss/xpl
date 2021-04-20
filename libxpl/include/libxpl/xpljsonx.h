@@ -16,9 +16,9 @@ extern "C" {
 #define JSONX_SCHEMA_URI BAD_CAST "http://www.ibm.com/xmlns/prod/2009/jsonx"
 
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplJsonXSerializeNodeList(xmlNodePtr list, bool strictTagNames,	bool valueTypeCheck, bool prettyPrint);
+	xplJsonXSerializeNodeList(const xmlNodePtr list, bool strictTagNames, bool valueTypeCheck, bool prettyPrint);
 XPLPUBFUN xmlNodePtr XPLCALL
-	xplJsonXParse(xmlChar *src, xmlNodePtr parent, bool validateStrings);
+	xplJsonXParse(const xmlChar *src, const xmlNodePtr parent, bool validateStrings);
 
 #ifdef __cplusplus
 }
