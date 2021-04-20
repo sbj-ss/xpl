@@ -1444,9 +1444,9 @@ xplError xplProcessFileEx(
 	wrapper = xplMWGetWrapper(relativePath);
 	if (!wrapper)
 		return xplProcessFile(basePath, relativePath, params, session, docOut, checkAbsPath);
-	xplParamAddValue(params, BAD_CAST "WrapperFile", BAD_CAST XPL_STRDUP((char*) wrapper), XPL_PARAM_TYPE_USERDATA);
+	xplParamReplaceValue(params, BAD_CAST "WrapperFile", BAD_CAST XPL_STRDUP((char*) wrapper), XPL_PARAM_TYPE_USERDATA);
 	xplParamsLockValue(params, BAD_CAST "WrapperFile", true);
-	xplParamAddValue(params, BAD_CAST "OriginalFile", BAD_CAST XPL_STRDUP((char*) relativePath), XPL_PARAM_TYPE_USERDATA);
+	xplParamReplaceValue(params, BAD_CAST "OriginalFile", BAD_CAST XPL_STRDUP((char*) relativePath), XPL_PARAM_TYPE_USERDATA);
 	xplParamsLockValue(params, BAD_CAST "OriginalFile", true);
 	return xplProcessFile(basePath, wrapper, params, session, docOut, checkAbsPath);
 }
