@@ -187,40 +187,6 @@ static SQLHDBC _xefDbEstablishConnection(const xmlChar* connString, xmlChar **er
 	return db_handle;
 }
 
-// TODO move to xpldb
-static xplDBPtr _xefDbGetAvailDB(xplDBListPtr list, xmlChar **error)
-{
-	xplDBPtr db;
-	bool append = false;
-
-	if (!(db = xplLocateAvailDB(list)))
-	{
-		db = xplDBCreate(NULL, xefDbDeallocateDb);
-		db->busy = true;
-		append = true;
-	}
-	if (!db->connection)
-	{
-		db->connection = _xefDbEstablishConnection(list->conn_string, error);
-		if (!db->connection)
-		{
-			db->busy = false;
-			if (append)
-				xplAddDBToDBList(list, db);
-			return NULL;
-		}
-	}
-	if (append)
-		xplAddDBToDBList(list, db);
-	return db;
-}
-
-static void _xefDbReleaseDB(xplDBPtr db)
-{
-	if (db)
-		db->busy = false;
-}
-
 bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **msg)
 {
 	SQLHDBC hDbc;
@@ -611,7 +577,7 @@ void xefDbFreeContext(xefDbContextPtr ctxt)
 	}
 	if (ctxt->buffer)
 		XPL_FREE(ctxt->buffer);
-	_xefDbReleaseDB(ctxt->db);
+	xplReleaseDB(ctxt->db);
 	XPL_FREE(ctxt);
 }
 
@@ -680,7 +646,7 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 		_xefDbSetParamsError(params, xplFormat("%s(): params->db_list is NULL", __FUNCTION__));
 		return NULL;
 	}
-	db = _xefDbGetAvailDB(params->db_list, &error_text);
+	db = xplGetOrCreateDB(params->db_list, _xefDbEstablishConnection, &error_text);
 	if (!db)
 	{
 		_xefDbSetParamsError(params, xplFormat("%s(): cannot connect to requested database: %s", __FUNCTION__, error_text));
@@ -723,7 +689,7 @@ error:
 		xefDbFreeContext(ctxt);
 	}
 	if (db)
-		_xefDbReleaseDB(db);
+		xplReleaseDB(db);
 	return NULL;
 done:
 	return ctxt; 

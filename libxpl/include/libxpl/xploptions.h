@@ -54,6 +54,7 @@ XPLPUBVAR int cfgInitialMacroTableSize;
 XPLPUBVAR xmlChar *cfgLogFileName;
 XPLPUBVAR int cfgLuciferCompat;
 XPLPUBVAR int cfgMacroContentCachingThreshold;
+XPLPUBVAR int cfgMaxDatabaseConnectionLifetime; // in seconds
 XPLPUBVAR int cfgMaxRecursionDepth;
 XPLPUBVAR int cfgMinDebugPrintLevel;
 XPLPUBVAR int cfgPrintTidyInfo;
@@ -96,6 +97,7 @@ XPLPUBVAR xmlChar *cfgXplNsUri;
 #define DEFAULT_INITIAL_MACRO_TABLE_SIZE 16
 #define DEFAULT_LUCIFER_COMPAT true
 #define DEFAULT_MACRO_CONTENT_CACHING_THRESHOLD -1 /* disabled */
+#define DEFAULT_MAX_DATABASE_CONNECTION_LIFETIME 86400
 #define DEFAULT_MAX_RECURSION_DEPTH 100
 #define DEFAULT_MIN_DEBUG_PRINT_LEVEL 0
 #define DEFAULT_PRINT_TIDY_INFO false

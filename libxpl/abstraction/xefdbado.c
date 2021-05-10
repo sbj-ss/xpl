@@ -82,7 +82,7 @@ void xefDbDeallocateDb(void *db_handle)
 	}
 }
 
-static ADOConnection* _xefDbEstablishConnection(const xmlChar* connString)
+static ADOConnection* _xefDbEstablishConnection(const xmlChar* connString, xmlChar **error)
 {
 	ADOConnection *conn;
 	HRESULT res;
@@ -102,41 +102,11 @@ static ADOConnection* _xefDbEstablishConnection(const xmlChar* connString)
 	if (bstr_connstring) SysFreeString(bstr_connstring);
 	if FAILED(res)
 	{
+		// TODO error info
 		_Connection_Release(conn);
 		return NULL;
 	}
 	return conn;
-}
-
-static xplDBPtr _xefDbGetAvailDB(xplDBListPtr list)
-{
-	xplDBPtr db;
-	bool append = false;
-
-	if (!(db = xplLocateAvailDB(list)))
-	{
-		db = xplDBCreate(NULL, xefDbDeallocateDb);
-		db->busy = true;
-		append = true;
-	}
-	if (!db->connection)
-	{
-		db->connection = _xefDbEstablishConnection(list->conn_string);
-		if (!db->connection)
-		{
-			db->busy = false;
-			return NULL;
-		}
-	}
-	if (append)
-		xplAddDBToDBList(list, db);
-	return db;
-}
-
-static void _xefDbReleaseDB(xplDBPtr db)
-{
-	if (db)
-		db->busy = false;
 }
 
 bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **msg)
@@ -552,7 +522,7 @@ void xefDbFreeContext(xefDbContextPtr ctxt)
 		_Command_Release(ctxt->command);
 	}
 	/* we don't close the connection here */
-	_xefDbReleaseDB(ctxt->db);
+	xplReleaseDB(ctxt->db);
 	XPL_FREE(ctxt);
 }
 
@@ -962,7 +932,7 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 		return NULL;
 	}
 
-	db = _xefDbGetAvailDB(params->db_list);
+	db = xplGetOrCreateDB(params->db_list, _xefDbEstablishConnection, &error_text);
 	if (!db)
 	{
 		_xefDbSetParamsError(params, xplFormat("%s(): cannot connect to requested database", __FUNCTION__));
@@ -1025,7 +995,7 @@ error:
 			_Command_Release(cmd);
 	}
 	if (db)
-		_xefDbReleaseDB(db);
+		xplReleaseDB(db);
 	return NULL;
 done:
 	return ctxt; 

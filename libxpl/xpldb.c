@@ -112,6 +112,30 @@ void xplAddDBToDBList(xplDBListPtr list, xplDBPtr db)
 	SUCCEED_OR_DIE(xprMutexRelease(&list->lock));
 }
 
+xplDBPtr xplGetOrCreateDB(xplDBListPtr list, xplDBConnector connector, xmlChar **error)
+{
+	xplDBPtr db;
+	bool append = false;
+
+	if (!(db = xplLocateAvailDB(list)))
+	{
+		db = xplDBCreate(NULL, xefDbDeallocateDb);
+		db->busy = true;
+		append = true;
+	}
+	if (!db->connection)
+		db->connection = connector(list->conn_string, error);
+	if (append)
+		xplAddDBToDBList(list, db);
+	return db->connection? db: NULL;
+}
+
+void xplReleaseDB(xplDBPtr db)
+{
+	if (db)
+		db->busy = false;
+}
+
 const xmlChar* xplDecodeDBConfigResult(xplDBConfigResult result)
 {
 	switch(result)

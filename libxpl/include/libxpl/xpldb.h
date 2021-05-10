@@ -17,6 +17,8 @@ extern "C" {
 
 /* Implementation-agnostic database connections */
 typedef void(*xplDBDeallocator)(void* payload);
+typedef void*(xplDBConnector)(const xmlChar *conn_string, xmlChar **error);
+
 typedef struct _xplDB xplDB, *xplDBPtr;
 struct _xplDB
 {
@@ -49,6 +51,10 @@ XPLPUBFUN xplDBPtr XPLCALL
 	xplLocateAvailDB(xplDBListPtr list);
 XPLPUBFUN void XPLCALL
 	xplAddDBToDBList(xplDBListPtr list, xplDBPtr db);
+XPLPUBFUN xplDBPtr XPLCALL
+	xplGetOrCreateDB(xplDBListPtr list, xplDBConnector connector, xmlChar **error);
+XPLPUBFUN void XPLCALL
+	xplReleaseDB(xplDBPtr db);
 
 /* Dynaconf functions. Threads must be locked before calling. */
 typedef enum _xplDBConfigResult
