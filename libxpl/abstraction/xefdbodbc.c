@@ -65,13 +65,14 @@ void xefShutdownDatabase()
 }
 
 /* =============== errors ================= */
-static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, RETCODE retCode)
+static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, RETCODE retCode, xplDBPtr conn)
 {
 	SQLSMALLINT rec_no = 1, msg_len;
 	SQLINTEGER error;
 	SQLRETURN r;
 	SQLWCHAR *msg = NULL, state[SQL_SQLSTATE_SIZE+1];
 	xmlChar *conv, *ret = NULL;
+	bool invalid_conn;
 
 	if (retCode == SQL_INVALID_HANDLE)
 		return BAD_CAST XPL_STRDUP("invalid handle");
@@ -85,6 +86,20 @@ static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, 
 		if (SQL_SUCCEEDED(r))
 		{
 			msg = (SQLWCHAR*) XPL_MALLOC((msg_len+1)*sizeof(SQLWCHAR));
+			if (conn)
+			{
+				invalid_conn = ( // SQL state 08001
+					state[0] == 0x30
+					&& state[1] == 0x38
+					&& state[2] == 0x30
+					&& state[3] == 0x30
+					&& state[4] == 0x31);
+				if (invalid_conn)
+				{
+					xefDbDeallocateDb(conn->connection);
+					conn->connection = NULL;
+				}
+			}
 			if (!msg)
 			{
 				if (ret)
@@ -164,7 +179,7 @@ static SQLHDBC _xefDbEstablishConnection(const xmlChar* connString, xmlChar **er
 	{
 		if (error)
 		{
-			odbc_error = _xefDbDecodeOdbcError(hEnv, SQL_HANDLE_ENV, r);
+			odbc_error = _xefDbDecodeOdbcError(hEnv, SQL_HANDLE_ENV, r, NULL);
 			*error = xplFormat("%s(): SQLAllocHandle(): %s", __FUNCTION__, odbc_error);
 			XPL_FREE(odbc_error);
 		}
@@ -177,7 +192,7 @@ static SQLHDBC _xefDbEstablishConnection(const xmlChar* connString, xmlChar **er
 	{
 		if (error)
 		{
-			odbc_error = _xefDbDecodeOdbcError(db_handle, SQL_HANDLE_DBC, r);
+			odbc_error = _xefDbDecodeOdbcError(db_handle, SQL_HANDLE_DBC, r, NULL);
 			*error = xplFormat("%s(): SQLDriverConnectW(): %s", __FUNCTION__, odbc_error);
 			XPL_FREE(odbc_error);
 		}
@@ -219,7 +234,7 @@ bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **m
 }
 
 /* ================ statements and queries =============== */
-static SQLHSTMT _xefCreateStmt(SQLHDBC hConn, xmlChar **error)
+static SQLHSTMT _xefCreateStmt(xefDbContextPtr ctxt, SQLHDBC hConn, xmlChar **error)
 {
 	SQLRETURN r;
 	SQLHSTMT stmt;
@@ -230,7 +245,7 @@ static SQLHSTMT _xefCreateStmt(SQLHDBC hConn, xmlChar **error)
 	{
 		if (error)
 		{
-			error_text = _xefDbDecodeOdbcError(hConn, SQL_HANDLE_DBC, r);
+			error_text = _xefDbDecodeOdbcError(hConn, SQL_HANDLE_DBC, r, ctxt->db);
 			*error = xplFormat("%s(): SQLAllocHandle(): %s", __FUNCTION__, error_text);
 			XPL_FREE(error_text);
 		}
@@ -244,6 +259,7 @@ static bool _xefDbExecSQL(xefDbContextPtr ctxt, const xmlChar *sql)
 	SQLRETURN r;
 	SQLWCHAR *w_sql = NULL;
 	xmlChar *error_text;
+	bool invalid_conn;
 
 	if (!ctxt)
 		return false;
@@ -258,9 +274,13 @@ static bool _xefDbExecSQL(xefDbContextPtr ctxt, const xmlChar *sql)
 	if (r == SQL_NO_DATA)
 		ctxt->end_of_recordsets = true;
 	else if (!SQL_SUCCEEDED(r))	{
-		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
+		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
 		_xefDbSetContextError(ctxt, xplFormat("%s(): SQLExecDirect(): %s", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
+		if (invalid_conn)
+		{
+
+		}
 		return false;
 	}
 	return true;
@@ -282,7 +302,7 @@ static bool _xefDbLocateNextNonemptyRecordset(xefDbContextPtr ctxt, bool advance
 		r = SQLNumResultCols(ctxt->statement, &ncols);
 		if (!SQL_SUCCEEDED(r))
 		{
-			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
+			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
 			_xefDbSetContextError(ctxt, xplFormat("%s(): SQLNumResultCols(): %s", __FUNCTION__, error_text));
 			goto error;
 		}
@@ -306,7 +326,7 @@ static bool _xefDbLocateNextNonemptyRecordset(xefDbContextPtr ctxt, bool advance
 		}
 		if (!SQL_SUCCEEDED(r))
 		{
-			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
+			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
 			_xefDbSetContextError(ctxt, xplFormat("%s(): SQLMoreResults(): %s", __FUNCTION__, error_text));
 			goto error;
 		}
@@ -332,7 +352,7 @@ static bool _xefDbNextRecord(xefDbContextPtr ctxt)
 		return false;
 	if (!SQL_SUCCEEDED(r))
 	{
-		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
+		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
 		_xefDbSetContextError(ctxt, xplFormat("%s(): SQLFetch(): %s", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
 		return false;
@@ -410,7 +430,7 @@ static void _xefDbCreateRow(xefDbContextPtr ctxt)
 		r = SQLColAttributeW(ctxt->statement, i, SQL_DESC_NAME, NULL, 0, &len, NULL);
 		if (!SQL_SUCCEEDED(r))
 		{
-			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
+			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
 			_xefDbSetContextError(ctxt, xplFormat("%s(): SQLColAttributeW(): %s", __FUNCTION__, error_text));
 			goto error;
 		}
@@ -426,7 +446,7 @@ static void _xefDbCreateRow(xefDbContextPtr ctxt)
 			r = SQLColAttributeW(ctxt->statement, i, SQL_DESC_NAME, w_name, len+3, &len, NULL);
 			if (!SQL_SUCCEEDED(r))
 			{
-				error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
+				error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
 				_xefDbSetContextError(ctxt, xplFormat("%s(): SQLColAttributeW(SQL_DESC_NAME): %s", __FUNCTION__, error_text));
 				goto error;
 			}
@@ -505,7 +525,7 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 		} while (r == SQL_SUCCESS_WITH_INFO);
 		if (!SQL_SUCCEEDED(r))
 		{
-			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
+			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
 			_xefDbSetContextError(ctxt, xplFormat("%s(): SQLGetData(): %s", __FUNCTION__, error_text));
 			XPL_FREE(error_text);
 			goto error;
@@ -624,7 +644,7 @@ ssize_t xefDbGetRowCount(xefDbContextPtr ctxt)
 	r = SQLRowCount(ctxt->statement, &len);
 	if (!SQL_SUCCEEDED(r))
 	{
-		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r);
+		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
 		_xefDbSetContextError(ctxt, xplFormat("%s(): SQLGetData(): %s", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
 		return -2;
@@ -659,7 +679,7 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 	ctxt->user_data = params->user_data;
 	ctxt->cleanup_stream = params->cleanup_nonprintable;
 
-	if (!(ctxt->statement = _xefCreateStmt((SQLHDBC)db->connection, &error_text)))
+	if (!(ctxt->statement = _xefCreateStmt(ctxt, (SQLHDBC) db->connection, &error_text)))
 	{
 		_xefDbSetParamsError(params, xplFormat("%s(): %s", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
