@@ -24,6 +24,7 @@ struct _xplDB
 {
 	void* connection;
 	bool busy;
+	XPR_TIME created_at;
 	xplDBPtr next;
 	xplDBDeallocator dealloc;
 };

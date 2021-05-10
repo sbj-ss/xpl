@@ -18,6 +18,7 @@ int cfgInitialMacroTableSize;
 xmlChar *cfgLogFileName;
 int cfgLuciferCompat;
 int cfgMacroContentCachingThreshold;
+int cfgMaxDatabaseConnectionLifetime;
 int cfgMaxRecursionDepth;
 int cfgMinDebugPrintLevel;
 int cfgPrintTidyInfo;
@@ -142,6 +143,11 @@ xplConfigEntry config_entries[] =
 		.value_ptr = &cfgMacroContentCachingThreshold,
 		.name = BAD_CAST "MacroContentCachingThreshold",
 		.default_value = (void*) DEFAULT_MACRO_CONTENT_CACHING_THRESHOLD
+	}, {
+		.cfg_type = CFG_TYPE_INT,
+		.value_ptr = &cfgMaxDatabaseConnectionLifetime,
+		.name = BAD_CAST "MaxDatabaseConnectionLifetime",
+		.default_value = (void*) DEFAULT_MAX_DATABASE_CONNECTION_LIFETIME
 	}, {
 		.cfg_type = CFG_TYPE_INT,
 		.value_ptr = &cfgMaxRecursionDepth,

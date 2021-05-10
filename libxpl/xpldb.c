@@ -3,6 +3,7 @@
 #include <libxpl/abstraction/xef.h>
 #include <libxpl/xpldb.h>
 #include <libxpl/xplmessages.h>
+#include <libxpl/xploptions.h>
 #include <libxpl/xplstring.h>
 #include <libxpl/xpltree.h>
 
@@ -15,6 +16,7 @@ xplDBPtr xplDBCreate(const xplDBPtr aNext, const xplDBDeallocator aDealloc)
 	if (!db)
 		return NULL;
 	memset(db, 0, sizeof(xplDB));
+	xprGetTime(&db->created_at);
 	db->next = aNext;
 	db->dealloc = aDealloc;
 	return db;
@@ -79,6 +81,7 @@ xplDBListPtr xplLocateDBList(const xmlChar *name)
 xplDBPtr xplLocateAvailDB(xplDBListPtr list)
 {
 	xplDBPtr db, ret = NULL;
+	XPR_TIME tm;
 
 	if (!list)
 		return NULL;
@@ -94,7 +97,19 @@ xplDBPtr xplLocateAvailDB(xplDBListPtr list)
 		db = db->next;
 	}
 	if (ret)
+	{
 		ret->busy = true;
+		if (cfgMaxDatabaseConnectionLifetime != -1)
+		{
+			xprGetTime(&tm);
+			if (xprTimeDelta(&tm, &db->created_at) / 1000 > cfgMaxDatabaseConnectionLifetime)
+			{
+				db->dealloc(db->connection);
+				db->connection = NULL;
+				memcpy(&db->created_at, &tm, sizeof(XPR_TIME));
+			}
+		}
+	}
 	SUCCEED_OR_DIE(xprMutexRelease(&list->lock));
 	return ret;
 }
