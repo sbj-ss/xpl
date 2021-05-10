@@ -88,10 +88,10 @@ static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, 
 			msg = (SQLWCHAR*) XPL_MALLOC((msg_len+1)*sizeof(SQLWCHAR));
 			if (conn)
 			{
-				invalid_conn = ( // SQL state 08001
+				invalid_conn = ( // SQL state 08S01
 					state[0] == 0x30
 					&& state[1] == 0x38
-					&& state[2] == 0x30
+					&& state[2] == 0x53
 					&& state[3] == 0x30
 					&& state[4] == 0x31);
 				if (invalid_conn)
