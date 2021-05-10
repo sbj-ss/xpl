@@ -93,7 +93,15 @@ static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, 
 					&& state[1] == 0x38
 					&& state[2] == 0x53
 					&& state[3] == 0x30
-					&& state[4] == 0x31);
+					&& state[4] == 0x31
+				) || ( // SQL state 08003
+					state[0] == 0x30
+					&& state[1] == 0x38
+					&& state[2] == 0x30
+					&& state[3] == 0x30
+					&& state[4] == 0x33
+
+				);
 				if (invalid_conn)
 				{
 					xefDbDeallocateDb(conn->connection);
