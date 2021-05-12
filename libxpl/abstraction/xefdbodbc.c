@@ -267,7 +267,6 @@ static bool _xefDbExecSQL(xefDbContextPtr ctxt, const xmlChar *sql)
 	SQLRETURN r;
 	SQLWCHAR *w_sql = NULL;
 	xmlChar *error_text;
-	bool invalid_conn;
 
 	if (!ctxt)
 		return false;
@@ -285,10 +284,6 @@ static bool _xefDbExecSQL(xefDbContextPtr ctxt, const xmlChar *sql)
 		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
 		_xefDbSetContextError(ctxt, xplFormat("%s(): SQLExecDirect(): %s", __FUNCTION__, error_text));
 		XPL_FREE(error_text);
-		if (invalid_conn)
-		{
-
-		}
 		return false;
 	}
 	return true;
