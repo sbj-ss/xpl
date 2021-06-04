@@ -17,5 +17,6 @@ void xplCmdSetResponseEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr resul
 	if (commandInfo->document->response)
 		XPL_FREE(commandInfo->document->response);
 	commandInfo->document->response = commandInfo->content;
+	commandInfo->content = NULL;
 	ASSIGN_RESULT(NULL, false, true);
 }
