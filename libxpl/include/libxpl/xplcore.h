@@ -70,6 +70,7 @@ struct _xplDocument
 	XPR_TIME profile_start_time;		/* for execution timing */
 	xmlBufferPtr deleted_nodes;			/* for deferred node deletion */
 	int iterator_spin;					/* for :with */
+	bool has_meaningful_content;		/* ditto */
 };
 
 XPLPUBFUN xplDocumentPtr XPLCALL

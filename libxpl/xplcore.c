@@ -105,6 +105,7 @@ xplDocumentPtr xplDocumentInit(const xmlChar *docPath, xplParamsPtr params, xplS
 	doc->shared_session = session;
 	doc->params = params;
 	doc->status = XPL_ERR_NOT_YET_REACHED;
+	doc->has_meaningful_content = true;
 	return doc;
 }
 

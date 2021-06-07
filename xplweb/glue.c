@@ -426,24 +426,25 @@ int serveXpl(struct mg_connection *conn, void *userData)
 		content_type = om->content_type;
 	if (ret == XPL_ERR_NO_ERROR || ret == XPL_ERR_FATAL_CALLED)
 	{
+		http_code = 200; // TODO extract from response?..
 		if (doc->response)
 		{
-			http_code = 200; // TODO extract from response?..
-			mg_printf(conn, "%s\r\n\r\n", doc->response);
+			mg_printf(conn, "%s\r\n", doc->response);
 		} else {
-			if ((payload = serializeDoc(doc->document, encoding, om, &payload_size)))
-			{
-				http_code = 200;
-				mg_printf(conn, "HTTP/1.1 200 OK\r\n");
-				mg_printf(conn, "Cache-control: no-cache\r\n");
-				mg_printf(conn, "Content-Length: "SIZE_T_FORMAT"\r\n", payload_size);
-				mg_printf(conn, "Content-Type: %s; charset=%s\r\n", content_type, encoding);
-				setSessionCookie(conn, doc->shared_session);
-				mg_printf(conn, "\r\n");
-				mg_printf(conn, "%s", payload);
-				XPL_FREE(payload);
-			}
+			mg_printf(conn, "HTTP/1.1 200 OK\r\n");
+			mg_printf(conn, "Cache-control: no-cache\r\n");
 		}
+		if (doc->has_meaningful_content && (payload = serializeDoc(doc->document, encoding, om, &payload_size)))
+		{
+			http_code = 200;
+			mg_printf(conn, "Content-Length: "SIZE_T_FORMAT"\r\n", payload_size);
+			mg_printf(conn, "Content-Type: %s; charset=%s\r\n", content_type, encoding);
+			setSessionCookie(conn, doc->shared_session);
+			mg_printf(conn, "\r\n");
+			mg_printf(conn, "%s", payload);
+			XPL_FREE(payload);
+		} else
+			mg_printf(conn, "\r\n");
 	} else {
 		/* always return error as XML */
 		mg_printf(conn, "HTTP/1.1 500 Internal Server Error\r\n");
