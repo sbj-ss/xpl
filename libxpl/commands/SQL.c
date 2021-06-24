@@ -610,8 +610,7 @@ done:
 		XPL_FREE(dbq_params.error);
 	if (db_ctxt)
 		xefDbFreeContext(db_ctxt);
-	if (dbname_attr)
-		XPL_FREE(dbname_attr);
+	XPL_FREE(dbname_attr);
 	if (row_tag_names)
 		_freeRowTagNames(row_tag_names);
 }

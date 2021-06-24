@@ -48,7 +48,7 @@ void xplCmdLoadModuleEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 
 	xplLockThreads(true);
 	code = xplLoadModule(params->name, &error);
-	if ((code != XPL_MODULE_CMD_OK) || (code != XPL_MODULE_CMD_MODULE_ALREADY_LOADED))
+	if ((code != XPL_MODULE_CMD_OK) && (code != XPL_MODULE_CMD_MODULE_ALREADY_LOADED))
 	{
 		ret = xplCreateErrorNode(commandInfo->element, "cannot load module '%s': %s", params->name, error);
 		if (error)

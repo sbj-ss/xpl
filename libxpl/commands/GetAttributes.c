@@ -157,7 +157,7 @@ void xplCmdGetAttributesEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr res
 			return;
 		}
 		if (cfgWarnOnInvalidNodeType && src != commandInfo->element->children)
-			xplDisplayWarning(commandInfo->element, "can only work with element nodes, select '%s'", (char*) params->select->user);
+			xplDisplayWarning(commandInfo->element, "can only work with element nodes but non-element children are present");
 		if (cfgWarnOnMultipleSelection && _hasElementTail(src))
 			xplDisplayWarning(commandInfo->element, "gets attributes only from its first child element but more elements follow");
 	}

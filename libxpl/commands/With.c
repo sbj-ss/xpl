@@ -142,18 +142,16 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 				cur->children = cur->last = NULL;
 			}
 			xplDocDeferNodeDeletion(commandInfo->document, cur);
-		} else if (params->mode == WITH_MODE_APPEND) {
+		} else {
 			xplAppendChildren(cur, repl);
 			xplNodeListApply(commandInfo->document, repl, &temp_result);
-		} else
-			DISPLAY_INTERNAL_ERROR_MESSAGE();
+		}
 	} /* for */
 
 	if (commandInfo->element->type == XML_ELEMENT_NODE)
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 	commandInfo->document->iterator_spin--;
-	if (params->select->nodesetval)
-		params->select->nodesetval->nodeNr = 0;
+	params->select->nodesetval->nodeNr = 0;
 }
 
 void xplCmdWithEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)

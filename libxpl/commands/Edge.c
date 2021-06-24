@@ -248,7 +248,8 @@ void xplCmdEdgeEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 					else
 						xmlNewProp(cur, params->name.ncname, source_text);
 				} else if (cfgWarnOnInvalidNodeType)
-					xplDisplayWarning(commandInfo->element, "can't assign attributes to non-elements, destination '%s'", (char*) params->destination->user);
+					xplDisplayWarning(commandInfo->element, "can't assign attributes to non-elements, destination: %s",
+						params->destination? (char*) params->destination->user: "parent node");
 				break;
 			default:
 				DISPLAY_INTERNAL_ERROR_MESSAGE();
