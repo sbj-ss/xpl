@@ -83,41 +83,45 @@ static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, 
 		r = SQLGetDiagRecW(handleType, handle, rec_no, state, &error, msg, 0, &msg_len);
 		if (r == SQL_NO_DATA)
 			return ret? ret: BAD_CAST XPL_STRDUP("no information available");
-		if (SQL_SUCCEEDED(r))
+		if (!SQL_SUCCEEDED(r))
 		{
-			msg = (SQLWCHAR*) XPL_MALLOC((msg_len+1)*sizeof(SQLWCHAR));
-			if (conn)
-			{
-				invalid_conn = ( // SQL state 08S01
-					state[0] == 0x30
-					&& state[1] == 0x38
-					&& state[2] == 0x53
-					&& state[3] == 0x30
-					&& state[4] == 0x31
-				) || ( // SQL state 08003
-					state[0] == 0x30
-					&& state[1] == 0x38
-					&& state[2] == 0x30
-					&& state[3] == 0x30
-					&& state[4] == 0x33
+			if (ret)
+				return xplFormat("%s, %s(): SQLGetDiagRecW() failed", ret, __FUNCTION__);
+			return xplFormat("%s(): SQLGetDiagRecW() failed", __FUNCTION__);
+		}
+		msg = (SQLWCHAR*) XPL_MALLOC((msg_len+1)*sizeof(SQLWCHAR));
+		if (conn)
+		{
+			invalid_conn = ( // SQL state 08S01
+				state[0] == 0x30
+				&& state[1] == 0x38
+				&& state[2] == 0x53
+				&& state[3] == 0x30
+				&& state[4] == 0x31
+			) || ( // SQL state 08003
+				state[0] == 0x30
+				&& state[1] == 0x38
+				&& state[2] == 0x30
+				&& state[3] == 0x30
+				&& state[4] == 0x33
 
-				);
-				if (invalid_conn)
-				{
-					xefDbDeallocateDb(conn->connection);
-					conn->connection = NULL;
-				}
-			}
-			if (!msg)
+			);
+			if (invalid_conn)
 			{
-				if (ret)
-					XPL_FREE(ret);
-				return xplFormat("%s(): SQLGetDiagRecW(): insufficient memory", __FUNCTION__);
+				xefDbDeallocateDb(conn->connection);
+				conn->connection = NULL;
 			}
-			r = SQLGetDiagRecW(handleType, handle, rec_no, state, &error, msg, msg_len+1, &msg_len);
-		} else {
-			if (msg)
-				XPL_FREE(msg);
+		}
+		if (!msg)
+		{
+			if (ret)
+				XPL_FREE(ret);
+			return xplFormat("%s(): SQLGetDiagRecW(): insufficient memory", __FUNCTION__);
+		}
+		r = SQLGetDiagRecW(handleType, handle, rec_no, state, &error, msg, msg_len+1, &msg_len);
+		if (!SQL_SUCCEEDED(r))
+		{
+			XPL_FREE(msg);
 			if (ret)
 				return xplFormat("%s, %s(): SQLGetDiagRecW() failed", ret, __FUNCTION__);
 			return xplFormat("%s(): SQLGetDiagRecW() failed", __FUNCTION__);
@@ -440,12 +444,12 @@ static void _xefDbCreateRow(xefDbContextPtr ctxt)
 		if (len)
 		{
 			w_name = (SQLWCHAR*) XPL_MALLOC((len+2)*sizeof(SQLWCHAR)); /* certain ODBC drivers are crazy */
-			*w_name = 0;
 			if (!w_name)
 			{
 				_xefDbSetContextError(ctxt, xplFormat("%s(): insufficient memory for column name", __FUNCTION__));
 				goto error;
 			}
+			*w_name = 0;
 			r = SQLColAttributeW(ctxt->statement, i, SQL_DESC_NAME, w_name, len+3, &len, NULL);
 			if (!SQL_SUCCEEDED(r))
 			{
@@ -564,6 +568,8 @@ error:
 static xefDbContextPtr _xefDbCreateContext()
 {
 	xefDbContextPtr ret = (xefDbContextPtr) XPL_MALLOC(sizeof(xefDbContext));
+	if (!ret)
+		return NULL;
 	memset(ret, 0, sizeof(xefDbContext));
 	ret->stream_type = XEF_DB_STREAM_UNKNOWN;
 	return ret;
@@ -676,7 +682,11 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 		XPL_FREE(error_text);
 		return NULL;
 	}
-	ctxt = _xefDbCreateContext();
+	if (!(ctxt = _xefDbCreateContext()))
+	{
+		_xefDbSetParamsError(params, xplFormat("%s(): cannot allocate context", __FUNCTION__));
+		goto error;
+	}
 	ctxt->db = db;
 	ctxt->stream_type = XEF_DB_STREAM_TDS; /* we can't stream XML via ODBC */
 	ctxt->user_data = params->user_data;
@@ -684,9 +694,8 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 
 	if (!(ctxt->statement = _xefCreateStmt(ctxt, (SQLHDBC) db->connection, &error_text)))
 	{
-		_xefDbSetParamsError(params, xplFormat("%s(): %s", __FUNCTION__, error_text));
-		XPL_FREE(error_text);
-		goto done;
+		_xefDbSetParamsError(params, xplFormat("%s(): cannot create statement: %s", __FUNCTION__, error_text));
+		goto error;
 	}
 
 	if (!_xefDbExecSQL(ctxt, params->query))
@@ -711,8 +720,7 @@ error:
 		}
 		xefDbFreeContext(ctxt);
 	}
-	if (db)
-		xplReleaseDB(db);
+	xplReleaseDB(db);
 	return NULL;
 done:
 	return ctxt; 
@@ -761,8 +769,6 @@ void xefDbEnumRows(xefDbContextPtr ctxt, xefDbGetRowCallback cb, void *user_data
 		_xefDbSetContextError(ctxt, xplFormat("%s(): ctxt->statement is NULL", __FUNCTION__));
 		return;
 	}
-	if (ctxt->error)
-		return;
 	while (1)
 	{
 		if (!_xefDbNextRecord(ctxt))

@@ -90,6 +90,6 @@ bool xefCleanHtml(xefCleanHtmlParamsPtr params)
 	params->error = NULL;
 	tidyBufFree(&output);
 	tidyBufFree(&errbuf);
-	if (tdoc) tidyRelease(tdoc);
+	tidyRelease(tdoc);
 	return true;
 }
