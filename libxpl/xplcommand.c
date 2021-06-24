@@ -395,8 +395,7 @@ xmlNodePtr xplGetCommandParams(const xplCommandPtr command, xplCommandInfoPtr co
 			goto done;
 		}
 done:
-	if (required_params)
-		XPL_FREE(required_params);
+	XPL_FREE(required_params);
 	return ret;
 }
 
@@ -447,7 +446,7 @@ static void _paramClearValueScanner(void *payload, void *data, XML_HCBNC xmlChar
 			{
 				if ((param->type == XPL_CMD_PARAM_TYPE_STRING) || (param->type == XPL_CMD_PARAM_TYPE_NCNAME))
 					XPL_FREE(*value);
-				else if (param->type == XPL_CMD_PARAM_TYPE_PTR_CUSTOM_GETTER && param->extra.ptr_fn.deallocator)
+				else if (param->extra.ptr_fn.deallocator)
 					param->extra.ptr_fn.deallocator(*value);
 				*value = NULL;
 			}

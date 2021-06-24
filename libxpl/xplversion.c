@@ -354,7 +354,7 @@ typedef struct _versionElement
 	ptrdiff_t offset;
 } versionElement, *versionElementPtr;
 
-static const xplLibraryVersions * const version_stencil = NULL;
+static const xplLibraryVersions * const version_stencil = (const xplLibraryVersions * const) (uintptr_t) 0x12345678; // never actually dereferenced
 
 #define VERSION_OFFSET(part) (uintptr_t) &version_stencil->part - (uintptr_t) version_stencil
 

@@ -308,6 +308,7 @@ static XPR_DECLARE_THREAD_ROUTINE(xplDocThreadWrapper, p)
 	{
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 		xprExitThread((XPR_THREAD_RETVAL) -1);
+		return (XPR_THREAD_RETVAL) -1;
 	}
 	err = xplDocumentApply(doc);
 	if ((err != XPL_ERR_NO_ERROR) && (err != XPL_ERR_FATAL_CALLED))
@@ -655,7 +656,7 @@ xmlNodePtr xplDocSessionGetAllObjects(xplDocumentPtr doc, bool local, const xmlN
 	if (select)
 		ret = obj? _selectAndCopyNodes(doc, obj, select, parent, ok): NULL;
 	else {
-		cur = ret = obj? xplCloneNodeList(obj->children, parent, parent->doc): NULL;
+		cur = ret = (obj? xplCloneNodeList(obj->children, parent, parent->doc): NULL);
 		while (cur)
 		{
 			xplLiftNsDefs(parent, cur, cur->children);
@@ -1058,7 +1059,7 @@ xplMacroPtr xplAddMacro(
 	xplResult tmp_result;
 	xmlNsPtr ns;
 
-	if (!replace || (replace && cfgWarnOnMacroRedefinition))
+	if (!replace || cfgWarnOnMacroRedefinition)
 		prev_def = xplMacroLookupByQName(macro->parent, qname);
 	if (replace && cfgWarnOnMacroRedefinition && prev_def)
 		xplDisplayWarning(macro, "macro '%s%s%s' redefined, previous line: %d",

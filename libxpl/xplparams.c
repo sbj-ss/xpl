@@ -500,7 +500,7 @@ int xplParseParamString(const xmlChar *params, const char *fallbackEncoding, xpl
 			*amp_pos = 0;
 		param = BAD_CAST params;
 		params = amp_pos? amp_pos+1: NULL;
-		if (param && *param)
+		if (*param)
 		{
 			/* extract the left part */
 			eq_pos = BAD_CAST xmlStrchr(param, '=');

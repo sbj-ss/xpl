@@ -74,21 +74,36 @@ bool xstrIsNumber(const xmlChar *str)
 
 xmlChar* xstrGetLastLibxmlError()
 {
+	static const char error_fmt[] = "file %s, %d:%d, problem: %s, extra info [%s, %s, %s]";
 	xmlChar *error, *encError;
 	xmlErrorPtr err;
 	size_t max_err_len;
 
+	// TODO: maybe simply use xplFormat()?
 	err = xmlGetLastError();
 	if (!err)
 		return BAD_CAST XPL_STRDUP("unknown error");
-	max_err_len = (err->message?strlen(err->message):0) + (err->file?strlen(err->file):0) + 127;
-	if (err->str1) max_err_len += strlen(err->str1);
-	if (err->str2) max_err_len += strlen(err->str2);
-	if (err->str3) max_err_len += strlen(err->str3);
+	max_err_len = strlen(error_fmt) - 14;
+	max_err_len += err->message? strlen(err->message): 6;
+	max_err_len += err->file? strlen(err->file): 0;
+	max_err_len += err->str1? strlen(err->str1): 6;
+	max_err_len += err->str2? strlen(err->str2): 6;
+	max_err_len += err->str3? strlen(err->str3): 6;
 	error = (xmlChar*) XPL_MALLOC(max_err_len + 1);
 	if (!error)
 		return NULL;
-	snprintf((char*) error, max_err_len, "file %s, %d:%d, problem: %s, extra info [%s, %s, %s]", err->file, err->line, err->int2, err->message, err->str1, err->str2, err->str3);
+	snprintf(
+		(char*) error,
+		max_err_len,
+		error_fmt,
+		err->file? err->file: "(null)",
+		err->line,
+		err->int2,
+		err->message? err->message: "(null)",
+		err->str1? err->str1: "(null)",
+		err->str2? err->str2: "(null)",
+		err->str3? err->str3: "(null)"
+	);
 	encError = xmlEncodeSpecialChars(NULL, error);
 	XPL_FREE(error);
 	return encError;

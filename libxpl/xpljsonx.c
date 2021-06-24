@@ -539,8 +539,7 @@ xmlNodePtr xplJsonXParse(const xmlChar *src, const xmlNodePtr parent, bool valid
 	}
 	ret = xplDetachChildren(parent);
 done:
-	if (parser)
-		yajl_free(parser);
+	yajl_free(parser);
 	if (ctxt.key)
 		XPL_FREE(ctxt.key);
 	return ret;

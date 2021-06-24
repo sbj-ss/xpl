@@ -339,15 +339,15 @@ void xplMarkDOSAxisForDeletion(xmlNodePtr cur, int bitwiseAttribute, bool doMark
 		xmlUnlinkNode(cur);
 		return;
 	}
-	cur->type = (xmlElementType) doMark
+	cur->type = (xmlElementType) (doMark
 		? ((int) cur->type |  bitwiseAttribute)
-		: ((int) cur->type & ~bitwiseAttribute);
+		: ((int) cur->type & ~bitwiseAttribute));
 	prop = cur->properties;
 	while (prop)
 	{
-		prop->type = (xmlElementType) doMark
+		prop->type = (xmlElementType) (doMark
 			? ((int) cur->type |  bitwiseAttribute)
-			: ((int) cur->type & ~bitwiseAttribute);
+			: ((int) cur->type & ~bitwiseAttribute));
 		prop = prop->next;
 	}
 	cur = cur->children;
@@ -547,7 +547,7 @@ static xmlAttrPtr clonePropInternal(const xmlDocPtr doc, xmlNodePtr target, cons
     /*
      * Try to handle IDs
      */
-	if (target && cur && target->doc && cur->doc &&	cur->doc->ids && cur->parent) 
+	if (target && target->doc && cur->doc && cur->doc->ids && cur->parent)
 	{
 		if (xmlIsID(cur->doc, cur->parent, cur)) 
 		{
@@ -854,12 +854,14 @@ static void _clearNsPairs(xplNsPairsPtr pairs, bool clearNew)
 {
 	size_t i;
 
-	if (clearNew)
-		for (i = 0; i < pairs->count; i++)
-			xmlFreeNs(pairs->namespaces[i].new_ns);
 	if (pairs->namespaces)
-		XPL_FREE(pairs->namespaces);
-	pairs->namespaces = NULL;
+	{
+		if (clearNew)
+			for (i = 0; i < pairs->count; i++)
+				xmlFreeNs(pairs->namespaces[i].new_ns);
+			XPL_FREE(pairs->namespaces);
+		pairs->namespaces = NULL;
+	}
 	pairs->count = pairs->size = 0;
 }
 
