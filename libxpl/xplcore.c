@@ -970,6 +970,11 @@ void xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, 
 		out = xplReplaceContentEntries(doc, macro->id, element, macro->content, element->parent);
 		xplSetChildren(element, out);
 		xplNodeListApply(doc, element->children, result);
+		if (element->type & XPL_NODE_DELETION_MASK)
+		{
+			out = NULL;
+			goto done;
+		}
 		out = xplDetachChildren(element);
 		if (!out) /* contents could be removed by :return */
 			out = macro->return_value;
@@ -987,6 +992,7 @@ void xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, 
 		macro->content = xplCloneNodeList(out, element->parent, element->doc);
 		macro->expansion_state = XPL_MACRO_EXPANDED;
 	}
+done:
 	ASSIGN_RESULT(out, false, true);
 	doc->macro_nesting_level--;
 	doc->current_macro = prev_macro;
@@ -1029,6 +1035,8 @@ void xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr resu
 		/* element could be removed (:with) */
 		if (!(element->type & XPL_NODE_DELETION_MASK))
 			xplNodeListApply(doc, cmd_info.element->children, result);
+		else
+			ASSIGN_RESULT(NULL, false, true);
 		/* element could be removed by its children */
 		if (!(element->type & XPL_NODE_DELETION_MASK))
 		{
@@ -1075,6 +1083,11 @@ xplMacroPtr xplAddMacro(
 		doc->current_macro = mb;
 		mb->caller = macro;
 		xplNodeListApply(doc, macro->children, &tmp_result);
+		if (macro->type & XPL_NODE_DELETION_MASK)
+		{
+			xplMacroFree(mb);
+			return NULL;
+		}
 		doc->current_macro = prev_macro;
 	}
 	mb->content = xplDetachChildren(macro);
