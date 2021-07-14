@@ -10,6 +10,7 @@
 #include <libxml/xpath.h>
 #include <libxpl/abstraction/xpr.h>
 #include <libxpl/xplcommand.h>
+#include <libxpl/xpldb.h>
 #include <libxpl/xplmacro.h>
 #include <libxpl/xplparams.h>
 #include <libxpl/xplsession.h>
@@ -71,6 +72,7 @@ struct _xplDocument
 	xmlBufferPtr deleted_nodes;			/* for deferred node deletion */
 	int iterator_spin;					/* for :with */
 	bool has_meaningful_content;		/* ditto */
+	xplDBPtr cur_db;					/* for :dbsession and :sql */
 };
 
 XPLPUBFUN xplDocumentPtr XPLCALL

@@ -166,7 +166,7 @@ void xefDbDeallocateDb(void *db_handle)
 	}
 }
 
-static SQLHDBC _xefDbEstablishConnection(const xmlChar* connString, xmlChar **error)
+void* xefDbEstablishConnection(const xmlChar* connString, xmlChar **error)
 {
 	SQLWCHAR *w_conn_string = NULL;
 	size_t w_conn_string_len;
@@ -211,7 +211,7 @@ static SQLHDBC _xefDbEstablishConnection(const xmlChar* connString, xmlChar **er
 		SQLFreeHandle(SQL_HANDLE_DBC, db_handle);
 		return SQL_NULL_HANDLE;
 	}
-	return db_handle;
+	return (void*) db_handle;
 }
 
 bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **msg)
@@ -219,7 +219,7 @@ bool xefDbCheckAvail(const xmlChar* connString, const xmlChar *name, xmlChar **m
 	SQLHDBC hDbc;
 	xmlChar *error, *stars, *pw;
 
-	if ((hDbc = _xefDbEstablishConnection(connString, &error)))
+	if ((hDbc = xefDbEstablishConnection(connString, &error)))
 	{
 		xefDbDeallocateDb(hDbc);
 		if (msg)
@@ -664,22 +664,14 @@ ssize_t xefDbGetRowCount(xefDbContextPtr ctxt)
 /*=============== high-level API ================*/
 xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 {
-	xplDBPtr db = NULL;
 	xmlChar *error_text = NULL;
 	xefDbContextPtr ctxt = NULL;
 
 	if (!params)
 		return NULL;
-	if (!params->db_list)
+	if (!params->db)
 	{
-		_xefDbSetParamsError(params, xplFormat("%s(): params->db_list is NULL", __FUNCTION__));
-		return NULL;
-	}
-	db = xplGetOrCreateDB(params->db_list, _xefDbEstablishConnection, &error_text);
-	if (!db)
-	{
-		_xefDbSetParamsError(params, xplFormat("%s(): cannot connect to requested database: %s", __FUNCTION__, error_text));
-		XPL_FREE(error_text);
+		_xefDbSetParamsError(params, xplFormat("%s(): params->db is NULL", __FUNCTION__));
 		return NULL;
 	}
 	if (!(ctxt = _xefDbCreateContext()))
@@ -687,12 +679,12 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 		_xefDbSetParamsError(params, xplFormat("%s(): cannot allocate context", __FUNCTION__));
 		goto error;
 	}
-	ctxt->db = db;
+	ctxt->db = params->db;
 	ctxt->stream_type = XEF_DB_STREAM_TDS; /* we can't stream XML via ODBC */
 	ctxt->user_data = params->user_data;
 	ctxt->cleanup_stream = params->cleanup_nonprintable;
 
-	if (!(ctxt->statement = _xefCreateStmt(ctxt, (SQLHDBC) db->connection, &error_text)))
+	if (!(ctxt->statement = _xefCreateStmt(ctxt, (SQLHDBC) ctxt->db->connection, &error_text)))
 	{
 		_xefDbSetParamsError(params, xplFormat("%s(): cannot create statement: %s", __FUNCTION__, error_text));
 		goto error;
@@ -720,7 +712,6 @@ error:
 		}
 		xefDbFreeContext(ctxt);
 	}
-	xplReleaseDB(db);
 	return NULL;
 done:
 	return ctxt; 

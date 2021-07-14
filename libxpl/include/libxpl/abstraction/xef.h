@@ -31,6 +31,8 @@ XPLPUBFUN bool XPLCALL
 	xefStartup(xefStartupParamsPtr params);
 XPLPUBFUN bool XPLCALL
 	xefIsStarted(void);
+XPLPUBFUN void* XPLCALL
+	xefDbEstablishConnection(const xmlChar* connString, xmlChar **error);
 XPLPUBFUN void XPLCALL
 	xefShutdown(void);
 
@@ -105,7 +107,7 @@ typedef struct _xefDbQueryParams
 	xefDbStreamType desired_stream_type;
 	bool cleanup_nonprintable;
 	const xmlChar *query;
-	xplDBListPtr db_list;
+	xplDBPtr db;
 	const void *user_data;
 	/* output */
 	xmlChar *error;		/* must be freed */

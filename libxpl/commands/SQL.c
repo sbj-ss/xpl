@@ -535,52 +535,20 @@ static xmlNodePtr _buildDoc(xefDbContextPtr db_ctxt, xplTdsDocRowContextPtr row_
 void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdSqlParamsPtr cmd_params = (xplCmdSqlParamsPtr) commandInfo->params;
-	xmlChar *dbname_attr = NULL;
 	xplSqlRowTagNamesPtr row_tag_names = NULL;
-
-	xmlNodePtr dbs;
-	xplDBListPtr db_list;
-
 	xefDbQueryParams dbq_params;
 	xefDbContextPtr db_ctxt = NULL;
 	xplTdsFragmentRowContext frag_ctxt;
 	xplTdsDocRowContext doc_ctxt;
 
-	dbq_params.error = NULL;
 	if (cmd_params->as_attributes && cmd_params->show_nulls)
 	{
 		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "asattributes and shownulls can't be used simultaneously"), true, true);
 		return;
 	}
-	dbs = commandInfo->element->parent;
-	while (dbs)
-	{
-		if (!xmlStrcmp(dbs->name, BAD_CAST "dbsession") && xplCheckNodeForXplNs(commandInfo->document, dbs))
-			break;
-		dbs = dbs->parent;
-	}
-	if (!dbs)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "dbsession not found"), true, true);
-		return;
-	}
-	dbname_attr = xmlGetNoNsProp(dbs, BAD_CAST "dbname");
-	if (!dbname_attr)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "no dbname found in %s:dbsession", dbs->ns? dbs->ns->prefix: BAD_CAST ""), true, true);
-		return;
-	}
-	db_list = xplLocateDBList(dbname_attr);
-	if (!db_list)
-	{
-		ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "unknown database \"%s\" in %s:dbsession",
-			dbname_attr, dbs->ns? dbs->ns->prefix: BAD_CAST ""), true, true);
-		goto done;
-	}
-
 	memset(&dbq_params, 0, sizeof(dbq_params));
 	dbq_params.cleanup_nonprintable = cmd_params->cleanup_stream;
-	dbq_params.db_list = db_list;
+	dbq_params.db = commandInfo->document->cur_db;
 	dbq_params.query = commandInfo->content;
 	dbq_params.desired_stream_type = cmd_params->merge_table_as_xml? XEF_DB_STREAM_XML: XEF_DB_STREAM_TDS;
 	db_ctxt = xefDbQuery(&dbq_params);
@@ -610,7 +578,6 @@ done:
 		XPL_FREE(dbq_params.error);
 	if (db_ctxt)
 		xefDbFreeContext(db_ctxt);
-	XPL_FREE(dbname_attr);
 	if (row_tag_names)
 		_freeRowTagNames(row_tag_names);
 }
