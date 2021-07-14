@@ -243,6 +243,29 @@
       <A>1</A>
     </Expected>
   </MustSucceed>
+  
+  <MustSucceed name="pass/same-tag-name">
+    <Input>
+      <xpl:dbsession dbname="pg-xpl-test">
+        <xpl:sql tagname="R" sametagname="true">
+          SELECT 1 AS col;
+          SELECT 2 AS col;
+          SELECT 3 AS col;
+        </xpl:sql>
+      </xpl:dbsession>
+    </Input>
+    <Expected>
+      <R>
+        <col>1</col>
+      </R>
+      <R>
+        <col>2</col>
+      </R>
+      <R>
+        <col>3</col>
+      </R>
+    </Expected>
+  </MustSucceed>
  
   <MustFail name="fail/no-dbsession">
     <Input>

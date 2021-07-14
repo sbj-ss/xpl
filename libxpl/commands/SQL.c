@@ -21,6 +21,7 @@ typedef struct _xplCmdSqlParams
 	bool keep_nulls;
 	xmlChar *tag_name;
 	bool show_nulls;
+	bool same_tag_name;
 } xplCmdSqlParams, *xplCmdSqlParamsPtr;
 
 static const xplCmdSqlParams params_stencil =
@@ -32,7 +33,8 @@ static const xplCmdSqlParams params_stencil =
 	.merge_table_as_xml = false,
 	.repeat = true,
 	.tag_name = DEFAULT_RESPONSE_TAG_NAME,
-	.show_nulls = false
+	.show_nulls = false,
+	.same_tag_name = false
 };
 
 static xmlChar* tagname_aliases[] = { BAD_CAST "responsetagname", NULL };
@@ -78,6 +80,10 @@ xplCommand xplSqlCommand =
 			.name = BAD_CAST "shownulls",
 			.type = XPL_CMD_PARAM_TYPE_BOOL,
 			.value_stencil = &params_stencil.show_nulls
+		}, {
+			.name = BAD_CAST "sametagname",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.same_tag_name
 		}, {
 			.name = NULL
 		}
@@ -235,6 +241,7 @@ typedef struct _xplTdsFragmentRowContext
 	bool as_attributes;
 	bool keep_nulls;
 	bool show_nulls;
+	bool same_tag_name;
 	/* used internally */
 	xplSqlXmlRowDescPtr xml_desc;
 	xplQName row_qname;
@@ -296,7 +303,9 @@ static xmlNodePtr _getNextRTN(xplTdsFragmentRowContextPtr row_ctxt, xplSqlRowTag
 
 	if (!tag_names || (tag_names->pos >= tag_names->count))
 		return xplCreateErrorNode(row_ctxt->parent, "query result has more recordsets than tag names specified");
-	name = tag_names->names[tag_names->pos++];
+	name = tag_names->names[tag_names->pos];
+	if (!row_ctxt->same_tag_name)
+		tag_names->pos++;
 	if (name && *name)
 	{
 		if (xplParseQName(name, row_ctxt->parent, &(row_ctxt->row_qname)) != XPL_PARSE_QNAME_OK)
@@ -569,6 +578,7 @@ void xplCmdSqlEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		frag_ctxt.default_column_qname = cmd_params->default_column_name;
 		frag_ctxt.keep_nulls = cmd_params->keep_nulls;
 		frag_ctxt.show_nulls = cmd_params->show_nulls;
+		frag_ctxt.same_tag_name = cmd_params->same_tag_name;
 		frag_ctxt.head = frag_ctxt.tail = NULL;
 		frag_ctxt.parent = commandInfo->element;
 		ASSIGN_RESULT(_buildFragmentFromTds(db_ctxt, &frag_ctxt, row_tag_names, &cmd_params->repeat), cmd_params->repeat, true);
