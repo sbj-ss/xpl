@@ -686,7 +686,7 @@ xefDbContextPtr xefDbQuery(xefDbQueryParamsPtr params)
 
 	if (!(ctxt->statement = _xefCreateStmt(ctxt, (SQLHDBC) ctxt->db->connection, &error_text)))
 	{
-		_xefDbSetParamsError(params, xplFormat("%s(): cannot create statement: %s", __FUNCTION__, error_text));
+		_xefDbSetParamsError(params, xplFormat("%s(): cannot create statement: %s", __FUNCTION__, error_text? error_text: BAD_CAST "unknown error"));
 		goto error;
 	}
 
