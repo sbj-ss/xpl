@@ -63,6 +63,15 @@
     </Expected>
   </MustSucceed>
 
+  <MustSucceed name="pass/empty-selection">
+    <Input>
+      <xpl:with select="/Heffalump">
+        <xpl:content select="Jabberwocky"/>
+      </xpl:with>
+    </Input>
+    <Expected/>
+  </MustSucceed>
+
   <MustFail name="fail/missing-select">
     <Input>
       <xpl:with/>
