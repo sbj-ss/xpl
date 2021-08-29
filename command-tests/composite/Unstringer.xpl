@@ -195,6 +195,28 @@
     </Expected>
   </MustSucceed>
 
+  <MustSucceed name="pass/flat">
+    <Input>
+      <xpl:unstringer tagname="A" delimiter=",">
+        <Q>1,2</Q>
+        <Q>3,4</Q>
+      </xpl:unstringer>
+      <xpl:unstringer tagname="B" delimiter="," flat="true">
+        <Q>1,2</Q>
+        <Q>3,4</Q>
+      </xpl:unstringer>      
+    </Input>
+    <Expected>
+      <A>1</A>
+      <A>2</A>
+      <A>3</A>
+      <A>4</A>
+      <B>1</B>
+      <B>23</B>
+      <B>4</B>
+    </Expected>
+  </MustSucceed>
+
   <MustFail name="fail/no-tagname">
     <Input>
       <xpl:unstringer/>
@@ -252,6 +274,12 @@
   <MustFail name="fail/bad-multi-delimiter">
     <Input>
       <xpl:unstringer tagname="A" multidelimiter="not-too-multi"/>
+    </Input>
+  </MustFail>
+  
+  <MustFail name="fail/bad-flat">
+    <Input>
+      <xpl:unstringer tagname="A" flat="dunno"/>
     </Input>
   </MustFail>
   

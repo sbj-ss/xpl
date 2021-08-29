@@ -18,6 +18,7 @@ typedef struct _xplCmdUnstringerParams
 	bool multi_delimiter;
 	bool keep_empty_tags;
 	bool repeat;
+	bool flat;
 } xplCmdUnstringerParams, *xplCmdUnstringerParamsPtr;
 
 static const xplCmdUnstringerParams params_stencil =
@@ -30,7 +31,8 @@ static const xplCmdUnstringerParams params_stencil =
 	.keep_delimiter = false,
 	.multi_delimiter = false,
 	.keep_empty_tags = false,
-	.repeat = true
+	.repeat = true,
+	.flat = false
 };
 
 static xmlChar* delimiter_aliases[] = { BAD_CAST "delim", BAD_CAST "delimeter", NULL };
@@ -42,7 +44,7 @@ xplCommand xplUnstringerCommand =
 {
 	.prologue = NULL,
 	.epilogue = xplCmdUnstringerEpilogue,
-	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE | XPL_CMD_FLAG_CONTENT_FOR_EPILOGUE,
+	.flags = XPL_CMD_FLAG_PARAMS_FOR_EPILOGUE,
 	.params_stencil = &params_stencil,
 	.stencil_size = sizeof(xplCmdUnstringerParams),
 	.parameters = {
@@ -88,6 +90,10 @@ xplCommand xplUnstringerCommand =
 			.name = BAD_CAST "repeat",
 			.type = XPL_CMD_PARAM_TYPE_BOOL,
 			.value_stencil = &params_stencil.repeat
+		}, {
+			.name = BAD_CAST "flat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.value_stencil = &params_stencil.flat
 		}, {
 			.name = NULL
 		}
@@ -212,7 +218,6 @@ static xmlNodePtr _splitBySingle(UnstringerContextPtr ctxt)
 		}
 	}
 	return ret;
-#undef APPEND_NODE
 }
 
 void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
@@ -220,11 +225,12 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	UnstringerContext ctxt;
 	ssize_t i;
 	xmlNodePtr ret = NULL, tail = NULL, out, cur;
+	xmlBufferPtr buf = NULL;
 
 	memset(&ctxt, 0, sizeof(UnstringerContext));
 	ctxt.params = (xplCmdUnstringerParamsPtr) commandInfo->params;
 
-	if (!ctxt.params->select && (!commandInfo->content || !*commandInfo->content))
+	if (!ctxt.params->select && !commandInfo->element->children)
 	{
 		if (ctxt.params->keep_empty_tags)
 			ret = xmlNewDocNode(commandInfo->element->doc, ctxt.params->tag_name.ns, ctxt.params->tag_name.ncname, NULL);
@@ -237,6 +243,8 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	ctxt.doc = commandInfo->element->doc;
 	if (ctxt.params->unique)
 		ctxt.unique_hash = xmlHashCreate(16);
+	if (ctxt.params->flat)
+		buf = xmlBufferCreate();
 	if (ctxt.params->select)
 	{
 		i = 0;
@@ -267,12 +275,16 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		}
 		if (!ctxt.input_str)
 			continue;
-		out = _splitBySingle(&ctxt);
-		if (!ret)
-			ret = out;
-		else
-			xplAppendList(tail, out);
-		tail = xplFindTail(out);
+		if (ctxt.params->flat)
+			xmlBufferCat(buf, (const xmlChar*) ctxt.input_str);
+		else {
+			out = _splitBySingle(&ctxt);
+			if (!ret)
+				ret = out;
+			else
+				xplAppendList(tail, out);
+			tail = xplFindTail(out);
+		}
 		XPL_FREE(ctxt.input_str);
 		if (ctxt.params->select)
 		{
@@ -282,10 +294,18 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		} else
 			cur = cur->next;
 	}
+	if (ctxt.params->flat)
+	{
+		ctxt.input_str = xmlBufferDetach(buf);
+		ret = _splitBySingle(&ctxt);
+		XPL_FREE(ctxt.input_str);
+	}
 	ASSIGN_RESULT(ret, ctxt.params->repeat, true);
 
 	if (ctxt.unique_hash)
 		xmlHashFree(ctxt.unique_hash, NULL);
+	if (buf)
+		xmlBufferFree(buf);
 	if (ctxt.params->delimiter_tag_name.ncname == ctxt.params->tag_name.ncname)
 		ctxt.params->delimiter_tag_name.ncname = NULL;
 }
