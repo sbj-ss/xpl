@@ -197,11 +197,11 @@
 
   <MustSucceed name="pass/flat">
     <Input>
-      <xpl:unstringer tagname="A" delimiter=",">
+      <xpl:unstringer tagname="A" select="Q" delimiter=",">
         <Q>1,2</Q>
         <Q>3,4</Q>
       </xpl:unstringer>
-      <xpl:unstringer tagname="B" delimiter="," flat="true">
+      <xpl:unstringer tagname="B" select="Q" delimiter="," flat="true">
         <Q>1,2</Q>
         <Q>3,4</Q>
       </xpl:unstringer>      
