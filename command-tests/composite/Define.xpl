@@ -5,7 +5,7 @@
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
-
+ 
   <MustSucceed name="pass/content">
     <Input>
       <Prev>prev-content</Prev>
@@ -110,6 +110,44 @@
     </Expected>
   </MustSucceed>
 
+  <MustSucceed name="pass/mode-expand-now">
+    <Input>
+      <xpl:define name="B">outer</xpl:define>
+      <xpl:define name="now">
+        <xpl:define name="B">inner</xpl:define>
+        <xpl:content/>
+      </xpl:define>
+      <now xpl:expand="now">
+        <B/>
+      </now>
+    </Input>
+    <Expected>inner</Expected>
+  </MustSucceed>
+   
+  <MustSucceed name="pass/mode-expand-after">
+    <Input>
+      <xpl:define name="B">outer</xpl:define>
+      <xpl:define name="after">
+        <xpl:define name="B">inner</xpl:define>
+        <xpl:content/>
+      </xpl:define>
+      <after xpl:expand="after">
+        <B/>
+      </after>
+    </Input>
+    <Expected>outer</Expected>
+  </MustSucceed>
+
+  <MustSucceed name="pass/mode-expand-skip">
+    <Input>
+      <xpl:define name="skip">skipped</xpl:define>
+      <skip xpl:expand="skip">original</skip>
+    </Input>
+    <Expected>
+      <skip>original</skip>
+    </Expected>
+  </MustSucceed>
+
   <MustFail name="fail/unknown-namespace">
     <Input>
       <xpl:define name="heffalump:A"/>
@@ -131,6 +169,13 @@
   <MustFail name="fail/bad-expand">
     <Input>
       <xpl:define name="A" expand="tomorrow"/>
+    </Input>
+  </MustFail>
+
+  <MustFail name="fail/bad-expand-mode">
+    <Input>
+      <xpl:define name="bad"/>
+      <bad xpl:expand="partially"/>
     </Input>
   </MustFail>
   

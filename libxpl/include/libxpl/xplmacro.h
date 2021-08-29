@@ -16,7 +16,6 @@
 extern "C" {
 #endif
 
-/* XPL macro definition */
 typedef enum _xplMacroExpansionState
 {
 	XPL_MACRO_EXPAND_UNKNOWN = -1, /* Only for xplMacroExpansionStateFromString() */
@@ -24,6 +23,14 @@ typedef enum _xplMacroExpansionState
 	XPL_MACRO_EXPAND_ONCE,
 	XPL_MACRO_EXPANDED
 } xplMacroExpansionState;
+
+typedef enum _xplMacroExpansionMode
+{
+	XPL_MACRO_EM_UNKNOWN = -1, /* Only for xplMacroExpansionModeFromString() */
+	XPL_MACRO_EM_NOW = 0,
+	XPL_MACRO_EM_AFTER,
+	XPL_MACRO_EM_SKIP
+} xplMacroExpansionMode;
 
 typedef struct _xplMacro
 {
@@ -49,6 +56,8 @@ XPLPUBFUN xplMacroExpansionState XPLCALL
 	xplMacroExpansionStateFromString(const xmlChar *state);
 XPLPUBFUN xmlChar* XPLCALL
 	xplMacroExpansionStateGetter(const xplCommandInfoPtr commandInfo, const xmlChar *expect, xplMacroExpansionState *result);
+XPLPUBFUN xplMacroExpansionMode XPLCALL
+	xplMacroExpansionModeFromString(const xmlChar *mode);
 XPLPUBFUN xplMacroPtr XPLCALL
 	xplMacroCreate(const xmlChar *aId, xmlNodePtr aContent, xplMacroExpansionState expansionState);
 XPLPUBFUN void XPLCALL

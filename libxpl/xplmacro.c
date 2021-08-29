@@ -11,12 +11,11 @@ xplMacroExpansionState xplMacroExpansionStateFromString(const xmlChar *state)
 		return XPL_MACRO_EXPAND_ALWAYS; /* default */
 	if (!xmlStrcasecmp(state, BAD_CAST "true") || !xmlStrcasecmp(state, BAD_CAST "now"))
 		return XPL_MACRO_EXPANDED;
-	else if (!xmlStrcasecmp(state, BAD_CAST "false") || !xmlStrcasecmp(state, BAD_CAST "always"))
+	if (!xmlStrcasecmp(state, BAD_CAST "false") || !xmlStrcasecmp(state, BAD_CAST "always"))
 		return XPL_MACRO_EXPAND_ALWAYS;
-	else if (!xmlStrcasecmp(state, BAD_CAST "once"))
+	if (!xmlStrcasecmp(state, BAD_CAST "once"))
 		return XPL_MACRO_EXPAND_ONCE;
-	else
-		return XPL_MACRO_EXPAND_UNKNOWN;
+	return XPL_MACRO_EXPAND_UNKNOWN;
 }
 
 xmlChar* xplMacroExpansionStateGetter(xplCommandInfoPtr info, const xmlChar *raw_value, xplMacroExpansionState *result)
@@ -26,6 +25,19 @@ xmlChar* xplMacroExpansionStateGetter(xplCommandInfoPtr info, const xmlChar *raw
 	if (*result == XPL_MACRO_EXPAND_UNKNOWN)
 		return xplFormat("invalid expand value '%s'", raw_value);
 	return NULL;
+}
+
+xplMacroExpansionMode xplMacroExpansionModeFromString(const xmlChar *mode)
+{
+	if (!mode)
+		return XPL_MACRO_EM_NOW; /* default */
+	if (!xmlStrcasecmp(mode, BAD_CAST "now"))
+		return XPL_MACRO_EM_NOW;
+	if (!xmlStrcasecmp(mode, BAD_CAST "after"))
+		return XPL_MACRO_EM_AFTER;
+	if (!xmlStrcasecmp(mode, BAD_CAST "skip"))
+		return XPL_MACRO_EM_SKIP;
+	return XPL_MACRO_EM_UNKNOWN;
 }
 
 xplMacroPtr xplMacroCreate(const xmlChar *aId, xmlNodePtr aContent, xplMacroExpansionState expansionState)

@@ -946,8 +946,34 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr resu
 void xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result)
 {
 	xmlNodePtr out, prev_caller;
+	xmlChar *raw_expansion_mode;
+	xplMacroExpansionMode expansion_mode;
 	xplMacroPtr prev_macro;
+	xmlNsPtr xpl_ns;
 
+	raw_expansion_mode = xmlGetNsProp(element, BAD_CAST "expand", cfgXplNsUri);
+	expansion_mode = xplMacroExpansionModeFromString(raw_expansion_mode);
+	switch (expansion_mode)
+	{
+	case XPL_MACRO_EM_UNKNOWN:
+		out = xplCreateErrorNode(element, "invalid node expansion mode %s", raw_expansion_mode);
+		XPL_FREE(raw_expansion_mode);
+		ASSIGN_RESULT(out, true, true);
+		return;
+	case XPL_MACRO_EM_SKIP:
+		XPL_FREE(raw_expansion_mode);
+		xpl_ns = xmlSearchNsByHref(element->doc, element, cfgXplNsUri);
+		xmlUnsetNsProp(element, xpl_ns, BAD_CAST "expand");
+		ASSIGN_RESULT(element, false, false);
+		return;
+	case XPL_MACRO_EM_AFTER:
+		xplNodeListApply(doc, element->children, result);
+		break;
+	case XPL_MACRO_EM_NOW:
+		break;
+	default:
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+	}
 	doc->macro_nesting_level++;
 	if (doc->macro_nesting_level > cfgMaxRecursionDepth)
 	{
@@ -1003,6 +1029,8 @@ done:
 		xplDocDeferNodeListDeletion(doc, macro->node_original_content);
 		macro->node_original_content = NULL;
 	}
+	if (raw_expansion_mode)
+		XPL_FREE(raw_expansion_mode);
 }
 
 void xplExecuteCommand(xplDocumentPtr doc, xmlNodePtr element, xplResultPtr result)
