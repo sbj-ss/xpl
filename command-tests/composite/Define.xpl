@@ -112,16 +112,26 @@
 
   <MustSucceed name="pass/mode-expand-now">
     <Input>
-      <xpl:define name="B">outer</xpl:define>
+      <xpl:define name="B">
+        <processed>outer</processed>
+      </xpl:define>
       <xpl:define name="now">
-        <xpl:define name="B">inner</xpl:define>
+        <xpl:define name="B">
+          <processed>inner</processed>
+        </xpl:define>
         <xpl:content/>
       </xpl:define>
+      <now>
+        <B/>
+      </now>
       <now xpl:expand="now">
         <B/>
       </now>
     </Input>
-    <Expected>inner</Expected>
+    <Expected>
+      <processed>inner</processed>
+      <processed>inner</processed>
+    </Expected>
   </MustSucceed>
    
   <MustSucceed name="pass/mode-expand-after">
