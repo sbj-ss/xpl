@@ -45,7 +45,7 @@ XPLPUBFUN void XPLCALL
 
 #define DISPLAY_INTERNAL_ERROR_MESSAGE() xplDisplayMessage(XPL_MSG_INTERNAL_ERROR,\
 	"please contact the developer. Function %s, file %s, line %d",\
-	__FUNCTION__, __FILE__, __LINE__);
+	__func__, __FILE__, __LINE__);
 
 #define SUCCEED_OR_DIE(f) \
 	do { \
@@ -54,7 +54,7 @@ XPLPUBFUN void XPLCALL
 			xplDisplayMessage( \
 				XPL_MSG_INTERNAL_ERROR, \
 				"please contact the developer. Function %s, file %s, line %d. Exiting", \
-				__FUNCTION__, __FILE__, __LINE__ \
+				__func__, __FILE__, __LINE__ \
 			); \
 			xprShutdownApp(7); \
 		} \

@@ -131,7 +131,7 @@ static char* _yajlGenStatusToString(int status)
 		} \
 		if (ctxt->out_of_memory) \
 		{ \
-			ret = xplCreateErrorNode(ctxt->parent, "%s(): out of memory", __FUNCTION__); \
+			ret = xplCreateErrorNode(ctxt->parent, "%s(): out of memory", __func__); \
 			goto done; \
 		} \
 	} while(0) \
@@ -320,23 +320,23 @@ xmlNodePtr xplJsonXSerializeNodeList(const xmlNodePtr list, bool strictTagNames,
 	memset(&ctxt, 0, sizeof(ctxt));
 	if (!(ctxt.buf = xmlBufferCreateSize(2048)))
 	{
-		ret = xplCreateErrorNode(list->parent, "%s(): xmlBufferCreateSize() failed", __FUNCTION__);
+		ret = xplCreateErrorNode(list->parent, "%s(): xmlBufferCreateSize() failed", __func__);
 		goto done;
 	}
 	xmlBufferSetAllocationScheme(ctxt.buf, XML_BUFFER_ALLOC_HYBRID);
 	if (!(ctxt.gen = yajl_gen_alloc(yajl_mem_funcs_ptr)))
 	{
-		ret = xplCreateErrorNode(list->parent, "%s(): yajl_gen_alloc() failed", __FUNCTION__);
+		ret = xplCreateErrorNode(list->parent, "%s(): yajl_gen_alloc() failed", __func__);
 		goto done;
 	}
 	if (!yajl_gen_config(ctxt.gen, yajl_gen_print_callback, _yajlPrint, &ctxt))
 	{
-		ret = xplCreateErrorNode(list->parent, "%s(): yajl_gen_config(yajl_gen_print_callback) failed", __FUNCTION__);
+		ret = xplCreateErrorNode(list->parent, "%s(): yajl_gen_config(yajl_gen_print_callback) failed", __func__);
 		goto done;
 	}
 	if (!yajl_gen_config(ctxt.gen, yajl_gen_beautify, (int) prettyPrint))
 	{
-		ret = xplCreateErrorNode(list->parent, "%s(): yajl_gen_config(yajl_gen_beautify) failed", __FUNCTION__);
+		ret = xplCreateErrorNode(list->parent, "%s(): yajl_gen_config(yajl_gen_beautify) failed", __func__);
 		goto done;
 	}
 	ctxt.strict_tag_names = strictTagNames;
@@ -512,10 +512,10 @@ xmlNodePtr xplJsonXParse(const xmlChar *src, const xmlNodePtr parent, bool valid
 
 	memset(&ctxt, 0, sizeof(ctxt));
 	if (!(parser = yajl_alloc(&yajl_parse_callbacks, (yajl_alloc_funcs*) yajl_mem_funcs_ptr, &ctxt)))
-		return xplCreateErrorNode(parent, "%s(): yajl_alloc() failed", __FUNCTION__);
+		return xplCreateErrorNode(parent, "%s(): yajl_alloc() failed", __func__);
 	if (!yajl_config(parser, yajl_dont_validate_strings, (int) !validateStrings))
 	{
-		ret = xplCreateErrorNode(parent, "%s(): yajl_config(yajl_dont_validate_strings) failed", __FUNCTION__);
+		ret = xplCreateErrorNode(parent, "%s(): yajl_config(yajl_dont_validate_strings) failed", __func__);
 		goto done;
 	}
 	if (!(ctxt.ns = xmlSearchNsByHref(parent->doc, parent, JSONX_SCHEMA_URI)))

@@ -279,14 +279,14 @@ void xprSetConsoleColor(int color)
 	// TODO terminfo
 	color = color & 0x0F;
 	if (color > 7)
-		xmlGenericError(xmlGenericErrorContext, "\e[3%d;1m", color & 0x07);
+		xmlGenericError(xmlGenericErrorContext, "\033[3%d;1m", color & 0x07);
 	else
-		xmlGenericError(xmlGenericErrorContext, "\e[3%dm", color);
+		xmlGenericError(xmlGenericErrorContext, "\033[3%dm", color);
 }
 
 void xprResetConsoleColor()
 {
-	xmlGenericError(xmlGenericErrorContext, "\e[0m");
+	xmlGenericError(xmlGenericErrorContext, "\033[0m");
 }
 
 /* debugger interaction */

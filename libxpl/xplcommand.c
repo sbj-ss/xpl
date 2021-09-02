@@ -571,7 +571,7 @@ xplLoadModuleResult xplLoadModule(const xmlChar *name, xmlChar **error_data)
 		return XPL_MODULE_CMD_MODULE_NOT_FOUND;
 	}
 	XPL_FREE(path_with_ext);
-	get_commands_func = (GetCommandsFunc) xprGetProcAddress(hmodule, "GetCommands");
+	*(void **) (&get_commands_func) = xprGetProcAddress(hmodule, "GetCommands");
 	if (!get_commands_func)
 	{
 		xprUnloadSharedObject(hmodule);

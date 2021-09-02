@@ -266,7 +266,7 @@ void xplCmdUnstringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 	{
 		if (cur->type == XML_ELEMENT_NODE || cur->type == XML_ATTRIBUTE_NODE)
 			ctxt.input_str = xmlNodeListGetString(cur->doc, cur->children, 1);
-		else if ((cur->type == XML_TEXT_NODE || cur->type == XML_CDATA_SECTION_NODE) && cur->content)
+		else if ((cur->type == XML_TEXT_NODE || cur->type == XML_CDATA_SECTION_NODE) && cur->content) //это неверно!!
 			ctxt.input_str = BAD_CAST XPL_STRDUP((char*) cur->content);
 		else {
 			if (cfgWarnOnInvalidNodeType)

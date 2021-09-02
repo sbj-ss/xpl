@@ -27,7 +27,7 @@ void xprShutdownApp(int code)
 {
 	if (in_shutdown)
 	{
-		fprintf(stderr, "Attempted to call %s from %s. Exiting immediately.\n", __FUNCTION__, __FUNCTION__);
+		fprintf(stderr, "Attempted to call %s from %s. Exiting immediately.\n", __func__, __func__);
 		exit(EXIT_FAILURE);
 	}
 	if (shutdown_func)
