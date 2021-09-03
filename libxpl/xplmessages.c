@@ -27,7 +27,7 @@ const xplMsgTypeDesc* xplMsgTypeDescByType(xplMsgType msgType)
 {
 	if ((int) msgType < 0 || (int) msgType > XPL_MSG_MAX)
 		return &unknown_message_desc;
-	return message_type_descs[msgType];
+	return &message_type_descs[msgType];
 }
 
 xplMsgType xplMsgTypeFromString(const xmlChar *severity, bool allowInternalError)
