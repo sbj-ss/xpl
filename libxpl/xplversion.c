@@ -380,7 +380,7 @@ static xplLibraryVersions compiled_versions;
 static xplLibraryVersions running_versions;
 bool versions_initialized = false;
 
-static void _initLibraryVersions()
+static void _initLibraryVersions(void)
 {
 	size_t i;
 

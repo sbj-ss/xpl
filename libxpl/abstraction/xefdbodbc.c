@@ -565,7 +565,7 @@ error:
 }
 
 /* =============== XEF context =============== */
-static xefDbContextPtr _xefDbCreateContext()
+static xefDbContextPtr _xefDbCreateContext(void)
 {
 	xefDbContextPtr ret = (xefDbContextPtr) XPL_MALLOC(sizeof(xefDbContext));
 	if (!ret)

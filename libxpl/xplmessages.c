@@ -229,7 +229,7 @@ void xplStackTrace(const xmlNodePtr startPoint)
 	xmlGenericError(xmlGenericErrorContext, "-------\n");
 }
 
-static void xplCleanupLogger()
+static void xplCleanupLogger(void)
 {
 	if (log_file)
 	{
@@ -238,7 +238,7 @@ static void xplCleanupLogger()
 	}
 }
 
-static bool xplInitLogger()
+static bool xplInitLogger(void)
 {
 	xmlChar *log_file_full_name, *executable_path;
 

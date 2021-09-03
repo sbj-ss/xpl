@@ -1268,7 +1268,7 @@ xmlChar* xplGetAppType()
 	return BAD_CAST "unknown";
 }
 
-static bool _ssInitCore()
+static bool _ssInitCore(void)
 {
 	if (!xprMutexInit(&global_conf_mutex))
 	{
@@ -1278,7 +1278,7 @@ static bool _ssInitCore()
 	return true;
 }
 
-static void _ssStopCore()
+static void _ssStopCore(void)
 {
 	if (!xprMutexCleanup(&global_conf_mutex))
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
