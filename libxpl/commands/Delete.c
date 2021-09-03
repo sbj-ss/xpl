@@ -126,7 +126,7 @@ void xplCmdDeleteEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				default:
 					/* we're trying to do something weird like deleting a DTD */
 					if (cfgWarnOnInvalidNodeType)
-						xplDisplayWarning(commandInfo->element, "attempting to delete a node '%s%s%s', type %d declared at line %d",
+						xplDisplayWarning(commandInfo->element, "attempting to delete a node '%s%s%s', type %u declared at line %d",
 							cur->ns && cur->ns->prefix? cur->ns->prefix: BAD_CAST "",
 							cur->ns && cur->ns->prefix? ":": "",
 							cur->name, cur->type, cur->line);

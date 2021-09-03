@@ -201,7 +201,7 @@ static void _getLibIconvVersion(const xmlChar **str, bool running)
 	if (running)
 		*str = BAD_CAST gnu_get_libc_version();
 	else {
-		snprintf(buf, sizeof(buf), "%u.%u", __GLIBC__, __GLIBC_MINOR__);
+		snprintf(buf, sizeof(buf), "%d.%d", __GLIBC__, __GLIBC_MINOR__);
 		*str = BAD_CAST buf;
 	}
 #else

@@ -49,7 +49,7 @@ bool xefCryptoDigest(xefCryptoDigestParamsPtr params)
 		return false;
 	if (((int) params->digest_method) < 0 || ((int) params->digest_method) > XEF_CRYPTO_DIGEST_METHOD_MAX)
 	{
-		params->error = xplFormat("unknown digest method '%d'", params->digest_method);
+		params->error = xplFormat("unknown digest method '%u'", params->digest_method);
 		return false;
 	}
 	if (!(params->digest = (xmlChar*) XPL_MALLOC(digest_methods[params->digest_method].size)))

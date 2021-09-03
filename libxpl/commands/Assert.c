@@ -62,7 +62,7 @@ void xplCmdAssertEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			smth = (ct->stringval && *ct->stringval);
 			break;
 		default:
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "unsupported XPath result type %d (expression is %s)", ct->type, commandInfo->content), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "unsupported XPath result type %u (expression is %s)", ct->type, commandInfo->content), true, true);
 			goto done;
 		}
 		if (!smth)

@@ -139,7 +139,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 			xmlAddChild((xmlNodePtr) doc, root);
 			root->children->content = value;
 		} else {
-			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "select XPath expression '%s' evaluated to unsupported type %d", (char*) params->select->user, params->select->type), true, true);
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "select XPath expression '%s' evaluated to unsupported type %u", (char*) params->select->user, params->select->type), true, true);
 			goto done;
 		}
 	} else {
