@@ -318,7 +318,7 @@ static void _getLibxml2Version(const xmlChar **str, bool running)
 
 static void _getLibYajlVersion(const xmlChar **str, bool running)
 {
-	static char compiled_v[32], running_v[32];
+	static char compiled_v[64], running_v[64];
 	int ver;
 
 	if (running)
