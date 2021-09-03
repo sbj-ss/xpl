@@ -469,8 +469,13 @@ static void _paramClearValueScanner(void *payload, void *data, XML_HCBNC xmlChar
 			qname->ncname = NULL;
 			qname->ns = NULL;
 			break;
-		default:
+		case XPL_CMD_PARAM_TYPE_INT:
+		case XPL_CMD_PARAM_TYPE_BOOL:
+		case XPL_CMD_PARAM_TYPE_DICT:
+		case XPL_CMD_PARAM_TYPE_INT_CUSTOM_GETTER:
 			break;
+		default:
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
 	}
 }
 

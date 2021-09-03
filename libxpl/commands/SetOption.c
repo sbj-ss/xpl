@@ -64,6 +64,9 @@ void xplCmdSetOptionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 		case XPL_SET_OPTION_INTERNAL_ERROR:
 			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "internal error, please contact the developer"), true, true);
 			break;
+		default:
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
+			ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "internal error: unknown xplSetOptionValue() return code"), true, true);
 	}
 	xplLockThreads(false);
 }

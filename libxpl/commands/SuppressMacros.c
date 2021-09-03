@@ -74,8 +74,10 @@ static xmlNodePtr _addMacroToHash(xmlChar *str, xmlHashTablePtr hash, xmlNodePtr
 {
 	xplQName qname;
 	void *macro;
+	xplParseQNameResult res;
 
-	switch(xplParseQName(str, source, &qname))
+	res = xplParseQName(str, source, &qname);
+	switch (res)
 	{
 		case XPL_PARSE_QNAME_OK:
 			macro = xplMacroLookupByQName(source, qname);
@@ -87,6 +89,9 @@ static xmlNodePtr _addMacroToHash(xmlChar *str, xmlHashTablePtr hash, xmlNodePtr
 			break;
 		case XPL_PARSE_QNAME_INVALID_QNAME:
 			return xplCreateErrorNode(source, "invalid qname '%s'", str);
+		default:
+			DISPLAY_INTERNAL_ERROR_MESSAGE();
+			return xplCreateErrorNode(source, "unknown xplParseQName() return code %u", res);
 	}
 	return NULL;
 }

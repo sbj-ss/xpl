@@ -589,43 +589,46 @@ static xmlNodePtr cloneNodeListInner(const xmlNodePtr cur, const xmlNodePtr pare
 
 static xmlNodePtr cloneNodeInner(const xmlNodePtr node, const xmlNodePtr parent, const xmlDocPtr doc, xmlNodePtr top_clone)
 {
-    xmlNodePtr ret;
+	xmlNodePtr ret;
 
-    if (!node) 
+	if (!node)
 		return NULL;
-    switch (node->type) 
+	switch (node->type)
 	{
-        case XML_TEXT_NODE:
-        case XML_CDATA_SECTION_NODE:
-        case XML_ELEMENT_NODE:
-        case XML_DOCUMENT_FRAG_NODE:
-        case XML_ENTITY_REF_NODE:
-        case XML_ENTITY_NODE:
-        case XML_PI_NODE:
-        case XML_COMMENT_NODE:
-        case XML_XINCLUDE_START:
-        case XML_XINCLUDE_END:
-        	break;
-        case XML_ATTRIBUTE_NODE:
-        	return (xmlNodePtr) clonePropInternal(doc, parent, (xmlAttrPtr) node, NULL);
-        case XML_NAMESPACE_DECL:
-        	return (xmlNodePtr) xmlCopyNamespaceList((xmlNsPtr) node);
-        case XML_DOCUMENT_NODE:
-        case XML_HTML_DOCUMENT_NODE:
+		case XML_TEXT_NODE:
+		case XML_CDATA_SECTION_NODE:
+		case XML_ELEMENT_NODE:
+		case XML_DOCUMENT_FRAG_NODE:
+		case XML_ENTITY_REF_NODE:
+		case XML_ENTITY_NODE:
+		case XML_PI_NODE:
+		case XML_COMMENT_NODE:
+		case XML_XINCLUDE_START:
+		case XML_XINCLUDE_END:
+			break;
+		case XML_ATTRIBUTE_NODE:
+			return (xmlNodePtr) clonePropInternal(doc, parent, (xmlAttrPtr) node, NULL);
+		case XML_NAMESPACE_DECL:
+			return (xmlNodePtr) xmlCopyNamespaceList((xmlNsPtr) node);
+		case XML_DOCUMENT_NODE:
+		case XML_HTML_DOCUMENT_NODE:
 #ifdef LIBXML_DOCB_ENABLED
-        case XML_DOCB_DOCUMENT_NODE:
+		case XML_DOCB_DOCUMENT_NODE:
 #endif
 #ifdef LIBXML_TREE_ENABLED
-        	return (xmlNodePtr) xmlCopyDoc((xmlDocPtr) node, 1);
+			return (xmlNodePtr) xmlCopyDoc((xmlDocPtr) node, 1);
 #endif /* LIBXML_TREE_ENABLED */
-        case XML_DOCUMENT_TYPE_NODE:
-        case XML_NOTATION_NODE:
-        case XML_DTD_NODE:
-        case XML_ELEMENT_DECL:
-        case XML_ATTRIBUTE_DECL:
-        case XML_ENTITY_DECL:
-            return NULL;
-    }
+		case XML_DOCUMENT_TYPE_NODE:
+		case XML_NOTATION_NODE:
+		case XML_DTD_NODE:
+		case XML_ELEMENT_DECL:
+		case XML_ATTRIBUTE_DECL:
+		case XML_ENTITY_DECL:
+			return NULL;
+		default:
+			// do we need to display internal error message here?..
+			return NULL;
+	}
 
     /*
      * Allocate a new node and fill the fields.
