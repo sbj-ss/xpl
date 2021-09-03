@@ -9,6 +9,27 @@ static FILE *log_file = NULL;
 static XPR_MUTEX console_interlock;
 bool messages_initialized = false;
 
+// TODO define color codes in XPR
+static const xplMsgTypeDesc message_type_descs[] = {
+	[XPL_MSG_UNKNOWN] = { XPR_DEFAULT_CONSOLE_COLOR, "UNKNOWN MESSAGE" },
+	[XPL_MSG_DEBUG] = { 0x06, "DEBUG" },
+	[XPL_MSG_INFO] = { XPR_DEFAULT_CONSOLE_COLOR, "INFO" },
+	[XPL_MSG_WARNING] = { 0x08, "WARNING" },
+	[XPL_MSG_ERROR] = { 0x0E, "ERROR" },
+	[XPL_MSG_INTERNAL_ERROR] = { 0x0C, "INTERNAL ERROR" }
+};
+
+static const xplMsgTypeDesc unknown_message_desc = {
+	XPR_DEFAULT_CONSOLE_COLOR, "MESSAGE TYPE OUT OF BOUNDS"
+};
+
+const xplMsgTypeDesc* xplMsgTypeDescByType(xplMsgType msgType)
+{
+	if ((int) msgType < 0 || (int) msgType > XPL_MSG_MAX)
+		return &unknown_message_desc;
+	return message_type_descs[msgType];
+}
+
 xplMsgType xplMsgTypeFromString(const xmlChar *severity, bool allowInternalError)
 {
 	if (!xmlStrcasecmp(severity, BAD_CAST "debug"))
@@ -60,20 +81,10 @@ void xplDisplayMessage(xplMsgType msgType, const char *fmt, ... )
 	char now[32];
 	struct tm *_tm;
 	time_t tnow;
-	char *what;
-	int color;
 	static char encoding_error_msg[] = "[cannot display message using console encoding]";
+	const xplMsgTypeDesc *type_desc;
 
-	switch (msgType)
-	{
-		case XPL_MSG_DEBUG:   what = "DEBUG"; break;
-		case XPL_MSG_INFO:    what = "INFO"; break;
-		case XPL_MSG_WARNING: what = "WARNING"; break;
-		case XPL_MSG_ERROR:   what = "ERROR"; break;
-		case XPL_MSG_INTERNAL_ERROR: what = "INTERNAL ERROR"; break;
-		default: what = "UNKNOWN MESSAGE";
-	}
-
+	type_desc = xplMsgTypeDescByType(msgType);
 	va_start(arg_list, fmt);
 	msg = xplVFormatMessage(fmt, arg_list);
 	time(&tnow);
@@ -84,7 +95,7 @@ void xplDisplayMessage(xplMsgType msgType, const char *fmt, ... )
 
 	if (log_file)
 	{
-		fprintf(log_file, "[%s] %s: %s\n", now, what, msg);
+		fprintf(log_file, "[%s] %s: %s\n", now, type_desc->name, msg);
 		if (cfgFlushLogFile)
 			fflush(log_file);
 	}
@@ -96,19 +107,8 @@ void xplDisplayMessage(xplMsgType msgType, const char *fmt, ... )
 		/* prefer garbled messages over no messages at all */
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
 	if (cfgUseConsoleColors)
-	{
-		switch (msgType)
-		{
-			case XPL_MSG_DEBUG: color = 0x06; break; // TODO define these codes in XPR
-			case XPL_MSG_INFO: color = XPR_DEFAULT_CONSOLE_COLOR; break;
-			case XPL_MSG_WARNING: color = 0x0B; break;
-			case XPL_MSG_ERROR: color = 0x0E; break;
-			case XPL_MSG_INTERNAL_ERROR: color = 0x0C; break;
-			default: color = XPR_DEFAULT_CONSOLE_COLOR;
-		}
-		xprSetConsoleColor(color);
-	}
-	xmlGenericError(xmlGenericErrorContext, "[%s] %s: %s\n", now, what, encoded_msg);
+		xprSetConsoleColor(type_desc->color);
+	xmlGenericError(xmlGenericErrorContext, "[%s] %s: %s\n", now, type_desc->name, encoded_msg);
 	if (cfgUseConsoleColors)
 		xprResetConsoleColor();
 	if (messages_initialized && !xprMutexRelease(&console_interlock))

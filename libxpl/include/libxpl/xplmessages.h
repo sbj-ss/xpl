@@ -16,14 +16,23 @@ extern "C" {
 
 typedef enum _xplMsgType
 {
-	XPL_MSG_UNKNOWN = -1,
-	XPL_MSG_DEBUG = 0,
+	XPL_MSG_UNKNOWN,
+	XPL_MSG_DEBUG,
 	XPL_MSG_INFO,
 	XPL_MSG_WARNING,
 	XPL_MSG_ERROR,
-	XPL_MSG_INTERNAL_ERROR
+	XPL_MSG_INTERNAL_ERROR,
+	XPL_MSG_MAX = XPL_MSG_INTERNAL_ERROR
 } xplMsgType;
 
+typedef struct _xplMsgTypeDesc
+{
+	int color;
+	const char *name;
+} xplMsgTypeDesc, *xplMsgTypeDescPtr;
+
+XPLPUBFUN const xplMsgTypeDesc* XPLCALL
+	xplMsgTypeDescByType(xplMsgType msgType);
 XPLPUBFUN xplMsgType XPLCALL
 	xplMsgTypeFromString(const xmlChar *severity, bool allowInternalError);
 XPLPUBFUN xmlChar* XPLCALL
