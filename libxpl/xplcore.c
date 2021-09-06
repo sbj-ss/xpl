@@ -945,7 +945,7 @@ void xplNodeListApply(xplDocumentPtr doc, xmlNodePtr children, xplResultPtr resu
 
 void xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, xplResultPtr result)
 {
-	xmlNodePtr out, prev_caller;
+	xmlNodePtr out, prev_caller, prev_original_content;
 	xmlChar *raw_expansion_mode;
 	xplMacroExpansionMode expansion_mode;
 	xplMacroPtr prev_macro;
@@ -982,6 +982,7 @@ void xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, 
 	}
 	prev_macro = doc->current_macro;
 	prev_caller = macro->caller;
+	prev_original_content = macro->node_original_content;
 	macro->caller = element;
 	doc->current_macro = macro;
 	macro->times_called++;
@@ -992,7 +993,7 @@ void xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, 
 	case XPL_MACRO_EXPAND_ALWAYS:
 	case XPL_MACRO_EXPAND_ONCE:
 		/* :inherit may be called, let's keep contents. not clearing parent intentionally */
-		macro->node_original_content = element->children; 
+		macro->node_original_content = element->children;
 		out = xplReplaceContentEntries(doc, macro->id, element, macro->content, element->parent);
 		xplSetChildren(element, out);
 		xplNodeListApply(doc, element->children, result);
@@ -1029,6 +1030,7 @@ done:
 		xplDocDeferNodeListDeletion(doc, macro->node_original_content);
 		macro->node_original_content = NULL;
 	}
+	macro->node_original_content = prev_original_content;
 	if (raw_expansion_mode)
 		XPL_FREE(raw_expansion_mode);
 }

@@ -109,6 +109,20 @@
       <Result>1</Result>
     </Expected>
   </MustSucceed>
+  
+  <MustSucceed name="pass/expand-now-with-content">
+    <Input>
+      <xpl:define name="Now" expand="now">
+        <Result/>
+      </xpl:define>
+      <Now>1</Now>
+      <Now>2</Now>
+    </Input>
+    <Expected>
+      <Result/>
+      <Result/>
+    </Expected>
+  </MustSucceed>  
 
   <MustSucceed name="pass/mode-expand-now">
     <Input>
