@@ -5,7 +5,34 @@
 
 INCLUDE = -I./include -I./tests/include -I../xts/include -I/usr/include/libxml2
 LIBS = -lxml2 -lxpl -lonig -ltidy -lcrypto -lidn -lodbc -lcurl -lyajl
-WARNINGS = -Wall -Wmissing-prototypes -Wshadow -Werror -Wextra 
+WARNINGS = \
+-Wall\
+-Wextra\
+-Wmissing-prototypes\
+-Wshadow\
+-Wformat=2\
+-Wformat-overflow=2\
+-Wformat-truncation=2\
+-Wformat-security\
+-Wformat-signedness\
+-Wnull-dereference\
+-Warray-bounds=2\
+-Wimplicit-fallthrough=3\
+-Wshift-overflow=2\
+-Wvla\
+-Walloca\
+-Wstringop-overflow=4\
+-Wlogical-op\
+-Wduplicated-cond\
+-Wduplicated-branches\
+-Wswitch-default\
+-Wundef\
+-Wstrict-prototypes\
+-Wcast-align\
+-Wjump-misses-init\
+-Wtrampolines\
+-Wstack-protector\
+-Werror
 FEATURES = -D_XEF_TRANSPORT_CURL -D_XEF_DB_ODBC -D_XEF_HTML_CLEANER_TIDY -D_XEF_CRYPTO_OPENSSL
 CFLAGS = -fpic -fno-common -D_IN_DLL $(FEATURES) $(WARNINGS)
 ifeq ($(DEBUG), 1)
@@ -14,6 +41,7 @@ CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=undefined -fno-sanitize-rec
 else
 CFLAGS += -O2
 endif
+LINKER_FLAGS = -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,-z,separate-code
 
 CC = gcc
 SO_EXT = .so
@@ -192,10 +220,10 @@ $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 	
 libxpl$(SO_EXT): $(OBJS)
-	$(CC) -shared -o $@ $(OBJS)
+	$(CC) -shared $(LINKER_FLAGS) -o $@ $(OBJS)
 
 $(TEST_BIN): libxpl$(SO_EXT) $(TEST_OBJS)
-	$(CC) $(CFLAGS) $(TEST_OBJS) -o $@ -L../xts -L. $(LIBS) -lxts
+	$(CC) $(CFLAGS) $(LINKER_FLAGS) $(TEST_OBJS) -o $@ -L../xts -L. $(LIBS) -lxts
 
 test: $(TEST_BIN)
 	LD_LIBRARY_PATH=.:$$LD_LIBRARY_PATH $(TEST_BIN) $$(if which tput > /dev/null 2>&1 && test $$(tput -T$$TERM colors) -ge 8; then echo -n '-c'; fi)
