@@ -298,7 +298,10 @@ static void _processCommandLineArguments(int argc, char *argv[], char **options)
 		snprintf(config_file_name, sizeof(config_file_name) - 1, "%s", CONFIG_FILE);
 	else
 		/* No config file set. Path to exe found in arg[0]. Use default file name next to the executable. */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
 		snprintf(config_file_name, sizeof(config_file_name) - 1, "%.*s%c%s", (int)(p - argv[0]), argv[0], XPR_PATH_DELIM, CONFIG_FILE);
+#pragma GCC diagnostic pop
 	config_file_name[sizeof(config_file_name) - 1] = 0;
 
 #if defined(CONFIG_FILE2)
@@ -374,7 +377,10 @@ static void _setOptionAbsolutePath(char *options[], const char *option_name, con
 			if (!getcwd(path, sizeof(path)))
 				cwDie("getcwd() failed!\n");
 		} else {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
 			snprintf(path, sizeof(path) - 1, "%.*s", (int) (p - path_to_civetweb_exe), path_to_civetweb_exe);
+#pragma GCC diagnostic pop
 			path[sizeof(path) - 1] = 0;
 		}
 

@@ -6,7 +6,34 @@
 INCLUDE = -I./include -I../libxpl/include -I ../civetweb/include -I/usr/include/libxml2
 LIB = -L../libxpl
 LIBS = -lxml2 -ldl -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -lpthread -lcurl -lyajl
-WARNINGS = -Wall -Wextra -Wmissing-prototypes -Wshadow
+WARNINGS = \
+-Wall\
+-Wextra\
+-Wmissing-prototypes\
+-Wshadow\
+-Wformat-overflow=2\
+-Wformat-truncation=2\
+-Wformat-security\
+-Wnull-dereference\
+-Warray-bounds=2\
+-Wimplicit-fallthrough=3\
+-Wshift-overflow=2\
+-Wvla\
+-Walloca\
+-Wstringop-overflow=4\
+-Wlogical-op\
+-Wduplicated-cond\
+-Wduplicated-branches\
+-Wundef\
+-Wstrict-prototypes\
+-Wcast-align\
+-Wjump-misses-init\
+-Wtrampolines\
+-Wstack-protector\
+-Werror
+#-Wswitch-default
+#-Wformat=2
+#-Wformat-signedness
 FEATURES = -D_XEF_TRANSPORT_CURL -D_XEF_DB_ODBC -D_XEF_HTML_CLEANER_TIDY -D_XEF_CRYPTO_OPENSSL
 CFLAGS = -fno-common $(LIB) $(FEATURES) $(WARNINGS) -Werror $(INCLUDE)
 CW_CFLAGS = $(WARNINGS) -DWIN32 -I../civetweb/include -DUSE_STACK_SIZE=102400 -DOPENSSL_API_1_1
