@@ -109,8 +109,8 @@
 	#define XPL_FREE(ptr) xmlFree((ptr))
 #else
 	#define LEAK_DETECTION_PREPARE
-	#define LEAK_DETECTION_START()
-	#define LEAK_DETECTION_STOP_AND_REPORT()
+	#define LEAK_DETECTION_START() (void) 0;
+	#define LEAK_DETECTION_STOP_AND_REPORT() (void) 0;
 	#define LEAK_DETECTION_RET_CODE(old) (old)
 	#define XPL_MALLOC(size) malloc((size))
 	#define XPL_REALLOC(ptr, size) realloc((ptr), (size))
