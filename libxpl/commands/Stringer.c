@@ -89,7 +89,7 @@ void xplCmdStringerEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 
 	if (params->select)
 	{
-		if (!params->select->nodesetval)
+		if (!params->select->nodesetval || !params->select->nodesetval->nodeNr)
 		{
 			ASSIGN_RESULT(NULL, false, true);
 			return;
