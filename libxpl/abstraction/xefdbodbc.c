@@ -71,8 +71,9 @@ static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, 
 	SQLINTEGER error;
 	SQLRETURN r;
 	SQLWCHAR *msg = NULL, state[SQL_SQLSTATE_SIZE+1];
-	xmlChar *conv, *ret = NULL;
-	bool invalid_conn;
+	xmlChar *conv, *ret = NULL, *hex_state;
+	ssize_t state_len;
+	bool invalid_conn, first = true, is_printable = true;
 
 	if (retCode == SQL_INVALID_HANDLE)
 		return BAD_CAST XPL_STRDUP("invalid handle");
@@ -130,9 +131,33 @@ static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, 
 		conv = NULL;
 		xstrIconvString("utf-8", "utf-16le", (const char*) msg, (const char*) (msg + msg_len), (char**) &conv, NULL);
 		XPL_FREE(msg);
-		ret = ret? xmlStrcat(xmlStrcat(ret, BAD_CAST ", "), conv): conv;
-		if (ret != conv)
-			XPL_FREE(conv);
+		state_len = 0;
+		while (state[state_len] && (state_len < SQL_SQLSTATE_SIZE))
+		{
+			if ((state[state_len] < 0x20) || (state[state_len] & 0xFF80))
+				is_printable = false;
+			state_len++;
+		}
+		if (is_printable)
+		{
+			hex_state = BAD_CAST xmlMalloc(state_len + 1);
+			hex_state[state_len] = 0;
+			while (--state_len >= 0)
+				hex_state[state_len] = (char) (state[state_len] & 0xFF);
+		} else
+			hex_state = xstrBufferToHexAlloc(state, state_len*sizeof(SQLWCHAR), true);
+		if (first)
+		{
+			ret = hex_state;
+			first = false;
+		} else {
+			ret = xmlStrcat(ret, BAD_CAST ", ");
+			ret = xmlStrcat(ret, hex_state);
+			XPL_FREE(hex_state);
+		}
+		ret = xmlStrcat(ret, BAD_CAST ": ");
+		ret = xmlStrcat(ret, conv);
+		XPL_FREE(conv);
 	}
 }
 
