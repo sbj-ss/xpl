@@ -106,5 +106,21 @@
     </Input>
   </MustFail>
   
+  <MustFail name="fail/bad-replace-on-node">
+    <Input>
+      <xpl:convert-to-define>
+        <A replace="partially"/>
+      </xpl:convert-to-define>
+    </Input>
+  </MustFail>
+  
+  <MustFail name="fail/bad-expand-on-node">
+    <Input>
+      <xpl:convert-to-define>
+        <A expand="sometimes"/>
+      </xpl:convert-to-define>
+    </Input>
+  </MustFail>
+  
   <Summary/>
 </Root>

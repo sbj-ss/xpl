@@ -43,7 +43,7 @@ xplCommand xplConvertToDefineCommand =
 void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
 	xplCmdConvertToDefineParamsPtr params = (xplCmdConvertToDefineParamsPtr) commandInfo->params;
-	xmlNodePtr cur, error;
+	xmlNodePtr cur, error, first_error = NULL, last_error = NULL;
 	xmlChar *id_attr, *expand_attr, *replace_attr;
 	xplMacroExpansionState expand;
 	int replace;
@@ -52,34 +52,35 @@ void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr r
 	cur = commandInfo->element->children;
 	while (cur)
 	{
+		error = NULL;
 		if (cur->type == XML_ELEMENT_NODE)
 		{
 			expand_attr = xmlGetNoNsProp(cur, BAD_CAST "expand");
 			if (expand_attr)
 			{
 				expand = xplMacroExpansionStateFromString(expand_attr);
-				XPL_FREE(expand_attr);
 				if (expand == XPL_MACRO_EXPAND_UNKNOWN)
 				{
 					error = xplCreateErrorNode(commandInfo->element, "invalid expand value '%s'", expand_attr);
-					xplReplaceWithList(cur, error);
-					cur = error->next;
-					continue;
+					APPEND_NODE_TO_LIST(first_error, last_error, error);
 				}
+				XPL_FREE(expand_attr);
+				if (error)
+					goto next;
 			} else
 				expand = params->default_expand;
 			replace_attr = xmlGetNoNsProp(cur, BAD_CAST "replace");
 			if (replace_attr)
 			{
 				replace = xplGetBooleanValue(replace_attr);
-				XPL_FREE(replace_attr);
 				if (replace == -1)
 				{
 					error = xplCreateErrorNode(commandInfo->element, "invalid replace value '%s'", replace_attr);
-					xplReplaceWithList(cur, error);
-					cur = error->next;
-					continue;
+					APPEND_NODE_TO_LIST(first_error, last_error, error);
 				}
+				XPL_FREE(replace_attr);
+				if (error)
+					goto next;
 			} else
 				replace = params->default_replace;
 			id_attr = xmlGetNoNsProp(cur, CONTENT_ID_ATTR);
@@ -89,7 +90,8 @@ void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr r
 			if (id_attr)
 				XPL_FREE(id_attr);
 		}
+next:
 		cur = cur->next;
 	}
-	ASSIGN_RESULT(NULL, false, true);
+	ASSIGN_RESULT(first_error, !!first_error, true);
 }
