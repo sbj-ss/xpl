@@ -4,6 +4,46 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+static xplOutputMethodDesc output_methods[] =
+{
+	{
+		.name = BAD_CAST "html",
+		.content_type = BAD_CAST "text/html",
+		.xml_format = XML_SAVE_AS_HTML,
+		.serializer_type = XPL_OST_XML
+	}, {
+		.name = BAD_CAST "xml",
+		.content_type = BAD_CAST "text/xml",
+		.xml_format = XML_SAVE_AS_XML,
+		.serializer_type = XPL_OST_XML
+	}, {
+		.name = BAD_CAST "xhtml",
+		.content_type = BAD_CAST "application/xhtml+xml",
+		.xml_format = XML_SAVE_XHTML,
+		.serializer_type = XPL_OST_XML
+	}, {
+		.name = BAD_CAST "text",
+		.content_type = BAD_CAST "text/plain",
+		.xml_format = 0,
+		.serializer_type = XPL_OST_TEXT
+	}, {
+		.name = BAD_CAST "none",
+		.content_type = BAD_CAST "",
+		.xml_format = 0,
+		.serializer_type = XPL_OST_NONE
+	}
+};
+
+xplOutputMethodDescPtr xplOutputMethodDescFromString(xmlChar *name)
+{
+	size_t i;
+
+	for (i = 0; i < sizeof(output_methods) / sizeof(output_methods[0]); i++)
+		if (!xmlStrcasecmp(name, output_methods[i].name))
+			return &output_methods[i];
+	return NULL;
+}
+
 static void safeSerializeIndent(FILE *fp, int indent)
 {
 	int i;

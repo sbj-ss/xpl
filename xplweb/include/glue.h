@@ -8,6 +8,7 @@
 #include "Configuration.h"
 #include <libxml/xmlstring.h>
 #include <libxpl/xplparams.h>
+#include <libxpl/xplsave.h>
 #include <libxpl/xplsession.h>
 #include <civetweb.h>
 
@@ -29,29 +30,12 @@ extern "C" {
 
 #define SESSION_ID_COOKIE "session_id"
 
-typedef enum _OutputSerializer
-{
-	OS_XML,
-	OS_TEXT,
-	OS_NONE
-} OutputSerializer;
-
-typedef struct _OutputMethodDesc
-{
-	xmlChar *name;
-	xmlChar *content_type;
-	int xml_format;
-	OutputSerializer serializer;
-} OutputMethodDesc, *OutputMethodDescPtr;
-
 extern xmlChar *doc_root;
 
-OutputMethodDescPtr XPLCALL /* ditto */
-	getOutputMethod(xmlChar *name);
 xplParamsPtr XPLCALL /* collect URL query and POST body params */
 	buildParams(struct mg_connection *conn, const struct mg_request_info *request_info);
 xmlChar* XPLCALL /* serialize output document using selected method */
-	serializeDoc(xmlDocPtr doc, xmlChar *encoding, OutputMethodDescPtr om, size_t *size);
+	serializeDoc(xmlDocPtr doc, xmlChar *encoding, xplOutputMethodDescPtr om, size_t *size);
 void XPLCALL /* send session id cookie to client */
 	setSessionCookie(struct mg_connection *conn, xplSessionPtr session);
 int XPLCALL /* handle a request to .xpl file */

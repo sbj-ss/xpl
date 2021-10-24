@@ -8,6 +8,7 @@
 #include <libxpl/xplcore.h>
 #include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
+#include <libxpl/xplsave.h>
 #include <libxpl/xplstring.h>
 
 #if defined(_WIN32) && defined(__MINGW64__)
@@ -19,49 +20,6 @@
 xmlChar *doc_root;
 
 #define DEFAULT_OUTPUT_METHOD_NAME (BAD_CAST "html")
-
-static OutputMethodDesc output_methods[] =
-{
-	{
-		.name = BAD_CAST "html",
-		.content_type = BAD_CAST "text/html",
-		.xml_format = XML_SAVE_AS_HTML,
-		.serializer = OS_XML
-	}, {
-		.name = BAD_CAST "xml",
-		.content_type = BAD_CAST "text/xml",
-		.xml_format = XML_SAVE_AS_XML,
-		.serializer = OS_XML
-	}, {
-		.name = BAD_CAST "xhtml",
-		.content_type = BAD_CAST "application/xhtml+xml",
-		.xml_format = XML_SAVE_XHTML,
-		.serializer = OS_XML
-	}, {
-		.name = BAD_CAST "text",
-		.content_type = BAD_CAST "text/plain",
-		.xml_format = 0,
-		.serializer = OS_TEXT
-	}, {
-		.name = BAD_CAST "none",
-		.content_type = BAD_CAST "",
-		.xml_format = 0,
-		.serializer = OS_NONE
-	}
-};
-
-
-OutputMethodDescPtr getOutputMethod(xmlChar *name)
-{
-	size_t i;
-
-	if (!name || !*name)
-		name = DEFAULT_OUTPUT_METHOD_NAME;
-	for (i = 0; i < sizeof(output_methods) / sizeof(output_methods[0]); i++)
-		if (!xmlStrcasecmp(name, output_methods[i].name))
-			return &output_methods[i];
-	return NULL;
-}
 
 static bool _provideUniqueFilename(char* path, size_t pathLen)
 {
@@ -286,14 +244,14 @@ struct _xmlSaveCtxt {
 };
 typedef struct _xmlSaveCtxt *xmlSaveCtxtPtr;
 
-xmlChar* serializeDoc(xmlDocPtr doc, xmlChar *encoding, OutputMethodDescPtr om, size_t *size)
+xmlChar* serializeDoc(xmlDocPtr doc, xmlChar *encoding, xplOutputMethodDescPtr om, size_t *size)
 {
 	xmlBufferPtr buf;
 	xmlSaveCtxtPtr save_ctxt;
 	xmlNodePtr root;
 	xmlChar *txt, *ret = NULL;
 
-	if (om->serializer == OS_XML)
+	if (om->serializer_type == XPL_OST_XML)
 	{
 		buf = xmlBufferCreate();
 		save_ctxt = xmlSaveToBuffer(buf, (const char*) encoding, om->xml_format);
@@ -313,7 +271,7 @@ xmlChar* serializeDoc(xmlDocPtr doc, xmlChar *encoding, OutputMethodDescPtr om, 
 			*size = xmlStrlen(ret);
 		}
 		xmlBufferFree(buf);
-	} else if (om->serializer == OS_TEXT) {
+	} else if (om->serializer_type == XPL_OST_TEXT) {
 		root = xplFirstElementNode(doc->children);
 		txt = root? xmlNodeListGetString(doc, root->children, 1): NULL;
 		if (txt)
@@ -378,7 +336,7 @@ int serveXpl(struct mg_connection *conn, void *userData)
 	xmlChar *content_type = NULL;
 	xmlChar *payload = NULL;
 	size_t payload_size;
-	OutputMethodDescPtr om;
+	xplOutputMethodDescPtr om;
 	xplError ret;
 	int http_code = -1;
 
@@ -421,7 +379,7 @@ int serveXpl(struct mg_connection *conn, void *userData)
 	}
 	if (!encoding || !*encoding)
 		encoding = BAD_CAST DEFAULT_OUTPUT_ENC;
-	om = getOutputMethod(output_method);
+	om = xplOutputMethodDescFromString((output_method && *output_method)? output_method: DEFAULT_OUTPUT_METHOD_NAME);
 	if (!content_type || !*content_type)
 		content_type = om->content_type;
 	if (ret == XPL_ERR_NO_ERROR || ret == XPL_ERR_FATAL_CALLED)

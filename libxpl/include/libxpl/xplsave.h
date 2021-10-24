@@ -16,6 +16,25 @@
 extern "C" {
 #endif
 
+typedef enum _xplOutputSerializerType
+{
+	XPL_OST_UNKNOWN = -1,
+	XPL_OST_XML = 0,
+	XPL_OST_TEXT,
+	XPL_OST_NONE
+} xplOutputSerializerType;
+
+typedef struct _xplOutputMethodDesc
+{
+	xmlChar *name;
+	xmlChar *content_type;
+	int xml_format;
+	xplOutputSerializerType serializer_type;
+} xplOutputMethodDesc, *xplOutputMethodDescPtr;
+
+XPLPUBFUN xplOutputMethodDescPtr XPLCALL /* ditto */
+	xplOutputMethodDescFromString(xmlChar *name);
+
 /* header, elements, props and text only. doesn't use memory manager. */
 XPLPUBFUN void XPLCALL
 	xplSafeSerializeDocument(const xmlChar *filename, xmlDocPtr doc);

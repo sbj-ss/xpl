@@ -5,9 +5,11 @@
 #include <unistd.h>
 #include <libxml/xmlsave.h>
 #include <libxpl/xplcore.h>
+#include <libxpl/xplmessages.h>
 #include <libxpl/xploptions.h>
 #include <libxpl/xplsave.h>
 #include <libxpl/xplstart.h>
+#include <libxpl/xplstring.h>
 #include <libxpl/xplversion.h>
 
 static xmlChar* _getAppType(void)
@@ -20,7 +22,7 @@ static xmlChar* _getAppType(void)
 xmlChar *in_file = BAD_CAST "test.xml";
 xmlChar *out_file = BAD_CAST "test_out.xml";
 xmlChar *start_file = NULL;
-char *out_encoding = NULL;
+char *out_encoding = "utf-8";
 int verbose = 0;
 
 static struct option option_list[] = 
@@ -147,6 +149,59 @@ static void _parseCommandLine(int argc, char **argv)
 	}
 }
 
+static bool _saveOutput(xplDocumentPtr doc)
+{
+	xmlChar *output_method, *txt, *content;
+	size_t content_size;
+	xplOutputMethodDescPtr om_desc;
+	xmlNodePtr root;
+	int fh;
+	bool ret;
+
+	output_method = xplParamGetFirstValue(doc->params, BAD_CAST "OutputMethod");
+	om_desc = xplOutputMethodDescFromString((output_method && *output_method)? output_method: BAD_CAST "xml");
+	switch (om_desc->serializer_type)
+	{
+	case XPL_OST_UNKNOWN:
+		xplDisplayMessage(XPL_MSG_ERROR, "Unknown output method: %s. No files saved.", output_method);
+		return true; // we've already complained
+	case XPL_OST_XML:
+		return xplSaveXmlDocToFile(doc->document, out_file, out_encoding, XML_SAVE_FORMAT);
+	case XPL_OST_TEXT:
+		ret = false;
+		root = xplFirstElementNode(doc->document->children);
+		txt = root? xmlNodeListGetString(doc->document, root->children, 1): NULL;
+		if (txt)
+		{
+			if (!strcmp(out_encoding, "utf-8"))
+			{
+				content = txt;
+				content_size = xmlStrlen(txt);
+			} else if (xstrIconvString((char*) out_encoding, "utf-8", (char*) txt, (char*) txt + xmlStrlen(txt), (char**) &content, &content_size) == -1)
+				content = NULL;
+			if (content)
+			{
+				fh = xprSOpen(out_file, O_CREAT | O_TRUNC | O_WRONLY | O_BINARY, _SH_DENYWR, S_IREAD | S_IWRITE);
+				if (fh != -1)
+				{
+					if (write(fh, content, content_size) == (ssize_t) content_size)
+						ret = true;
+					close(fh);
+				}
+				XPL_FREE(content);
+			}
+			if (txt != content)
+				XPL_FREE(txt);
+		}
+		return ret;
+	case XPL_OST_NONE:
+		return true;
+	default:
+		DISPLAY_INTERNAL_ERROR_MESSAGE();
+		return false;
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	xmlChar *app_path = NULL;
@@ -198,7 +253,7 @@ int main(int argc, char* argv[])
 	params = xplParamsCreate();
 	doc_result = xplProcessFileEx(app_path, in_file, params, session, &doc, true);
 	/* save document even if processing failed */
-	if (doc->document && !xplSaveXmlDocToFile(doc->document, out_file, out_encoding, XML_SAVE_FORMAT))
+	if (doc->document && !_saveOutput(doc))
 	{
 		fprintf(stderr, "can't save output file '%s': %s\n", out_file, strerror(errno));
 		exit_code = EC_CANNOT_SAVE_OUTPUT;
