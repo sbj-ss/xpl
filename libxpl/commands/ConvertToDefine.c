@@ -48,6 +48,7 @@ void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr r
 	xplMacroExpansionState expand;
 	int replace;
 	xplQName qname;
+	bool warning_issued = false;
 
 	cur = commandInfo->element->children;
 	while (cur)
@@ -89,6 +90,9 @@ void xplCmdConvertToDefineEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr r
 			xplAddMacro(commandInfo->document, cur, qname, commandInfo->element->parent, expand, replace, id_attr);
 			if (id_attr)
 				XPL_FREE(id_attr);
+		} else if (cfgWarnOnInvalidNodeType && !warning_issued) {
+			warning_issued = true;
+			xplDisplayWarning(commandInfo->element, "non-element nodes inside ignored");
 		}
 next:
 		cur = cur->next;
