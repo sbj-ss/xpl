@@ -106,6 +106,12 @@ static xmlChar* _xefDbDecodeOdbcError(SQLHANDLE handle, SQLSMALLINT handleType, 
 				&& state[3] == 0x30
 				&& state[4] == 0x33
 
+			) || ( // SQL state HY000
+				state[0] == 'H'
+				&& state[1] == 'Y'
+				&& state[2] == '0'
+				&& state[3] == '0'
+				&& state[4] == '0'
 			);
 			if (invalid_conn)
 			{
