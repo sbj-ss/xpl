@@ -47,6 +47,24 @@
     </Expected>
   </MustSucceed>
   
+  <MustSucceed name="pass/repeat">
+    <Input>
+      <xpl:define name="B">
+        <Processed/>
+      </xpl:define>
+      <xpl:rename select="./*" newname="B">
+        <A/>
+      </xpl:rename>
+      <xpl:rename select="./*" newname="B" repeat="true">
+        <A/>
+      </xpl:rename>
+    </Input>
+    <Expected>
+      <B/>
+      <Processed/>
+    </Expected>
+  </MustSucceed>
+  
   <MustFail name="fail/missing-select">
     <Input>
       <xpl:rename newname="A"/>
@@ -68,6 +86,12 @@
   <MustFail name="fail/bad-new-name">
     <Input>
       <xpl:rename select="A" newname="#"/>
+    </Input>
+  </MustFail>
+  
+  <MustFail name="fail/bad-repeat">
+    <Input>
+      <xpl:rename select="A" newname="B" repeat="twice"/>
     </Input>
   </MustFail>
   

@@ -8,12 +8,14 @@ typedef struct _xplCmdRenameParams
 {
 	xmlXPathObjectPtr select;
 	xplQName new_name;
+	bool repeat;
 } xplCmdRenameParams, *xplCmdRenameParamsPtr;
 
 static const xplCmdRenameParams params_stencil =
 {
 	.select = NULL,
-	.new_name = { NULL, NULL }
+	.new_name = { NULL, NULL },
+	.repeat = false
 };
 
 xplCommand xplRenameCommand =
@@ -35,6 +37,11 @@ xplCommand xplRenameCommand =
 			.type = XPL_CMD_PARAM_TYPE_QNAME,
 			.required = true,
 			.value_stencil = &params_stencil.new_name
+		}, {
+			.name = BAD_CAST "repeat",
+			.type = XPL_CMD_PARAM_TYPE_BOOL,
+			.required = false,
+			.value_stencil = &params_stencil.repeat
 		}, {
 			.name = NULL
 		}
@@ -71,5 +78,5 @@ void xplCmdRenameEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 				xplDisplayWarning(commandInfo->element, "can only rename elements and attributes, select = '%s'", (char*) params->select->user);
 		}
 	}
-	ASSIGN_RESULT(NULL, false, true);
+	ASSIGN_RESULT(xplDetachChildren(commandInfo->element), params->repeat, true);
 }
