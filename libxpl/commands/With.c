@@ -91,7 +91,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 	NaosCheckResult naos_check_result;
 
 	if (!params->select->nodesetval || !params->select->nodesetval->nodeNr)
-		return;
+		goto done;
 	commandInfo->document->iterator_spin++;
 
 	for (i = 0; i < (size_t) params->select->nodesetval->nodeNr; i++)
@@ -147,7 +147,7 @@ void xplCmdWithPrologue(xplCommandInfoPtr commandInfo)
 			xplNodeListApply(commandInfo->document, repl, &temp_result);
 		}
 	} /* for */
-
+done:
 	if (commandInfo->element->type == XML_ELEMENT_NODE)
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 	commandInfo->document->iterator_spin--;
