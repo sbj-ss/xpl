@@ -965,7 +965,7 @@ void xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, 
 		XPL_FREE(raw_expansion_mode);
 		xpl_ns = xmlSearchNsByHref(element->doc, element, cfgXplNsUri);
 		xmlUnsetNsProp(element, xpl_ns, BAD_CAST "expand");
-		ASSIGN_RESULT(element, false, false);
+		xplNodeListApply(doc, element->children, result);
 		return;
 	case XPL_MACRO_EM_AFTER:
 		xplNodeListApply(doc, element->children, result);

@@ -176,10 +176,12 @@
   <MustSucceed name="pass/mode-expand-skip">
     <Input>
       <xpl:define name="skip">skipped</xpl:define>
-      <skip xpl:expand="skip">original</skip>
+      <skip xpl:expand="skip">
+        <xpl:attribute name="visited">true</xpl:attribute>
+      </skip>
     </Input>
     <Expected>
-      <skip>original</skip>
+      <skip visited="true"/>
     </Expected>
   </MustSucceed>
 
