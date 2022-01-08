@@ -83,8 +83,6 @@ XPLPUBFUN xplDocumentPtr XPLCALL
 	xplDocumentCreateFromMemory(const xmlChar* docPath, const xmlChar *origin,  xplParamsPtr params, xplSessionPtr session, const xmlChar *encoding);
 XPLPUBFUN xplDocumentPtr XPLCALL
 	xplDocumentCreateChild(xplDocumentPtr parent, xmlNodePtr parentNode, bool inheritMacros, bool shareSession);
-
-/* Main method */
 XPLPUBFUN void XPLCALL
 	xplDocumentFree(xplDocumentPtr doc);
 
