@@ -29,6 +29,24 @@
     <Expected>true</Expected>
   </MustSucceed>
 
+  <MustSucceed name="pass/detailed">
+    <Input>
+      <xpl:value-of select="count(./version) + count(./version/@minor) + count(./version/@major) + count(./version/@beta) + count(./version/@debug)">
+        <xpl:get-version part="detailed"/>
+      </xpl:value-of>
+    </Input>
+    <Expected>5</Expected>
+  </MustSucceed>
+
+  <MustSucceed name="pass/detailed-custom-tag-name">
+    <Input>
+      <xpl:value-of select="count(./ns-a:V) + count(./ns-a:V/@minor) + count(./ns-a:V/@major) + count(./ns-a:V/@beta) + count(./ns-a:V/@debug)">
+        <xpl:get-version part="detailed" tagname="ns-a:V"/>
+      </xpl:value-of>
+    </Input>
+    <Expected>5</Expected>
+  </MustSucceed>
+
   <MustSucceed name="pass/libs">
     <Input>
       <xpl:include select="library[@name='libxml2']/@name">

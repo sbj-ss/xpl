@@ -12,6 +12,7 @@ typedef enum _xplCmdGetVersionPart
 	XCGV_PART_MAJOR,
 	XCGV_PART_MINOR,
 	XCGV_PART_FULL,
+	XCGV_PART_DETAILED,
 	XCGV_PART_LIBS,
 	XCGV_PART_XEF
 } xplCmdGetVersionPart;
@@ -21,6 +22,7 @@ static xplCmdParamDictValue part_dict[] =
 	{ BAD_CAST "minor", XCGV_PART_MINOR },
 	{ BAD_CAST "major", XCGV_PART_MAJOR },
 	{ BAD_CAST "full", XCGV_PART_FULL },
+	{ BAD_CAST "detailed", XCGV_PART_DETAILED },
 	{ BAD_CAST "libs", XCGV_PART_LIBS },
 	{ BAD_CAST "xef", XCGV_PART_XEF },
 	{ NULL, 0 }
@@ -67,7 +69,7 @@ xplCommand xplGetVersionCommand =
 	}
 };
 
-static xmlNodePtr _getXplVersion(xmlDocPtr doc, xplCmdGetVersionPart part)
+static xmlNodePtr _getXplAtomicVersion(xmlDocPtr doc, xplCmdGetVersionPart part)
 {
 	xmlChar *ver;
 	xmlNodePtr ret;
@@ -94,8 +96,24 @@ static xmlNodePtr _getXplVersion(xmlDocPtr doc, xplCmdGetVersionPart part)
 	return ret;
 }
 
+static xmlNodePtr _getXplDetailedVersion(xmlDocPtr doc, xplQName tagname)
+{
+	xmlNodePtr ret;
+	xmlChar ver[12];
+
+	ret = xmlNewDocNode(doc, tagname.ns, tagname.ncname, NULL);
+	sprintf((char*) ver, "%d", XPL_VERSION_MAJOR);
+	xmlNewProp(ret, BAD_CAST "major", ver);
+	sprintf((char*) ver, "%d", XPL_VERSION_MINOR);
+	xmlNewProp(ret, BAD_CAST "minor", ver);
+	xmlNewProp(ret, BAD_CAST "debug", BAD_CAST (XPL_VERSION_EFFECTIVE_FLAG_DEBUG? "true": "false"));
+	xmlNewProp(ret, BAD_CAST "beta", BAD_CAST (XPL_VERSION_EFFECTIVE_FLAG_BETA? "true": "false"));
+	return ret;
+}
+
 static const xplQName default_library_name = { NULL, BAD_CAST "library" };
 static const xplQName default_xef_name = { NULL, BAD_CAST "feature" };
+static const xplQName default_detailed_name = { NULL, BAD_CAST "version" };
 
 void xplCmdGetVersionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 {
@@ -112,6 +130,10 @@ void xplCmdGetVersionEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result
 		tagname = params->tagname.ncname? params->tagname: default_xef_name;
 		nodes = xplXefImplementationsToNodeList(commandInfo->element->doc, tagname, xplGetXefImplementations());
 		ASSIGN_RESULT(nodes, params->repeat, true);
+	} else if (params->part == XCGV_PART_DETAILED) {
+		tagname = params->tagname.ncname? params->tagname: default_detailed_name;
+		nodes = _getXplDetailedVersion(commandInfo->element->doc, tagname);
+		ASSIGN_RESULT(nodes, params->repeat, true);
 	} else
-		ASSIGN_RESULT(_getXplVersion(commandInfo->element->doc, params->part), false, true);
+		ASSIGN_RESULT(_getXplAtomicVersion(commandInfo->element->doc, params->part), false, true);
 }
