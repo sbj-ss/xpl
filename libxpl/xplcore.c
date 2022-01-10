@@ -950,7 +950,6 @@ void xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, 
 	xplMacroExpansionMode expansion_mode;
 	xplMacroPtr prev_macro;
 	xmlNsPtr xpl_ns;
-	bool repeat = false;
 
 	raw_expansion_mode = xmlGetNsProp(element, BAD_CAST "expand", cfgXplNsUri);
 	expansion_mode = xplMacroExpansionModeFromString(raw_expansion_mode);
@@ -1009,7 +1008,6 @@ void xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, 
 		break;
 	case XPL_MACRO_EXPANDED:
 		out = xplCloneNodeList(macro->content, element->parent, element->doc);
-		repeat = true;
 		break;
 	default:
 		DISPLAY_INTERNAL_ERROR_MESSAGE();
@@ -1022,7 +1020,7 @@ void xplExecuteMacro(xplDocumentPtr doc, xmlNodePtr element, xplMacroPtr macro, 
 		macro->expansion_state = XPL_MACRO_EXPANDED;
 	}
 done:
-	ASSIGN_RESULT(out, repeat, true);
+	ASSIGN_RESULT(out, false, true);
 	doc->macro_nesting_level--;
 	doc->current_macro = prev_macro;
 	macro->caller = prev_caller;

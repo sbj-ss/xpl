@@ -129,10 +129,12 @@
       <xpl:define name="now" expand="now">
         <A/>
       </xpl:define>
-      <xpl:define name="A">OK</xpl:define>
+      <xpl:define name="A">Failed</xpl:define>
       <now/>
     </Input>
-    <Expected>OK</Expected>
+    <Expected>
+      <A/>
+    </Expected>
   </MustSucceed>  
 
   <MustSucceed name="pass/mode-expand-now">
