@@ -42,6 +42,18 @@
     </Expected>
   </MustSucceed>
 
+  <MustSucceed name="pass/omit-root-with-select">
+    <Input>
+      <ns-a:A>text</ns-a:A>
+      <xpl:save file="save/OmitRootWithSelect.xml" select="preceding-sibling::ns-a:A" omitroot="true"/>
+      <xpl:delete select="preceding-sibling::ns-a:A"/>
+      <xpl:include file="save/OmitRootWithSelect.xml"/>
+    </Input>
+    <Expected>
+      <ns-a:A xmlns:ns-a="http://a.example.com">text</ns-a:A>
+    </Expected>
+  </MustSucceed>
+
   <MustSucceed name="pass/abspath">
     <Input>
       <xpl:define name="Path" expand="true"><xpl:get-option name="DocRoot"/>/save/AbsPath.xml</xpl:define>

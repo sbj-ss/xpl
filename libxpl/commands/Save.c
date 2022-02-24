@@ -120,7 +120,7 @@ void xplCmdSaveEpilogue(xplCommandInfoPtr commandInfo, xplResultPtr result)
 						ASSIGN_RESULT(xplCreateErrorNode(commandInfo->element, "omitroot requires exactly one element node returned by XPath selection"), true, true);
 						goto done;
 					}
-					root = nodes->nodeTab[0];
+					root = xplCloneNode(nodes->nodeTab[0], (xmlNodePtr) doc, doc);
 				} else {
 					for (i = 0; i < (size_t) nodes->nodeNr; i++)
 						xmlAddChild(root, xplCloneAsNodeChild(nodes->nodeTab[i], root));
