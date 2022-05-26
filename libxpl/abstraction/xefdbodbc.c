@@ -558,7 +558,8 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 	SQLRETURN r;
 	SQLSMALLINT target_type;
 	xmlChar *error_text;
-	bool recode;
+	bool is_binary;
+	int terminator_len;
 
 	if (!ctxt)
 		return;
@@ -573,15 +574,30 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 		field = &ctxt->row->fields[i];
 		field_size = 0;
 		would_grow = false;
+		switch(field->data_type)
+		{
+		case SQL_VARBINARY:
+		case SQL_LONGVARBINARY:
+			// mysql returns mediumblob/longblob for utf8-encoded mediumtext/longtext, esp. json
+			target_type = SQL_C_BINARY;
+			is_binary = true;
+			terminator_len = 0;
+			break;
+		default:
+			target_type = SQL_C_WCHAR;
+			is_binary = false;
+			terminator_len = sizeof(SQLWCHAR);
+		}
+
 		do {
 			if (!ctxt->buffer)
 			{
-				ctxt->buffer = (SQLWCHAR*) XPL_MALLOC(INITIAL_FIELD_BUFFER_SIZE);
+				ctxt->buffer = (SQLWCHAR*) XPL_MALLOC(INITIAL_FIELD_BUFFER_SIZE + 1); // extra byte for the forced terminator
 				ctxt->buffer_size = INITIAL_FIELD_BUFFER_SIZE;
 				buffer = ctxt->buffer;
 			} else if (would_grow) {
-				ctxt->buffer = (SQLWCHAR*) XPL_REALLOC(ctxt->buffer, ctxt->buffer_size*2);
-				field_size = ctxt->buffer_size - sizeof(SQLWCHAR);
+				ctxt->buffer = (SQLWCHAR*) XPL_REALLOC(ctxt->buffer, ctxt->buffer_size*2 + 1);
+				field_size = ctxt->buffer_size - terminator_len;
 				buffer = ctxt->buffer + ctxt->buffer_size / sizeof(SQLWCHAR) - 1;
 				ctxt->buffer_size *= 2;
 			} else
@@ -591,21 +607,12 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 				_xefDbSetContextError(ctxt, xplFormat("%s(): not enough memory for ctxt->buffer", __func__));
 				goto error;
 			}
-			switch(field->data_type)
-			{
-			case SQL_VARBINARY:
-			case SQL_LONGVARBINARY:
-				// mysql returns mediumblob/longblob for utf8-encoded mediumtext/longtext, esp. json
-				target_type = SQL_C_BINARY;
-				recode = false;
-				break;
-			default:
-				target_type = SQL_C_WCHAR;
-				recode = true;
-			}
+			if (is_binary)
+				memset(buffer, 0, ctxt->buffer_size - field_size + 1); // this is the only way to zero-terminate "binary" values
 			r = SQLGetData(ctxt->statement, i + 1, target_type, buffer, ctxt->buffer_size - field_size, &len_or_ind);
 			would_grow = true;
 		} while (r == SQL_SUCCESS_WITH_INFO);
+
 		if (!SQL_SUCCEEDED(r))
 		{
 			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
@@ -613,11 +620,28 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 			XPL_FREE(error_text);
 			goto error;
 		}
+
 		if (len_or_ind == SQL_NULL_DATA)
 		{
 			field->is_null = true;
 			field->value_size = 0;
-		} else if (recode) {
+		} else if (is_binary) {
+			field->is_null = false;
+			if (len_or_ind == SQL_NO_TOTAL)
+				field_size = xmlStrlen(BAD_CAST ctxt->buffer);
+			else {
+				field_size += len_or_ind;
+				field_size++;
+				while (*((BAD_CAST ctxt->buffer) + field_size - 1) == 0)
+					field_size--;
+			}
+			field->value = BAD_CAST XPL_STRDUP(BAD_CAST(ctxt->buffer));
+			if (!field->value)
+			{
+				_xefDbSetContextError(ctxt, xplFormat("%s(): no memory for value copy", __func__));
+				goto error;
+			}
+		} else {
 			field->is_null = false;
 			if (len_or_ind == SQL_NO_TOTAL)
 				field_size = sqlwcharlen(ctxt->buffer) * sizeof(SQLWCHAR);
@@ -633,17 +657,6 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 				_xefDbSetContextError(ctxt, xplFormat("%s(): no memory for value recoding", __func__));
 				goto error;
 			}
-		} else {
-			field->is_null = false;
-			if (len_or_ind == SQL_NO_TOTAL)
-				field_size = xmlStrlen(BAD_CAST ctxt->buffer);
-			else {
-				field_size += len_or_ind;
-				field_size++;
-				while (*((BAD_CAST ctxt->buffer) + field_size - 1) == 0)
-					field_size--;
-			}
-			field->value = BAD_CAST XPL_STRDUP(BAD_CAST(ctxt->buffer));
 		}
 	}
 	return;
