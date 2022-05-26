@@ -489,6 +489,7 @@ static bool _xefDbGetFieldDescLong(xefDbContextPtr ctxt, SQLUSMALLINT index, SQL
 	xmlChar *error_text = NULL;
 	SQLRETURN r;
 
+	*ret = 0;
 	r = SQLColAttributeW(ctxt->statement, index, which, NULL, 0, NULL, ret);
 	if (!SQL_SUCCEEDED(r))
 	{
@@ -638,6 +639,7 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 				field_size = xmlStrlen(BAD_CAST ctxt->buffer);
 			else {
 				field_size += len_or_ind;
+				field_size++;
 				while (*((BAD_CAST ctxt->buffer) + field_size - 1) == 0)
 					field_size--;
 			}
