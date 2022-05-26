@@ -85,6 +85,7 @@ typedef struct _xefDbField
 	bool is_null;
 	size_t value_size; /* in bytes without null terminator */
 	bool needs_copy;
+	long data_type;
 	void *db_object; /* implementation specific */
 } xefDbField, *xefDbFieldPtr;
 

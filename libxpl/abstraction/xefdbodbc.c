@@ -430,14 +430,83 @@ static void _xefDbFreeRow(xefDbRowPtr row)
 	XPL_FREE(row);
 }
 
+static bool _xefDbGetFieldDescText(xefDbContextPtr ctxt, SQLUSMALLINT index, SQLUSMALLINT which, xmlChar **ret)
+{
+	SQLWCHAR *w_name;
+	SQLSMALLINT len;
+	xmlChar *error_text = NULL;
+	SQLRETURN r;
+
+	len = 0;
+	r = SQLColAttributeW(ctxt->statement, index, which, NULL, 0, &len, NULL);
+	if (!SQL_SUCCEEDED(r))
+	{
+		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
+		_xefDbSetContextError(ctxt, xplFormat("%s(): SQLColAttributeW(): %s", __func__, error_text));
+		goto error;
+	}
+	if (len)
+	{
+		w_name = (SQLWCHAR*) XPL_MALLOC((len+2)*sizeof(SQLWCHAR)); /* certain ODBC drivers are crazy */
+		if (!w_name)
+		{
+			_xefDbSetContextError(ctxt, xplFormat("%s(): insufficient memory for column name", __func__));
+			goto error;
+		}
+		*w_name = 0;
+		r = SQLColAttributeW(ctxt->statement, index, which, w_name, len+3, &len, NULL);
+		if (!SQL_SUCCEEDED(r))
+		{
+			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
+			_xefDbSetContextError(ctxt, xplFormat("%s(): SQLColAttributeW(SQL_DESC_NAME): %s", __func__, error_text));
+			goto error;
+		}
+		w_name[len/sizeof(SQLWCHAR) + 1] = 0;
+		*ret = NULL;
+		if (xstrIconvString("utf-8", "utf-16le", (const char*) w_name, ((const char*) w_name) + len + 2, (char**) ret, NULL) == -1)
+		{
+			_xefDbSetContextError(ctxt, xplFormat("%s(): cannot represent column name in UTF-8 encoding", __func__));
+			XPL_FREE(w_name);
+			goto error;
+		}
+		XPL_FREE(w_name);
+		if (!*ret)
+		{
+			_xefDbSetContextError(ctxt, xplFormat("%s(): insufficient memory for column name", __func__));
+			goto error;
+		}
+	} else // if (len)
+		*ret = NULL;
+	return true;
+error:
+	if (error_text)
+		XPL_FREE(error_text);
+	return false;
+}
+
+static bool _xefDbGetFieldDescLong(xefDbContextPtr ctxt, SQLUSMALLINT index, SQLUSMALLINT which, SQLLEN *ret)
+{
+	xmlChar *error_text = NULL;
+	SQLRETURN r;
+
+	r = SQLColAttributeW(ctxt->statement, index, which, NULL, 0, NULL, ret);
+	if (!SQL_SUCCEEDED(r))
+	{
+		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
+		_xefDbSetContextError(ctxt, xplFormat("%s(): SQLColAttributeW(): %s", __func__, error_text));
+		goto error;
+	}
+	return true;
+error:
+	if (error_text)
+		XPL_FREE(error_text);
+	return false;
+}
+
 static void _xefDbCreateRow(xefDbContextPtr ctxt)
 {
 	xefDbRowPtr row;
-	SQLSMALLINT i, len;
-	SQLWCHAR *w_name;
-	xmlChar *col_name;
-	SQLRETURN r;
-	xmlChar *error_text = NULL;
+	SQLUSMALLINT i;
 
 	if (!ctxt)
 		return;
@@ -464,52 +533,13 @@ static void _xefDbCreateRow(xefDbContextPtr ctxt)
 
 	for (i = 1; i <= ctxt->col_count; i++)
 	{
-		len = 0;
-		r = SQLColAttributeW(ctxt->statement, i, SQL_DESC_NAME, NULL, 0, &len, NULL);
-		if (!SQL_SUCCEEDED(r))
-		{
-			error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
-			_xefDbSetContextError(ctxt, xplFormat("%s(): SQLColAttributeW(): %s", __func__, error_text));
+		if (!_xefDbGetFieldDescText(ctxt, i, SQL_DESC_NAME, &(row->fields[i - 1].name)))
 			goto error;
-		}
-		if (len)
-		{
-			w_name = (SQLWCHAR*) XPL_MALLOC((len+2)*sizeof(SQLWCHAR)); /* certain ODBC drivers are crazy */
-			if (!w_name)
-			{
-				_xefDbSetContextError(ctxt, xplFormat("%s(): insufficient memory for column name", __func__));
-				goto error;
-			}
-			*w_name = 0;
-			r = SQLColAttributeW(ctxt->statement, i, SQL_DESC_NAME, w_name, len+3, &len, NULL);
-			if (!SQL_SUCCEEDED(r))
-			{
-				error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
-				_xefDbSetContextError(ctxt, xplFormat("%s(): SQLColAttributeW(SQL_DESC_NAME): %s", __func__, error_text));
-				goto error;
-			}
-			w_name[len/sizeof(SQLWCHAR) + 1] = 0;
-			col_name = NULL;
-			if (xstrIconvString("utf-8", "utf-16le", (const char*) w_name, ((const char*) w_name) + len + 2, (char**) &col_name, NULL) == -1)
-			{
-				_xefDbSetContextError(ctxt, xplFormat("%s(): cannot represent column name in UTF-8 encoding", __func__));
-				XPL_FREE(w_name);
-				goto error;
-			}
-			XPL_FREE(w_name);
-			if (!col_name)
-			{
-				_xefDbSetContextError(ctxt, xplFormat("%s(): insufficient memory for column name", __func__));
-				goto error;
-			}
-		} else // if (len)
-			col_name = NULL;
-		row->fields[i - 1].name = col_name;
+		if (!_xefDbGetFieldDescLong(ctxt, i, SQL_DESC_TYPE, &(row->fields[i - 1].data_type)))
+			goto error;
 	}
 	goto done;
 error:
-	if (error_text)
-		XPL_FREE(error_text);
 	_xefDbFreeRow(row);
 	return;
 done:
@@ -525,7 +555,9 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 	SQLWCHAR *buffer = NULL;
 	SQLLEN field_size, len_or_ind;
 	SQLRETURN r;
+	SQLSMALLINT target_type;
 	xmlChar *error_text;
+	bool recode;
 
 	if (!ctxt)
 		return;
@@ -558,7 +590,19 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 				_xefDbSetContextError(ctxt, xplFormat("%s(): not enough memory for ctxt->buffer", __func__));
 				goto error;
 			}
-			r = SQLGetData(ctxt->statement, i + 1, SQL_C_WCHAR, buffer, ctxt->buffer_size - field_size, &len_or_ind);
+			switch(field->data_type)
+			{
+			case SQL_VARBINARY:
+			case SQL_LONGVARBINARY:
+				// mysql returns mediumblob/longblob for utf8-encoded mediumtext/longtext, esp. json
+				target_type = SQL_C_BINARY;
+				recode = false;
+				break;
+			default:
+				target_type = SQL_C_WCHAR;
+				recode = true;
+			}
+			r = SQLGetData(ctxt->statement, i + 1, target_type, buffer, ctxt->buffer_size - field_size, &len_or_ind);
 			would_grow = true;
 		} while (r == SQL_SUCCESS_WITH_INFO);
 		if (!SQL_SUCCEEDED(r))
@@ -572,7 +616,7 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 		{
 			field->is_null = true;
 			field->value_size = 0;
-		} else {
+		} else if (recode) {
 			field->is_null = false;
 			if (len_or_ind == SQL_NO_TOTAL)
 				field_size = sqlwcharlen(ctxt->buffer) * sizeof(SQLWCHAR);
@@ -588,6 +632,16 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 				_xefDbSetContextError(ctxt, xplFormat("%s(): no memory for value recoding", __func__));
 				goto error;
 			}
+		} else {
+			field->is_null = false;
+			if (len_or_ind == SQL_NO_TOTAL)
+				field_size = xmlStrlen(BAD_CAST ctxt->buffer);
+			else {
+				field_size += len_or_ind;
+				while (*((BAD_CAST ctxt->buffer) + field_size - 1) == 0)
+					field_size--;
+			}
+			field->value = BAD_CAST XPL_STRDUP(BAD_CAST(ctxt->buffer));
 		}
 	}
 	return;
