@@ -635,7 +635,7 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 				while (*((BAD_CAST ctxt->buffer) + field_size - 1) == 0)
 					field_size--;
 			}
-			field->value = BAD_CAST XPL_STRDUP(BAD_CAST(ctxt->buffer));
+			field->value = BAD_CAST XPL_STRDUP(ctxt->buffer);
 			if (!field->value)
 			{
 				_xefDbSetContextError(ctxt, xplFormat("%s(): no memory for value copy", __func__));
