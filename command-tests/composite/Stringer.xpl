@@ -5,7 +5,7 @@
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
-  
+<!--   
   <MustSucceed name="pass/no-delimiters">
     <Input>
       <xpl:stringer>
@@ -83,6 +83,29 @@
         <B>Ы</B>
       </Data>
       <Str>123</Str>
+    </Expected>
+  </MustSucceed>
+ -->
+  <MustSucceed name="pass/selected-attribute">
+    <Input>
+      <Data>
+        <A a="4"/>
+        <A a="5"/>
+        <A a="6"/>
+        <B a="Ы"/>
+      </Data>
+      <Str>
+        <xpl:stringer select="preceding::Data/A/@a"/>
+      </Str>
+    </Input>
+    <Expected>
+      <Data>
+        <A a="4"/>
+        <A a="5"/>
+        <A a="6"/>
+        <B a="Ы"/>
+      </Data>
+      <Str>456</Str>
     </Expected>
   </MustSucceed>
   
