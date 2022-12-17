@@ -5,7 +5,7 @@
 -->
 <Root xmlns:xpl="urn:x-xpl:xpl">
   <xpl:include select="/Root/xpl:define" file="Helpers.xpl"/>
-<!--   
+
   <MustSucceed name="pass/no-delimiters">
     <Input>
       <xpl:stringer>
@@ -85,7 +85,7 @@
       <Str>123</Str>
     </Expected>
   </MustSucceed>
- -->
+ 
   <MustSucceed name="pass/selected-attribute">
     <Input>
       <Data>
