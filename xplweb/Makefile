@@ -5,7 +5,7 @@
 
 INCLUDE = -I./include -I../libxpl/include -I ../civetweb/include -I/usr/include/libxml2
 LIB = -L../libxpl
-LIBS = -lxml2 -ldl -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -lpthread -lcurl -lyajl
+LIBS = -lxml2 -ldl -lxpl -lonig -lcrypto -ltidy -lidn -lodbc -lpthread -lcurl -lyajl -lz
 WARNINGS = \
 -Wall\
 -Wextra\
@@ -29,14 +29,14 @@ WARNINGS = \
 -Wcast-align\
 -Wjump-misses-init\
 -Wtrampolines\
--Wstack-protector\
 -Werror
+#-Wstack-protector\ # ругается на civetweb
 #-Wswitch-default
 #-Wformat=2
 #-Wformat-signedness
 FEATURES = -D_XEF_TRANSPORT_CURL -D_XEF_DB_ODBC -D_XEF_HTML_CLEANER_TIDY -D_XEF_CRYPTO_OPENSSL
 CFLAGS = -fno-common $(LIB) $(FEATURES) $(WARNINGS) -Werror $(INCLUDE)
-CW_CFLAGS = $(WARNINGS) -DWIN32 -I../civetweb/include -DUSE_STACK_SIZE=102400 -DOPENSSL_API_1_1
+CW_CFLAGS = $(WARNINGS) -DWIN32 -I../civetweb/include -DUSE_STACK_SIZE=102400 -DOPENSSL_API_1_1 -DUSE_ZLIB
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -D_DEBUG -D_FORTIFY_SOURCE=2 -fsanitize=undefined -fno-sanitize-recover -fstack-protector
 CW_CFLAGS += -g -DDEBUG
