@@ -32,6 +32,7 @@ WARNINGS = \
 -Wjump-misses-init\
 -Wtrampolines\
 -Wstack-protector\
+-Wno-deprecated-declarations\
 -Werror
 FEATURES = -D_XEF_TRANSPORT_CURL -D_XEF_DB_ODBC -D_XEF_HTML_CLEANER_TIDY -D_XEF_CRYPTO_OPENSSL
 CFLAGS = -fpic -fno-common -D_IN_DLL $(FEATURES) $(WARNINGS)

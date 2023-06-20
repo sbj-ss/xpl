@@ -19,7 +19,6 @@ WARNINGS = \
 -Wimplicit-fallthrough=3\
 -Wshift-overflow=2\
 -Wvla\
--Walloca\
 -Wstringop-overflow=4\
 -Wlogical-op\
 -Wduplicated-cond\

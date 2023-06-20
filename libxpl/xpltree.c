@@ -862,7 +862,7 @@ static void _clearNsPairs(xplNsPairsPtr pairs, bool clearNew)
 		if (clearNew)
 			for (i = 0; i < pairs->count; i++)
 				xmlFreeNs(pairs->namespaces[i].new_ns);
-			XPL_FREE(pairs->namespaces);
+		XPL_FREE(pairs->namespaces);
 		pairs->namespaces = NULL;
 	}
 	pairs->count = pairs->size = 0;

@@ -194,9 +194,9 @@ xplParamsPtr buildParams(struct mg_connection *conn, const struct mg_request_inf
 	if (xplParamReplaceValue(ctxt.params, REMOTE_ADDRESS_PARAM, BAD_CAST XPL_STRDUP(requestInfo->remote_addr), XPL_PARAM_TYPE_USERDATA) != XPL_PARAM_RES_OK)
 		goto error;
 
-	xplParamsLockValue(ctxt.params, DOC_ROOT_PARAM, TRUE);
-	xplParamsLockValue(ctxt.params, REMOTE_ADDRESS_PARAM, TRUE);
-	xplParamsLockValue(ctxt.params, RESOURCE_PARAM, TRUE);
+	xplParamsLockValue(ctxt.params, DOC_ROOT_PARAM, true);
+	xplParamsLockValue(ctxt.params, REMOTE_ADDRESS_PARAM, true);
+	xplParamsLockValue(ctxt.params, RESOURCE_PARAM, true);
 
 	for (i = 0; i < requestInfo->num_headers; i++)
 		if (xplParamAddValue(
