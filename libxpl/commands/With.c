@@ -151,7 +151,7 @@ done:
 	if (commandInfo->element->type == XML_ELEMENT_NODE)
 		xplDocDeferNodeListDeletion(commandInfo->document, xplDetachChildren(commandInfo->element));
 	commandInfo->document->iterator_spin--;
-	if (params->select->nodesetval)
+	if (params->select && params->select->nodesetval)
 		params->select->nodesetval->nodeNr = 0;
 }
 
