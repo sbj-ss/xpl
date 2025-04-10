@@ -132,7 +132,7 @@ void xplDisplayWarning(const xmlNodePtr carrier, const char *fmt, ...)
 		(carrier->ns && carrier->ns->prefix)? (char*) carrier->ns->prefix: "",
 		(carrier->ns && carrier->ns->prefix)? ":": "",
 		carrier->name,
-		inner_message,
+		inner_message? (char*) inner_message: "unknown error",
 		carrier->doc->URL,
 		carrier->line
 	);

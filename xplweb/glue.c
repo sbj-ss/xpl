@@ -113,7 +113,7 @@ static int _fieldFound(const char *key, const char *filename, char *path, size_t
 	{
 		if (!_provideUniqueFilename(path, pathLen))
 		{
-			xplDisplayMessage(XPL_MSG_ERROR, "Document root '%s' is too long to handle uploads. Max upload path len is %lu chars", doc_root, pathLen);
+			xplDisplayMessage(XPL_MSG_ERROR, "Document root '%s' is too long to handle uploads. Max upload path len is %lu chars", doc_root, (unsigned long) pathLen);
 			return MG_FORM_FIELD_STORAGE_ABORT;
 		}
 		xplDisplayMessage(XPL_MSG_DEBUG, "about to create file %s -> %s...\n", filename, path);

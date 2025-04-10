@@ -484,19 +484,21 @@ error:
 	return false;
 }
 
-static bool _xefDbGetFieldDescLong(xefDbContextPtr ctxt, SQLUSMALLINT index, SQLUSMALLINT which, SQLLEN *ret)
+static bool _xefDbGetFieldDescLong(xefDbContextPtr ctxt, SQLUSMALLINT index, SQLUSMALLINT which, long *ret)
 {
 	xmlChar *error_text = NULL;
 	SQLRETURN r;
+	SQLLEN value;
 
 	*ret = 0;
-	r = SQLColAttributeW(ctxt->statement, index, which, NULL, 0, NULL, ret);
+	r = SQLColAttributeW(ctxt->statement, index, which, NULL, 0, NULL, &value);
 	if (!SQL_SUCCEEDED(r))
 	{
 		error_text = _xefDbDecodeOdbcError(ctxt->statement, SQL_HANDLE_STMT, r, ctxt->db);
 		_xefDbSetContextError(ctxt, xplFormat("%s(): SQLColAttributeW(): %s", __func__, error_text));
 		goto error;
 	}
+	*ret = (long) value;
 	return true;
 error:
 	if (error_text)
@@ -607,8 +609,6 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 				_xefDbSetContextError(ctxt, xplFormat("%s(): not enough memory for ctxt->buffer", __func__));
 				goto error;
 			}
-			if (is_binary)
-				memset(buffer, 0, ctxt->buffer_size - field_size + 1); // this is the only way to zero-terminate "binary" values
 			r = SQLGetData(ctxt->statement, i + 1, target_type, buffer, ctxt->buffer_size - field_size, &len_or_ind);
 			would_grow = true;
 		} while (r == SQL_SUCCESS_WITH_INFO);
@@ -627,6 +627,7 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 			field->value_size = 0;
 		} else if (is_binary) {
 			field->is_null = false;
+			memset(buffer, 0, ctxt->buffer_size - field_size + 1); // TODO is this the only way to zero-terminate "binary" values?..
 			if (len_or_ind == SQL_NO_TOTAL)
 				field_size = xmlStrlen(BAD_CAST ctxt->buffer);
 			else {
@@ -635,7 +636,7 @@ static void _xefDbFillRow(xefDbContextPtr ctxt)
 				while (*((BAD_CAST ctxt->buffer) + field_size - 1) == 0)
 					field_size--;
 			}
-			field->value = BAD_CAST XPL_STRDUP((char*) ctxt->buffer);
+			field->value = BAD_CAST XPL_STRDUP((char*) ctxt->buffer); // TODO what else could we do with real binary containing zeroes?..
 			if (!field->value)
 			{
 				_xefDbSetContextError(ctxt, xplFormat("%s(): no memory for value copy", __func__));

@@ -53,6 +53,7 @@ user.dict
 /xpl/*.xpl
 /xplweb/*.xpl
 /xplweb/*.conf
+/xplweb/cacert.pem
 # internal todo list
 /ToDo.txt
 # debug memory dumps

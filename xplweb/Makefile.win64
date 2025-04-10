@@ -10,7 +10,7 @@ ifneq ($(LIB_ROOT),)
 INCLUDE += -I$(LIB_ROOT)/include -I$(LIB_ROOT)/include/libxml2
 LIB += -L$(LIB_ROOT)/lib 
 endif
-WARNINGS = -Wall -Wextra -Wmissing-prototypes -Wshadow
+WARNINGS = -Wall -Wextra -Wmissing-prototypes -Wshadow -Wno-deprecated-declarations
 FEATURES = -D_XEF_TRANSPORT_CURL -D_XEF_DB_ODBC -D_XEF_HTML_CLEANER_TIDY -D_XEF_CRYPTO_OPENSSL
 CFLAGS = -fno-common $(LIB) $(FEATURES) $(WARNINGS) -Werror $(INCLUDE)
 CW_CFLAGS = $(WARNINGS) -DWIN32 -I../civetweb/include -DUSE_STACK_SIZE=102400 -DOPENSSL_API_1_1

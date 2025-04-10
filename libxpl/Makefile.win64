@@ -10,7 +10,7 @@ INCLUDE += -I$(LIB_ROOT)/include -I$(LIB_ROOT)/include/libxml2
 LIB += -L$(LIB_ROOT)/lib 
 endif
 LIBS = -lxml2 -lonig -ltidy -lcrypto -lidn -lodbc32 -liconv -lz.dll -llzma -lpsapi -lole32 -lcurl -lyajl
-WARNINGS = -Wall -Wmissing-prototypes -Wshadow -Werror -Wextra
+WARNINGS = -Wall -Wmissing-prototypes -Wshadow -Werror -Wextra -Wno-deprecated-declarations
 FEATURES = -D_XEF_HTML_CLEANER_TIDY -D_XEF_DB_ODBC -D_XEF_TRANSPORT_CURL -D_XEF_CRYPTO_OPENSSL
 CFLAGS = -fpic -fno-common -D_IN_DLL $(FEATURES) $(WARNINGS)
 ifeq ($(DEBUG), 1)

@@ -70,7 +70,7 @@ const xmlChar* xplErrorToShortString(xplError error)
 }
 
 /* common document initialization part */
-static void _xpathDummyError(void *data, xmlErrorPtr error)
+static void _xpathDummyError(void *data, const xmlError *error)
 {
 	UNUSED_PARAM(data);
 	UNUSED_PARAM(error);

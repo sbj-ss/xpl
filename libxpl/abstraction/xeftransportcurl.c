@@ -98,7 +98,7 @@ typedef struct _uploadData
 {
 	const xmlChar *data;
 	size_t pos;
-	size_t size;
+	long size;
 } uploadData, *uploadDataPtr;
 
 static size_t _readCallback(char *ptr, size_t size, size_t nItems, void *userData)

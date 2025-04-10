@@ -181,7 +181,7 @@ xmlChar *xprRealPath(const xmlChar *path)
 		return NULL;
 	if (!(full_path = (WCHAR*) XPL_MALLOC(MAX_PATH)))
 		goto done;
-	if (!(len = GetFullPathNameW(internal_path, sizeof(full_path) / sizeof(WCHAR), full_path, NULL)))
+	if (!(len = GetFullPathNameW(internal_path, MAX_PATH / sizeof(WCHAR), full_path, NULL)))
 		goto done;
 	xstrIconvString("utf-8", XPR_FS_ENCODING, (char*) full_path, (char*) full_path + len*sizeof(WCHAR), (char**) &ret, NULL);
 done:

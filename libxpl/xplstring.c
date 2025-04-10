@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <string.h>
 #include <iconv.h>
+#include <libxml/xmlerror.h>
 #include <libxml/chvalid.h>
 #include <libxml/entities.h>
 #ifdef _USE_LIBIDN
@@ -76,7 +77,7 @@ xmlChar* xstrGetLastLibxmlError()
 {
 	static const char error_fmt[] = "file %s, %d:%d, problem: %s, extra info [%s, %s, %s]";
 	xmlChar *error, *encError;
-	xmlErrorPtr err;
+	xmlError const *err;
 	size_t max_err_len;
 
 	// TODO: maybe simply use xplFormat()?
@@ -553,7 +554,7 @@ void xstrComposeAndSplitPath(
 	xmlChar *path;
 	const xmlChar *fn;
 
-	fn = BAD_CAST strrchr((const char*) relativePath, '/');
+	fn = BAD_CAST strrchr((const char*) relativePath, XPR_PATH_DELIM);
 
 	if (checkAbsPath && xprIsPathAbsolute(relativePath)) // ignore basePath
 	{
